@@ -12,12 +12,13 @@ import {
 } from "@mantine/core";
 import { useColorScheme } from "@mantine/hooks";
 import { Spotlight, type SpotlightActionData, type SpotlightActionGroupData, spotlight } from "@mantine/spotlight";
-import { IconMoon, IconSearch, IconSettings, IconSun, IconSunMoon } from "@tabler/icons-react";
+import { IconSearch, IconSettings, IconSunMoon } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useAtom, useAtomValue } from "jotai";
 import { type JSX, type SVGProps, useState } from "react";
 import { useTranslation } from "react-i18next";
+import ThemeButton from "@/features/settings/components/ThemeButton";
 import { nativeBarAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
 import { linksdata } from "./Sidebar";
@@ -82,32 +83,6 @@ const Icons = {
 function getActions(navigate: any, setColorScheme: any, t: any): (SpotlightActionGroupData | SpotlightActionData)[] {
   return [
     {
-      group: "Switch theme",
-      actions: [
-        {
-          id: "light",
-          label: t("Settings.Appearance.Theme.Light"),
-          description: "Switch to light theme",
-          onClick: () => setColorScheme("light"),
-          leftSection: <IconSun size={24} stroke={1.5} />,
-        },
-        {
-          id: "dark",
-          label: t("Settings.Appearance.Theme.Dark"),
-          description: "Switch to dark theme",
-          onClick: () => setColorScheme("dark"),
-          leftSection: <IconMoon size={24} stroke={1.5} />,
-        },
-        {
-          id: "auto",
-          label: t("Settings.Appearance.Theme.Auto"),
-          description: "Follow the system's color scheme",
-          onClick: () => setColorScheme("auto"),
-          leftSection: <IconSunMoon size={24} stroke={1.5} />,
-        },
-      ],
-    },
-    {
       group: "Pages",
       actions: linksdata.map((link) => {
         const label = t(`SideBar.${link.label}`);
@@ -124,6 +99,14 @@ function getActions(navigate: any, setColorScheme: any, t: any): (SpotlightActio
     {
       group: "Settings",
       actions: [
+        {
+          id: "theme",
+          label: t("Settings.Appearance.Theme"),
+          description: t("Settings.Appearance.Theme.Desc"),
+          leftSection: <IconSunMoon size={24} stroke={1.5} />,
+          rightSection: <ThemeButton />,
+          disabled: true,
+        },
         {
           id: "settings",
           label: t("SideBar.Settings"),
@@ -232,6 +215,9 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
           searchProps={{
             leftSection: <IconSearch size={20} stroke={1.5} />,
             placeholder: "Search...",
+          }}
+          transitionProps={{
+            transition: "fade-down",
           }}
         />
       </Group>
