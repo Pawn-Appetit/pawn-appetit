@@ -502,6 +502,12 @@ function BoardGame() {
       white: (players.white.type === "human" ? players.white.name : players.white.engine?.name) ?? "?",
       black: (players.black.type === "human" ? players.black.name : players.black.engine?.name) ?? "?",
       time_control: undefined,
+      orientation:
+        players.white.type === "human" && players.black.type === "engine"
+          ? "white"
+          : players.white.type === "engine" && players.black.type === "human"
+            ? "black"
+            : headers.orientation
     };
 
     if (players.white.timeControl || players.black.timeControl) {
@@ -530,6 +536,7 @@ function BoardGame() {
       ...headers,
       ...newHeaders,
       fen: root.fen,
+
     });
 
     setTabs((prev) =>
