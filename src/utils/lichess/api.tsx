@@ -227,6 +227,36 @@ export async function getLichessAccount({
   return response.json();
 }
 
+export async function fetchLastLichessGames(username: string, count: number = 5) {
+  const url = `${baseURL}/games/user/${username}?max=${count}&pgnInJson=true&opening=true`;
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { Accept: "application/x-ndjson" },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch games: ${response.statusText}`);
+    }
+
+    const text = await response.text();
+    const games = text
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line));
+    return games;
+  } catch (e) {
+    error(`Error fetching last Lichess games for ${username}: ${e}`);
+    notifications.show({
+      title: "Fetch Error",
+      message: `Could not fetch recent games for ${username} from Lichess.`,
+      color: "red",
+      icon: <IconX />,
+    });
+    return [];
+  }
+}
+
 export async function getBestMoves(
   _tab: string,
   _goMode: GoMode,

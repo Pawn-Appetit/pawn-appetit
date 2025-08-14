@@ -47,21 +47,23 @@ const ChessComPlayer = z.object({
   username: z.string(),
 });
 
+const ChessComGameSchema = z.object({
+  url: z.string(),
+  pgn: z.string().nullish(),
+  time_control: z.string(),
+  end_time: z.number(),
+  rated: z.boolean(),
+  initial_setup: z.string(),
+  fen: z.string(),
+  rules: z.string(),
+  white: ChessComPlayer,
+  black: ChessComPlayer,
+});
+
+export type ChessComGame = z.infer<typeof ChessComGameSchema>;
+
 const ChessComGames = z.object({
-  games: z.array(
-    z.object({
-      url: z.string(),
-      pgn: z.string().nullish(),
-      time_control: z.string(),
-      end_time: z.number(),
-      rated: z.boolean(),
-      initial_setup: z.string(),
-      fen: z.string(),
-      rules: z.string(),
-      white: ChessComPlayer,
-      black: ChessComPlayer,
-    }),
-  ),
+  games: z.array(ChessComGameSchema),
 });
 
 export async function getChessComAccount(player: string): Promise<ChessComStats | null> {
@@ -96,6 +98,40 @@ async function getGameArchives(player: string) {
   const url = `${baseURL}/pub/player/${player}/games/archives`;
   const response = await fetch(url, { headers, method: "GET" });
   return (await response.json()) as Archive;
+}
+
+export async function fetchLastChessComGames(player: string): Promise<ChessComGame[]> {
+  try {
+    const archives = await getGameArchives(player);
+    if (archives.archives.length === 0) {
+      return [];
+    }
+    const lastArchiveUrl = archives.archives[archives.archives.length - 1];
+    const response = await fetch(lastArchiveUrl, { headers, method: "GET" });
+
+    if (!response.ok) {
+      error(`Failed to fetch games from ${lastArchiveUrl}: ${response.status}`);
+      return [];
+    }
+
+    const gamesData = ChessComGames.safeParse(await response.json());
+
+    if (!gamesData.success) {
+      error(`Invalid game data from ${lastArchiveUrl}: ${gamesData.error}`);
+      return [];
+    }
+
+    return gamesData.data.games.sort((a, b) => b.end_time - a.end_time);
+  } catch (e) {
+    error(`Error fetching last chess.com games for ${player}: ${e}`);
+    notifications.show({
+      title: "Fetch Error",
+      message: `Could not fetch recent games for ${player}.`,
+      color: "red",
+      icon: <IconX />,
+    });
+    return [];
+  }
 }
 
 export async function downloadChessCom(player: string, timestamp: number | null) {

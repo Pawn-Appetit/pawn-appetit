@@ -47,6 +47,11 @@ import { type GameRecord, getRecentGames } from "@/utils/gameRecords";
 import { getPuzzleStats, getTodayPuzzleCount } from "@/utils/puzzleStreak";
 import { genID, type Tab } from "@/utils/tabs";
 
+import RecentOnlineGames from "./components/RecentOnlineGames";
+import { type ChessComGame, fetchLastChessComGames } from "@/utils/chess.com/api";
+import { fetchLastLichessGames } from "@/utils/lichess/api";
+
+
 function getChessTitle(rating: number): string {
   if (rating >= 2500) return "Grandmaster";
   if (rating >= 2200) return "International Master";
@@ -63,6 +68,51 @@ function getChessTitle(rating: number): string {
   if (rating >= 100) return "Class J";
   return "Class K";
 }
+
+type GenericGame = {
+  id: string;
+  opponent: string;
+  opponentRating?: number;
+  result: 'Won' | 'Lost' | 'Draw';
+  movesCount?: number;
+  date: string;
+  pgn: string;
+  userColor: 'white' | 'black';
+};
+
+const lichessGameAdapter = (game: any, username: string): GenericGame => {
+    const userIsWhite = game.players.white.user.name.toLowerCase() === username.toLowerCase();
+    const opponent = userIsWhite ? game.players.black : game.players.white;
+    const result = game.winner ? (game.winner === (userIsWhite ? 'white' : 'black') ? 'Won' : 'Lost') : 'Draw';
+    return {
+        id: game.id,
+        opponent: opponent.user.name,
+        opponentRating: opponent.rating,
+        result,
+        movesCount: game.moves.split(' ').length,
+        date: new Date(game.createdAt).toLocaleDateString(),
+        pgn: game.pgn,
+        userColor: userIsWhite ? 'white' : 'black',
+    };
+};
+
+const chessComGameAdapter = (game: ChessComGame, username: string): GenericGame => {
+    const userIsWhite = game.white.username.toLowerCase() === username.toLowerCase();
+    const opponent = userIsWhite ? game.black : game.white;
+    const userResult = userIsWhite ? game.white.result : game.black.result;
+    const resultText = userResult === 'win' ? 'Won' : (game.black.result === game.white.result ? 'Draw' : 'Lost');
+    return {
+        id: game.url,
+        opponent: opponent.username,
+        opponentRating: opponent.rating,
+        result: resultText,
+        movesCount: game.pgn?.split(' ').filter(s => s.match(/^\d+\./)).length,
+        date: new Date(game.end_time * 1000).toLocaleDateString(),
+        pgn: game.pgn || '',
+        userColor: userIsWhite ? 'white' : 'black',
+    };
+};
+
 
 export default function DashboardPage() {
   const [isFirstOpen, setIsFirstOpen] = useState(false);
@@ -94,6 +144,9 @@ export default function DashboardPage() {
       s.lichess?.username === mainAccountName ||
       s.chessCom?.username === mainAccountName,
   );
+
+  const hasLichessAccount = sessions.some(s => s.lichess);
+  const hasChessComAccount = sessions.some(s => s.chessCom);
 
   let user = {
     name: mainAccountName ?? "No main account",
@@ -533,9 +586,78 @@ export default function DashboardPage() {
 
       <Grid>
         <Grid.Col span={{ base: 12, md: 7 }}>
+            <SimpleGrid cols={1} spacing="md">
+                    <RecentOnlineGames
+                        platform="lichess"
+                        title="Recent Lichess Games"
+                        fetchGamesFn={(username) => fetchLastLichessGames(username, 5)}
+                        gameAdapter={lichessGameAdapter}
+                    />
+                    <RecentOnlineGames
+                        platform="chess.com"
+                        title="Recent Chess.com Games"
+                        fetchGamesFn={fetchLastChessComGames}
+                        gameAdapter={chessComGameAdapter}
+                    />
+            </SimpleGrid>
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, md: 5 }}>
           <Card withBorder p="lg" radius="md" h="100%">
             <Group justify="space-between" mb="sm">
-              <Text fw={700}>Recent games</Text>
+              <Text fw={700}>Puzzles</Text>
+              <Button
+                size="xs"
+                variant="light"
+                onClick={() => navigate({ to: "/boards" })}
+                leftSection={<IconPuzzle size={16} />}
+              >
+                Solve now
+              </Button>
+            </Group>
+            <Group align="center" gap="lg">
+              <RingProgress
+                size={180}
+                thickness={12}
+                sections={[{ value: (puzzleStats.currentStreak / puzzleStats.target) * 100, color: "yellow" }]}
+                label={
+                  <Stack gap={0} align="center">
+                    <ThemeIcon color="yellow" variant="light">
+                      <IconFlame size={18} />
+                    </ThemeIcon>
+                    <Text fw={700}>{puzzleStats.currentStreak}</Text>
+                    <Text size="xs" c="dimmed">
+                      day streak
+                    </Text>
+                  </Stack>
+                }
+              />
+              <Box style={{ flex: 1 }}>
+                <Text size="sm" c="dimmed" mb={6}>
+                  This week
+                </Text>
+                <BarChart
+                  h={120}
+                  data={puzzleStats.history}
+                  dataKey="day"
+                  series={[{ name: "solved", color: "yellow.6" }]}
+                  withLegend={false}
+                  gridAxis="none"
+                  xAxisProps={{ hide: true }}
+                  yAxisProps={{ hide: true }}
+                  barProps={{ radius: 4 }}
+                />
+              </Box>
+            </Group>
+          </Card>
+        </Grid.Col>
+      </Grid>
+
+      <Grid>
+        <Grid.Col span={{ base: 12, md: 7 }}>
+          <Card withBorder p="lg" radius="md" h="100%">
+            <Group justify="space-between" mb="sm">
+              <Text fw={700}>Recent Local Games</Text>
             </Group>
             <ScrollArea h={240} type="auto">
               <Table striped highlightOnHover>
@@ -612,115 +734,6 @@ export default function DashboardPage() {
             </ScrollArea>
           </Card>
         </Grid.Col>
-
-        <Grid.Col span={{ base: 12, md: 5 }}>
-          <Card withBorder p="lg" radius="md" h="100%">
-            <Group justify="space-between" mb="sm">
-              <Text fw={700}>Puzzles</Text>
-              <Button
-                size="xs"
-                variant="light"
-                onClick={() => navigate({ to: "/boards" })}
-                leftSection={<IconPuzzle size={16} />}
-              >
-                Solve now
-              </Button>
-            </Group>
-            <Group align="center" gap="lg">
-              <RingProgress
-                size={180}
-                thickness={12}
-                sections={[{ value: (puzzleStats.currentStreak / puzzleStats.target) * 100, color: "yellow" }]}
-                label={
-                  <Stack gap={0} align="center">
-                    <ThemeIcon color="yellow" variant="light">
-                      <IconFlame size={18} />
-                    </ThemeIcon>
-                    <Text fw={700}>{puzzleStats.currentStreak}</Text>
-                    <Text size="xs" c="dimmed">
-                      day streak
-                    </Text>
-                  </Stack>
-                }
-              />
-              <Box style={{ flex: 1 }}>
-                <Text size="sm" c="dimmed" mb={6}>
-                  This week
-                </Text>
-                <BarChart
-                  h={120}
-                  data={puzzleStats.history}
-                  dataKey="day"
-                  series={[{ name: "solved", color: "yellow.6" }]}
-                  withLegend={false}
-                  gridAxis="none"
-                  xAxisProps={{ hide: true }}
-                  yAxisProps={{ hide: true }}
-                  barProps={{ radius: 4 }}
-                />
-              </Box>
-            </Group>
-          </Card>
-        </Grid.Col>
-      </Grid>
-
-      <Grid>
-        <Grid.Col span={{ base: 12, md: 7 }}>
-          <Card withBorder p="lg" radius="md" h="100%">
-            <Group justify="space-between" mb="sm">
-              <Text fw={700}>Suggested for you</Text>
-              <Group gap="xs">
-                <Badge variant="light" color="grape">
-                  Lessons
-                </Badge>
-                <Badge variant="light" color="blue">
-                  Openings
-                </Badge>
-              </Group>
-            </Group>
-            <Stack>
-              {suggestions.map((s) => (
-                <Group key={s.id} justify="space-between" align="center">
-                  <Group>
-                    <ThemeIcon
-                      variant="light"
-                      color={s.tag === "Openings" ? "blue" : s.tag === "Endgames" ? "grape" : "teal"}
-                    >
-                      {s.tag === "Openings" ? (
-                        <IconBook2 size={16} />
-                      ) : s.tag === "Endgames" ? (
-                        <IconBrain size={16} />
-                      ) : (
-                        <IconTrophy size={16} />
-                      )}
-                    </ThemeIcon>
-                    <Stack gap={0}>
-                      <Text fw={600}>{s.title}</Text>
-                      <Group gap={6}>
-                        <Badge variant="light">{s.tag}</Badge>
-                        <Badge variant="dot" color="gray">
-                          {s.difficulty}
-                        </Badge>
-                      </Group>
-                    </Stack>
-                  </Group>
-                  <Button
-                    variant="light"
-                    onClick={() => {
-                      if (s.onClick) s.onClick();
-                      else if (s.to) navigate({ to: s.to });
-                      else navigate({ to: "/learn" });
-                    }}
-                    rightSection={<IconArrowRight size={16} />}
-                  >
-                    Start
-                  </Button>
-                </Group>
-              ))}
-            </Stack>
-          </Card>
-        </Grid.Col>
-
         <Grid.Col span={{ base: 12, md: 5 }}>
           <Card withBorder p="lg" radius="md" h="100%">
             <Group justify="space-between" mb="sm">
