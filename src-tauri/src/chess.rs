@@ -591,9 +591,20 @@ pub async fn get_best_moves(
                             }
                         }
                     }
-                    UciMessage::BestMove { .. } => {
+                    UciMessage::BestMove { best_move, .. } => {
+                        let final_move = best_move.to_string();
+                        let final_best_moves = BestMoves {
+                            multipv: 1,
+                            depth: proc.last_depth,
+                            nodes: 0,
+                            score: proc.last_best_moves.first().map_or(Score::default(), |m| m.score.clone()),
+                            uci_moves: vec![final_move],
+                            san_moves: vec![],
+                            nps: 0,
+                        };
+
                         BestMovesPayload {
-                            best_lines: proc.last_best_moves.clone(),
+                            best_lines: vec![final_best_moves],
                             engine: id.clone(),
                             tab: tab.clone(),
                             fen: proc.options.fen.clone(),
@@ -601,7 +612,10 @@ pub async fn get_best_moves(
                             progress: 100.0,
                         }
                         .emit(&app)?;
+
                         proc.last_progress = 100.0;
+
+                        break;
                     }
                     _ => {}
                 }
