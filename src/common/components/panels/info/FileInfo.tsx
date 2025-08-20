@@ -1,12 +1,13 @@
 import { ActionIcon, Code, Divider, Group, Text, Tooltip } from "@mantine/core";
 import { IconReload } from "@tabler/icons-react";
 import { useAtom } from "jotai";
+import { useTranslation } from "react-i18next";
 import { commands } from "@/bindings";
 import { currentTabAtom } from "@/state/atoms";
-import { formatNumber } from "@/utils/format";
 import { unwrap } from "@/utils/unwrap";
 
 function FileInfo({ setGames }: { setGames: React.Dispatch<React.SetStateAction<Map<number, string>>> }) {
+  const { t } = useTranslation();
   const [tab, setCurrentTab] = useAtom(currentTabAtom);
 
   if (tab?.source?.type === "file") {
@@ -14,8 +15,7 @@ function FileInfo({ setGames }: { setGames: React.Dispatch<React.SetStateAction<
       <>
         <Group justify="space-between" py="sm" px="md">
           <Text>
-            {formatNumber(tab.source.numGames || 0)} game
-            {tab.source.numGames === 1 ? "" : "s"}
+            {t("Common.Games", { count: tab.source.numGames || 0 })}
           </Text>
           <Group>
             <Tooltip label={tab.source.path}>

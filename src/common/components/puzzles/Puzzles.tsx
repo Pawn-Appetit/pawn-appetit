@@ -101,7 +101,7 @@ function Puzzles({ id }: { id: string }) {
   const [selectedDb, setSelectedDb] = useAtom(selectedPuzzleDbAtom);
 
   const { documentDir } = useLoaderData({ from: "/boards" });
-  const { files, isLoading } = useFileDirectory(documentDir);
+  const { files } = useFileDirectory(documentDir);
 
   useEffect(() => {
     if (files) {
@@ -287,7 +287,7 @@ function Puzzles({ id }: { id: string }) {
           <Group grow>
             <div>
               <Text size="sm" c="dimmed">
-                Puzzle Rating
+                {t("Puzzle.Rating")}
               </Text>
               <Text fw={500} size="xl">
                 {puzzles?.[currentPuzzle]?.completion === "incomplete"
@@ -300,7 +300,7 @@ function Puzzles({ id }: { id: string }) {
             {averageWonRating && (
               <div>
                 <Text size="sm" c="dimmed">
-                  Average Success Rating
+                  {t("Puzzle.AverageSuccessRating")}
                 </Text>
                 <Text fw={500} size="xl">
                   {averageWonRating.toFixed(0)}
@@ -310,7 +310,7 @@ function Puzzles({ id }: { id: string }) {
             {averageLostRating && (
               <div>
                 <Text size="sm" c="dimmed">
-                  Average Fail Rating
+                  {t("Puzzle.AverageFailRating")}
                 </Text>
                 <Text fw={500} size="xl">
                   {averageLostRating.toFixed(0)}
@@ -323,10 +323,10 @@ function Puzzles({ id }: { id: string }) {
                   label: p.title.split(".db3")[0],
                   value: p.path,
                 }))
-                .concat({ label: "+ Add new", value: "add" })}
+                .concat({ label: `+ ${t("Common.AddNew")}`, value: "add" })}
               value={selectedDb}
               clearable={false}
-              placeholder="Select database"
+              placeholder={t("Puzzle.SelectDatabase")}
               onChange={(v) => {
                 if (v === "add") {
                   setAddOpened(true);
@@ -338,20 +338,20 @@ function Puzzles({ id }: { id: string }) {
           </Group>
           <Divider my="sm" />
           <Group>
-            <Input.Wrapper label="Rating Range" flex={1}>
+            <Input.Wrapper label={t("Puzzle.RatingRange")} flex={1}>
               <RangeSlider min={600} max={2800} value={ratingRange} onChange={setRatingRange} disabled={progressive} />
             </Input.Wrapper>
-            <Input.Wrapper label="Progressive">
+            <Input.Wrapper label={t("Puzzle.Progressive")}>
               <Center>
                 <Checkbox checked={progressive} onChange={(event) => setProgressive(event.currentTarget.checked)} />
               </Center>
             </Input.Wrapper>
-            <Input.Wrapper label="Hide Rating">
+            <Input.Wrapper label={t("Puzzle.HideRating")}>
               <Center>
                 <Checkbox checked={hideRating} onChange={(event) => setHideRating(event.currentTarget.checked)} />
               </Center>
             </Input.Wrapper>
-            <Input.Wrapper label="In Order">
+            <Input.Wrapper label={t("Puzzle.InOrder")}>
               <Center>
                 <Checkbox checked={inOrder} onChange={(event) => setInOrder(event.currentTarget.checked)} />
               </Center>
@@ -360,10 +360,7 @@ function Puzzles({ id }: { id: string }) {
           <Divider my="sm" />
           <Group justify="space-between">
             {turnToMove && (
-              <Text fz="1.75rem">
-                {turnToMove === "white" ? "Black " : "White "}
-                To Move
-              </Text>
+              <Text fz="1.75rem">{turnToMove === "white" ? t("Puzzle.BlackToMove") : t("Puzzle.WhiteToMove")}</Text>
             )}
             <Group>
               <Switch
@@ -373,12 +370,12 @@ function Puzzles({ id }: { id: string }) {
                 label={t("Puzzle.JumpToNextPuzzleImmediately")}
               />
 
-              <Tooltip label="New Puzzle">
+              <Tooltip label={t("Puzzle.NewPuzzle")}>
                 <ActionIcon disabled={!selectedDb} onClick={() => generatePuzzle(selectedDb!)}>
                   <IconPlus />
                 </ActionIcon>
               </Tooltip>
-              <Tooltip label="Analyze Position">
+              <Tooltip label={t("Puzzle.AnalyzePosition")}>
                 <ActionIcon
                   disabled={!selectedDb}
                   onClick={() =>
@@ -404,7 +401,7 @@ function Puzzles({ id }: { id: string }) {
                   <IconZoomCheck />
                 </ActionIcon>
               </Tooltip>
-              <Tooltip label="Clear Session">
+              <Tooltip label={t("Puzzle.ClearSession")}>
                 <ActionIcon
                   onClick={() => {
                     setPuzzles([]);
@@ -438,7 +435,7 @@ function Puzzles({ id }: { id: string }) {
             }}
             disabled={puzzles.length === 0 || showingSolution}
           >
-            {showingSolution ? "Showing Solution" : "View Solution"}
+            {showingSolution ? t("Puzzle.ShowingSolution") : t("Puzzle.ViewSolution")}
           </Button>
         </Paper>
       </Portal>

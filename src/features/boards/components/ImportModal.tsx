@@ -16,6 +16,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { makeFen, parseFen } from "chessops/fen";
 import { useAtom } from "jotai";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { commands } from "@/bindings";
 import GenericCard from "@/common/components/GenericCard";
@@ -40,6 +41,7 @@ const FILE_TYPES = [
 ] as const;
 
 export default function ImportModal({ context, id }: ContextModalProps<{ modalBody: string }>) {
+  const { t } = useTranslation();
   const [pgn, setPgn] = useState("");
   const [fen, setFen] = useState("");
   const [file, setFile] = useState<string | null>(null);
@@ -172,7 +174,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
         sessionStorage.setItem(prev.value, JSON.stringify({ version: 0, state: tree }));
         return {
           ...prev,
-          name: "Analysis Board",
+          name: t("Tab.AnalysisBoard.Title"),
           type: "analysis",
         };
       });

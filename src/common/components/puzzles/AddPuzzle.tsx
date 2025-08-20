@@ -2,6 +2,7 @@ import { Alert, Box, Divider, Group, Modal, Paper, ScrollArea, Stack, Text } fro
 import { IconAlertCircle } from "@tabler/icons-react";
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { type Dispatch, type SetStateAction, useState } from "react";
+import { useTranslation } from "react-i18next";
 import useSWRImmutable from "swr/immutable";
 import { commands, events, type PuzzleDatabaseInfo } from "@/bindings";
 import ProgressButton from "@/common/components/ProgressButton";
@@ -23,10 +24,11 @@ function AddPuzzle({
   setPuzzleDbs: Dispatch<SetStateAction<PuzzleDatabaseInfo[]>>;
   files: (FileMetadata | Directory)[] | undefined;
 }) {
+  const { t } = useTranslation();
   const { data: dbs, error } = useSWRImmutable("default_puzzle_databases", getDefaultPuzzleDatabases);
 
   return (
-    <Modal opened={opened} onClose={() => setOpened(false)} title="Add Database">
+    <Modal opened={opened} onClose={() => setOpened(false)} title={t("Databases.Add.Title")}>
       <ScrollArea.Autosize mah={500} offsetScrollbars>
         <Stack>
           {dbs?.map((db, i) => (
@@ -40,8 +42,8 @@ function AddPuzzle({
             />
           ))}
           {error && (
-            <Alert icon={<IconAlertCircle size="1rem" />} title="Error" color="red">
-              {"Failed to fetch the database's info from the server."}
+            <Alert icon={<IconAlertCircle size="1rem" />} title={t("Common.Error")} color="red">
+              {t("Databases.Add.ErrorFetch")}
             </Alert>
           )}
         </Stack>
@@ -63,6 +65,7 @@ function PuzzleDbCard({
   initInstalled: boolean;
   files: (FileMetadata | Directory)[] | undefined;
 }) {
+  const { t } = useTranslation();
   const [inProgress, setInProgress] = useState<boolean>(false);
 
   async function downloadDatabase(id: number, url: string, name: string) {
@@ -77,7 +80,7 @@ function PuzzleDbCard({
       <Group wrap="nowrap" gap={0} grow>
         <Box p="md" flex={1}>
           <Text tt="uppercase" c="dimmed" fw={700} size="xs">
-            DATABASE
+            {t("Databases.Add.Title").toUpperCase()}
           </Text>
           <Text fw="bold" mb="xs">
             {puzzleDb.title}
@@ -90,13 +93,13 @@ function PuzzleDbCard({
           <Group wrap="nowrap" grow my="md">
             <Stack gap={0} align="center">
               <Text tt="uppercase" c="dimmed" fw={700} size="xs">
-                SIZE
+                {t("Common.Size").toUpperCase()}
               </Text>
               <Text size="xs">{formatBytes(puzzleDb.storageSize)}</Text>
             </Stack>
             <Stack gap={0} align="center">
               <Text tt="uppercase" c="dimmed" fw={700} size="xs">
-                PUZZLES
+                {t("Files.FileType.Puzzle").toUpperCase()}
               </Text>
               <Text size="xs">{formatNumber(puzzleDb.puzzleCount)}</Text>
             </Stack>
@@ -106,10 +109,10 @@ function PuzzleDbCard({
             progressEvent={events.downloadProgress}
             initInstalled={initInstalled}
             labels={{
-              completed: "Installed",
-              action: "Install",
-              inProgress: "Downloading",
-              finalizing: "Extracting",
+              completed: t("Common.Installed"),
+              action: t("Common.Install"),
+              inProgress: t("Common.Downloading"),
+              finalizing: t("Common.Extracting"),
             }}
             onClick={() => downloadDatabase(databaseId, puzzleDb.downloadLink!, puzzleDb.title)}
             inProgress={inProgress}

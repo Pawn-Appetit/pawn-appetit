@@ -84,7 +84,7 @@ function FileCard({
           </Tooltip>
         </Group>
         <Text ta="center" c="dimmed">
-          {selected?.numGames} {t("Common.Games")}
+          {t("Common.Games", { count: selected?.numGames || 0 })}
         </Text>
         <div />
       </Group>

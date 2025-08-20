@@ -3,6 +3,7 @@ import { DateInput } from "@mantine/dates";
 import cx from "clsx";
 import dayjs from "dayjs";
 import { memo, useContext, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import type { Outcome } from "@/bindings";
 import { ContentEditable } from "@/features/boards/components/ContentEditable";
@@ -20,9 +21,10 @@ function GameInfo({
   simplified?: "repertoire" | "puzzle";
   changeTitle?: (title: string) => void;
 }) {
+  const { t } = useTranslation();
   const store = useContext(TreeStateContext);
   const disabled = store === null;
-  const setHeaders = store !== null ? useStore(store, (s) => s.setHeaders) : () => {};
+  const setHeaders = useStore(store as NonNullable<typeof store>, (s) => s.setHeaders);
 
   const date = headers.date
     ? dayjs(headers.date, "YYYY.MM.DD").isValid()
@@ -54,7 +56,7 @@ function GameInfo({
               simplified === "repertoire"
                 ? "Enter Opening Title"
                 : simplified === "puzzle"
-                  ? "Enter Puzzle Title"
+                  ? t("Puzzle.EnterTitle")
                   : "Unknown Event"
             }
             className={cx(classes.contentEditable, !event && classes.contentEditablePlaceholder)}
@@ -106,7 +108,7 @@ function GameInfo({
       </Group>
       {simplified === "puzzle" && (
         <Group gap={4}>
-          <Input.Wrapper label="Puzzle Rating" flex={1}>
+          <Input.Wrapper label={t("Puzzle.Rating")} flex={1}>
             <Slider
               min={600}
               max={2800}

@@ -266,7 +266,7 @@ export function ThemeSettings() {
               value: "auto",
               label: (
                 <Center>
-                  <IconSunMoon size={rem(16)} />
+                  <IconSunMoon size={16} />
                   <Text size="sm" ml={10}>
                     {t("Settings.Appearance.Theme.Auto", "Auto")}
                   </Text>
@@ -277,7 +277,7 @@ export function ThemeSettings() {
               value: "light",
               label: (
                 <Center>
-                  <IconSun size={rem(16)} />
+                  <IconSun size={16} />
                   <Text size="sm" ml={10}>
                     {t("Settings.Appearance.Theme.Light", "Light")}
                   </Text>
@@ -288,7 +288,7 @@ export function ThemeSettings() {
               value: "dark",
               label: (
                 <Center>
-                  <IconMoon size={rem(16)} />
+                  <IconMoon size={16} />
                   <Text size="sm" ml={10}>
                     {t("Settings.Appearance.Theme.Dark", "Dark")}
                   </Text>
@@ -299,7 +299,7 @@ export function ThemeSettings() {
               value: "custom",
               label: (
                 <Center>
-                  <IconPalette size={rem(16)} />
+                  <IconPalette size={16} />
                   <Text size="sm" ml={10}>
                     {t("Settings.Appearance.Theme.Custom", "Custom")}
                   </Text>
@@ -321,19 +321,19 @@ export function ThemeSettings() {
             <Group gap="xs">
               <Tooltip label="Import from file">
                 <ActionIcon variant="subtle" component="label" htmlFor={fileInputId}>
-                  <IconUpload size={rem(16)} />
+                  <IconUpload size={16} />
                 </ActionIcon>
               </Tooltip>
 
               <Tooltip label="Import from JSON">
                 <ActionIcon variant="subtle" onClick={() => setImportModalOpen(true)}>
-                  <IconFileImport size={rem(16)} />
+                  <IconFileImport size={16} />
                 </ActionIcon>
               </Tooltip>
 
               <Button
                 variant="outline"
-                leftSection={<IconPalette size={rem(16)} />}
+                leftSection={<IconPalette size={16} />}
                 size="xs"
                 onClick={handleCreateCustomTheme}
                 disabled={!currentTheme}
@@ -361,9 +361,9 @@ export function ThemeSettings() {
                   <Group justify="space-between" align="center">
                     <Group gap="sm">
                       {theme.type === "light" ? (
-                        <IconSun size={rem(16)} color="var(--mantine-color-yellow-6)" />
+                        <IconSun size={16} color="var(--mantine-color-yellow-6)" />
                       ) : (
-                        <IconMoon size={rem(16)} color="var(--mantine-color-indigo-6)" />
+                        <IconMoon size={16} color="var(--mantine-color-indigo-6)" />
                       )}
                       <div>
                         <Text size="sm" fw={500}>
@@ -387,7 +387,7 @@ export function ThemeSettings() {
                             handleEditTheme(theme.name);
                           }}
                         >
-                          <IconEdit size={rem(14)} />
+                          <IconEdit size={14} />
                         </ActionIcon>
                       </Tooltip>
 
@@ -400,7 +400,7 @@ export function ThemeSettings() {
                             handleExportTheme(theme.name);
                           }}
                         >
-                          <IconDownload size={rem(14)} />
+                          <IconDownload size={14} />
                         </ActionIcon>
                       </Tooltip>
 
@@ -414,7 +414,7 @@ export function ThemeSettings() {
                             deleteCustomTheme(theme.uuid);
                           }}
                         >
-                          <IconTrash size={rem(14)} />
+                          <IconTrash size={14} />
                         </ActionIcon>
                       </Tooltip>
                     </Group>

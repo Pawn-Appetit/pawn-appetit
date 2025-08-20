@@ -151,7 +151,7 @@ function RootLayout() {
       () => {
         navigate({ to: "/boards" });
         createTab({
-          tab: { name: "Analyze", type: "analysis" },
+          tab: { name: t("Tab.AnalysisBoard.Title"), type: "analysis" },
           setTabs,
           setActiveTab,
         });
@@ -172,7 +172,7 @@ function RootLayout() {
       () => {
         navigate({ to: "/boards" });
         createTab({
-          tab: { name: "Train", type: "puzzles" },
+          tab: { name: t("Tab.Puzzle.Title"), type: "puzzles" },
           setTabs,
           setActiveTab,
         });
@@ -274,7 +274,7 @@ function RootLayout() {
         ],
       },
     ],
-    [t, checkForUpdates, keyMap, openNewFile],
+    [t, checkForUpdates, keyMap, openNewFile, createNewTab],
   );
 
   const { data: menu } = useSWRImmutable(["menu", menuActions], () => createMenu(menuActions));

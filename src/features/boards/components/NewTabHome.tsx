@@ -52,7 +52,7 @@ export default function NewTabHome({ id }: { id: string }) {
         setTabs((prev) => {
           const tab = prev.find((t) => t.value === id);
           if (!tab) return prev;
-          tab.name = "Puzzle Training";
+          tab.name = t("Tab.Puzzle.Title");
           tab.type = "puzzles";
           return [...prev];
         });

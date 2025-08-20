@@ -23,6 +23,7 @@ import {
   ThemeIcon,
   Title,
 } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import {
   IconArrowRight,
   IconBolt,
@@ -479,22 +480,28 @@ export default function DashboardPage() {
         <Group align="center" justify="space-between" wrap="nowrap">
           <Stack gap={6} flex={6}>
             <Title order={1} fw={800}>
-              {isFirstOpen ? "Welcome to Pawn Appétit!" : " Welcome back"}
+              {t(isFirstOpen ? "Dashboard.Welcome.FirstOpen" : "Dashboard.Welcome.Back")}
             </Title>
             <Text size="sm" c="dimmed">
-              Ready to make your next best move?
+              {t("Dashboard.Welcome.Desc")}
             </Text>
             <Group gap="xs" mt="xs">
               <Button radius="md" onClick={PLAY_CHESS.onClick} leftSection={<IconChess size={18} />}>
-                Play a game
+                {t(PLAY_CHESS.label)}
               </Button>
               <Button
                 variant="light"
                 radius="md"
-                onClick={() => navigate({ to: "/boards" })}
+                onClick={() => {
+                  navigate({ to: "/boards" });
+                  modals.openContextModal({
+                    modal: "importModal",
+                    innerProps: {},
+                  });
+                }}
                 leftSection={<IconUpload size={18} />}
               >
-                Upload PGN
+                {t("Tab.ImportGame.Button")}
               </Button>
             </Group>
           </Stack>
@@ -665,7 +672,7 @@ export default function DashboardPage() {
                                     ...prev,
                                     {
                                       value: uuid,
-                                      name: "Analyze",
+                                      name: t("Tab.AnalysisBoard.Title"),
                                       type: "analysis",
                                     },
                                   ]);
@@ -926,14 +933,21 @@ export default function DashboardPage() {
         <Grid.Col span={{ base: 12, md: 5 }}>
           <Card withBorder p="lg" radius="md" h="100%">
             <Group justify="space-between" mb="sm">
-              <Text fw={700}>Puzzles</Text>
+              <Text fw={700}>{t("Tab.Puzzle.Title")}</Text>
               <Button
                 size="xs"
                 variant="light"
-                onClick={() => navigate({ to: "/boards" })}
+                onClick={() => {
+                  createTab({
+                    tab: { name: t("Tab.Puzzle.Title"), type: "puzzles" },
+                    setTabs,
+                    setActiveTab,
+                  });
+                  navigate({ to: "/boards" });
+                }}
                 leftSection={<IconPuzzle size={16} />}
               >
-                Solve now
+                {t("Tab.Puzzle.Button")}
               </Button>
             </Group>
             <Group align="center" gap="lg">
