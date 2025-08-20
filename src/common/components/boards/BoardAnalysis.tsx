@@ -27,6 +27,7 @@ import {
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
 import { defaultPGN } from "@/utils/chess";
+import { isTempImportFile } from "@/utils/files";
 import { reloadTab, saveTab, saveToFile } from "@/utils/tabs";
 import AnalysisPanel from "../panels/analysis/AnalysisPanel";
 import AnnotationPanel from "../panels/annotation/AnnotationPanel";
@@ -58,7 +59,7 @@ function BoardAnalysis() {
   const setStoreSave = useStore(store, (s) => s.save);
 
   const saveFile = useCallback(async () => {
-    if (currentTab?.source != null) {
+    if (currentTab?.source != null && !isTempImportFile(currentTab?.source?.path!)) {
       saveTab(currentTab, store);
       setStoreSave();
     } else {

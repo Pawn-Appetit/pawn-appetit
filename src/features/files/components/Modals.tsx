@@ -1,19 +1,13 @@
-import { Button, Modal, SimpleGrid, Stack, Text, Textarea, TextInput } from "@mantine/core";
+import { Button, Modal, Stack } from "@mantine/core";
 import { useLoaderData } from "@tanstack/react-router";
 import { rename, writeTextFile } from "@tauri-apps/plugin-fs";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import GenericCard from "@/common/components/GenericCard";
+import { FilenameInput } from "@/features/files/components/FilenameInput";
+import { FileTypeSelector } from "@/features/files/components/FileTypeSelector";
+import { PgnSourceInput, type PgnTarget, resolvePgnTarget } from "@/features/files/components/PgnSourceInput";
 import { createFile } from "@/utils/files";
 import type { Directory, FileMetadata, FileType } from "./file";
-
-const FILE_TYPES = [
-  { label: "Game", value: "game" },
-  { label: "Repertoire", value: "repertoire" },
-  { label: "Tournament", value: "tournament" },
-  { label: "Puzzle", value: "puzzle" },
-  { label: "Other", value: "other" },
-] as const;
 
 export function CreateModal({
   opened,
@@ -29,18 +23,18 @@ export function CreateModal({
   setSelected: React.Dispatch<React.SetStateAction<FileMetadata | null>>;
 }) {
   const { t } = useTranslation();
-
+  const [pgnTarget, setPgnTarget] = useState<PgnTarget>({ type: "pgn", target: "" });
   const [filename, setFilename] = useState("");
   const [filetype, setFiletype] = useState<FileType>("game");
-  const [pgn, setPgn] = useState("");
   const [error, setError] = useState("");
   const { documentDir } = useLoaderData({ from: "/files" });
 
   async function addFile() {
+    const resolvedPgnTarget = await resolvePgnTarget(pgnTarget);
     const newFile = await createFile({
       filename,
       filetype,
-      pgn,
+      pgn: resolvedPgnTarget.content,
       dir: documentDir,
     });
     if (newFile.isErr) {
@@ -64,38 +58,10 @@ export function CreateModal({
         }}
       >
         <Stack>
-          <TextInput
-            label={t("Common.Name")}
-            placeholder={t("Common.EnterFileName")}
-            required
-            value={filename}
-            onChange={(e) => setFilename(e.currentTarget.value)}
-            error={error}
-          />
+          <FilenameInput value={filename} onChange={setFilename} error={error} />
+          <FileTypeSelector value={filetype} onChange={setFiletype} />
 
-          <Text fz="sm" fw="bold">
-            {t("Files.FileType")}
-          </Text>
-
-          <SimpleGrid cols={3}>
-            {FILE_TYPES.map((v) => (
-              <GenericCard
-                key={v.value}
-                id={v.value}
-                isSelected={filetype === v.value}
-                setSelected={setFiletype}
-                content={<Text ta="center">{t(`Files.FileType.${v.label}`)}</Text>}
-              />
-            ))}
-          </SimpleGrid>
-
-          <Textarea
-            value={pgn}
-            onChange={(event) => setPgn(event.currentTarget.value)}
-            label={t("Common.PGNGame")}
-            placeholder="Leave empty to start from scratch"
-            rows={10}
-          />
+          <PgnSourceInput setFilename={setFilename} setPgnTarget={setPgnTarget} pgnTarget={pgnTarget} />
 
           <Button style={{ marginTop: "1rem" }} type="submit">
             {t("Common.Create")}
@@ -164,30 +130,8 @@ export function EditModal({
         }}
       >
         <Stack>
-          <TextInput
-            label={t("Common.Name")}
-            placeholder={t("Common.EnterFileName")}
-            required
-            value={filename}
-            onChange={(e) => setFilename(e.currentTarget.value)}
-            error={error}
-          />
-
-          <Text fz="sm" fw="bold">
-            {t("Files.FileType")}
-          </Text>
-
-          <SimpleGrid cols={3}>
-            {FILE_TYPES.map((v) => (
-              <GenericCard
-                key={v.value}
-                id={v.value}
-                isSelected={filetype === v.value}
-                setSelected={setFiletype}
-                content={<Text ta="center">{t(`Files.FileType.${v.label}`)}</Text>}
-              />
-            ))}
-          </SimpleGrid>
+          <FilenameInput value={filename} onChange={setFilename} error={error} />
+          <FileTypeSelector value={filetype} onChange={setFiletype} />
 
           <Button style={{ marginTop: "1rem" }} type="submit">
             {t("Common.Edit")}

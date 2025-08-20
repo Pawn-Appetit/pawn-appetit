@@ -1,9 +1,11 @@
+import { basename, extname } from "@tauri-apps/api/path";
 import { save } from "@tauri-apps/plugin-dialog";
 import { z } from "zod";
 import type { StoreApi } from "zustand";
 import { commands } from "@/bindings";
 import { fileMetadataSchema } from "@/features/files/components/file";
 import type { TreeStoreState } from "@/state/store/tree";
+import { createFile, getFileNameWithoutExtension, isTempImportFile } from "@/utils/files";
 import { unwrap } from "@/utils/unwrap";
 import { getPGN, parsePGN } from "./chess";
 import type { GameHeaders, TreeState } from "./treeReducer";
@@ -113,7 +115,7 @@ export async function saveToFile({
   store: StoreApi<TreeStoreState>;
 }) {
   let filePath: string;
-  if (tab?.source?.type === "file") {
+  if (tab?.source?.type === "file" && !isTempImportFile(tab?.source?.path)) {
     filePath = tab.source.path;
   } else {
     const userChoice = await save({
@@ -127,18 +129,25 @@ export async function saveToFile({
     });
     if (userChoice === null) return;
     filePath = userChoice;
+    const fileName = await getFileNameWithoutExtension(filePath);
+    if (tab?.source?.type === "file" && isTempImportFile(tab?.source?.path)) {
+      const count = unwrap(await commands.countPgnGames(tab?.source?.path ?? ""));
+      const games = unwrap(await commands.readGames(tab?.source?.path ?? "", 0, count - 1));
+      const pgn = games.join("");
+      await createFile({
+        filename: fileName,
+        filetype: "game",
+        pgn,
+        dir: dir,
+      });
+    }
     setCurrentTab((prev) => {
       return {
         ...prev,
-        file: {
-          type: "file",
-          name: userChoice,
-          path: userChoice,
-          numGames: 1,
-          metadata: {
-            tags: [],
-            type: "game",
-          },
+        source: {
+          ...(prev.source ?? { type: "file", numGames: 1, metadata: { type: "game", tags: [] } }),
+          name: fileName,
+          path: filePath,
           lastModified: Date.now(),
         },
       };
