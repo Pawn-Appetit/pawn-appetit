@@ -23,10 +23,10 @@ import { zh_CN } from "./translation/zh_CN";
 i18n.use(initReactI18next).init({
   resources: {
     en: en_US,
-    hy_AM: hy_AM,
     be_BY: be_BY,
     es_ES: es_ES,
     fr_FR: fr_FR,
+    hy_AM: hy_AM,
     it_IT: it_IT,
     ja_JP: ja_JP,
     nb_NO: nb_NO,

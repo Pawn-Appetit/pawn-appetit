@@ -3,6 +3,7 @@ import path, { basename } from "path";
 import * as ts from "typescript";
 
 interface TranslationData {
+  language: {"DisplayName": string},
   translation: Record<string, any>;
 }
 
@@ -87,8 +88,11 @@ function updateTranslations() {
     });
 
     const fileNameWithoutExt = path.basename(filePath, ".ts");
-    const fileContent =
-      `export const ${fileNameWithoutExt} = {\n` + `  translation: ${JSON.stringify(translation, null, 4)}\n` + `};\n`;
+    const translationContent = {
+      language: { "DisplayName": translatedData.language?.DisplayName || `MISSING_${fileNameWithoutExt}` },
+      translation
+    }
+    const fileContent = `export const ${fileNameWithoutExt} = ${JSON.stringify(translationContent, null, 2)};\n`;
     fs.writeFileSync(filePath, fileContent, "utf8");
     console.log(`[${file}] Updated.`);
   });

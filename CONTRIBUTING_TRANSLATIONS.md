@@ -8,18 +8,28 @@ All translation files are located in the `src/translation/` directory.
 
 #### To Add a New Language
 
-1.  **Create the new file**: Copy an existing translation file, such as `en_US.ts`, and rename it using your language's code (e.g., `am_AM.ts` for Armenian).
+1.  **Create the new file**: Copy an existing translation file, such as `en_US.ts`, and rename it using your language's code (e.g., `hy_AM.ts` for Armenian).
 2.  **Translate the text**: Open your new file and translate all the text values within it.
-3.  **Add the language to the settings**: Open [SettingsPage](src/features/settings/SettingsPage.tsx) and add a new language object to the settings menu.
+3.  **Add the language to i18n.init({...})**: Open [index.tsx](src/index.tsx) and the new language to the list of imports and to `i18n.init({...})`.
 
 For example:
 <!-- end list -->
 
-```typescript
-    {
-        value: "am_AM",
-        label: "Armenian"
-    }
+```diff
+import { fr_FR } from "./translation/fr_FR";
++import { hy_AM } from "./translation/hy_AM";
+import { it_IT } from "./translation/it_IT";
+
+i18n.use(initReactI18next).init({
+  resources: {
+    en: en_US,
+    be_BY: be_BY,
+    es_ES: es_ES,
+    fr_FR: fr_FR,
+ +   hy_AM: hy_AM,
+    it_IT: it_IT,
+    ja_JP: ja_JP,
+
 ```
 
 #### To Update an Existing Translation

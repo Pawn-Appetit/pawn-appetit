@@ -5,6 +5,7 @@ import * as ts from "typescript";
 const BASE_PATH = "./src/translation/en_US.ts";
 
 interface TranslationData {
+  language: {"DisplayName": string},
   translation: Record<string, any>;
 }
 
@@ -81,6 +82,7 @@ function calculateTranslationProgress(basePath: string, translatedPath: string):
       const hasTranslation =
         translatedKeys.includes(key) &&
         translated[key] !== "" &&
+        translated[key] !== "MISSING_KEY" &&
         translated[key] !== null &&
         translated[key] !== undefined;
 
@@ -127,7 +129,7 @@ function flatten(obj: Record<string, any>, path = "", res: Record<string, any> =
 }
 
 const LANGUAGE_EMOJIS: LanguageEmoji = {
-  am: "🇦🇲", // Armenian
+  hy: "🇦🇲", // Armenian
   be: "🇧🇾", // Belarusian
   zh: "🇨🇳", // Chinese
   de: "🇩🇪", // German
@@ -141,6 +143,7 @@ const LANGUAGE_EMOJIS: LanguageEmoji = {
   it: "🇮🇹", // Italian
   uk: "🇺🇦", // Ukrainian
   tr: "🇹🇷", // Turkish
+  ja: "🇯🇵", // Japanese
 };
 
 /**
@@ -149,7 +152,7 @@ const LANGUAGE_EMOJIS: LanguageEmoji = {
  * @returns Markdown table string
  */
 function generateMarkdown(translations: TranslationProgress): string {
-  const rows = Object.entries(translations).map(([lang, percent]) => {
+  const rows = Object.entries(translations).sort((a, b)=>b[1]-a[1]).map(([lang, percent]) => {
     const [langCode, language] = lang.split("_");
     const emoji = LANGUAGE_EMOJIS[langCode] || "🌐";
     const status = getStatusEmoji(percent);
