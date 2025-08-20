@@ -4,6 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useAtom, useSetAtom } from "jotai";
 import { commands, type NormalizedGame } from "@/bindings";
 import GameInfo from "@/common/components/GameInfo";
+import { TreeStateProvider } from "@/common/components/TreeStateContext";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import { createTab } from "@/utils/tabs";
 import GamePreview from "./GamePreview";
@@ -18,7 +19,9 @@ function GameCard({ game, file, mutate }: { game: NormalizedGame; file: string; 
     <Paper shadow="sm" p="sm" withBorder h="100%">
       <ScrollArea h="100%">
         <Stack h="100%" gap="xs">
-          <GameInfo headers={game} />
+          <TreeStateProvider>
+            <GameInfo headers={game} />
+          </TreeStateProvider>
           <Divider />
           <Group justify="left">
             <Tooltip label="Analyze game">

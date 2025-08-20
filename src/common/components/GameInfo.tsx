@@ -23,7 +23,12 @@ function GameInfo({
 }) {
   const { t } = useTranslation();
   const store = useContext(TreeStateContext);
-  const disabled = store === null;
+
+  if (!store) {
+    throw new Error("GameInfo must be used within a TreeStateProvider");
+  }
+
+  const disabled = false;
   const setHeaders = useStore(store as NonNullable<typeof store>, (s) => s.setHeaders);
 
   const date = headers.date
