@@ -1,8 +1,7 @@
 import { Button, Checkbox, Group, Stack, Text, TextInput } from "@mantine/core";
 import type { ContextModalProps } from "@mantine/modals";
-import { useLoaderData } from "@tanstack/react-router";
 import { makeFen, parseFen } from "chessops/fen";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
@@ -11,7 +10,7 @@ import { FilenameInput } from "@/features/files/components/FilenameInput";
 import { FileTypeSelector } from "@/features/files/components/FileTypeSelector";
 import type { FileType } from "@/features/files/components/file";
 import { PgnSourceInput, type PgnTarget, resolvePgnTarget } from "@/features/files/components/PgnSourceInput";
-import { activeTabAtom, currentTabAtom, tabsAtom } from "@/state/atoms";
+import { activeTabAtom, currentTabAtom, storedDocumentDirAtom, tabsAtom } from "@/state/atoms";
 import { parsePGN } from "@/utils/chess";
 import { getChesscomGame } from "@/utils/chess.com/api";
 import { chessopsError } from "@/utils/chessops";
@@ -37,7 +36,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
   const [save, setSave] = useState(false);
   const [filename, setFilename] = useState("");
   const [error, setError] = useState("");
-  const { documentDir } = useLoaderData({ from: "/boards" });
+  const documentDir = useAtomValue(storedDocumentDirAtom) || "";
 
   async function handleSubmit() {
     setLoading(true);
