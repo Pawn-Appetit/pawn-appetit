@@ -1,6 +1,6 @@
-export const am_AM = {
+export const hy_AM = {
   language: {
-    "DisplayName": "አማርኛ",
+    "DisplayName": "հայերեն",
   },
   translation: {
     "Common.On": "Միացնել",

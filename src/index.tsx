@@ -5,11 +5,11 @@ import { createRoot } from "react-dom/client";
 import { initReactI18next } from "react-i18next";
 import App from "./App";
 
-import { am_AM } from "./translation/am_AM";
 import { be_BY } from "./translation/be_BY";
 import { en_US } from "./translation/en_US";
 import { es_ES } from "./translation/es_ES";
 import { fr_FR } from "./translation/fr_FR";
+import { hy_AM } from "./translation/hy_AM";
 import { it_IT } from "./translation/it_IT";
 import { ja_JP } from "./translation/ja_JP";
 import { nb_NO } from "./translation/nb_NO";
@@ -23,7 +23,7 @@ import { zh_CN } from "./translation/zh_CN";
 i18n.use(initReactI18next).init({
   resources: {
     en: en_US,
-    am_AM: am_AM,
+    hy_AM: hy_AM,
     be_BY: be_BY,
     es_ES: es_ES,
     fr_FR: fr_FR,
