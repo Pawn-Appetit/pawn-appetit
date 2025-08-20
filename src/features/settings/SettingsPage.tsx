@@ -64,6 +64,17 @@ export default function Page() {
   const [moveNotationType, setMoveNotationType] = useAtom(moveNotationTypeAtom);
   const [computedTheme] = useAtom<ThemeDefinition | null>(computedThemeAtom);
 
+  const langagues: { value: string; label: string }[] = [];
+  for (const localCode of Object.keys(i18n.services.resourceStore.data)) {
+    // Not sure why it's an exception in the init of our i18n. But to produce the same list I'll normalize it
+    const normalizedCode = localCode === "en" ? "en_US" : localCode;
+    // Load label from specific namespace, in the other language resource. 
+    // Would avoid having to load full files if all the translations weren't all already loaded in memory
+    langagues.push({ value: normalizedCode, label: t("language:DisplayName", { lng: normalizedCode }) });
+  }
+  langagues.sort((a, b) => a.label.localeCompare(b.label));
+  console.dir(langagues);
+
   const allSettings = useMemo(
     (): SettingItem[] => [
       {
@@ -398,60 +409,7 @@ export default function Page() {
             </div>
             <Select
               allowDeselect={false}
-              data={[
-                {
-                  value: "am_AM",
-                  label: "Armenian",
-                },
-                {
-                  value: "be_BY",
-                  label: "Belarusian",
-                },
-                {
-                  value: "zh_CN",
-                  label: "Chinese",
-                },
-                {
-                  value: "en_US",
-                  label: "English",
-                },
-                {
-                  value: "fr_FR",
-                  label: "Français",
-                },
-                {
-                  value: "pl_PL",
-                  label: "Polish",
-                },
-                {
-                  value: "nb_NO",
-                  label: "Norsk bokmål",
-                },
-                {
-                  value: "pt_PT",
-                  label: "Portuguese",
-                },
-                {
-                  value: "ru_RU",
-                  label: "Russian",
-                },
-                {
-                  value: "es_ES",
-                  label: "Spanish",
-                },
-                {
-                  value: "it_IT",
-                  label: "Italian",
-                },
-                {
-                  value: "uk_UA",
-                  label: "Ukrainian",
-                },
-                {
-                  value: "tr_TR",
-                  label: "Türkçe",
-                },
-              ]}
+              data={langagues}
               value={i18n.language}
               onChange={(val) => {
                 i18n.changeLanguage(val || "en_US");

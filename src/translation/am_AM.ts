@@ -1,4 +1,7 @@
 export const am_AM = {
+  language: {
+    "DisplayName": "አማርኛ",
+  },
   translation: {
     "Common.On": "Միացնել",
     "Common.Off": "Անջատել",

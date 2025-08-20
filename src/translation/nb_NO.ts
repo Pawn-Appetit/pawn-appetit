@@ -1,4 +1,7 @@
 export const nb_NO = {
+  language: {
+    "DisplayName": "Norsk",
+  },
   translation: {
     "Common.On": "PÅ",
     "Common.Off": "AV",

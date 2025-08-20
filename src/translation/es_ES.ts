@@ -1,4 +1,7 @@
 export const es_ES = {
+  language: {
+    "DisplayName": "Español",
+  },
   translation: {
     "Common.On": "ON",
     "Common.Off": "OFF",

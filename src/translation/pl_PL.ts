@@ -1,4 +1,7 @@
 export const pl_PL = {
+  language: {
+    "DisplayName": "Polski",
+  },
   translation: {
     "Common.On": "WŁĄCZONE",
     "Common.Off": "WYŁĄCZONE",
