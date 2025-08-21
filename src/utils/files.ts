@@ -1,6 +1,6 @@
 import { Result } from "@badrap/result";
-import { resolve } from "@tauri-apps/api/path";
-import { exists, writeTextFile } from "@tauri-apps/plugin-fs";
+import { BaseDirectory, basename, extname, resolve, tempDir } from "@tauri-apps/api/path";
+import { exists, mkdir, writeTextFile } from "@tauri-apps/plugin-fs";
 import { platform } from "@tauri-apps/plugin-os";
 import { defaultGame, makePgn } from "chessops/pgn";
 import useSWR from "swr";
@@ -18,13 +18,22 @@ export function usePlatform() {
   return { os: r.data, ...r };
 }
 
+export async function getFileNameWithoutExtension(filePath: string): Promise<string> {
+  const fileNameWithExtension = await basename(filePath);
+  const extension = await extname(filePath);
+  return fileNameWithExtension.replace(`.${extension}`, "");
+}
+
 export async function openFile(
   file: string,
   setTabs: React.Dispatch<React.SetStateAction<Tab[]>>,
   setActiveTab: React.Dispatch<React.SetStateAction<string | null>>,
 ) {
   const count = unwrap(await commands.countPgnGames(file));
-  const input = unwrap(await commands.readGames(file, 0, 0))[0];
+  const games = unwrap(await commands.readGames(file, 0, count - 1));
+  const allGamesContent = games.join("");
+
+  const fileName = await getFileNameWithoutExtension(file);
 
   const fileInfo: FileMetadata = {
     type: "file",
@@ -32,22 +41,35 @@ export async function openFile(
       tags: [],
       type: "game",
     },
-    name: file,
+    name: fileName,
     path: file,
     numGames: count,
     lastModified: new Date().getUTCSeconds(),
   };
-  const tree = await parsePGN(input);
-  createTab({
+
+  // Parse only the first game for session storage
+  const firstGameTree = await parsePGN(games[0]);
+
+  const tabId = await createTab({
     tab: {
-      name: getGameName(tree.headers),
+      name: getGameName(firstGameTree?.headers) || "Multiple Games",
       type: "analysis",
     },
     setTabs,
     setActiveTab,
-    pgn: input,
+    pgn: allGamesContent,
     srcInfo: fileInfo,
   });
+
+  // Store the first game's state in session storage (for backward compatibility)
+  // The analysis board will handle multiple games through the pgn content
+  sessionStorage.setItem(
+    tabId,
+    JSON.stringify({
+      version: 0,
+      state: firstGameTree,
+    }),
+  );
 }
 
 export async function createFile({
@@ -82,4 +104,36 @@ export async function createFile({
     metadata,
     lastModified: new Date().getUTCSeconds(),
   });
+}
+
+export async function createTempImportFile(pgn: string): Promise<FileMetadata> {
+  const tempDirPath = await resolve(await tempDir(), "pawn-appetit");
+  const tempFilePath = await resolve(tempDirPath, `temp_import_${Date.now()}.pgn`);
+
+  // Ensure temp directory exists
+  try {
+    await mkdir("pawn-appetit", { baseDir: BaseDirectory.Temp });
+  } catch {
+    // Directory might already exist, continue
+  }
+
+  await writeTextFile(tempFilePath, pgn);
+
+  const numGames = unwrap(await commands.countPgnGames(tempFilePath));
+
+  return {
+    type: "file",
+    name: "Untitled",
+    path: tempFilePath,
+    numGames,
+    metadata: {
+      type: "game",
+      tags: [],
+    },
+    lastModified: Date.now(),
+  };
+}
+
+export function isTempImportFile(filePath: string): boolean {
+  return filePath.includes("temp_import_");
 }

@@ -1,6 +1,6 @@
 export const fr_FR = {
   language: {
-    "DisplayName": "Français",
+    DisplayName: "Français",
   },
   translation: {
     "Common.On": "On",
@@ -32,6 +32,8 @@ export const fr_FR = {
     "Common.RequirePath": "Le chemin est obligatoire",
     "Common.PGNFile": "Fichier PGN",
     "Common.PGNGame": "Partie PGN",
+    "Common.Or": "Ou",
+    "Common.ClickToSelectPGN": "Cliquez pour sélectionner un fichier PGN",
     "Common.Size": "Taille",
     "Common.GeneralSettings": "Paramètres",
     "Common.Data": "Données",
@@ -125,6 +127,14 @@ export const fr_FR = {
     "SideBar.Settings": "Paramètres",
 
     "Tab.NewTab": "Nouvel onglet",
+    "Tab.ImportGame.Title": "Importer une partie",
+    "Tab.ImportGame.Desc": "Importer une partie depuis un PGN",
+    "Tab.ImportGame.Button": "Importer une partie",
+    "Tab.ImportGame.URL": "URL de la partie (lichess ou chess.com)",
+    "Tab.ImportGame.SaveToCollection": "Sauvegarder dans la collection",
+    "Tab.ImportGame.Online": "En ligne",
+    "Tab.ImportGame.Importing": "Importation...",
+    "Tab.ImportGame.Import": "Importer",
 
     "Dashboard.Welcome.FirstOpen": "Bienvenu chez Pawn Appétit!",
     "Dashboard.Welcome.Back": "Bon retour!",
@@ -297,7 +307,15 @@ export const fr_FR = {
     "Files.EditMetadata": "Éditer Metadata",
     "Files.Edit.Title": "Éditer fichier",
     "Files.Create.Title": "Créer fichier",
+    "Files.Create.PGNPlaceholder": "Collez votre PGN ici...",
     "Files.Search": "Rechercher des fichiers",
+    "Files.NoFiles": "Aucun fichier trouvé",
+    "Files.NoFileSelected": "Aucun fichier sélectionné",
+    "Files.Name": "Nom",
+    "Files.LastModified": "Dernière modification",
+    "Files.Type": "Type",
+    "Files.Folder": "Dossier",
+    "Files.Delete": "Supprimer",
 
     "Menu.MarkAsStart": "Marquer comme début",
     "Menu.PromoteToMainLine": "Variante principale",

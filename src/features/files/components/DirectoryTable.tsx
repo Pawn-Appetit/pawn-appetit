@@ -13,11 +13,11 @@ import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { commands } from "@/bindings";
 import { activeTabAtom, deckAtomFamily, tabsAtom } from "@/state/atoms";
-import { capitalize } from "@/utils/format";
 import { createTab } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
 import * as classes from "./DirectoryTable.css";
 import type { Directory, FileMetadata } from "./file";
+import { FILE_TYPE_LABELS } from "./file";
 import { getStats } from "./opening";
 
 function flattenFiles(files: (FileMetadata | Directory)[]): (FileMetadata | Directory)[] {
@@ -225,6 +225,7 @@ function Table({
       columns={[
         {
           accessor: "name",
+          title: t("Files.Name"),
           sortable: true,
           noWrap: true,
           render: (row) => (
@@ -245,12 +246,18 @@ function Table({
         },
         {
           accessor: "metadata.type",
-          title: "Type",
+          title: t("Files.Type"),
           width: 100,
-          render: (row) => t(`Files.FileType.${capitalize((row.type === "file" && row.metadata.type) || "Folder")}`),
+          render: (row) => {
+            if (row.type === "file") {
+              return t(FILE_TYPE_LABELS[row.metadata.type]);
+            }
+            return t("Files.Folder");
+          },
         },
         {
           accessor: "lastModified",
+          title: t("Files.LastModified"),
           sortable: true,
           textAlign: "right",
           width: 200,
@@ -261,6 +268,7 @@ function Table({
         },
       ]}
       records={files}
+      noRecordsText={t("Files.NoFiles")}
       rowExpansion={{
         allowMultiple: true,
         expanded: {
@@ -291,6 +299,7 @@ function Table({
           {
             key: "open-file",
             icon: <IconEye size={16} />,
+            title: t("Common.Open"),
             disabled: record.type === "directory",
             onClick: () => {
               if (record.type === "directory") return;
@@ -300,7 +309,7 @@ function Table({
           {
             key: "delete-file",
             icon: <IconTrash size={16} />,
-            title: "Delete",
+            title: t("Files.Delete"),
             color: "red",
             onClick: async () => {
               if (record.type === "directory") {

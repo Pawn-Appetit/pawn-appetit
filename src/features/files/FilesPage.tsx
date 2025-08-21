@@ -8,13 +8,10 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import OpenFolderButton from "@/common/components/OpenFolderButton";
-import { capitalize } from "@/utils/format";
 import DirectoryTable from "./components/DirectoryTable";
 import FileCard from "./components/FileCard";
-import { type FileMetadata, type FileType, processEntriesRecursively } from "./components/file";
+import { FILE_TYPES, type FileMetadata, type FileType, processEntriesRecursively } from "./components/file";
 import { CreateModal, EditModal } from "./components/Modals";
-
-const FILE_TYPES: FileType[] = ["game", "repertoire", "tournament", "puzzle", "other"];
 
 const useFileDirectory = (dir: string) => {
   const { data, error, isLoading, mutate } = useSWR("file-directory", async () => {
@@ -124,14 +121,14 @@ function FilesPage() {
             </Button>
           </Group>
           <Group>
-            {FILE_TYPES.map((type) => (
+            {FILE_TYPES.map((item) => (
               <Chip
                 variant="outline"
-                key={type}
-                onChange={(v) => setFilter((filter) => (v ? type : filter === type ? null : filter))}
-                checked={filter === type}
+                key={item.value}
+                onChange={(v) => setFilter((filter) => (v ? item.value : filter === item.value ? null : filter))}
+                checked={filter === item.value}
               >
-                {t(`Files.FileType.${capitalize(type)}`)}
+                {t(item.labelKey)}
               </Chip>
             ))}
           </Group>
@@ -152,7 +149,7 @@ function FilesPage() {
             <FileCard selected={selected} games={games} setGames={setGames} toggleEditModal={toggleEditModal} />
           ) : (
             <Center h="100%">
-              <Text>No file selected</Text>
+              <Text>{t("Files.NoFileSelected")}</Text>
             </Center>
           )}
         </Paper>
