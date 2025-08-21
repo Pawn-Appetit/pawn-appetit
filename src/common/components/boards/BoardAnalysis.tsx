@@ -59,7 +59,11 @@ function BoardAnalysis() {
   const setStoreSave = useStore(store, (s) => s.save);
 
   const saveFile = useCallback(async () => {
-    if (currentTab?.source != null && !isTempImportFile(currentTab?.source?.path!)) {
+    if (
+      currentTab?.source != null &&
+      currentTab?.source?.type === "file" &&
+      !isTempImportFile(currentTab?.source?.path)
+    ) {
       saveTab(currentTab, store);
       setStoreSave();
     } else {

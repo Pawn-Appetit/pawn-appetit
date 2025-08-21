@@ -1,4 +1,3 @@
-import { basename, extname } from "@tauri-apps/api/path";
 import { save } from "@tauri-apps/plugin-dialog";
 import { z } from "zod";
 import type { StoreApi } from "zustand";

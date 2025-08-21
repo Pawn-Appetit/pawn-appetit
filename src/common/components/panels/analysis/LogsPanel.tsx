@@ -38,6 +38,7 @@ export default function LogsPanel() {
         if (filter === "all") return true;
         if (filter === "gui") return line.type === "gui";
         if (filter === "engine") return line.type === "engine";
+        return false;
       }),
     [data, filter],
   );
@@ -116,7 +117,7 @@ export default function LogsPanel() {
                 transform: `translateY(${virtualRow.start}px)`,
               }}
             >
-              <LogLine log={filteredData![virtualRow.index]} />
+              <LogLine log={filteredData![virtualRow.index] as Log} />
             </Table.Tr>
           ))}
         </Table>
@@ -126,6 +127,7 @@ export default function LogsPanel() {
 }
 
 type Log = { type: "gui"; value: string } | { type: "engine"; value: string };
+
 function LogLine({ log }: { log: Log }) {
   return (
     <>
