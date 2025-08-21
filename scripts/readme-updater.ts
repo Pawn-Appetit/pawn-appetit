@@ -5,7 +5,7 @@ import * as ts from "typescript";
 const BASE_PATH = "./src/translation/en_US.ts";
 
 interface TranslationData {
-  language: {"DisplayName": string},
+  language: { DisplayName: string };
   translation: Record<string, any>;
 }
 
@@ -93,14 +93,14 @@ function calculateTranslationProgress(basePath: string, translatedPath: string):
       return count + (hasTranslation ? 1 : 0);
     }, 0);
 
-      try {
-        const langName = basename(translatedPath, ".ts");
-        const outPath = `./src/translation/missing/${langName}.json`;
-        fs.writeFileSync(outPath, JSON.stringify(missingKeys, null, 2), "utf-8");
-        console.log(`Missing keys written to ${outPath}`);
-      } catch (err) {
-        console.error("Error writing missing keys file:", err);
-      }
+    try {
+      const langName = basename(translatedPath, ".ts");
+      const outPath = `./src/translation/missing/${langName}.json`;
+      fs.writeFileSync(outPath, JSON.stringify(missingKeys, null, 2), "utf-8");
+      console.log(`Missing keys written to ${outPath}`);
+    } catch (err) {
+      console.error("Error writing missing keys file:", err);
+    }
 
     return Math.round((translatedCount / baseKeys.length) * 100);
   } catch (error) {
@@ -152,12 +152,14 @@ const LANGUAGE_EMOJIS: LanguageEmoji = {
  * @returns Markdown table string
  */
 function generateMarkdown(translations: TranslationProgress): string {
-  const rows = Object.entries(translations).sort((a, b)=>b[1]-a[1]).map(([lang, percent]) => {
-    const [langCode, language] = lang.split("_");
-    const emoji = LANGUAGE_EMOJIS[langCode] || "🌐";
-    const status = getStatusEmoji(percent);
-    return `| ${emoji} ${language} | ${status} ${percent}% | [${language}](./src/translation/${lang}.ts) |`;
-  });
+  const rows = Object.entries(translations)
+    .sort((a, b) => b[1] - a[1])
+    .map(([lang, percent]) => {
+      const [langCode, language] = lang.split("_");
+      const emoji = LANGUAGE_EMOJIS[langCode] || "🌐";
+      const status = getStatusEmoji(percent);
+      return `| ${emoji} ${language} | ${status} ${percent}% | [${language}](./src/translation/${lang}.ts) |`;
+    });
 
   return [
     "| Language  | Status   | File                        |",

@@ -145,20 +145,20 @@ We’re planning to bring Pawn Appétit to additional platforms in future releas
 | Language  | Status   | File                        |
 |-----------|----------|-----------------------------|
 | 🇺🇸 US | ✅ 100% | [US](./src/translation/en_US.ts) |
-| 🇮🇹 IT | 🟡 98% | [IT](./src/translation/it_IT.ts) |
-| 🇫🇷 FR | 🟡 81% | [FR](./src/translation/fr_FR.ts) |
-| 🇦🇲 AM | 🟡 81% | [AM](./src/translation/hy_AM.ts) |
-| 🇷🇺 RU | 🟡 81% | [RU](./src/translation/ru_RU.ts) |
-| 🇧🇾 BY | 🟡 73% | [BY](./src/translation/be_BY.ts) |
-| 🇩🇪 DE | 🟡 73% | [DE](./src/translation/de_DE.ts) |
-| 🇪🇸 ES | 🟡 73% | [ES](./src/translation/es_ES.ts) |
-| 🇳🇴 NO | 🟡 73% | [NO](./src/translation/nb_NO.ts) |
-| 🇵🇱 PL | 🟡 73% | [PL](./src/translation/pl_PL.ts) |
-| 🇵🇹 PT | 🟡 73% | [PT](./src/translation/pt_PT.ts) |
-| 🇹🇷 TR | 🟡 73% | [TR](./src/translation/tr_TR.ts) |
-| 🇺🇦 UA | 🟡 73% | [UA](./src/translation/uk_UA.ts) |
-| 🇨🇳 CN | 🟡 73% | [CN](./src/translation/zh_CN.ts) |
-| 🇯🇵 JP | 🔴 12% | [JP](./src/translation/ja_JP.ts) |
+| 🇮🇹 IT | 🟡 91% | [IT](./src/translation/it_IT.ts) |
+| 🇫🇷 FR | 🟡 83% | [FR](./src/translation/fr_FR.ts) |
+| 🇦🇲 AM | 🟡 75% | [AM](./src/translation/hy_AM.ts) |
+| 🇷🇺 RU | 🟡 75% | [RU](./src/translation/ru_RU.ts) |
+| 🇧🇾 BY | 🟡 68% | [BY](./src/translation/be_BY.ts) |
+| 🇩🇪 DE | 🟡 68% | [DE](./src/translation/de_DE.ts) |
+| 🇪🇸 ES | 🟡 68% | [ES](./src/translation/es_ES.ts) |
+| 🇳🇴 NO | 🟡 68% | [NO](./src/translation/nb_NO.ts) |
+| 🇵🇱 PL | 🟡 68% | [PL](./src/translation/pl_PL.ts) |
+| 🇵🇹 PT | 🟡 68% | [PT](./src/translation/pt_PT.ts) |
+| 🇹🇷 TR | 🟡 68% | [TR](./src/translation/tr_TR.ts) |
+| 🇺🇦 UA | 🟡 68% | [UA](./src/translation/uk_UA.ts) |
+| 🇨🇳 CN | 🟡 68% | [CN](./src/translation/zh_CN.ts) |
+| 🇯🇵 JP | 🔴 10% | [JP](./src/translation/ja_JP.ts) |
 <!-- TRANSLATIONS_END -->
 
 📢 Want to help translate? See [CONTRIBUTING_TRANSLATIONS.md](./CONTRIBUTING_TRANSLATIONS.md) and [CONTRIBUTING.md](./CONTRIBUTING.md).

@@ -49,12 +49,9 @@
   "Tab.AnalysisBoard.Title": "Analysis Board",
   "Tab.AnalysisBoard.Desc": "Analyze a game or position",
   "Tab.AnalysisBoard.Button": "Analyze",
-  "Tab.ImportGame.Title": "Import Game",
-  "Tab.ImportGame.Desc": "Import a game from a PGN",
-  "Tab.ImportGame.Button": "Import",
   "Tab.Puzzle.Title": "Puzzles",
   "Tab.Puzzle.Desc": "Train your chess skills",
-  "Tab.Puzzle.Button": "Train",
+  "Tab.Puzzle.Button": "Solve now",
   "Dashboard.Card.Analyze.Title": "Board Analysis",
   "Dashboard.Card.Analyze.Desc": "Analyze positions, games, and variations with powerful chess engines.",
   "Dashboard.Card.Analyze.Button": "Analyze",
@@ -81,6 +78,5 @@
   "Settings.Appearance.Theme.Auto": "Auto",
   "Settings.Appearance.Theme.Custom": "Custom",
   "Settings.Appearance.hideDashboardOnStartup": "Hide Dashboard on Startup",
-  "Settings.Appearance.hideDashboardOnStartup.Desc": "Open Boards instead of Dashboard when the app starts",
-  "Puzzle.JumpToNextPuzzleImmediately": "Jump to next puzzle immediately"
+  "Settings.Appearance.hideDashboardOnStartup.Desc": "Open Boards instead of Dashboard when the app starts"
 }
