@@ -1,6 +1,6 @@
 export const be_BY = {
   language: {
-    "DisplayName": "Беларуская",
+    DisplayName: "Беларуская",
   },
   translation: {
     "Common.On": "УКЛ",

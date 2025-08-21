@@ -68,7 +68,7 @@ export default function Page() {
   for (const localCode of Object.keys(i18n.services.resourceStore.data)) {
     // Not sure why it's an exception in the init of our i18n. But to produce the same list I'll normalize it
     const normalizedCode = localCode === "en" ? "en_US" : localCode;
-    // Load label from specific namespace, in the other language resource. 
+    // Load label from specific namespace, in the other language resource.
     // Would avoid having to load full files if all the translations weren't all already loaded in memory
     langagues.push({ value: normalizedCode, label: t("language:DisplayName", { lng: normalizedCode }) });
   }

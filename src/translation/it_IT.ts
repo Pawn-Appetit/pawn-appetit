@@ -1,6 +1,6 @@
 export const it_IT = {
   language: {
-    "DisplayName": "Italiano",
+    DisplayName: "Italiano",
   },
   translation: {
     "Common.On": "ON",

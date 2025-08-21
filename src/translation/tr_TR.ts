@@ -1,6 +1,6 @@
 export const tr_TR = {
   language: {
-    "DisplayName": "Türkçe",
+    DisplayName: "Türkçe",
   },
   translation: {
     "Common.On": "Açık",
