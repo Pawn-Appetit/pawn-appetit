@@ -98,7 +98,7 @@ function GameTable() {
                   <SideInput
                     sides={query.sides!}
                     setSides={(value) => setQuery({ ...query, sides: value })}
-                    label={t("Common.Player")}
+                    selectingFor="player"
                   />
                 }
                 label={t("Common.Player")}
@@ -111,7 +111,7 @@ function GameTable() {
                   <SideInput
                     sides={query.sides!}
                     setSides={(value) => setQuery({ ...query, sides: value })}
-                    label={t("Common.Opponent")}
+                    selectingFor="opponent"
                   />
                 }
                 label={t("Common.Opponent")}
