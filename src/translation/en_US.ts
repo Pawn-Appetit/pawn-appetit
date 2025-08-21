@@ -54,18 +54,13 @@ export const en_US = {
     "Common.Black": "Black",
     "Common.Player": "Player",
     "Common.Opponent": "Opponent",
-    "Common.Date": "Date",
-    "Common.Plies": "Plies",
-    "Common.Event": "Event",
-    "Common.Site": "Site",
-    "Common.From": "From",
-    "Common.StartDate": "Start date",
-    "Common.To": "To",
-    "Common.EndDate": "End date",
     "Common.UnsavedChanges.Title": "Unsaved Changes",
     "Common.UnsavedChanges.Desc": "You have unsaved changes. Do you want to save them before closing?",
     "Common.SaveAndClose": "Save and Close",
     "Common.CloseWithoutSaving": "Close Without Saving",
+    "Common.Loading": "Loading...",
+    "Common.Continue": "Continue",
+    "Common.Review": "Review",
 
     "GoMode.Time": "Time",
     "GoMode.Depth": "Depth",
@@ -169,8 +164,6 @@ export const en_US = {
     "Lessons.ExercisesCompleted": "exercises completed",
     "Lessons.LessonCompleted": "Congratulations! You've completed {{lesson}}!",
     "Lessons.CompletionMessage": "You've successfully completed all exercises in this lesson. Keep up the great work!",
-    "Common.Continue": "Continue",
-    "Common.Review": "Review",
 
     "Practice.Title": "Chess Practice",
     "Practice.Description": "Improve your chess skills with targeted practice exercises",
@@ -367,6 +360,15 @@ export const en_US = {
     "Databases.Delete.Title": "Delete Database",
     "Databases.Delete.Message": "Are you sure you want to delete this database?",
 
+    "GameTable.Date": "Date",
+    "GameTable.Plies": "Plies",
+    "GameTable.Event": "Event",
+    "GameTable.Site": "Site",
+    "GameTable.From": "From",
+    "GameTable.StartDate": "Start date",
+    "GameTable.To": "To",
+    "GameTable.EndDate": "End date",
+
     "Errors.EmptyBoard": "Empty board",
     "Errors.InvalidKings": "Invalid number of kings",
     "Errors.OppositeCheck": "Opposite check",
@@ -526,6 +528,7 @@ export const en_US = {
     "GameNotation.RepertoireView": "Repertoire View",
     "GameNotation.MainLine": "Main Line",
     "GameNotation.ShowVariationsTooltip": "Show variations",
+
     "Outcome.Outcome": "Result",
     "Outcome.SelectOutcome": "Select result",
     "Outcome.Draw": "Draw",
@@ -534,7 +537,7 @@ export const en_US = {
     "Outcome.Unknown": "Unknown",
 
     "Tablebase.Title": "Tablebase",
-    "Common.Loading": "Loading...",
+
     "Tablebase.Error": "Error: ",
     "Tablebase.DTM": "DTM {{count}}",
     "Tablebase.DTZ": "DTZ {{count}}",

@@ -170,8 +170,8 @@ function GameTable() {
                 />
                 <Group>
                   <DateInput
-                    label={t("Common.From")}
-                    placeholder={t("Common.StartDate")}
+                    label={t("GameTable.From")}
+                    placeholder={t("GameTable.StartDate")}
                     clearable
                     valueFormat="YYYY-MM-DD"
                     value={query.start_date ? dayjs(query.start_date, "YYYY.MM.DD").toDate() : null}
@@ -183,8 +183,8 @@ function GameTable() {
                     }
                   />
                   <DateInput
-                    label={t("Common.To")}
-                    placeholder={t("Common.EndDate")}
+                    label={t("GameTable.To")}
+                    placeholder={t("GameTable.EndDate")}
                     clearable
                     valueFormat="YYYY-MM-DD"
                     value={query.end_date ? dayjs(query.end_date, "YYYY.MM.DD").toDate() : null}
@@ -257,15 +257,15 @@ function GameTable() {
                 </div>
               ),
             },
-            { accessor: "date", sortable: true, title: t("Common.Date") },
+            { accessor: "date", sortable: true, title: t("GameTable.Date") },
             {
               accessor: "result",
               title: t("Outcome.Outcome"),
               render: ({ result }) => result?.replaceAll("1/2", "½"),
             },
-            { accessor: "ply_count", title: t("Common.Plies"), sortable: true },
-            { accessor: "event", title: t("Common.Event") },
-            { accessor: "site", title: t("Common.Site") },
+            { accessor: "ply_count", title: t("GameTable.Plies"), sortable: true },
+            { accessor: "event", title: t("GameTable.Event") },
+            { accessor: "site", title: t("GameTable.Site") },
           ]}
           rowClassName={(_, i) => (i === selectedGame ? classes.selected : "")}
           noRecordsText={t("Common.NoGamesFound")}
