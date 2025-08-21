@@ -5,6 +5,7 @@ import { EMPTY_BOARD_FEN, makeFen, parseFen } from "chessops/fen";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Chessground } from "@/chessground/Chessground";
 import PiecesGrid from "@/common/components/boards/PiecesGrid";
 import { PlayerSearchInput } from "@/features/databases/components/PlayerSearchInput";
@@ -13,7 +14,7 @@ import { currentLocalOptionsAtom } from "@/state/atoms";
 function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
   const boardRef = useRef(null);
   const [options, setOptions] = useAtom(currentLocalOptionsAtom);
-
+  const { t } = useTranslation();
   const setSimilarStructure = async (fen: string) => {
     const setup = parseFen(fen).unwrap();
     for (const square of setup.board.pawn.complement()) {
@@ -41,8 +42,8 @@ function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
           <Text fw="bold">Color:</Text>
           <SegmentedControl
             data={[
-              { value: "white", label: "White" },
-              { value: "black", label: "Black" },
+              { value: "white", label: t("Common.White") },
+              { value: "black", label: t("Common.Black") },
             ]}
             value={options.color}
             onChange={(v) => setOptions({ ...options, color: v as "white" | "black" })}

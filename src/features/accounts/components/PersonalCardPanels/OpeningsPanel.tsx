@@ -4,6 +4,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import type { Color } from "chessops";
 import { useAtom, useAtomValue } from "jotai";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { PlayerGameInfo } from "@/bindings";
 import { commands, type GameOutcome } from "@/bindings";
 import { activeTabAtom, fontSizeAtom, tabsAtom } from "@/state/atoms";
@@ -51,6 +52,7 @@ function OpeningsPanel({ playerName, info }: { playerName: string; info: PlayerG
   const [website, setWebsite] = useState<string | null>("All websites");
   const [account, setAccount] = useState<string | null>("All accounts");
   const [timeControl, setTimeControl] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const openingData =
     info?.site_stats_data
@@ -99,10 +101,10 @@ function OpeningsPanel({ playerName, info }: { playerName: string; info: PlayerG
       )}
       <Group grow pt="xl">
         <Text ta="center" fw="bold">
-          White
+          {t("Common.White")}
         </Text>
         <Text ta="center" fw="bold">
-          Black
+          {t("Common.Black")}
         </Text>
       </Group>
       <Divider mt="md" />

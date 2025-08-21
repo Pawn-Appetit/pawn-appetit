@@ -1,6 +1,6 @@
 export const it_IT = {
   language: {
-    "DisplayName": "Italiano",
+    DisplayName: "Italiano",
   },
   translation: {
     "Common.On": "ON",
@@ -48,8 +48,8 @@ export const it_IT = {
     "Common.Engine": "Motore",
     "Common.Checkmate": "Scacco matto",
     "Common.Stalemate": "Stallo",
-    "Common.WHITE": "BIANCO",
-    "Common.BLACK": "NERO",
+    "Common.White": "Bianco",
+    "Common.Black": "Nero",
     "Common.UnsavedChanges.Title": "Modifiche non salvate",
     "Common.UnsavedChanges.Desc": "Hai delle modifiche non salvate. Vuoi salvarle prima di chiudere?",
     "Common.SaveAndClose": "Salva e chiudi",
@@ -355,8 +355,6 @@ export const it_IT = {
 
     "Fen.Start": "Inizio",
     "Fen.Empty": "Vuoto",
-    "Fen.White": "Bianco",
-    "Fen.Black": "Nero",
     "Fen.WhiteToMove": "Bianco a muovere",
     "Fen.BlackToMove": "Nero a muovere",
 

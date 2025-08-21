@@ -1,6 +1,6 @@
 export const be_BY = {
   language: {
-    "DisplayName": "Беларуская",
+    DisplayName: "Беларуская",
   },
   translation: {
     "Common.On": "УКЛ",
@@ -50,8 +50,8 @@ export const be_BY = {
     "Common.Engine": "Рухавік",
     "Common.Checkmate": "Шах і мат",
     "Common.Stalemate": "Пат",
-    "Common.WHITE": "БЕЛЫЯ",
-    "Common.BLACK": "ЧОРНЫЯ",
+    "Common.White": "БЕЛЫЯ",
+    "Common.Black": "ЧОРНЫЯ",
 
     "GoMode.Time": "Час",
     "GoMode.Depth": "Глыбіня",

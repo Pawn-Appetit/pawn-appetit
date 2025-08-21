@@ -360,7 +360,7 @@ function Puzzles({ id }: { id: string }) {
           <Divider my="sm" />
           <Group justify="space-between">
             {turnToMove && (
-              <Text fz="1.75rem">{turnToMove === "white" ? t("Puzzle.BlackToMove") : t("Puzzle.WhiteToMove")}</Text>
+              <Text fz="1.75rem">{turnToMove === "white" ? t("Fen.BlackToMove") : t("Fen.WhiteToMove")}</Text>
             )}
             <Group>
               <Switch

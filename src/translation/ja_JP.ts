@@ -1,6 +1,6 @@
 export const ja_JP = {
   language: {
-    "DisplayName": "日本語",
+    DisplayName: "日本語",
   },
   translation: {
     "Common.On": "オン",
@@ -47,11 +47,11 @@ export const ja_JP = {
     "Common.Engine": "エンジン",
     "Common.Checkmate": "チェックメイト",
     "Common.Stalemate": "ステイルメイト",
-    "Common.WHITE": "白",
-    "Common.BLACK": "黒",
+    "Common.White": "白",
+    "Common.Black": "黒",
     "Common.UnsavedChanges.Title": "未保存の変更",
     "Common.UnsavedChanges.Desc": "未保存の変更があります。閉じる前に保存しますか？",
     "Common.SaveAndClose": "保存して閉じる",
     "Common.CloseWithoutSaving": "保存せずに閉じる",
-  }
-}
+  },
+};

@@ -1,6 +1,6 @@
 export const zh_CN = {
   language: {
-    "DisplayName": "中文",
+    DisplayName: "中文",
   },
   translation: {
     "Common.On": "开",
@@ -48,8 +48,8 @@ export const zh_CN = {
     "Common.Engine": "引擎",
     "Common.Checkmate": "将杀",
     "Common.Stalemate": "无子可动",
-    "Common.WHITE": "白方",
-    "Common.BLACK": "黑方",
+    "Common.White": "白方",
+    "Common.Black": "黑方",
 
     "GoMode.Time": "时间",
     "GoMode.Depth": "深度",

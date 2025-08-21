@@ -1,6 +1,6 @@
 export const pt_PT = {
   language: {
-    "DisplayName": "Português",
+    DisplayName: "Português",
   },
   translation: {
     "Common.On": "ON",
@@ -48,8 +48,8 @@ export const pt_PT = {
     "Common.Engine": "Engine",
     "Common.Checkmate": "Chequemate",
     "Common.Stalemate": "Rei afogado",
-    "Common.WHITE": "BRANCAS",
-    "Common.BLACK": "PRETAS",
+    "Common.White": "Brancas",
+    "Common.Black": "Pretas",
 
     "GoMode.Time": "Tempo",
     "GoMode.Depth": "Profundidade",

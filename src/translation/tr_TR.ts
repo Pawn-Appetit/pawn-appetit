@@ -1,6 +1,6 @@
 export const tr_TR = {
   language: {
-    "DisplayName": "Türkçe",
+    DisplayName: "Türkçe",
   },
   translation: {
     "Common.On": "Açık",
@@ -48,8 +48,8 @@ export const tr_TR = {
     "Common.Engine": "Motor",
     "Common.Checkmate": "Mat",
     "Common.Stalemate": "Pat",
-    "Common.WHITE": "BEYAZ",
-    "Common.BLACK": "SİYAH",
+    "Common.White": "Beyaz",
+    "Common.Black": "Siyah",
 
     "GoMode.Time": "Zaman",
     "GoMode.Depth": "Derinlik",

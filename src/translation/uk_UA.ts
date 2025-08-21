@@ -1,6 +1,6 @@
 export const uk_UA = {
   language: {
-    "DisplayName": "Українська",
+    DisplayName: "Українська",
   },
   translation: {
     "Common.On": "УВІМК",
@@ -50,8 +50,8 @@ export const uk_UA = {
     "Common.Engine": "Движок",
     "Common.Checkmate": "Шах і мат",
     "Common.Stalemate": "Пат",
-    "Common.WHITE": "БІЛІ",
-    "Common.BLACK": "ЧОРНІ",
+    "Common.White": "БІЛІ",
+    "Common.Black": "ЧОРНІ",
 
     "GoMode.Time": "Час",
     "GoMode.Depth": "Глибина",

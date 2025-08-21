@@ -21,6 +21,7 @@ import { INITIAL_FEN } from "chessops/fen";
 import equal from "fast-deep-equal";
 import { useAtom, useAtomValue } from "jotai";
 import { Suspense, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { commands, events, type GoMode } from "@/bindings";
@@ -262,6 +263,7 @@ const DEFAULT_TIME_CONTROL: TimeControlField = {
 
 function BoardGame() {
   const activeTab = useAtomValue(activeTabAtom);
+  const { t } = useTranslation();
 
   const [inputColor, setInputColor] = useState<"white" | "random" | "black">("white");
 
@@ -608,9 +610,9 @@ function BoardGame() {
                 <Group>
                   <Text flex={1} ta="center" fz="lg" fw="bold">
                     {match(inputColor)
-                      .with("white", () => "White")
-                      .with("random", () => "Random")
-                      .with("black", () => "Black")
+                      .with("white", () => t("Common.White"))
+                      .with("random", () => t("Common.Random"))
+                      .with("black", () => t("Common.Black"))
                       .exhaustive()}
                   </Text>
                   <ActionIcon onClick={cycleColor}>
@@ -618,9 +620,9 @@ function BoardGame() {
                   </ActionIcon>
                   <Text flex={1} ta="center" fz="lg" fw="bold">
                     {match(inputColor)
-                      .with("white", () => "Black")
-                      .with("random", () => "Random")
-                      .with("black", () => "White")
+                      .with("white", () => t("Common.Black"))
+                      .with("random", () => t("Common.Random"))
+                      .with("black", () => t("Common.White"))
                       .exhaustive()}
                   </Text>
                 </Group>

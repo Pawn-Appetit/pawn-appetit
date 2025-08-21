@@ -1,6 +1,7 @@
 import { ActionIcon, Box, Group, Stack, Tabs, Title } from "@mantine/core";
 import { IconArrowBackUp, IconChess, IconTrophy, IconUser } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import GameTable from "@/features/databases/components/GameTable";
 import PlayerTable from "@/features/databases/components/PlayerTable";
 import { activeDatabaseViewStore, type DatabaseViewStore, useActiveDatabaseViewStore } from "@/state/store/database";
@@ -13,6 +14,7 @@ function DatabaseView() {
   const mode = useActiveDatabaseViewStore((s) => s.activeTab);
   const clearDatabase = useActiveDatabaseViewStore((s) => s.clearDatabase);
   const setActiveTab = useActiveDatabaseViewStore((s) => s.setActiveTab);
+  const { t } = useTranslation();
 
   return (
     <Box p="sm" h="100%">
@@ -39,13 +41,13 @@ function DatabaseView() {
             >
               <Tabs.List>
                 <Tabs.Tab leftSection={<IconChess size="1rem" />} value="games">
-                  Games
+                  {t("Databases.Card.Games")}
                 </Tabs.Tab>
                 <Tabs.Tab leftSection={<IconUser size="1rem" />} value="players">
-                  Players
+                  {t("Databases.Card.Players")}
                 </Tabs.Tab>
                 <Tabs.Tab leftSection={<IconTrophy size="1rem" />} value="tournaments">
-                  Tournaments
+                  {t("Databases.Card.Tournaments")}
                 </Tabs.Tab>
               </Tabs.List>
               <Tabs.Panel value="games" flex={1} style={{ overflow: "hidden" }} pt="md">

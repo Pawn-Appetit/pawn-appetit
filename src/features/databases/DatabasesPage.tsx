@@ -210,7 +210,7 @@ export default function DatabasesPage() {
                                 <Group>
                                   {item.type === "success" && item.indexed && (
                                     <Badge color="teal" variant="light" size="xs">
-                                      Indexed
+                                      {t("Databases.Settings.Indexed")}
                                     </Badge>
                                   )}
                                   {referenceDatabase === item.file && (
@@ -221,7 +221,7 @@ export default function DatabasesPage() {
                                         size="xs"
                                         leftSection={<IconStar size={12} />}
                                       >
-                                        Reference
+                                        {t("Databases.Settings.ReferenceDatabase_short")}
                                       </Badge>
                                     </Tooltip>
                                   )}

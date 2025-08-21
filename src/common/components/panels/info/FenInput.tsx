@@ -121,7 +121,7 @@ function FenInput({ currentFen }: { currentFen: string }) {
         </Stack>
         <Group>
           <Stack>
-            <Text size="sm">{t("Fen.White")}</Text>
+            <Text size="sm">{t("Common.White")}</Text>
             <Checkbox
               label="O-O"
               checked={whiteCastling.k}

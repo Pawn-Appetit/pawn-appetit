@@ -1,6 +1,6 @@
 export const nb_NO = {
   language: {
-    "DisplayName": "Norsk",
+    DisplayName: "Norsk",
   },
   translation: {
     "Common.On": "PÅ",
@@ -48,8 +48,8 @@ export const nb_NO = {
     "Common.Engine": "Computer",
     "Common.Checkmate": "Sjakkmatt",
     "Common.Stalemate": "Patt",
-    "Common.WHITE": "HVIT",
-    "Common.BLACK": "SVART",
+    "Common.White": "Hvit",
+    "Common.Black": "Svart",
 
     "GoMode.Time": "Tid",
     "GoMode.Depth": "Dybde",

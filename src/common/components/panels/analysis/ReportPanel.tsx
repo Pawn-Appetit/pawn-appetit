@@ -51,8 +51,8 @@ function ReportPanel() {
         <Group grow style={{ textAlign: "center" }}>
           {stats.whiteAccuracy && stats.blackAccuracy && (
             <>
-              <AccuracyCard color={t("Common.WHITE")} accuracy={stats.whiteAccuracy} cpl={stats.whiteCPL} />
-              <AccuracyCard color={t("Common.BLACK")} accuracy={stats.blackAccuracy} cpl={stats.blackCPL} />
+              <AccuracyCard color={t("Common.White")} accuracy={stats.whiteAccuracy} cpl={stats.whiteCPL} />
+              <AccuracyCard color={t("Common.Black")} accuracy={stats.blackAccuracy} cpl={stats.blackCPL} />
             </>
           )}
           <div>

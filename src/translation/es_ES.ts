@@ -1,6 +1,6 @@
 export const es_ES = {
   language: {
-    "DisplayName": "Español",
+    DisplayName: "Español",
   },
   translation: {
     "Common.On": "ON",
@@ -48,8 +48,8 @@ export const es_ES = {
     "Common.Engine": "Motor",
     "Common.Checkmate": "Jaque mate",
     "Common.Stalemate": "Rey ahogado",
-    "Common.WHITE": "BLANCAS",
-    "Common.BLACK": "NEGRAS",
+    "Common.White": "Blancas",
+    "Common.Black": "Negras",
 
     "GoMode.Time": "Tiempo",
     "GoMode.Depth": "Profundidad",

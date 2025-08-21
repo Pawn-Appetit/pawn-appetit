@@ -48,8 +48,8 @@ export const hy_AM = {
     "Common.Engine": "Շարժիչ",
     "Common.Checkmate": "Մատ",
     "Common.Stalemate": "Պատ",
-    "Common.WHITE": "ՍՊԻՏԱԿ",
-    "Common.BLACK": "Սև",
+    "Common.White": "Սպիտակ",
+    "Common.Black": "Սև",
 
     "GoMode.Time": "Ժամանակ",
     "GoMode.Depth": "Խորություն",
@@ -276,8 +276,6 @@ export const hy_AM = {
 
     "Fen.Start": "Սկիզբ",
     "Fen.Empty": "Դատարկ",
-    "Fen.White": "Սպիտակ",
-    "Fen.Black": "Սև",
     "Fen.WhiteToMove": "Սպիտակների քայլը",
     "Fen.BlackToMove": "Սևերի քայլը",
 

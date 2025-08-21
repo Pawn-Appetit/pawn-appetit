@@ -19,6 +19,7 @@ import dayjs from "dayjs";
 import { useAtom, useSetAtom } from "jotai";
 import { DataTable } from "mantine-datatable";
 import { useContext, useState } from "react";
+import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import { useStore } from "zustand";
 import type { GameSort, NormalizedGame, Outcome } from "@/bindings";
@@ -39,6 +40,7 @@ function GameTable() {
   const setQuery = useStore(store, (s) => s.setGamesQuery);
   const openedSettings = useStore(store, (s) => s.games.isFilterExpanded);
   const toggleOpenedSettings = useStore(store, (s) => s.toggleGamesOpenedSettings);
+  const { t } = useTranslation();
 
   const [selectedGame, setSelectedGame] = useState<number | null>(null);
 
@@ -96,10 +98,10 @@ function GameTable() {
                   <SideInput
                     sides={query.sides!}
                     setSides={(value) => setQuery({ ...query, sides: value })}
-                    label="Player"
+                    label={t("Common.Player")}
                   />
                 }
-                label="Player"
+                label={t("Common.Player")}
                 file={file}
               />
               <PlayerSearchInput
@@ -109,10 +111,10 @@ function GameTable() {
                   <SideInput
                     sides={query.sides!}
                     setSides={(value) => setQuery({ ...query, sides: value })}
-                    label="Opponent"
+                    label={t("Common.Opponent")}
                   />
                 }
-                label="Opponent"
+                label={t("Common.Opponent")}
                 file={file}
               />
             </Group>
@@ -150,7 +152,7 @@ function GameTable() {
                   </InputWrapper>
                 </Group>
                 <Select
-                  label="Result"
+                  label={t("Outcome.Outcome")}
                   value={query.outcome}
                   onChange={(value) =>
                     setQuery({
@@ -159,17 +161,17 @@ function GameTable() {
                     })
                   }
                   clearable
-                  placeholder="Select result"
+                  placeholder={t("Outcome.SelectOutcome")}
                   data={[
-                    { label: "White wins", value: "1-0" },
-                    { label: "Black wins", value: "0-1" },
-                    { label: "Draw", value: "1/2-1/2" },
+                    { label: t("Outcome.WhiteWins"), value: "1-0" },
+                    { label: t("Outcome.BlackWins"), value: "0-1" },
+                    { label: t("Outcome.Draw"), value: "1/2-1/2" },
                   ]}
                 />
                 <Group>
                   <DateInput
-                    label="From"
-                    placeholder="Start date"
+                    label={t("Common.From")}
+                    placeholder={t("Common.StartDate")}
                     clearable
                     valueFormat="YYYY-MM-DD"
                     value={query.start_date ? dayjs(query.start_date, "YYYY.MM.DD").toDate() : null}
@@ -181,8 +183,8 @@ function GameTable() {
                     }
                   />
                   <DateInput
-                    label="To"
-                    placeholder="End date"
+                    label={t("Common.To")}
+                    placeholder={t("Common.EndDate")}
                     clearable
                     valueFormat="YYYY-MM-DD"
                     value={query.end_date ? dayjs(query.end_date, "YYYY.MM.DD").toDate() : null}
@@ -229,6 +231,7 @@ function GameTable() {
           columns={[
             {
               accessor: "white",
+              title: t("Common.White"),
               render: ({ white, white_elo }) => (
                 <div>
                   <Text size="sm" fw={500}>
@@ -242,6 +245,7 @@ function GameTable() {
             },
             {
               accessor: "black",
+              title: t("Common.Black"),
               render: ({ black, black_elo }) => (
                 <div>
                   <Text size="sm" fw={500}>
@@ -253,17 +257,18 @@ function GameTable() {
                 </div>
               ),
             },
-            { accessor: "date", sortable: true },
+            { accessor: "date", sortable: true, title: t("Common.Date") },
             {
               accessor: "result",
+              title: t("Outcome.Outcome"),
               render: ({ result }) => result?.replaceAll("1/2", "½"),
             },
-            { accessor: "ply_count", title: "Plies", sortable: true },
-            { accessor: "event" },
-            { accessor: "site" },
+            { accessor: "ply_count", title: t("Common.Plies"), sortable: true },
+            { accessor: "event", title: t("Common.Event") },
+            { accessor: "site", title: t("Common.Site") },
           ]}
           rowClassName={(_, i) => (i === selectedGame ? classes.selected : "")}
-          noRecordsText="No games found"
+          noRecordsText={t("Common.NoGamesFound")}
           totalRecords={count!}
           recordsPerPage={query.options?.pageSize ?? 25}
           page={query.options?.page ?? 1}
@@ -307,7 +312,7 @@ function GameTable() {
           <GameCard game={games[selectedGame]} file={file} mutate={mutate} />
         ) : (
           <Center h="100%">
-            <Text>No game selected</Text>
+            <Text>{t("Common.NoGameSelected")}</Text>
           </Center>
         )
       }

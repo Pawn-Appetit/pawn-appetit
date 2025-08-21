@@ -50,7 +50,7 @@ function GameInfo({
       <Group w="100%" wrap="nowrap">
         {simplified === "repertoire" && (
           <Text c="dimmed" tt="uppercase" fw="bold" className={classes.colorHover} onClick={() => setWhiteOpened(true)}>
-            White
+            {t("Common.White")}
           </Text>
         )}
         <Group wrap="nowrap" justify={simplified ? "start" : "center"} w="100%">
@@ -59,7 +59,7 @@ function GameInfo({
             html={event}
             data-placeholder={
               simplified === "repertoire"
-                ? "Enter Opening Title"
+                ? t("Repertoire.EnterOpeningTitle")
                 : simplified === "puzzle"
                   ? t("Puzzle.EnterTitle")
                   : "Unknown Event"
@@ -152,11 +152,11 @@ function GameInfo({
             data={[
               {
                 value: "white",
-                label: "White",
+                label: t("Common.White"),
               },
               {
                 value: "black",
-                label: "Black",
+                label: t("Common.Black"),
               },
             ]}
           />

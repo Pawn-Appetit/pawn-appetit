@@ -31,6 +31,7 @@ import { INITIAL_FEN } from "chessops/fen";
 import equal from "fast-deep-equal";
 import { useAtom, useAtomValue } from "jotai";
 import React, { useContext, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { Comment } from "@/common/components/Comment";
 import { TreeStateContext } from "@/common/components/TreeStateContext";
@@ -103,6 +104,7 @@ function GameNotation({ topBar }: { topBar?: boolean }) {
   const { colorScheme } = useMantineColorScheme();
   const osColorScheme = useColorScheme();
   const keyMap = useAtomValue(keyMapAtom);
+  const { t } = useTranslation();
 
   useHotkeys([[keyMap.TOGGLE_BLUR.keys, () => setInvisible((prev: boolean) => !prev)]]);
 
@@ -209,7 +211,11 @@ function GameNotation({ topBar }: { topBar?: boolean }) {
                 {headers.result}
                 <br />
                 <Text span fs="italic">
-                  {headers.result === "1/2-1/2" ? "Draw" : headers.result === "1-0" ? "White wins" : "Black wins"}
+                  {headers.result === "1/2-1/2"
+                    ? t("Outcome.Draw")
+                    : headers.result === "1-0"
+                      ? t("Outcome.WhiteWins")
+                      : t("Outcome.BlackWins")}
                 </Text>
               </Text>
             )}
@@ -232,18 +238,19 @@ function NotationHeader({
   toggleVariationState: () => void;
 }) {
   const [invisible, setInvisible] = useAtom(currentInvisibleAtom);
+  const { t } = useTranslation();
 
   return (
     <Stack>
       <Group justify="space-between">
         <OpeningName />
         <Group gap="sm">
-          <Tooltip label={invisible ? "Show moves" : "Hide moves"}>
+          <Tooltip label={invisible ? t("GameNotation.ShowMoves") : t("GameNotation.HideMoves")}>
             <ActionIcon onClick={() => setInvisible((prev: boolean) => !prev)}>
               {invisible ? <IconEyeOff size="1rem" /> : <IconEye size="1rem" />}
             </ActionIcon>
           </Tooltip>
-          <Tooltip label={showComments ? "Hide comments" : "Show comments"}>
+          <Tooltip label={showComments ? t("GameNotation.HideComments") : t("GameNotation.ShowComments")}>
             <ActionIcon onClick={toggleComments}>
               {showComments ? <IconArticle size="1rem" /> : <IconArticleOff size="1rem" />}
             </ActionIcon>
@@ -251,10 +258,10 @@ function NotationHeader({
           <Tooltip
             label={
               variationState === "variations"
-                ? "Show Variations"
+                ? t("GameNotation.ShowVariations")
                 : variationState === "repertoire"
-                  ? "Repertoire View"
-                  : "Main Line"
+                  ? t("GameNotation.RepertoireView")
+                  : t("GameNotation.MainLine")
             }
           >
             <ActionIcon onClick={toggleVariationState}>
@@ -299,6 +306,7 @@ function RenderMainline({
   }
   const currentPosition = useStore(store, (s) => s.position);
   const theme = useMantineTheme();
+  const { t } = useTranslation();
 
   const variations = tree.children;
   if (!variations?.length) return null;
@@ -319,7 +327,7 @@ function RenderMainline({
             fontSize: "80%",
           }}
         >
-          <Tooltip label="Show variations">
+          <Tooltip label={t("GameNotation.ShowVariationsTooltip")}>
             <Box
               component="button"
               className={moveStyles.cell}

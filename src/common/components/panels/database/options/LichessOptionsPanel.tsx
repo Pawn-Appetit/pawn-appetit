@@ -127,8 +127,8 @@ const LichessOptionsPanel = () => {
           label="Color"
           placeholder="Select color"
           data={[
-            { label: "White", value: "white" },
-            { label: "Black", value: "black" },
+            { label: t("Common.White"), value: "white" },
+            { label: t("Common.Black"), value: "black" },
           ]}
           value={options.color}
           onChange={(v) => setOptions({ ...options, color: v as "white" | "black" })}

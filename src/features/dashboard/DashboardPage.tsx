@@ -623,7 +623,7 @@ export default function DashboardPage() {
                       {recentGames.map((g) => {
                         const isUserWhite = g.white.type === "human";
                         const opponent = isUserWhite ? g.black : g.white;
-                        const color = isUserWhite ? "White" : "Black";
+                        const color = isUserWhite ? t("Common.White") : t("Common.Black");
                         const now = Date.now();
                         const diffMs = now - g.timestamp;
                         let dateStr = "";
@@ -726,7 +726,7 @@ export default function DashboardPage() {
                         const isUserWhite = chessComUsernames.includes(g.white.username);
                         const opponent = isUserWhite ? g.black : g.white;
                         const userAccount = isUserWhite ? g.white : g.black;
-                        const color = isUserWhite ? "White" : "Black";
+                        const color = isUserWhite ? t("Common.White") : t("Common.Black");
                         const result = isUserWhite ? g.white.result : g.black.result;
                         return (
                           <Table.Tr key={g.url}>
@@ -844,7 +844,7 @@ export default function DashboardPage() {
                         const isUserWhite = lichessUsernames.includes(g.players.white.user?.name);
                         const opponent = isUserWhite ? g.players.black : g.players.white;
                         const userAccount = isUserWhite ? g.players.white : g.players.black;
-                        const color = isUserWhite ? "White" : "Black";
+                        const color = isUserWhite ? t("Common.White") : t("Common.Black");
                         return (
                           <Table.Tr key={g.id}>
                             <Table.Td>

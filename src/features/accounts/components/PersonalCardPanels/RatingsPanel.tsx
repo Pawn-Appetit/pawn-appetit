@@ -1,5 +1,6 @@
 import { Stack, Text } from "@mantine/core";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { PlayerGameInfo } from "@/bindings";
 import { getTimeControl } from "@/utils/timeControl";
@@ -36,6 +37,7 @@ interface RatingsPanelProps {
 }
 
 function RatingsPanel({ playerName, info }: RatingsPanelProps) {
+  const { t } = useTranslation();
   const [dateRange, setDateRange] = useState<DateRange | null>(DateRange.NinetyDays);
   const [timeControl, setTimeControl] = useState<string | null>(null);
   const [website, setWebsite] = useState<string | null>(null);
@@ -152,7 +154,7 @@ function RatingsPanel({ playerName, info }: RatingsPanelProps) {
         }}
       />
       <Text pt="md" fw="bold" fz="lg" ta="center">
-        {summary.games} Games
+        {t("Common.Games", { count: summary.games })}
       </Text>
       {dates.length > 1 && summary.games > 0 && (
         <>

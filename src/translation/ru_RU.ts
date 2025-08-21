@@ -1,6 +1,6 @@
 export const ru_RU = {
   language: {
-    "DisplayName": "Русский",
+    DisplayName: "Русский",
   },
   translation: {
     "Common.On": "ВКЛ",
@@ -50,8 +50,8 @@ export const ru_RU = {
     "Common.Engine": "Движок",
     "Common.Checkmate": "Мат",
     "Common.Stalemate": "Пат",
-    "Common.WHITE": "БЕЛЫЕ",
-    "Common.BLACK": "ЧЁРНЫЕ",
+    "Common.White": "Белые",
+    "Common.Black": "Чёрные",
 
     "GoMode.Time": "Время",
     "GoMode.Depth": "Глубина",
@@ -275,8 +275,6 @@ export const ru_RU = {
 
     "Fen.Start": "Начало",
     "Fen.Empty": "Пусто",
-    "Fen.White": "Белые",
-    "Fen.Black": "Чёрные",
     "Fen.WhiteToMove": "Ход белых",
     "Fen.BlackToMove": "Ход чёрных",
 

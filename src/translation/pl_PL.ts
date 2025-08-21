@@ -1,6 +1,6 @@
 export const pl_PL = {
   language: {
-    "DisplayName": "Polski",
+    DisplayName: "Polski",
   },
   translation: {
     "Common.On": "WŁĄCZONE",
@@ -50,8 +50,8 @@ export const pl_PL = {
     "Common.Engine": "Silnik",
     "Common.Checkmate": "Szach-mat",
     "Common.Stalemate": "Patt",
-    "Common.WHITE": "BIAŁE",
-    "Common.BLACK": "CZARNE",
+    "Common.White": "Białe",
+    "Common.Black": "Czarne",
 
     "GoMode.Time": "Czas",
     "GoMode.Depth": "Głębokość",
