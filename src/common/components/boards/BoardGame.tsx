@@ -109,7 +109,7 @@ function OpponentForm({
         engine: null,
         go: {
           t: "Depth",
-          c: 24,
+          c: 1,
         },
       }));
     }
@@ -135,7 +135,16 @@ function OpponentForm({
       )}
 
       {opponent.type === "engine" && (
-        <EnginesSelect engine={opponent.engine} setEngine={(engine) => setOpponent((prev) => ({ ...prev, engine }))} />
+        <EnginesSelect
+          engine={opponent.engine}
+          setEngine={(engine) =>
+            setOpponent((prev) => ({
+              ...prev,
+              ...(engine?.go ? { go: engine.go } : {}),
+              engine,
+            }))
+          }
+        />
       )}
 
       <Divider variant="dashed" label="Time Settings" />
