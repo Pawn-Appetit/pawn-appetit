@@ -1,6 +1,6 @@
 export const zh_CN = {
   language: {
-    "DisplayName": "中文",
+    DisplayName: "中文",
   },
   translation: {
     "Common.On": "开",

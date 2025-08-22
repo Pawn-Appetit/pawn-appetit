@@ -1,6 +1,6 @@
 export const uk_UA = {
   language: {
-    "DisplayName": "Українська",
+    DisplayName: "Українська",
   },
   translation: {
     "Common.On": "УВІМК",

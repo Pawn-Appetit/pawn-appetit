@@ -1,6 +1,6 @@
 export const ru_RU = {
   language: {
-    "DisplayName": "Русский",
+    DisplayName: "Русский",
   },
   translation: {
     "Common.On": "ВКЛ",

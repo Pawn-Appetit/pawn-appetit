@@ -1,6 +1,6 @@
 export const ja_JP = {
   language: {
-    "DisplayName": "日本語",
+    DisplayName: "日本語",
   },
   translation: {
     "Common.On": "オン",
@@ -53,5 +53,5 @@ export const ja_JP = {
     "Common.UnsavedChanges.Desc": "未保存の変更があります。閉じる前に保存しますか？",
     "Common.SaveAndClose": "保存して閉じる",
     "Common.CloseWithoutSaving": "保存せずに閉じる",
-  }
-}
+  },
+};
