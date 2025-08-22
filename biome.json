@@ -1,10 +1,7 @@
 {
     "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
     "files": {
-        "experimentalScannerIgnores": [
-            "src/bindings/generated.ts",
-            "src/routeTree.gen.ts"
-        ]
+        "includes": ["**", "!src/bindings/generated.ts", "!src/routeTree.gen.ts"]
     },
     "formatter": {
         "enabled": true,
@@ -28,5 +25,11 @@
                 "noConfusingVoidType": "off"
             }
         }
+    },
+    "vcs": {
+        "enabled": true,
+        "clientKind": "git",
+        "useIgnoreFile": true,
+        "defaultBranch": "main"
     }
 }

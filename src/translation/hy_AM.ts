@@ -1,6 +1,6 @@
 export const hy_AM = {
   language: {
-    "DisplayName": "Հայերեն",
+    DisplayName: "Հայերեն",
   },
   translation: {
     "Common.On": "Միացնել",
