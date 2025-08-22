@@ -1,5 +1,5 @@
 import { Box, Menu, UnstyledButton } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { Sides } from "@/utils/db";
 import * as classes from "./SideInput.css";
@@ -12,19 +12,43 @@ type SideInputProps = {
 
 export function SideInput({ selectingFor, sides, setSides }: SideInputProps) {
   const { t } = useTranslation();
-  const data: { label: string; color: "white" | "black" | "gray" }[] = [
-    { label: t("Common.White"), color: "white" },
-    { label: t("Common.Black"), color: "black" },
-    { label: t("Common.Any"), color: "gray" },
-  ];
 
-  const [selected, setSelected] = useState(
-    (sides === "WhiteBlack" && selectingFor === "player") || (sides === "BlackWhite" && selectingFor === "opponent")
-      ? data[0]
-      : sides === "Any"
-        ? data[2]
-        : data[1],
+  const data = useMemo(
+    () => [
+      { label: t("Common.White"), color: "white" as const },
+      { label: t("Common.Black"), color: "black" as const },
+      { label: t("Common.Any"), color: "gray" as const },
+    ],
+    [t],
   );
+
+  // Derive selected from sides prop
+  const selected = useMemo(() => {
+    if (
+      (sides === "WhiteBlack" && selectingFor === "player") ||
+      (sides === "BlackWhite" && selectingFor === "opponent")
+    ) {
+      return data[0];
+    } else if (sides === "Any") {
+      return data[2];
+    } else {
+      return data[1];
+    }
+  }, [sides, selectingFor, data]);
+
+  const handleSelect = (item: (typeof data)[0]) => {
+    if (
+      (item.color === "white" && selectingFor === "player") ||
+      (item.color === "black" && selectingFor === "opponent")
+    ) {
+      setSides("WhiteBlack");
+    } else if (item.color === "gray") {
+      setSides("Any");
+    } else {
+      setSides("BlackWhite");
+    }
+  };
+
   const items = data.map((item) => (
     <Menu.Item
       leftSection={
@@ -38,35 +62,12 @@ export function SideInput({ selectingFor, sides, setSides }: SideInputProps) {
           }}
         />
       }
-      onClick={() => setSelected(item)}
+      onClick={() => handleSelect(item)}
       key={item.color}
     >
       {item.label}
     </Menu.Item>
   ));
-
-  useEffect(() => {
-    if (
-      (selected.color === "white" && selectingFor === "player") ||
-      (selected.color === "black" && selectingFor === "opponent")
-    ) {
-      setSides("WhiteBlack");
-    } else if (selected.color === "gray") {
-      setSides("Any");
-    } else {
-      setSides("BlackWhite");
-    }
-  }, [selected, selectingFor]);
-
-  useEffect(() => {
-    const newSelected =
-      (sides === "WhiteBlack" && selectingFor === "player") || (sides === "BlackWhite" && selectingFor === "opponent")
-        ? data[0]
-        : sides === "Any"
-          ? data[2]
-          : data[1];
-    setSelected(newSelected);
-  }, [sides, selectingFor]);
 
   return (
     <Menu>

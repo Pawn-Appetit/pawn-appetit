@@ -25,7 +25,6 @@ function calculateEarliestDate(dateRange: DateRange, ratingDates: number[]): num
       return lastDate - 90 * MILLISECONDS_PER_DAY;
     case DateRange.OneYear:
       return lastDate - 365 * MILLISECONDS_PER_DAY;
-    case DateRange.AllTime:
     default:
       return Math.min(...ratingDates);
   }

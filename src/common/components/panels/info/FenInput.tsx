@@ -39,6 +39,7 @@ function getCastlingRights(setup: Setup) {
 }
 
 function FenInput({ currentFen }: { currentFen: string }) {
+  const { t } = useTranslation();
   const store = useContext(TreeStateContext)!;
   const setFen = useStore(store, (s) => s.setFen);
 
@@ -86,8 +87,6 @@ function FenInput({ currentFen }: { currentFen: string }) {
     }
     setFen(makeFen({ ...setup, castlingRights: newCastlingRights }));
   }, [blackCastling, setCastlingRights, setup, whiteCastling, setFen]);
-
-  const { t } = useTranslation();
 
   return (
     <Stack gap="sm">

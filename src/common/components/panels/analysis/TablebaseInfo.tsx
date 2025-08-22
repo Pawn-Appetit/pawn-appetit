@@ -65,7 +65,7 @@ function TablebaseInfo({ fen, turn }: { fen: string; turn: "white" | "black" }) 
             {data && (
               <Stack gap="xs">
                 <SimpleGrid cols={3}>
-                  {sortedMoves!.map((m) => (
+                  {sortedMoves?.map((m) => (
                     <Paper
                       withBorder
                       key={m.san}
