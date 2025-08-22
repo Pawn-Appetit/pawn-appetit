@@ -52,6 +52,7 @@ export const en_US = {
     "Common.Stalemate": "Stalemate",
     "Common.White": "White",
     "Common.Black": "Black",
+    "Common.Any": "Any",
     "Common.Player": "Player",
     "Common.Opponent": "Opponent",
     "Common.UnsavedChanges.Title": "Unsaved Changes",
