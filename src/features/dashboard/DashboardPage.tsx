@@ -92,6 +92,8 @@ export default function DashboardPage() {
 
   const sessions = useAtomValue(sessionsAtom);
   const [mainAccountName, setMainAccountName] = useState<string | null>(null);
+  const [activeGamesTab, setActiveGamesTab] = useState<string | null>('local');
+
   useEffect(() => {
     const stored = localStorage.getItem("mainAccount");
     setMainAccountName(stored);
@@ -552,62 +554,57 @@ export default function DashboardPage() {
       </Card>
 
       <Grid>
-        <Grid.Col span={{ base: 12, md: 3 }}>
+        <Grid.Col span={{ base: 12, sm: 12, md: 4, lg: 3, xl: 3 }}>
           <Card withBorder p="lg" radius="md" h="100%">
-            <Group>
-              <Avatar size={40} radius="xl" src={undefined}>
-                {user.name[0]}
-              </Avatar>
-              <Box>
-                <Group gap={6}>
-                  <Text fw={700}>{user.name}</Text>
-                  <Badge color="yellow" variant="light">
-                    {getChessTitle(user.rating)}
-                  </Badge>
-                </Group>
-                <Text size="sm" c="dimmed">
-                  {user.handle}
-                </Text>
-              </Box>
-            </Group>
+            <Box>
+              <Group gap={6} justify="space-between">
+                <Text fw={700}>{user.name}</Text>
+                <Badge color="yellow" variant="light">
+                  {getChessTitle(user.rating)}
+                </Badge>
+              </Group>
+              <Text size="sm" c="dimmed">
+                {user.handle}
+              </Text>
+            </Box>
             <Divider my="md" />
-            <Group justify="space-between">
+            <Group justify="space-between" align="stretch">
               {ratingHistory.classical && (
-                <Stack gap={2} p="md" align="center">
+                <Stack gap={2} p={{ base: "xs", sm: "md" }} style={{ flex: 1 }}>
                   <Text size="xs" c="teal.6">
                     Classical
                   </Text>
-                  <Text fw={700} fz="xl">
+                  <Text fw={700} fz={{ base: "lg", sm: "xl" }}>
                     {ratingHistory.classical}
                   </Text>
                 </Stack>
               )}
               {ratingHistory.rapid && (
-                <Stack gap={2} p="md" align="center">
+                <Stack gap={2} p={{ base: "xs", sm: "md" }} style={{ flex: 1 }}>
                   <Text size="xs" c="teal.6">
                     Rapid
                   </Text>
-                  <Text fw={700} fz="xl">
+                  <Text fw={700} fz={{ base: "lg", sm: "xl" }}>
                     {ratingHistory.rapid}
                   </Text>
                 </Stack>
               )}
               {ratingHistory.blitz && (
-                <Stack gap={2} p="md" align="center">
+                <Stack gap={2} p={{ base: "xs", sm: "md" }} style={{ flex: 1 }}>
                   <Text size="xs" c="yellow.6">
                     Blitz
                   </Text>
-                  <Text fw={700} fz="xl">
+                  <Text fw={700} fz={{ base: "lg", sm: "xl" }}>
                     {ratingHistory.blitz}
                   </Text>
                 </Stack>
               )}
               {ratingHistory.bullet && (
-                <Stack gap={2} p="md" align="center">
+                <Stack gap={2} p={{ base: "xs", sm: "md" }} style={{ flex: 1 }}>
                   <Text size="xs" c="blue.6">
                     Bullet
                   </Text>
-                  <Text fw={700} fz="xl">
+                  <Text fw={700} fz={{ base: "lg", sm: "xl" }}>
                     {ratingHistory.bullet}
                   </Text>
                 </Stack>
@@ -616,9 +613,9 @@ export default function DashboardPage() {
           </Card>
         </Grid.Col>
 
-        <Grid.Col span={{ base: 12, md: 9 }}>
+        <Grid.Col span={{ base: 12, sm: 12, md: 8, lg: 9, xl: 9 }}>
           <Card withBorder p="lg" radius="md" h="100%">
-            <SimpleGrid cols={{ base: 4, sm: 4, lg: 4 }}>
+            <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 2, lg: 4, xl: 4 }}>
               {quickActions.map((qa) => (
                 <Card key={qa.title} withBorder radius="md" p="md">
                   <Stack gap={8} align="flex-start">
@@ -643,20 +640,49 @@ export default function DashboardPage() {
       </Grid>
 
       <Grid>
-        <Grid.Col span={{ base: 12, md: 7 }}>
+        <Grid.Col span={{ base: 12, sm: 12, md: 7, lg: 7, xl: 7 }}>
           <Card withBorder p="lg" radius="md" h="100%">
-            <Tabs defaultValue="local">
-              <Tabs.List>
-                <Tabs.Tab value="local">Local</Tabs.Tab>
-                <Tabs.Tab value="chesscom">Chess.com</Tabs.Tab>
-                <Tabs.Tab value="lichess">Lichess</Tabs.Tab>
-              </Tabs.List>
+            <Tabs value={activeGamesTab} onChange={setActiveGamesTab}>
+            <Group justify="space-between" align="center">
+                <Tabs.List>
+                    <Tabs.Tab value="local">Local</Tabs.Tab>
+                    <Tabs.Tab value="chesscom">Chess.com</Tabs.Tab>
+                    <Tabs.Tab value="lichess">Lichess</Tabs.Tab>
+                </Tabs.List>
+                {activeGamesTab ==="chesscom" && <Group justify="space-between">
+                    <Select
+                        placeholder="Filter by account"
+                        value={selectedChessComUser}
+                        onChange={setSelectedChessComUser}
+                        data={[
+                            { value: "all", label: "All Accounts" },
+                            ...chessComUsernames.map((name) => ({ value: name, label: name })),
+                        ]}
+                        disabled={chessComUsernames.length <= 1}
+                    />
+                    <ActionIcon variant="subtle" onClick={() => setLastChessComUpdate(Date.now())}>
+                        <IconRefresh size="1rem" />
+                    </ActionIcon>
+                </Group>}
+               {activeGamesTab ==="lichess" && <Group justify="space-between">
+                    <Select
+                        placeholder="Filter by account"
+                        value={selectedLichessUser}
+                        onChange={setSelectedLichessUser}
+                        data={[
+                            { value: "all", label: "All Accounts" },
+                            ...lichessUsernames.map((name) => ({ value: name, label: name })),
+                        ]}
+                        disabled={lichessUsernames.length <= 1}
+                    />
+                    <ActionIcon variant="subtle" onClick={() => setLastLichessUpdate(Date.now())}>
+                        <IconRefresh size="1rem" />
+                    </ActionIcon>
+                </Group>}
+              </Group>
 
               <Tabs.Panel value="local" pt="xs">
-                <Group justify="space-between" mb="sm">
-                  <Text fw={700}>Recent games</Text>
-                </Group>
-                <ScrollArea h={240} type="auto">
+                <ScrollArea h={{ base: 200, sm: 220, md: 240, lg: 260 }} type="auto">
                   <Table striped highlightOnHover>
                     <Table.Thead>
                       <Table.Tr>
@@ -775,23 +801,7 @@ export default function DashboardPage() {
               </Tabs.Panel>
 
               <Tabs.Panel value="chesscom" pt="xs">
-                <Group justify="space-between" mb="sm">
-                  <Select
-                    label="Select Account"
-                    placeholder="Filter by account"
-                    value={selectedChessComUser}
-                    onChange={setSelectedChessComUser}
-                    data={[
-                      { value: "all", label: "All Accounts" },
-                      ...chessComUsernames.map((name) => ({ value: name, label: name })),
-                    ]}
-                    disabled={chessComUsernames.length <= 1}
-                  />
-                  <ActionIcon variant="subtle" onClick={() => setLastChessComUpdate(Date.now())} mt="xl">
-                    <IconRefresh size="1rem" />
-                  </ActionIcon>
-                </Group>
-                <ScrollArea h={200} type="auto">
+                <ScrollArea h={{ base: 200, sm: 220, md: 240, lg: 260 }} type="auto">
                   <Table striped highlightOnHover>
                     <Table.Thead>
                       <Table.Tr>
@@ -893,23 +903,7 @@ export default function DashboardPage() {
               </Tabs.Panel>
 
               <Tabs.Panel value="lichess" pt="xs">
-                <Group justify="space-between" mb="sm">
-                  <Select
-                    label="Select Account"
-                    placeholder="Filter by account"
-                    value={selectedLichessUser}
-                    onChange={setSelectedLichessUser}
-                    data={[
-                      { value: "all", label: "All Accounts" },
-                      ...lichessUsernames.map((name) => ({ value: name, label: name })),
-                    ]}
-                    disabled={lichessUsernames.length <= 1}
-                  />
-                  <ActionIcon variant="subtle" onClick={() => setLastLichessUpdate(Date.now())} mt="xl">
-                    <IconRefresh size="1rem" />
-                  </ActionIcon>
-                </Group>
-                <ScrollArea h={200} type="auto">
+                <ScrollArea h={{ base: 200, sm: 220, md: 240, lg: 260 }} type="auto">
                   <Table striped highlightOnHover>
                     <Table.Thead>
                       <Table.Tr>
@@ -1012,7 +1006,7 @@ export default function DashboardPage() {
           </Card>
         </Grid.Col>
 
-        <Grid.Col span={{ base: 12, md: 5 }}>
+        <Grid.Col span={{ base: 12, sm: 12, md: 5, lg: 5, xl: 5 }}>
           <Card withBorder p="lg" radius="md" h="100%">
             <Group justify="space-between" mb="sm">
               <Text fw={700}>{t("Tab.Puzzle.Title")}</Text>
@@ -1071,7 +1065,7 @@ export default function DashboardPage() {
       </Grid>
 
       <Grid>
-        <Grid.Col span={{ base: 12, md: 7 }}>
+        <Grid.Col span={{ base: 12, sm: 12, md: 7, lg: 7, xl: 7 }}>
           <Card withBorder p="lg" radius="md" h="100%">
             <Group justify="space-between" mb="sm">
               <Text fw={700}>Suggested for you</Text>
@@ -1127,7 +1121,7 @@ export default function DashboardPage() {
           </Card>
         </Grid.Col>
 
-        <Grid.Col span={{ base: 12, md: 5 }}>
+        <Grid.Col span={{ base: 12, sm: 12, md: 5, lg: 5, xl: 5 }}>
           <Card withBorder p="lg" radius="md" h="100%">
             <Group justify="space-between" mb="sm">
               <Text fw={700}>Daily goals</Text>
