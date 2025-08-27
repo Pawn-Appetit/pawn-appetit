@@ -51,6 +51,7 @@ import { useUserStatsStore } from "@/state/userStatsStore";
 import { type Achievement, getAchievements } from "@/utils/achievements";
 import { type ChessComGame, fetchLastChessComGames } from "@/utils/chess.com/api";
 import { type DailyGoal, getDailyGoals } from "@/utils/dailyGoals";
+import { formatDateToPGN } from "@/utils/format";
 import { type GameRecord, getRecentGames } from "@/utils/gameRecords";
 import { fetchLastLichessGames } from "@/utils/lichess/api";
 import { getPuzzleStats, getTodayPuzzleCount } from "@/utils/puzzleStreak";
@@ -92,7 +93,7 @@ export default function DashboardPage() {
 
   const sessions = useAtomValue(sessionsAtom);
   const [mainAccountName, setMainAccountName] = useState<string | null>(null);
-  const [activeGamesTab, setActiveGamesTab] = useState<string | null>('local');
+  const [activeGamesTab, setActiveGamesTab] = useState<string | null>("local");
 
   useEffect(() => {
     const stored = localStorage.getItem("mainAccount");
@@ -290,7 +291,7 @@ export default function DashboardPage() {
                 id: 0,
                 event: "Local Game",
                 site: "Pawn Appetit",
-                date: new Date(last.timestamp).toLocaleDateString().replace(/\//g, "."),
+                date: formatDateToPGN(last.timestamp),
                 white: last.white.name ?? (last.white.engine ? `Engine (${last.white.engine})` : "White"),
                 black: last.black.name ?? (last.black.engine ? `Engine (${last.black.engine})` : "Black"),
                 result: last.result as Outcome,
@@ -643,42 +644,46 @@ export default function DashboardPage() {
         <Grid.Col span={{ base: 12, sm: 12, md: 7, lg: 7, xl: 7 }}>
           <Card withBorder p="lg" radius="md" h="100%">
             <Tabs value={activeGamesTab} onChange={setActiveGamesTab}>
-            <Group justify="space-between" align="center">
+              <Group justify="space-between" align="center">
                 <Tabs.List>
-                    <Tabs.Tab value="local">Local</Tabs.Tab>
-                    <Tabs.Tab value="chesscom">Chess.com</Tabs.Tab>
-                    <Tabs.Tab value="lichess">Lichess</Tabs.Tab>
+                  <Tabs.Tab value="local">Local</Tabs.Tab>
+                  <Tabs.Tab value="chesscom">Chess.com</Tabs.Tab>
+                  <Tabs.Tab value="lichess">Lichess</Tabs.Tab>
                 </Tabs.List>
-                {activeGamesTab ==="chesscom" && <Group justify="space-between">
+                {activeGamesTab === "chesscom" && (
+                  <Group justify="space-between">
                     <Select
-                        placeholder="Filter by account"
-                        value={selectedChessComUser}
-                        onChange={setSelectedChessComUser}
-                        data={[
-                            { value: "all", label: "All Accounts" },
-                            ...chessComUsernames.map((name) => ({ value: name, label: name })),
-                        ]}
-                        disabled={chessComUsernames.length <= 1}
+                      placeholder="Filter by account"
+                      value={selectedChessComUser}
+                      onChange={setSelectedChessComUser}
+                      data={[
+                        { value: "all", label: "All Accounts" },
+                        ...chessComUsernames.map((name) => ({ value: name, label: name })),
+                      ]}
+                      disabled={chessComUsernames.length <= 1}
                     />
                     <ActionIcon variant="subtle" onClick={() => setLastChessComUpdate(Date.now())}>
-                        <IconRefresh size="1rem" />
+                      <IconRefresh size="1rem" />
                     </ActionIcon>
-                </Group>}
-               {activeGamesTab ==="lichess" && <Group justify="space-between">
+                  </Group>
+                )}
+                {activeGamesTab === "lichess" && (
+                  <Group justify="space-between">
                     <Select
-                        placeholder="Filter by account"
-                        value={selectedLichessUser}
-                        onChange={setSelectedLichessUser}
-                        data={[
-                            { value: "all", label: "All Accounts" },
-                            ...lichessUsernames.map((name) => ({ value: name, label: name })),
-                        ]}
-                        disabled={lichessUsernames.length <= 1}
+                      placeholder="Filter by account"
+                      value={selectedLichessUser}
+                      onChange={setSelectedLichessUser}
+                      data={[
+                        { value: "all", label: "All Accounts" },
+                        ...lichessUsernames.map((name) => ({ value: name, label: name })),
+                      ]}
+                      disabled={lichessUsernames.length <= 1}
                     />
                     <ActionIcon variant="subtle" onClick={() => setLastLichessUpdate(Date.now())}>
-                        <IconRefresh size="1rem" />
+                      <IconRefresh size="1rem" />
                     </ActionIcon>
-                </Group>}
+                  </Group>
+                )}
               </Group>
 
               <Tabs.Panel value="local" pt="xs">
@@ -747,7 +752,7 @@ export default function DashboardPage() {
                                     id: 0,
                                     event: "Local Game",
                                     site: "Pawn Appetit",
-                                    date: new Date(g.timestamp).toLocaleDateString().replace(/\//g, "."),
+                                    date: formatDateToPGN(g.timestamp),
                                     white: g.white.name ?? (g.white.engine ? `Engine (${g.white.engine})` : "White"),
                                     black: g.black.name ?? (g.black.engine ? `Engine (${g.black.engine})` : "Black"),
                                     result: g.result as Outcome,
@@ -851,7 +856,12 @@ export default function DashboardPage() {
                             <Table.Td>
                               <Text size="xs">{userAccount.username}</Text>
                             </Table.Td>
-                            <Table.Td c="dimmed">{new Date(g.end_time * 1000).toLocaleDateString()}</Table.Td>
+                            <Table.Td c="dimmed">
+                              {t("{{date, dateformat}}", {
+                                date: new Date(g.end_time * 1000),
+                                interpolation: { escapeValue: false },
+                              })}
+                            </Table.Td>
                             <Table.Td>
                               <Group gap="xs" wrap="nowrap">
                                 <Button
@@ -863,7 +873,7 @@ export default function DashboardPage() {
                                         id: 0,
                                         event: "Online Game",
                                         site: "Chess.com",
-                                        date: new Date(g.end_time * 1000).toLocaleDateString(),
+                                        date: formatDateToPGN(g.end_time * 1000),
                                         white: g.white.username,
                                         black: g.black.username,
                                         result: (g.white.result === "win"
@@ -944,7 +954,12 @@ export default function DashboardPage() {
                             <Table.Td>
                               <Text size="xs">{userAccount.user?.name}</Text>
                             </Table.Td>
-                            <Table.Td c="dimmed">{new Date(g.createdAt).toLocaleDateString()}</Table.Td>
+                            <Table.Td c="dimmed">
+                              {t("{{date, dateformat}}", {
+                                date: new Date(g.createdAt),
+                                interpolation: { escapeValue: false },
+                              })}
+                            </Table.Td>
                             <Table.Td>
                               <Group gap="xs" wrap="nowrap">
                                 <Button
@@ -956,7 +971,7 @@ export default function DashboardPage() {
                                         id: 0,
                                         event: `Rated ${g.speed} game`,
                                         site: "Lichess.org",
-                                        date: new Date(g.createdAt).toLocaleDateString(),
+                                        date: formatDateToPGN(g.createdAt),
                                         white: g.players.white.user?.name || "Unknown",
                                         black: g.players.black.user?.name || "Unknown",
                                         result: (g.winner === "white"

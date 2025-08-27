@@ -20,13 +20,13 @@ import { zh_CN } from "./translation/zh_CN";
 import {
   createBytesFormatter,
   createBytesLongFormatter,
-  createNodesFormatter,
-  createNodesLongFormatter,
-  createDurationFormatter,
-  createDurationLongFormatter,
-  createScoreFormatter,
   createDateFormatter,
   createDatetimeFormatter,
+  createDurationFormatter,
+  createDurationLongFormatter,
+  createNodesFormatter,
+  createNodesLongFormatter,
+  createScoreFormatter,
 } from "./utils/format";
 
 i18n.use(initReactI18next).init({

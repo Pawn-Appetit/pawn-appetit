@@ -13,6 +13,8 @@ import type { DatabaseViewStore } from "@/state/store/database";
 import { getTournamentGames } from "@/utils/db";
 import { createTab } from "@/utils/tabs";
 import { DatabaseViewStateContext } from "./DatabaseViewStateContext";
+import { parseDate } from "@/utils/format";
+import { useTranslation } from "react-i18next";
 
 const gamePoints = (game: NormalizedGame, player: string) => {
   if (game.white === player) {
@@ -30,6 +32,7 @@ const gamePoints = (game: NormalizedGame, player: string) => {
 };
 
 function TournamentCard({ tournament, file }: { tournament: Event; file: string }) {
+  const { t } = useTranslation();
   const store = useContext(DatabaseViewStateContext)!;
   const tournamentsActiveTab = useStore(store, (s) => s.tournaments.activeTab);
   const setTournamentsActiveTab = useStore(store, (s) => s.setTournamentsActiveTab);
@@ -185,7 +188,12 @@ function TournamentCard({ tournament, file }: { tournament: Event; file: string 
                     </div>
                   ),
                 },
-                { accessor: "date", sortable: true },
+                {
+                  accessor: "date",
+                  sortable: true,
+                  render: ({ date }) =>
+                    t("{{date, dateformat}}", { date: parseDate(date), interpolation: { escapeValue: false } }),
+                },
                 { accessor: "result" },
                 { accessor: "ply_count", sortable: true },
               ]}

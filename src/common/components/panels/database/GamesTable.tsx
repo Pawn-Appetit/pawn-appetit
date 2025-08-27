@@ -7,8 +7,11 @@ import { memo } from "react";
 import type { NormalizedGame } from "@/bindings";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import { createTab } from "@/utils/tabs";
+import { parseDate } from "@/utils/format";
+import { useTranslation } from "react-i18next";
 
 function GamesTable({ games, loading }: { games: NormalizedGame[]; loading: boolean }) {
+  const { t } = useTranslation();
   const [, setTabs] = useAtom(tabsAtom);
   const setActiveTab = useSetAtom(activeTabAtom);
 
@@ -72,7 +75,11 @@ function GamesTable({ games, loading }: { games: NormalizedGame[]; loading: bool
             </div>
           ),
         },
-        { accessor: "date" },
+        {
+          accessor: "date",
+          render: ({ date }) =>
+            t("{{date, dateformat}}", { date: parseDate(date), interpolation: { escapeValue: false } }),
+        },
         { accessor: "result" },
         { accessor: "ply_count" },
       ]}

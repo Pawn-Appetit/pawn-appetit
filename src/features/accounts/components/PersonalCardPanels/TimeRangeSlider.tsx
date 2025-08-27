@@ -1,5 +1,6 @@
 import { RangeSlider } from "@mantine/core";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface TimeRangeSliderProps {
   ratingDates: number[];
@@ -8,6 +9,7 @@ interface TimeRangeSliderProps {
 }
 
 const TimeRangeSlider = ({ ratingDates, dateRange, onDateRangeChange }: TimeRangeSliderProps) => {
+  const { t } = useTranslation();
   const [internalRange, setInternalRange] = useState<[number, number]>([
     dateRange?.start ?? 0,
     (dateRange?.end ?? ratingDates.length > 0) ? ratingDates.length - 1 : 0,
@@ -22,7 +24,12 @@ const TimeRangeSlider = ({ ratingDates, dateRange, onDateRangeChange }: TimeRang
   return (
     <RangeSlider
       pt="lg"
-      label={(value) => new Date(ratingDates[value]).toLocaleDateString()}
+      label={(value) =>
+        t("{{date, dateformat}}", {
+          date: new Date(ratingDates[value]),
+          interpolation: { escapeValue: false },
+        })
+      }
       value={internalRange}
       onChange={(value) => {
         setInternalRange(value);

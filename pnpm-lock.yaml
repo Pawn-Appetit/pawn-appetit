@@ -128,9 +128,6 @@ importers:
       d3:
         specifier: ^7.9.0
         version: 7.9.0
-      dayjs:
-        specifier: ^1.11.13
-        version: 1.11.13
       dom-to-image:
         specifier: ^2.6.0
         version: 2.6.0

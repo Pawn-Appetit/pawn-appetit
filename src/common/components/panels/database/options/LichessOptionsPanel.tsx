@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import ToggleButtonGroup, { type ToggleButtonGroupOption } from "@/common/components/ToggleButtonGroup";
 import { lichessOptionsAtom } from "@/state/atoms";
-import { capitalize } from "@/utils/format";
+import { capitalize, parseDate } from "@/utils/format";
 import { MIN_DATE } from "@/utils/lichess/api";
 import type { LichessGameSpeed, LichessRating } from "@/utils/lichess/explorer";
 
@@ -103,7 +103,7 @@ const LichessOptionsPanel = () => {
           value={options.since}
           minDate={MIN_DATE}
           maxDate={new Date()}
-          onChange={(value) => setOptions({ ...options, since: (value ?? undefined) as Date | undefined })}
+          onChange={(value) => setOptions({ ...options, since: parseDate(value) })}
           clearable
         />
         <MonthPickerInput
@@ -112,7 +112,7 @@ const LichessOptionsPanel = () => {
           value={options.until}
           minDate={MIN_DATE}
           maxDate={new Date()}
-          onChange={(value) => setOptions({ ...options, until: (value ?? undefined) as Date | undefined })}
+          onChange={(value) => setOptions({ ...options, until: parseDate(value) })}
           clearable
         />
       </Group>

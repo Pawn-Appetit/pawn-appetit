@@ -1,8 +1,8 @@
 /// <reference types="vitest" />
 import { resolve } from "node:path";
+import { TanStackRouterVite } from "@tanstack/router-vite-plugin";
 import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
 import react from "@vitejs/plugin-react-swc";
-import { TanStackRouterVite } from "@tanstack/router-vite-plugin";
 import { defineConfig } from "vite";
 
 const isDebug = !!process.env.TAURI_ENV_DEBUG;
@@ -29,5 +29,6 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
+    env: { TZ: "UTC" },
   },
 });

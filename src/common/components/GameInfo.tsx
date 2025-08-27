@@ -1,13 +1,13 @@
 import { Box, Group, Input, Select, SimpleGrid, Slider, Text } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import cx from "clsx";
-import dayjs from "dayjs";
 import { memo, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import type { Outcome } from "@/bindings";
 import { ContentEditable } from "@/features/boards/components/ContentEditable";
 import FideInfo from "@/features/databases/components/FideInfo";
+import { formatDateToPGN, parseDate } from "@/utils/format";
 import type { GameHeaders } from "@/utils/treeReducer";
 import * as classes from "./GameInfo.css";
 import { TreeStateContext } from "./TreeStateContext";
@@ -31,11 +31,7 @@ function GameInfo({
   const disabled = false;
   const setHeaders = useStore(store as NonNullable<typeof store>, (s) => s.setHeaders);
 
-  const date = headers.date
-    ? dayjs(headers.date, "YYYY.MM.DD").isValid()
-      ? dayjs(headers.date, "YYYY.MM.DD").toDate()
-      : null
-    : null;
+  const date = parseDate(headers.date);
   const [whiteOpened, setWhiteOpened] = useState(false);
   const [blackOpened, setBlackOpened] = useState(false);
 
@@ -207,7 +203,7 @@ function GameInfo({
               onChange={(date) => {
                 setHeaders({
                   ...headers,
-                  date: date ? dayjs(date).format("YYYY.MM.DD") : undefined,
+                  date: formatDateToPGN(date),
                 });
               }}
               readOnly={disabled}
