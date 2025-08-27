@@ -63,12 +63,12 @@ export default function Page() {
   const [moveMethod, setMoveMethod] = useAtom(moveMethodAtom);
   const [moveNotationType, setMoveNotationType] = useAtom(moveNotationTypeAtom);
   const [computedTheme] = useAtom<ThemeDefinition | null>(computedThemeAtom);
-  const [dateFormatMode, impl_setDateFormatMode] = useState(localStorage.getItem("dateFormatMode") || "intl");
+  const [dateFormatMode, setDateFormatMode] = useState(localStorage.getItem("dateFormatMode") || "intl");
 
-  const setDateFormatMode = useCallback((val: string) => {
-    impl_setDateFormatMode(val);
+  const handleDateFormatModeChange = useCallback((val: "intl" | "locale") => {
+    setDateFormatMode(val);
     localStorage.setItem("dateFormatMode", val);
-    i18n.changeLanguage(i18n.language); // triggers formatters re-rendervia languageChanged event
+    i18n.changeLanguage(i18n.language); // triggers formatters re-render via languageChanged event
   }, [i18n]);
 
   const langagues: { value: string; label: string }[] = [];
@@ -449,7 +449,7 @@ export default function Page() {
               value={dateFormatMode}
               onChange={(val) => {
                 if (val) {
-                  setDateFormatMode(val);
+                  handleDateFormatModeChange(val as "intl" | "locale");
                 }
               }}
             />
@@ -632,7 +632,7 @@ export default function Page() {
       computedTheme,
       dateFormatMode,
       dateFormatModes,
-      setDateFormatMode,
+      handleDateFormatModeChange,
     ],
   );
 
