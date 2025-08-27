@@ -209,19 +209,19 @@ The binary will be available in your current directory.
 |-----------|----------|-----------------------------|
 | 🇺🇸 US | ✅ 100% | [US](./src/translation/en_US.ts) |
 | 🇫🇷 FR | ✅ 100% | [FR](./src/translation/fr_FR.ts) |
-| 🇮🇹 IT | 🟡 85% | [IT](./src/translation/it_IT.ts) |
-| 🇦🇲 AM | 🟡 70% | [AM](./src/translation/hy_AM.ts) |
-| 🇷🇺 RU | 🟡 70% | [RU](./src/translation/ru_RU.ts) |
-| 🇩🇪 DE | 🟡 64% | [DE](./src/translation/de_DE.ts) |
-| 🇪🇸 ES | 🟡 64% | [ES](./src/translation/es_ES.ts) |
-| 🇳🇴 NO | 🟡 64% | [NO](./src/translation/nb_NO.ts) |
-| 🇹🇷 TR | 🟡 64% | [TR](./src/translation/tr_TR.ts) |
-| 🇧🇾 BY | 🟡 63% | [BY](./src/translation/be_BY.ts) |
-| 🇵🇱 PL | 🟡 63% | [PL](./src/translation/pl_PL.ts) |
-| 🇵🇹 PT | 🟡 63% | [PT](./src/translation/pt_PT.ts) |
-| 🇺🇦 UA | 🟡 63% | [UA](./src/translation/uk_UA.ts) |
-| 🇨🇳 CN | 🟡 63% | [CN](./src/translation/zh_CN.ts) |
-| 🇯🇵 JP | 🔴 10% | [JP](./src/translation/ja_JP.ts) |
+| 🇦🇲 AM | ✅ 100% | [AM](./src/translation/hy_AM.ts) |
+| 🇷🇺 RU | ✅ 100% | [RU](./src/translation/ru_RU.ts) |
+| 🇮🇹 IT | 🟡 76% | [IT](./src/translation/it_IT.ts) |
+| 🇧🇾 BY | 🟡 57% | [BY](./src/translation/be_BY.ts) |
+| 🇩🇪 DE | 🟡 57% | [DE](./src/translation/de_DE.ts) |
+| 🇪🇸 ES | 🟡 57% | [ES](./src/translation/es_ES.ts) |
+| 🇳🇴 NO | 🟡 57% | [NO](./src/translation/nb_NO.ts) |
+| 🇵🇱 PL | 🟡 57% | [PL](./src/translation/pl_PL.ts) |
+| 🇵🇹 PT | 🟡 57% | [PT](./src/translation/pt_PT.ts) |
+| 🇹🇷 TR | 🟡 57% | [TR](./src/translation/tr_TR.ts) |
+| 🇺🇦 UA | 🟡 57% | [UA](./src/translation/uk_UA.ts) |
+| 🇨🇳 CN | 🟡 57% | [CN](./src/translation/zh_CN.ts) |
+| 🇯🇵 JP | 🔴 9% | [JP](./src/translation/ja_JP.ts) |
 <!-- TRANSLATIONS_END -->
 
 📢 Want to help translate? See [CONTRIBUTING_TRANSLATIONS.md](./CONTRIBUTING_TRANSLATIONS.md) and [CONTRIBUTING.md](./CONTRIBUTING.md).

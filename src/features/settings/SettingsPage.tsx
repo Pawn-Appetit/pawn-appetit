@@ -3,7 +3,7 @@ import { IconBook, IconBrush, IconChess, IconFlag, IconFolder, IconMouse, IconVo
 import { useLoaderData } from "@tanstack/react-router";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAtom } from "jotai";
-import { useMemo, useState, useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import FileInput from "@/common/components/FileInput";
 import {
@@ -65,11 +65,14 @@ export default function Page() {
   const [computedTheme] = useAtom<ThemeDefinition | null>(computedThemeAtom);
   const [dateFormatMode, setDateFormatMode] = useState(localStorage.getItem("dateFormatMode") || "intl");
 
-  const handleDateFormatModeChange = useCallback((val: "intl" | "locale") => {
-    setDateFormatMode(val);
-    localStorage.setItem("dateFormatMode", val);
-    i18n.changeLanguage(i18n.language); // triggers formatters re-render via languageChanged event
-  }, [i18n]);
+  const handleDateFormatModeChange = useCallback(
+    (val: "intl" | "locale") => {
+      setDateFormatMode(val);
+      localStorage.setItem("dateFormatMode", val);
+      i18n.changeLanguage(i18n.language); // triggers formatters re-render via languageChanged event
+    },
+    [i18n],
+  );
 
   const langagues: { value: string; label: string }[] = [];
   for (const localeCode of Object.keys(i18n.services.resourceStore.data)) {
@@ -81,10 +84,13 @@ export default function Page() {
   }
   langagues.sort((a, b) => a.label.localeCompare(b.label));
 
-  const dateFormatModes = useMemo(() => [
-    { value: "intl", label: t("Settings.Appearance.DateFormat.International") },
-    { value: "locale", label: t("Settings.Appearance.DateFormat.Locale") },
-  ], [t]);
+  const dateFormatModes = useMemo(
+    () => [
+      { value: "intl", label: t("Settings.Appearance.DateFormat.International") },
+      { value: "locale", label: t("Settings.Appearance.DateFormat.Locale") },
+    ],
+    [t],
+  );
 
   const allSettings = useMemo(
     (): SettingItem[] => [
