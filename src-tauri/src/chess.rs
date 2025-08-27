@@ -1186,7 +1186,8 @@ pub async fn analyze_game(
     let path = PathBuf::from(&engine);
     let mut analysis: Vec<MoveAnalysis> = Vec::new();
 
-    let (mut proc, mut reader) = match EngineProcess::new(path.clone()).await {
+    // Create engine process
+    let (mut proc, mut reader) = match EngineProcess::new(path).await {
         Ok((p, r)) => (p, r),
         Err(e) => {
             error!("Failed to create engine for game analysis: {}", e);
@@ -1194,7 +1195,7 @@ pub async fn analyze_game(
         }
     };
 
-    // Parse initial position
+    // Parse initial position and build analysis positions
     let fen = Fen::from_ascii(options.fen.as_bytes())
         .map_err(|e| {
             error!("Invalid FEN in analyze_game: {}", options.fen);
@@ -1207,7 +1208,6 @@ pub async fn analyze_game(
             e
         })?;
     
-    // Build positions to analyze
     let mut positions_to_analyze = build_analysis_positions(&mut chess, &fen, &options)?;
     
     if options.reversed {
@@ -1220,85 +1220,106 @@ pub async fn analyze_game(
     
     info!("Analyzing {} positions", total_positions);
 
+    // Analyze each position
     for (i, (position_fen, moves, is_sacrifice)) in positions_to_analyze.iter().enumerate() {
-        debug!("Analyzing position {}/{}: {} moves", i + 1, total_positions, moves.len());
+        debug!("Analyzing position {}/{}: FEN={}, {} moves played from start", 
+               i + 1, total_positions, position_fen, moves.len());
         
         // Emit progress update
-        ReportProgress {
-            progress: (i as f64 / total_positions as f64) * 100.0,
-            id: id.clone(),
-            finished: false,
-        }.emit(&app)?;
+        emit_progress(&app, (i as f64 / total_positions as f64) * 100.0, &id, false).await?;
+
+        // Stop engine if it's running from previous analysis
+        if proc.is_running() {
+            debug!("Stopping engine before analyzing position {}", i + 1);
+            if let Err(e) = proc.stop().await {
+                warn!("Failed to stop engine before position {}: {}", i, e);
+            }
+        }
 
         // Setup engine options for this position
-        let mut analysis_options = uci_options.clone();
-        ensure_multipv_option(&mut analysis_options);
+        let analysis_options = prepare_engine_options(&uci_options);
 
         if let Err(e) = proc.set_options(EngineOptions {
-            fen: options.fen.clone(),
-            moves: moves.clone(),
+            fen: position_fen.to_string(),
+            moves: vec![], // Use empty moves since position_fen already includes the moves
             extra_options: analysis_options,
         }).await {
             warn!("Failed to set options for position {}: {}", i, e);
+            analysis.push(MoveAnalysis::default());
             continue;
         }
 
+        debug!("Starting engine analysis for position {}", i + 1);
         if let Err(e) = proc.go(&go_mode).await {
             warn!("Failed to start analysis for position {}: {}", i, e);
+            analysis.push(MoveAnalysis::default());
             continue;
         }
 
         // Analyze this position
         let mut current_analysis = MoveAnalysis::default();
-        match analyze_single_position(&mut proc, &mut reader).await {
+        match analyze_single_position(&mut proc, &mut reader, &vec![]).await {
             Ok(best_moves) => {
+                debug!("Analysis complete for position {}: found {} best moves", i + 1, best_moves.len());
                 current_analysis.best = best_moves;
             }
             Err(e) => {
                 warn!("Failed to analyze position {}: {}", i, e);
-                continue;
             }
         }
 
         // Set sacrifice flag
         current_analysis.is_sacrifice = *is_sacrifice;
-
-        // Check for novelty if requested
-        if options.annotate_novelties && !novelty_found {
-            current_analysis.novelty = check_novelty(
-                position_fen, 
-                &options.reference_db, 
-                &state
-            ).await.unwrap_or_else(|e| {
-                warn!("Failed to check novelty for position {}: {}", i, e);
-                false
-            });
-            
-            if current_analysis.novelty {
-                info!("Novelty found at position {}", i);
-                novelty_found = true;
-            }
-        }
-
         analysis.push(current_analysis);
     }
 
+    // Restore original order if reversed
     if options.reversed {
-        debug!("Reversing analysis results back to original order");
+        debug!("Restoring original analysis order");
         analysis.reverse();
+        positions_to_analyze.reverse();
+    }
+
+    // Check for novelties after analysis is complete
+    for (i, analysis_result) in analysis.iter_mut().enumerate() {
+        let position_fen = &positions_to_analyze[i].0;
+        
+        if options.annotate_novelties && !novelty_found {
+            match check_novelty(position_fen, &options.reference_db, &state).await {
+                Ok(is_novelty) => {
+                    analysis_result.novelty = is_novelty;
+                    if is_novelty {
+                        info!("Novelty found at position {}", i);
+                        novelty_found = true;
+                    }
+                }
+                Err(e) => {
+                    warn!("Failed to check novelty for position {}: {}", i, e);
+                    analysis_result.novelty = false;
+                }
+            }
+        }
     }
 
     // Final progress update
-    ReportProgress {
-        progress: 100.0,
-        id: id.clone(),
-        finished: true,
-    }.emit(&app)?;
+    emit_progress(&app, 100.0, &id, true).await?;
+    
+    // Clean up: stop the engine and terminate the process
+    if proc.is_running() {
+        if let Err(e) = proc.stop().await {
+            warn!("Failed to stop engine at end of analysis: {}", e);
+        }
+    }
+    
+    if let Err(e) = proc.kill().await {
+        warn!("Failed to terminate engine process: {}", e);
+    }
     
     info!("Game analysis completed: {} positions analyzed", analysis.len());
     Ok(analysis)
 }
 
+// Helper function to build analysis positions from moves
 fn build_analysis_positions(
     chess: &mut Chess,
     initial_fen: &Fen,
@@ -1339,6 +1360,16 @@ fn build_analysis_positions(
     Ok(positions)
 }
 
+// Helper function to detect sacrifices using evaluation
+fn detect_sacrifice(previous_pos: &Chess, current_pos: &Chess) -> bool {
+    let prev_eval = naive_eval(previous_pos);
+    let cur_eval = -naive_eval(current_pos);
+    
+    // Consider it a sacrifice if evaluation drops by more than a pawn
+    prev_eval > cur_eval + 100
+}
+
+// Helper function to ensure MultiPV option is set
 fn ensure_multipv_option(options: &mut Vec<EngineOption>) {
     const DEFAULT_MULTIPV: &str = "2";
     
@@ -1352,13 +1383,20 @@ fn ensure_multipv_option(options: &mut Vec<EngineOption>) {
     }
 }
 
+// Helper function to analyze a single position
 async fn analyze_single_position(
     proc: &mut EngineProcess,
-    reader: &mut Lines<BufReader<ChildStdout>>
+    reader: &mut Lines<BufReader<ChildStdout>>,
+    _moves: &[String]
 ) -> Result<Vec<BestMoves>, Error> {
     trace!("Starting single position analysis");
     
+    // Reset analysis state for this position
+    proc.reset_analysis_state();
+    let mut final_best_moves = Vec::new();
+    
     while let Ok(Some(line)) = reader.next_line().await {
+        proc.logs.push(EngineLog::Engine(line.clone()));
         trace!("Engine line: {}", line);
         
         match parse_one(&line) {
@@ -1371,27 +1409,29 @@ async fn analyze_single_position(
                         proc.best_moves.push(best_moves);
                         
                         if multipv == proc.real_multipv {
-                            if proc.best_moves.iter().all(|x| x.depth == cur_depth) && cur_depth >= proc.last_depth {
+                            let all_same_depth = proc.best_moves.iter().all(|x| x.depth == cur_depth);
+                            
+                            if all_same_depth && cur_depth >= proc.last_depth {
                                 proc.last_depth = cur_depth;
-                                // Don't clear here, wait for bestmove
+                                // Store the current complete set of best moves
+                                final_best_moves = proc.best_moves.clone();
                             }
                             
-                            if proc.best_moves.len() == proc.real_multipv as usize {
-                                proc.best_moves.clear();
-                            }
+                            // Clear for next multipv collection
+                            proc.best_moves.clear();
                         }
                     }
                 }
             }
             UciMessage::BestMove { .. } => {
-                trace!("Received bestmove, analysis complete");
+                trace!("Received bestmove, analysis complete for depth {}", proc.last_depth);
                 
-                // Update engine state
+                // Transition to idle state
                 if let Err(e) = proc.transition_state(EngineState::Idle) {
-                    warn!("Failed to transition to idle state after bestmove: {}", e);
+                    warn!("Failed to transition to idle state: {}", e);
                 }
                 
-                return Ok(proc.best_moves.clone());
+                return Ok(final_best_moves);
             }
             _ => {}
         }
@@ -1400,14 +1440,7 @@ async fn analyze_single_position(
     Err(Error::EngineTimeout)
 }
 
-fn detect_sacrifice(previous_pos: &Chess, current_pos: &Chess) -> bool {
-    let prev_eval = naive_eval(previous_pos);
-    let cur_eval = -naive_eval(current_pos);
-    
-    // Consider it a sacrifice if evaluation drops by more than a pawn
-    prev_eval > cur_eval + 100
-}
-
+// Helper function to check for novelty in position
 async fn check_novelty(
     fen: &Fen,
     reference_db: &Option<PathBuf>,
@@ -1429,6 +1462,31 @@ async fn check_novelty(
     } else {
         Err(Error::MissingReferenceDatabase)
     }
+}
+
+// Helper function to emit progress updates
+async fn emit_progress(
+    app: &tauri::AppHandle,
+    progress: f64,
+    id: &str,
+    finished: bool
+) -> Result<(), Error> {
+    ReportProgress {
+        progress,
+        id: id.to_string(),
+        finished,
+    }.emit(app)
+        .map_err(|e| {
+            error!("Failed to emit progress: {:?}", e);
+            Error::EventEmissionFailed
+        })
+}
+
+// Helper function to setup engine options for analysis
+fn prepare_engine_options(uci_options: &[EngineOption]) -> Vec<EngineOption> {
+    let mut extra_options = uci_options.to_vec();
+    ensure_multipv_option(&mut extra_options);
+    extra_options
 }
 
 // Chess evaluation functions (kept from original but with better structure)
