@@ -21,7 +21,7 @@ use tauri_specta::Event;
 use tokio::{
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader, Lines},
     process::{Child, ChildStdin, ChildStdout, Command},
-    sync::Mutex,
+    sync::{Mutex, oneshot},
     time::timeout,
 };
 use vampirc_uci::{
@@ -36,13 +36,105 @@ use crate::{
     AppState,
 };
 
-// Constants for timing and rate limiting
+// Constants for proper timeouts (not arbitrary delays)
 const ENGINE_INIT_TIMEOUT: Duration = Duration::from_secs(10);
-const TICK_DURATION: Duration = Duration::from_millis(20); // Increased from 10ms to reduce polling frequency
-const MIN_EVENT_INTERVAL: Duration = Duration::from_millis(50); // Target ≤50ms latency
-const MAX_EVENT_INTERVAL: Duration = Duration::from_millis(150); // Increased base timeout threshold
-const ENGINE_STOP_DELAY: Duration = Duration::from_millis(50);
-const EVENTS_PER_SECOND: u32 = 15; // Reduced from 20 to prevent spam
+const ENGINE_STOP_TIMEOUT: Duration = Duration::from_secs(5);
+const ENGINE_STATE_TRANSITION_TIMEOUT: Duration = Duration::from_secs(2);
+const MIN_EVENT_INTERVAL: Duration = Duration::from_millis(50);
+const EVENTS_PER_SECOND: u32 = 15;
+
+// Engine state management
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum EngineState {
+    Idle,
+    Initializing,
+    Analyzing,
+    Stopping,
+    Terminated,
+}
+
+// Event management for backpressure
+#[derive(Debug)]
+pub struct EventQueue {
+    pending_events: Vec<BestMovesPayload>,
+    acknowledgment_receiver: Option<oneshot::Receiver<()>>,
+    max_queue_size: usize,
+}
+
+impl EventQueue {
+    fn new() -> Self {
+        Self {
+            pending_events: Vec::new(),
+            acknowledgment_receiver: None,
+            max_queue_size: 10, // Prevent unbounded growth
+        }
+    }
+
+    fn queue_event(&mut self, event: BestMovesPayload) -> bool {
+        if self.pending_events.len() >= self.max_queue_size {
+            debug!("Event queue full, dropping oldest event");
+            self.pending_events.remove(0);
+        }
+        self.pending_events.push(event);
+        true
+    }
+
+    fn has_pending(&self) -> bool {
+        !self.pending_events.is_empty() || self.acknowledgment_receiver.is_some()
+    }
+
+    async fn try_send_next(&mut self, app: &tauri::AppHandle) -> Result<bool, Error> {
+        // Check if we're waiting for acknowledgment
+        if let Some(mut rx) = self.acknowledgment_receiver.take() {
+            match rx.try_recv() {
+                Ok(()) => {
+                    debug!("Event acknowledged, can send next");
+                }
+                Err(oneshot::error::TryRecvError::Empty) => {
+                    // Still waiting, put it back
+                    self.acknowledgment_receiver = Some(rx);
+                    return Ok(false);
+                }
+                Err(oneshot::error::TryRecvError::Closed) => {
+                    debug!("Acknowledgment channel closed, proceeding");
+                }
+            }
+        }
+
+        // Send next event if available
+        if let Some(event) = self.pending_events.pop() {
+            match event.emit(app) {
+                Ok(()) => {
+                    debug!("Event sent successfully");
+                    Ok(true)
+                }
+                Err(e) => {
+                    error!("Failed to emit event: {:?}", e);
+                    Err(Error::EventEmissionFailed)
+                }
+            }
+        } else {
+            Ok(false)
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct EngineProcess {
+    stdin: ChildStdin,
+    state: EngineState,
+    last_depth: u32,
+    best_moves: Vec<BestMoves>,
+    last_best_moves: Vec<BestMoves>,
+    last_progress: f32,
+    last_event_sent: Option<Instant>,
+    options: EngineOptions,
+    go_mode: GoMode,
+    real_multipv: u16,
+    logs: Vec<EngineLog>,
+    start: Instant,
+    state_change_notify: Option<oneshot::Sender<EngineState>>,
+}
 
 #[cfg(target_os = "windows")]
 const CREATE_NO_WINDOW: u32 = 0x08000000;
@@ -52,22 +144,6 @@ const CREATE_NO_WINDOW: u32 = 0x08000000;
 pub enum EngineLog {
     Gui(String),
     Engine(String),
-}
-
-#[derive(Debug)]
-pub struct EngineProcess {
-    stdin: ChildStdin,
-    last_depth: u32,
-    best_moves: Vec<BestMoves>,
-    last_best_moves: Vec<BestMoves>,
-    last_progress: f32,
-    last_event_sent: Option<Instant>,
-    options: EngineOptions,
-    go_mode: GoMode,
-    running: bool,
-    real_multipv: u16,
-    logs: Vec<EngineLog>,
-    start: Instant,
 }
 
 impl EngineProcess {
@@ -102,6 +178,7 @@ impl EngineProcess {
         Ok((
             Self {
                 stdin,
+                state: EngineState::Idle,
                 last_depth: 0,
                 best_moves: Vec::new(),
                 last_best_moves: Vec::new(),
@@ -111,11 +188,68 @@ impl EngineProcess {
                 options: EngineOptions::default(),
                 real_multipv: 0,
                 go_mode: GoMode::Infinite,
-                running: false,
                 start: Instant::now(),
+                state_change_notify: None,
             },
             lines,
         ))
+    }
+
+    async fn wait_for_state(&mut self, expected_state: EngineState, timeout_duration: Duration) -> Result<(), Error> {
+        if self.state == expected_state {
+            return Ok(());
+        }
+
+        let start = Instant::now();
+        while start.elapsed() < timeout_duration {
+            if self.state == expected_state {
+                return Ok(());
+            }
+            
+            // Small delay to prevent busy waiting
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+
+        Err(Error::InvalidEngineState {
+            expected: expected_state,
+            actual: self.state.clone(),
+        })
+    }
+
+    fn transition_state(&mut self, new_state: EngineState) -> Result<(), Error> {
+        let valid_transition = match (&self.state, &new_state) {
+            (EngineState::Idle, EngineState::Analyzing) => true,
+            (EngineState::Analyzing, EngineState::Stopping) => true,
+            (EngineState::Stopping, EngineState::Idle) => true,
+            (EngineState::Analyzing, EngineState::Idle) => true, // Direct stop
+            (_, EngineState::Terminated) => true,
+            _ => false,
+        };
+
+        if !valid_transition {
+            return Err(Error::InvalidStateTransition {
+                from: self.state.clone(),
+                to: new_state,
+            });
+        }
+
+        debug!("Engine state transition: {:?} -> {:?}", self.state, new_state);
+        self.state = new_state.clone();
+        
+        // Notify waiting tasks of state change
+        if let Some(tx) = self.state_change_notify.take() {
+            let _ = tx.send(new_state);
+        }
+
+        Ok(())
+    }
+
+    fn is_running(&self) -> bool {
+        matches!(self.state, EngineState::Analyzing)
+    }
+
+    fn is_idle(&self) -> bool {
+        matches!(self.state, EngineState::Idle)
     }
 
     fn spawn_engine_process(path: &PathBuf) -> Result<Child, Error> {
@@ -339,19 +473,6 @@ impl EngineProcess {
         Ok(())
     }
 
-    async fn go(&mut self, mode: &GoMode) -> Result<(), Error> {
-        self.go_mode = mode.clone();
-        let msg = self.format_go_command(mode);
-        
-        info!("Starting engine analysis: {}", msg.trim());
-        Self::send_command_with_log(&mut self.stdin, &msg, &mut self.logs).await?;
-        
-        self.running = true;
-        self.start = Instant::now();
-        self.last_event_sent = None;
-        Ok(())
-    }
-
     fn format_go_command(&self, mode: &GoMode) -> String {
         match mode {
             GoMode::Depth(depth) => format!("go depth {depth}\n"),
@@ -365,18 +486,71 @@ impl EngineProcess {
     }
 
     async fn stop(&mut self) -> Result<(), Error> {
-        if self.running {
-            info!("Stopping engine analysis");
-            Self::send_command_with_log(&mut self.stdin, "stop\n", &mut self.logs).await?;
-            self.running = false;
+        if !self.is_running() {
+            debug!("Engine not running, stop request ignored");
+            return Ok(());
         }
+
+        info!("Stopping engine analysis");
+        
+        // Transition to stopping state
+        self.transition_state(EngineState::Stopping)?;
+        
+        // Send stop command
+        Self::send_command_with_log(&mut self.stdin, "stop\n", &mut self.logs).await?;
+        
+        // Wait for engine to actually stop (bestmove response or timeout)
+        let stop_timeout = timeout(
+            ENGINE_STOP_TIMEOUT, 
+            self.wait_for_state(EngineState::Idle, ENGINE_STOP_TIMEOUT)
+        ).await;
+        
+        match stop_timeout {
+            Ok(Ok(())) => {
+                info!("Engine stopped successfully");
+                Ok(())
+            }
+            Ok(Err(e)) => {
+                warn!("Engine stop state wait failed: {}", e);
+                // Force transition to idle if state wait failed
+                self.transition_state(EngineState::Idle)?;
+                Ok(())
+            }
+            Err(_) => {
+                error!("Engine stop timeout");
+                // Force transition to idle after timeout
+                self.transition_state(EngineState::Idle)?;
+                Err(Error::EngineStopTimeout)
+            }
+        }
+    }
+
+    async fn go(&mut self, mode: &GoMode) -> Result<(), Error> {
+        if !self.is_idle() {
+            return Err(Error::InvalidEngineState {
+                expected: EngineState::Idle,
+                actual: self.state.clone(),
+            });
+        }
+
+        self.go_mode = mode.clone();
+        let msg = self.format_go_command(mode);
+        
+        // Transition to analyzing state before sending command
+        self.transition_state(EngineState::Analyzing)?;
+        
+        info!("Starting engine analysis: {}", msg.trim());
+        Self::send_command_with_log(&mut self.stdin, &msg, &mut self.logs).await?;
+        
+        self.start = Instant::now();
+        self.last_event_sent = None;
         Ok(())
     }
 
     async fn kill(&mut self) -> Result<(), Error> {
         info!("Terminating engine process");
+        self.transition_state(EngineState::Terminated)?;
         Self::send_command_with_log(&mut self.stdin, "quit\n", &mut self.logs).await?;
-        self.running = false;
         Ok(())
     }
 }
@@ -625,7 +799,7 @@ pub async fn get_best_moves(
     if let Some(process_guard) = state.engine_processes.get(&key) {
         let mut process = process_guard.lock().await;
         
-        if options == process.options && go_mode == process.go_mode && process.running {
+        if options == process.options && go_mode == process.go_mode && process.is_running() {
             debug!("Engine already running with same parameters, returning cached results");
             return Ok(Some((process.last_progress, process.last_best_moves.clone())));
         }
@@ -635,10 +809,12 @@ pub async fn get_best_moves(
             warn!("Failed to stop existing engine: {}", e);
         }
         
-        drop(process); // Release lock before delay
-        tokio::time::sleep(ENGINE_STOP_DELAY).await;
+        // Wait for engine to be idle before proceeding
+        if let Err(e) = process.wait_for_state(EngineState::Idle, ENGINE_STATE_TRANSITION_TIMEOUT).await {
+            warn!("Engine did not return to idle state: {}", e);
+            // Continue anyway, but the next operations might fail
+        }
         
-        let mut process = process_guard.lock().await;
         if let Err(e) = process.set_options(options.clone()).await {
             error!("Failed to set engine options: {}", e);
             return Err(e);
@@ -702,19 +878,28 @@ async fn engine_communication_loop(
     info!("Starting engine communication loop for: {:?}", key);
     
     let rate_limiter = RateLimiter::direct(Quota::per_second(nonzero!(EVENTS_PER_SECOND)));
-    let mut last_best_moves_payload: Option<BestMovesPayload> = None;
+    let mut event_queue = EventQueue::new();
     let mut first_result_sent = false;
-    let mut timeout_count = 0;
-    let mut last_timeout_emit = Instant::now();
 
     let result = async {
         loop {
-            match timeout(TICK_DURATION, reader.next_line()).await {
+            // Try to send any queued events first
+            match event_queue.try_send_next(&app).await {
+                Ok(true) => {
+                    debug!("Sent queued event successfully");
+                }
+                Ok(false) => {
+                    // No events to send or waiting for acknowledgment
+                }
+                Err(e) => {
+                    warn!("Failed to send queued event: {}", e);
+                }
+            }
+
+            // Read from engine with a reasonable timeout
+            match timeout(Duration::from_millis(100), reader.next_line()).await {
                 Ok(Ok(Some(line))) => {
                     debug!("Raw engine output: {}", line);
-                    
-                    // Reset timeout counter on successful read
-                    timeout_count = 0;
                     
                     let mut proc = process.lock().await;
                     proc.logs.push(EngineLog::Engine(line.clone()));
@@ -726,7 +911,7 @@ async fn engine_communication_loop(
                                 &mut proc,
                                 attrs,
                                 &rate_limiter,
-                                &mut last_best_moves_payload,
+                                &mut event_queue,
                                 &mut first_result_sent,
                                 &id,
                                 &tab,
@@ -737,6 +922,11 @@ async fn engine_communication_loop(
                         }
                         UciMessage::BestMove { .. } => {
                             debug!("Received bestmove, analysis complete");
+                            
+                            // Transition to idle state
+                            if let Err(e) = proc.transition_state(EngineState::Idle) {
+                                warn!("Failed to transition to idle state: {}", e);
+                            }
                             
                             let payload = BestMovesPayload {
                                 best_lines: proc.last_best_moves.clone(),
@@ -749,20 +939,18 @@ async fn engine_communication_loop(
 
                             info!("Emitting final bestmove payload for engine {} on tab {}", id, tab);
 
+                            // For final bestmove, send immediately without queuing
                             match payload.emit(&app) {
                                 Ok(_) => {
                                     debug!("Successfully emitted bestmove payload");
-                                    tokio::time::sleep(Duration::from_millis(30)).await;
                                 }
                                 Err(e) => {
                                     error!("Failed to emit final bestmove payload: {:?}", e);
                                 }
                             }
 
-                            info!("Analysis complete, cleaning up engine process");
-                            
+                            info!("Analysis complete, engine now idle");
                             proc.last_progress = 100.0;
-                            proc.running = false;
                         }
                         _ => {
                             trace!("Unhandled UCI message: {}", line);
@@ -778,42 +966,11 @@ async fn engine_communication_loop(
                     break;
                 }
                 Err(_) => {
-                    timeout_count += 1;
-                    
-                    // Only consider emitting timeout payloads if we have pending data
-                    // and enough time has passed since the last timeout emission
-                    if let Some(ref payload) = last_best_moves_payload {
-                        let now = Instant::now();
-                        let time_since_last_emit = now.duration_since(last_timeout_emit);
-                        
-                        // Use exponential backoff for timeout intervals to reduce spam
-                        let timeout_threshold = if timeout_count < 10 {
-                            MAX_EVENT_INTERVAL
-                        } else if timeout_count < 50 {
-                            Duration::from_millis(200) // 200ms after initial period
-                        } else {
-                            Duration::from_millis(500) // 500ms for long periods of no activity
-                        };
-                        
-                        let proc = process.lock().await;
-                        let should_emit_timeout = proc.last_event_sent.map_or(
-                            time_since_last_emit >= timeout_threshold,
-                            |t| t.elapsed() >= timeout_threshold
-                        );
-                        
-                        if should_emit_timeout {
-                            trace!("Emitting timeout payload after {}ms (timeout_count: {})", 
-                                   timeout_threshold.as_millis(), timeout_count);
-                            
-                            if let Err(e) = payload.emit(&app) {
-                                warn!("Failed to emit timeout payload: {}", e);
-                            } else {
-                                let mut proc = process.lock().await;
-                                proc.last_event_sent = Some(now);
-                                last_timeout_emit = now;
-                            }
-                            
-                            last_best_moves_payload = None;
+                    // Timeout - check if we can send any pending events
+                    if event_queue.has_pending() {
+                        // Try to send with a more permissive rate limit during timeouts
+                        if let Err(e) = event_queue.try_send_next(&app).await {
+                            debug!("Could not send pending event during timeout: {}", e);
                         }
                     }
                 }
@@ -824,6 +981,12 @@ async fn engine_communication_loop(
 
     if let Err(e) = result {
         error!("Engine communication loop error for {:?}: {}", key, e);
+    }
+    
+    // Ensure engine is marked as terminated
+    if let Some(process_guard) = engine_processes.get(&key) {
+        let mut proc = process_guard.lock().await;
+        let _ = proc.transition_state(EngineState::Terminated);
     }
     
     info!("Engine communication loop finished for: {:?}", key);
@@ -839,7 +1002,7 @@ async fn handle_info_message(
         governor::clock::DefaultClock,
         governor::middleware::NoOpMiddleware
     >,
-    last_best_moves_payload: &mut Option<BestMovesPayload>,
+    event_queue: &mut EventQueue,
     first_result_sent: &mut bool,
     id: &str,
     tab: &str,
@@ -875,7 +1038,7 @@ async fn handle_info_message(
                     progress,
                 };
                 
-                let should_emit = if !*first_result_sent {
+                let should_emit_immediately = if !*first_result_sent {
                     debug!("Emitting first analysis result: depth={}, multipv={}", cur_depth, multipv);
                     true
                 } else if cur_depth > proc.last_depth {
@@ -886,28 +1049,33 @@ async fn handle_info_message(
                     debug!("Emitting update for same depth due to time interval: depth={}", cur_depth);
                     true
                 } else {
-                    // Only store payload for timeout emission if it represents meaningful progress
-                    // (new depth or significant time has passed since last event)
-                    if cur_depth > proc.last_depth || 
-                       proc.last_event_sent.map_or(true, |t| t.elapsed() >= Duration::from_millis(200)) {
-                        trace!("Storing meaningful payload for potential timeout emission: depth={}", cur_depth);
-                        *last_best_moves_payload = Some(payload.clone());
-                    }
                     false
                 };
                 
-                if should_emit {
-                    debug!("Emitting analysis result: depth={}, progress={:.2}%", cur_depth, progress);
+                if should_emit_immediately {
+                    debug!("Emitting analysis result immediately: depth={}, progress={:.2}%", cur_depth, progress);
                     proc.last_event_sent = Some(Instant::now());
-                    payload.emit(app)?;
-                    *first_result_sent = true;
-                    *last_best_moves_payload = None;
                     
-                    // Only update last_depth when we actually emit a result for a new depth
-                    if cur_depth > proc.last_depth {
-                        proc.last_depth = cur_depth;
-                        debug!("Updated last_depth to: {}", proc.last_depth);
+                    match payload.emit(app) {
+                        Ok(()) => {
+                            *first_result_sent = true;
+                            
+                            // Only update last_depth when we actually emit a result for a new depth
+                            if cur_depth > proc.last_depth {
+                                proc.last_depth = cur_depth;
+                                debug!("Updated last_depth to: {}", proc.last_depth);
+                            }
+                        }
+                        Err(e) => {
+                            error!("Failed to emit event immediately: {:?}", e);
+                            // Queue the event for later
+                            event_queue.queue_event(payload);
+                        }
                     }
+                } else {
+                    // Queue event for potential delayed emission
+                    debug!("Queueing event for potential delayed emission: depth={}", cur_depth);
+                    event_queue.queue_event(payload);
                 }
 
                 proc.last_best_moves = proc.best_moves.clone();
@@ -1217,6 +1385,12 @@ async fn analyze_single_position(
             }
             UciMessage::BestMove { .. } => {
                 trace!("Received bestmove, analysis complete");
+                
+                // Update engine state
+                if let Err(e) = proc.transition_state(EngineState::Idle) {
+                    warn!("Failed to transition to idle state after bestmove: {}", e);
+                }
+                
                 return Ok(proc.best_moves.clone());
             }
             _ => {}

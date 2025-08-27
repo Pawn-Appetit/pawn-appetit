@@ -107,6 +107,24 @@ pub enum Error {
 
     #[error("Engine timeout")]
     EngineTimeout,
+
+    #[error("Invalid state transition from {from:?} to {to:?}")]
+    InvalidStateTransition {
+        from: crate::chess::EngineState,
+        to: crate::chess::EngineState,
+    },
+
+    #[error("Engine not in expected state: expected {expected:?}, found {actual:?}")]
+    InvalidEngineState {
+        expected: crate::chess::EngineState,
+        actual: crate::chess::EngineState,
+    },
+
+    #[error("Engine stop timeout")]
+    EngineStopTimeout,
+
+    #[error("Event emission failed")]
+    EventEmissionFailed,
 }
 
 impl serde::Serialize for Error {
