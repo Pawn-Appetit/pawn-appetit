@@ -1,4 +1,5 @@
 import { Badge, Box, Group } from "@mantine/core";
+import { useForceUpdate } from "@mantine/hooks";
 import { IconChevronRight, IconEye, IconTarget, IconTrash } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { remove } from "@tauri-apps/plugin-fs";
@@ -11,6 +12,7 @@ import { DataTable, type DataTableSortStatus } from "mantine-datatable";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { commands } from "@/bindings";
+import { useLanguageChangeListener } from "@/common/hooks/useLanguageChangeListener";
 import { activeTabAtom, deckAtomFamily, tabsAtom } from "@/state/atoms";
 import { createTab } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
@@ -174,6 +176,8 @@ function Table({
   setSort: (sort: SortStatus) => void;
 }) {
   const { t } = useTranslation();
+  const forceUpdate = useForceUpdate();
+  useLanguageChangeListener(forceUpdate);
 
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
   const expandedFiles = expandedIds.filter((id) => files?.find((f) => f.path === id && f.type === "directory"));

@@ -1,10 +1,12 @@
 import { Group, Progress, Text } from "@mantine/core";
+import { useForceUpdate } from "@mantine/hooks";
 import { useAtom } from "jotai";
 import { DataTable } from "mantine-datatable";
 import { memo, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/common/components/TreeStateContext";
+import { useLanguageChangeListener } from "@/common/hooks/useLanguageChangeListener";
 import { moveNotationTypeAtom } from "@/state/atoms";
 import { addPieceSymbol } from "@/utils/annotation";
 import type { Opening } from "@/utils/db";
@@ -14,6 +16,8 @@ function OpeningsTable({ openings, loading }: { openings: Opening[]; loading: bo
   const store = useContext(TreeStateContext)!;
   const makeMove = useStore(store, (s) => s.makeMove);
   const [moveNotationType] = useAtom(moveNotationTypeAtom);
+  const forceUpdate = useForceUpdate();
+  useLanguageChangeListener(forceUpdate);
 
   const whiteTotal = openings?.reduce((acc, curr) => acc + curr.white, 0);
   const blackTotal = openings?.reduce((acc, curr) => acc + curr.black, 0);

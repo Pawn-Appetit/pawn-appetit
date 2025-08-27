@@ -1,20 +1,22 @@
 import { ActionIcon, Paper, Stack, Tabs, Text, useMantineTheme } from "@mantine/core";
+import { useForceUpdate } from "@mantine/hooks";
 import { IconEye } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtom, useSetAtom } from "jotai";
 import { DataTable, type DataTableSortStatus } from "mantine-datatable";
 import { useContext, useState } from "react";
+import { useTranslation } from "react-i18next";
 import useSWRImmutable from "swr/immutable";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import type { Event, NormalizedGame } from "@/bindings";
+import { useLanguageChangeListener } from "@/common/hooks/useLanguageChangeListener";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import type { DatabaseViewStore } from "@/state/store/database";
 import { getTournamentGames } from "@/utils/db";
+import { parseDate } from "@/utils/format";
 import { createTab } from "@/utils/tabs";
 import { DatabaseViewStateContext } from "./DatabaseViewStateContext";
-import { parseDate } from "@/utils/format";
-import { useTranslation } from "react-i18next";
 
 const gamePoints = (game: NormalizedGame, player: string) => {
   if (game.white === player) {
@@ -42,6 +44,8 @@ function TournamentCard({ tournament, file }: { tournament: Event; file: string 
   const setActiveTab = useSetAtom(activeTabAtom);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const forceUpdate = useForceUpdate();
+  useLanguageChangeListener(forceUpdate);
 
   const { data: games, isLoading } = useSWRImmutable(
     ["tournament-games", file, tournament.id],

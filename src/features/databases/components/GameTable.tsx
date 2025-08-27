@@ -12,7 +12,7 @@ import {
   Text,
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
-import { useHotkeys } from "@mantine/hooks";
+import { useForceUpdate, useHotkeys } from "@mantine/hooks";
 import { IconExternalLink, IconFilter, IconFilterFilled } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { invoke } from "@tauri-apps/api/core";
@@ -23,6 +23,7 @@ import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import { useStore } from "zustand";
 import type { GameSort, NormalizedGame, Outcome } from "@/bindings";
+import { useLanguageChangeListener } from "@/common/hooks/useLanguageChangeListener";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import { query_games } from "@/utils/db";
 import { formatDateToPGN, parseDate } from "@/utils/format";
@@ -49,6 +50,8 @@ function GameTable() {
 
   const [, setTabs] = useAtom(tabsAtom);
   const setActiveTab = useSetAtom(activeTabAtom);
+  const forceUpdate = useForceUpdate();
+  useLanguageChangeListener(forceUpdate);
 
   const { data, isLoading, mutate } = useSWR(["games", query], () => query_games(file, query));
 
