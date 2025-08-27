@@ -27,6 +27,7 @@ import {
   createNodesFormatter,
   createNodesLongFormatter,
   createScoreFormatter,
+  createMoveNotationFormatter,
 } from "./utils/format";
 
 i18n.use(initReactI18next).init({
@@ -60,6 +61,7 @@ i18n.services.formatter?.add("durationLong", createDurationLongFormatter(i18n));
 i18n.services.formatter?.add("score", createScoreFormatter(i18n));
 i18n.services.formatter?.add("dateformat", createDateFormatter(i18n, localStorage));
 i18n.services.formatter?.add("datetimeformat", createDatetimeFormatter(i18n, localStorage));
+i18n.services.formatter?.add("moveNotation", createMoveNotationFormatter(i18n, localStorage));
 
 const container = document.getElementById("app");
 const root = createRoot(container!);

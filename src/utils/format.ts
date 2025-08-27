@@ -313,3 +313,83 @@ export function formatDateToPGN(date: Date | string | number | null | undefined)
 
   return `${year}.${month}.${day}`;
 }
+
+// Wrapper because we're outside of a React component
+function getFromAtomWithStorage<T>(storage: Storage, key: string, initialValue: T): T {
+  const storedValue = storage.getItem(key);
+  if (storedValue === null) {
+    return initialValue;
+  }
+  try {
+    const parsed = JSON.parse(storedValue);
+    return parsed;
+  } catch {
+    return initialValue;
+  }
+}
+
+const PIECE_SYMBOLS = { K: "♔", Q: "♕", R: "♖", B: "♗", N: "♘" };
+const TRANSLATED_PIECE_CHARS_CACHE = new Map<string, { K: string; Q: string; R: string; B: string; N: string }>();
+
+export function hasTranslatedPieceChars(
+  i18n: {
+    t: (key: string, options?: { lng?: string }) => string;
+    language: string;
+  },
+  lng?: string,
+): boolean {
+  const currentLng = lng || i18n.language;
+
+  return Object.keys(PIECE_SYMBOLS).some((key) => {
+    const translatedChar = i18n.t(`PieceChars.${key}`, { lng: currentLng });
+    return key.toLowerCase() !== translatedChar.toLowerCase();
+  });
+}
+
+export function createMoveNotationFormatter(
+  i18n: {
+    t: (key: string, options?: { lng?: string }) => string;
+    language: string;
+  },
+  storage?: Storage,
+) {
+  return (
+    value: unknown,
+    lng?: string,
+    options?: { notationType?: "letters" | "symbols" | "letters-translated" },
+  ): string => {
+    const move = String(value);
+    const notationType =
+      options?.notationType ||
+      (storage
+        ? getFromAtomWithStorage<"letters" | "symbols" | "letters-translated">(storage, "letters", "symbols")
+        : "symbols");
+    const currentLng = lng || i18n.language;
+
+    switch (notationType) {
+      case "symbols": {
+        const pieceChar = PIECE_SYMBOLS[move[0] as keyof typeof PIECE_SYMBOLS];
+        if (typeof pieceChar === "undefined") return move;
+        return pieceChar + move.slice(1);
+      }
+      case "letters-translated": {
+        let translatedPieceChars = TRANSLATED_PIECE_CHARS_CACHE.get(currentLng);
+        if (!translatedPieceChars) {
+          translatedPieceChars = {
+            K: i18n.t("PieceChars.K", { lng: currentLng }),
+            Q: i18n.t("PieceChars.Q", { lng: currentLng }),
+            R: i18n.t("PieceChars.R", { lng: currentLng }),
+            B: i18n.t("PieceChars.B", { lng: currentLng }),
+            N: i18n.t("PieceChars.N", { lng: currentLng }),
+          };
+          TRANSLATED_PIECE_CHARS_CACHE.set(currentLng, translatedPieceChars);
+        }
+        const pieceChar = translatedPieceChars[move[0] as keyof typeof translatedPieceChars];
+        if (typeof pieceChar === "undefined") return move;
+        return pieceChar + move.slice(1);
+      }
+      default:
+        return move;
+    }
+  };
+}

@@ -85,7 +85,7 @@ export const fontSizeAtom = atomWithStorage(
   Number.parseInt(document.documentElement.style.fontSize, 10) || 100,
 );
 
-export const moveNotationTypeAtom = atomWithStorage<"letters" | "symbols">("letters", "symbols");
+export const moveNotationTypeAtom = atomWithStorage<"letters" | "symbols" | "letters-translated">("letters", "symbols");
 export const moveMethodAtom = atomWithStorage<"drag" | "select" | "both">("move-method", "drag");
 export const spellCheckAtom = atomWithStorage<boolean>("spell-check", false);
 export const moveInputAtom = atomWithStorage<boolean>("move-input", false);
