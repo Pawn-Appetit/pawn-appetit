@@ -29,11 +29,12 @@ import {
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { info } from "@tauri-apps/plugin-log";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { DatabaseInfo } from "@/bindings";
 import { commands, events } from "@/bindings";
 import { downloadChessCom } from "@/utils/chess.com/api";
 import { getDatabases, query_games } from "@/utils/db";
-import { capitalize } from "@/utils/format";
+import { capitalize, parseDate } from "@/utils/format";
 import { downloadLichess } from "@/utils/lichess/api";
 import type { Session } from "@/utils/session";
 import { unwrap } from "@/utils/unwrap";
@@ -78,6 +79,7 @@ export function AccountCard({
   isMain,
   setMain,
 }: AccountCardProps) {
+  const { t } = useTranslation();
   const items = stats.map((stat) => {
     let color = "gray.5";
     let DiffIcon: React.FC<IconProps> = IconArrowRight;
@@ -326,7 +328,10 @@ export function AccountCard({
       <Accordion.Panel px="0" py="md">
         <SimpleGrid cols={2}>{items}</SimpleGrid>
         <Text mt="xs" size="xs" c="dimmed" ta="right">
-          {`Last update: ${new Date(updatedAt).toLocaleDateString()}`}
+          {`Last update: ${t("{{date, dateformat}}", {
+            date: parseDate(updatedAt),
+            interpolation: { escapeValue: false },
+          })}`}
         </Text>
       </Accordion.Panel>
     </Accordion.Item>

@@ -501,6 +501,10 @@ export const fr_FR = {
     "Settings.Appearance.Theme.Custom": "Personnalisé",
     "Settings.Appearance.hideDashboardOnStartup": "Masquer le tableau de bord au démarrage",
     "Settings.Appearance.hideDashboardOnStartup.Desc": "Ouvrir les échiquiers au lieu du tableau de bord",
+    "Settings.Appearance.DateFormat": "Format de date",
+    "Settings.Appearance.DateFormat.Desc": "Choisir entre le format international (YYYY-MM-DD) ou selon la locale",
+    "Settings.Appearance.DateFormat.International": "International",
+    "Settings.Appearance.DateFormat.Locale": "Selon la locale",
 
     "PgnInput.Comments": "Commentaires",
     "PgnInput.Glyphs": "Glyphes",

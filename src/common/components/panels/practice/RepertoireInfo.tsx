@@ -1,4 +1,5 @@
 import { ActionIcon, Alert, Button, Group, Progress, Stack, Text, Tooltip } from "@mantine/core";
+import { useForceUpdate } from "@mantine/hooks";
 import { IconInfoCircle, IconReload } from "@tabler/icons-react";
 import { useAtom, useAtomValue } from "jotai";
 import { atomWithStorage } from "jotai/utils";
@@ -6,6 +7,7 @@ import { DataTable, type DataTableSortStatus } from "mantine-datatable";
 import { useContext, useMemo, useState } from "react";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/common/components/TreeStateContext";
+import { useLanguageChangeListener } from "@/common/hooks/useLanguageChangeListener";
 import {
   currentTabAtom,
   minimumGamesAtom,
@@ -110,6 +112,8 @@ const sortStatusAtom = atomWithStorage<SortStatus>(
 function MissingMoves({ missingMoves, search }: { missingMoves: MissingMove[]; search: () => void }) {
   const store = useContext(TreeStateContext)!;
   const goToMove = useStore(store, (s) => s.goToMove);
+  const forceUpdate = useForceUpdate();
+  useLanguageChangeListener(forceUpdate);
 
   const [sort, setSort] = useAtom<SortStatus>(sortStatusAtom);
   const sortedMissingMoves = useMemo(

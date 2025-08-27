@@ -250,3 +250,66 @@ export function createDatetimeFormatter(
     }
   };
 }
+
+/**
+ * Parses a date input and returns a Date object
+ * @param dateInput - Date string, Date object, or timestamp number
+ * @returns Date object or undefined if invalid
+ */
+export function parseDate(dateInput: string | Date | number | null | undefined): Date | undefined {
+  if (dateInput === null || dateInput === undefined) {
+    return undefined;
+  }
+
+  if (dateInput instanceof Date) {
+    return Number.isNaN(dateInput.getTime()) ? undefined : dateInput;
+  }
+
+  if (typeof dateInput === "number") {
+    const date = new Date(dateInput);
+    return Number.isNaN(date.getTime()) ? undefined : date;
+  }
+
+  if (typeof dateInput !== "string") {
+    return undefined;
+  }
+
+  try {
+    const date = new Date(dateInput);
+    return Number.isNaN(date.getTime()) ? undefined : date;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Formats a date input to YYYY.MM.DD format for PGN storage
+ * @param date - Date object, date string, or timestamp number to format
+ * @returns Formatted date string or undefined if invalid
+ */
+export function formatDateToPGN(date: Date | string | number | null | undefined): string | undefined {
+  if (date === null || date === undefined) {
+    return undefined;
+  }
+
+  let dateObj: Date;
+  if (typeof date === "string") {
+    dateObj = new Date(date);
+  } else if (typeof date === "number") {
+    dateObj = new Date(date);
+  } else if (date instanceof Date) {
+    dateObj = date;
+  } else {
+    return undefined;
+  }
+
+  if (Number.isNaN(dateObj.getTime())) {
+    return undefined;
+  }
+
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const day = String(dateObj.getDate()).padStart(2, "0");
+
+  return `${year}.${month}.${day}`;
+}

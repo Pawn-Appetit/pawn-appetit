@@ -12,11 +12,10 @@ import {
   Text,
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
-import { useHotkeys } from "@mantine/hooks";
+import { useForceUpdate, useHotkeys } from "@mantine/hooks";
 import { IconExternalLink, IconFilter, IconFilterFilled } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { invoke } from "@tauri-apps/api/core";
-import dayjs from "dayjs";
 import { useAtom, useSetAtom } from "jotai";
 import { DataTable } from "mantine-datatable";
 import { useContext, useState } from "react";
@@ -24,8 +23,10 @@ import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import { useStore } from "zustand";
 import type { GameSort, NormalizedGame, Outcome } from "@/bindings";
+import { useLanguageChangeListener } from "@/common/hooks/useLanguageChangeListener";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import { query_games } from "@/utils/db";
+import { formatDateToPGN, parseDate } from "@/utils/format";
 import { createTab } from "@/utils/tabs";
 import { DatabaseViewStateContext } from "./DatabaseViewStateContext";
 import GameCard from "./GameCard";
@@ -49,6 +50,8 @@ function GameTable() {
 
   const [, setTabs] = useAtom(tabsAtom);
   const setActiveTab = useSetAtom(activeTabAtom);
+  const forceUpdate = useForceUpdate();
+  useLanguageChangeListener(forceUpdate);
 
   const { data, isLoading, mutate } = useSWR(["games", query], () => query_games(file, query));
 
@@ -175,11 +178,11 @@ function GameTable() {
                     placeholder={t("GameTable.StartDate")}
                     clearable
                     valueFormat="YYYY-MM-DD"
-                    value={query.start_date ? dayjs(query.start_date, "YYYY.MM.DD").toDate() : null}
+                    value={parseDate(query.start_date)}
                     onChange={(value) =>
                       setQuery({
                         ...query,
-                        start_date: value ? dayjs(value).format("YYYY.MM.DD") : undefined,
+                        start_date: formatDateToPGN(value),
                       })
                     }
                   />
@@ -188,11 +191,11 @@ function GameTable() {
                     placeholder={t("GameTable.EndDate")}
                     clearable
                     valueFormat="YYYY-MM-DD"
-                    value={query.end_date ? dayjs(query.end_date, "YYYY.MM.DD").toDate() : null}
+                    value={parseDate(query.end_date)}
                     onChange={(value) =>
                       setQuery({
                         ...query,
-                        end_date: value ? dayjs(value).format("YYYY.MM.DD") : undefined,
+                        end_date: formatDateToPGN(value),
                       })
                     }
                   />
@@ -264,7 +267,7 @@ function GameTable() {
               title: t("GameTable.Date"),
               render: ({ date }) =>
                 t("{{date, dateformat}}", {
-                  date: date ? new Date(date) : undefined,
+                  date: parseDate(date),
                   interpolation: { escapeValue: false },
                 }),
             },

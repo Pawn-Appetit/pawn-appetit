@@ -1,16 +1,20 @@
 import { ActionIcon, Paper, Stack, Tabs, Text, useMantineTheme } from "@mantine/core";
+import { useForceUpdate } from "@mantine/hooks";
 import { IconEye } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtom, useSetAtom } from "jotai";
 import { DataTable, type DataTableSortStatus } from "mantine-datatable";
 import { useContext, useState } from "react";
+import { useTranslation } from "react-i18next";
 import useSWRImmutable from "swr/immutable";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import type { Event, NormalizedGame } from "@/bindings";
+import { useLanguageChangeListener } from "@/common/hooks/useLanguageChangeListener";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import type { DatabaseViewStore } from "@/state/store/database";
 import { getTournamentGames } from "@/utils/db";
+import { parseDate } from "@/utils/format";
 import { createTab } from "@/utils/tabs";
 import { DatabaseViewStateContext } from "./DatabaseViewStateContext";
 
@@ -30,6 +34,7 @@ const gamePoints = (game: NormalizedGame, player: string) => {
 };
 
 function TournamentCard({ tournament, file }: { tournament: Event; file: string }) {
+  const { t } = useTranslation();
   const store = useContext(DatabaseViewStateContext)!;
   const tournamentsActiveTab = useStore(store, (s) => s.tournaments.activeTab);
   const setTournamentsActiveTab = useStore(store, (s) => s.setTournamentsActiveTab);
@@ -39,6 +44,8 @@ function TournamentCard({ tournament, file }: { tournament: Event; file: string 
   const setActiveTab = useSetAtom(activeTabAtom);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const forceUpdate = useForceUpdate();
+  useLanguageChangeListener(forceUpdate);
 
   const { data: games, isLoading } = useSWRImmutable(
     ["tournament-games", file, tournament.id],
@@ -185,7 +192,12 @@ function TournamentCard({ tournament, file }: { tournament: Event; file: string 
                     </div>
                   ),
                 },
-                { accessor: "date", sortable: true },
+                {
+                  accessor: "date",
+                  sortable: true,
+                  render: ({ date }) =>
+                    t("{{date, dateformat}}", { date: parseDate(date), interpolation: { escapeValue: false } }),
+                },
                 { accessor: "result" },
                 { accessor: "ply_count", sortable: true },
               ]}

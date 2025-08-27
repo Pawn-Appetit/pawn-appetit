@@ -1,16 +1,23 @@
 import { ActionIcon, Text, useMantineTheme } from "@mantine/core";
+import { useForceUpdate } from "@mantine/hooks";
 import { IconEye } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtom, useSetAtom } from "jotai";
 import { DataTable } from "mantine-datatable";
 import { memo } from "react";
+import { useTranslation } from "react-i18next";
 import type { NormalizedGame } from "@/bindings";
+import { useLanguageChangeListener } from "@/common/hooks/useLanguageChangeListener";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
+import { parseDate } from "@/utils/format";
 import { createTab } from "@/utils/tabs";
 
 function GamesTable({ games, loading }: { games: NormalizedGame[]; loading: boolean }) {
+  const { t } = useTranslation();
   const [, setTabs] = useAtom(tabsAtom);
   const setActiveTab = useSetAtom(activeTabAtom);
+  const forceUpdate = useForceUpdate();
+  useLanguageChangeListener(forceUpdate);
 
   const theme = useMantineTheme();
   const navigate = useNavigate();
@@ -72,7 +79,11 @@ function GamesTable({ games, loading }: { games: NormalizedGame[]; loading: bool
             </div>
           ),
         },
-        { accessor: "date" },
+        {
+          accessor: "date",
+          render: ({ date }) =>
+            t("{{date, dateformat}}", { date: parseDate(date), interpolation: { escapeValue: false } }),
+        },
         { accessor: "result" },
         { accessor: "ply_count" },
       ]}

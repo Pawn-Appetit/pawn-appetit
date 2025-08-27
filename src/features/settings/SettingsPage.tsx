@@ -3,7 +3,7 @@ import { IconBook, IconBrush, IconChess, IconFlag, IconFolder, IconMouse, IconVo
 import { useLoaderData } from "@tanstack/react-router";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAtom } from "jotai";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import FileInput from "@/common/components/FileInput";
 import {
@@ -63,16 +63,28 @@ export default function Page() {
   const [moveMethod, setMoveMethod] = useAtom(moveMethodAtom);
   const [moveNotationType, setMoveNotationType] = useAtom(moveNotationTypeAtom);
   const [computedTheme] = useAtom<ThemeDefinition | null>(computedThemeAtom);
+  const [dateFormatMode, setDateFormatMode] = useState(localStorage.getItem("dateFormatMode") || "intl");
+
+  const handleDateFormatModeChange = useCallback((val: "intl" | "locale") => {
+    setDateFormatMode(val);
+    localStorage.setItem("dateFormatMode", val);
+    i18n.changeLanguage(i18n.language); // triggers formatters re-render via languageChanged event
+  }, [i18n]);
 
   const langagues: { value: string; label: string }[] = [];
-  for (const localCode of Object.keys(i18n.services.resourceStore.data)) {
+  for (const localeCode of Object.keys(i18n.services.resourceStore.data)) {
     // Not sure why it's an exception in the init of our i18n. But to produce the same list I'll normalize it
-    const normalizedCode = localCode === "en" ? "en_US" : localCode;
+    const normalizedCode = localeCode === "en" ? "en_US" : localeCode;
     // Load label from specific namespace, in the other language resource.
     // Would avoid having to load full files if all the translations weren't all already loaded in memory
     langagues.push({ value: normalizedCode, label: t("language:DisplayName", { lng: normalizedCode }) });
   }
   langagues.sort((a, b) => a.label.localeCompare(b.label));
+
+  const dateFormatModes = useMemo(() => [
+    { value: "intl", label: t("Settings.Appearance.DateFormat.International") },
+    { value: "locale", label: t("Settings.Appearance.DateFormat.Locale") },
+  ], [t]);
 
   const allSettings = useMemo(
     (): SettingItem[] => [
@@ -419,6 +431,32 @@ export default function Page() {
         ),
       },
       {
+        id: "date-format",
+        title: t("Settings.Appearance.DateFormat"),
+        description: t("Settings.Appearance.DateFormat.Desc"),
+        tab: "appearance",
+        component: (
+          <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
+            <div>
+              <Text>{t("Settings.Appearance.DateFormat")}</Text>
+              <Text size="xs" c="dimmed">
+                {t("Settings.Appearance.DateFormat.Desc")}
+              </Text>
+            </div>
+            <Select
+              allowDeselect={false}
+              data={dateFormatModes}
+              value={dateFormatMode}
+              onChange={(val) => {
+                if (val) {
+                  handleDateFormatModeChange(val as "intl" | "locale");
+                }
+              }}
+            />
+          </Group>
+        ),
+      },
+      {
         id: "title-bar",
         title: t("Settings.Appearance.TitleBar"),
         description: t("Settings.Appearance.TitleBar.Desc"),
@@ -592,6 +630,9 @@ export default function Page() {
       filesDirectory,
       setFilesDirectory,
       computedTheme,
+      dateFormatMode,
+      dateFormatModes,
+      handleDateFormatModeChange,
     ],
   );
 

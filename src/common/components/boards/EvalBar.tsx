@@ -1,6 +1,6 @@
 import { Box, Text, Tooltip, useMantineTheme } from "@mantine/core";
-import { useTranslation } from "react-i18next";
 import type { Color } from "chessground/types";
+import { useTranslation } from "react-i18next";
 import type { ScoreValue } from "@/bindings";
 import { getWinChance } from "@/utils/score";
 

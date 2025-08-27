@@ -1,11 +1,12 @@
 import { Center, Flex, Text, TextInput } from "@mantine/core";
-import { useHotkeys } from "@mantine/hooks";
+import { useForceUpdate, useHotkeys } from "@mantine/hooks";
 import { IconSearch } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
 import { useContext } from "react";
 import useSWR from "swr";
 import { useStore } from "zustand";
 import { commands, type Event, type TournamentSort } from "@/bindings";
+import { useLanguageChangeListener } from "@/common/hooks/useLanguageChangeListener";
 import { unwrap } from "@/utils/unwrap";
 import { DatabaseViewStateContext } from "./DatabaseViewStateContext";
 import GridLayout from "./GridLayout";
@@ -24,6 +25,8 @@ function TournamentTable() {
   const tournaments = data?.data ?? [];
   const count = data?.count;
   const tournament = tournaments.find((t) => t.id === selected);
+  const forceUpdate = useForceUpdate();
+  useLanguageChangeListener(forceUpdate);
 
   useHotkeys([
     [

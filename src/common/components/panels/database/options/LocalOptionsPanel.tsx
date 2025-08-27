@@ -2,7 +2,6 @@ import { Box, Button, Group, NativeSelect, SegmentedControl, Stack, Text } from 
 import { DateInput } from "@mantine/dates";
 import { parseSquare } from "chessops";
 import { EMPTY_BOARD_FEN, makeFen, parseFen } from "chessops/fen";
-import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,6 +9,7 @@ import { Chessground } from "@/chessground/Chessground";
 import PiecesGrid from "@/common/components/boards/PiecesGrid";
 import { PlayerSearchInput } from "@/features/databases/components/PlayerSearchInput";
 import { currentLocalOptionsAtom } from "@/state/atoms";
+import { formatDateToPGN, parseDate } from "@/utils/format";
 
 function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
   const boardRef = useRef(null);
@@ -73,11 +73,11 @@ function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
             placeholder="Start date"
             valueFormat="YYYY-MM-DD"
             clearable
-            value={options.start_date ? dayjs(options.start_date, "YYYY.MM.DD").toDate() : undefined}
+            value={parseDate(options.start_date)}
             onChange={(value) =>
               setOptions({
                 ...options,
-                start_date: value ? dayjs(value).format("YYYY.MM.DD") : undefined,
+                start_date: formatDateToPGN(value),
               })
             }
           />
@@ -86,11 +86,11 @@ function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
             placeholder="End date"
             valueFormat="YYYY-MM-DD"
             clearable
-            value={options.end_date ? dayjs(options.end_date, "YYYY.MM.DD").toDate() : null}
+            value={parseDate(options.end_date)}
             onChange={(value) =>
               setOptions({
                 ...options,
-                end_date: value ? dayjs(value).format("YYYY.MM.DD") : undefined,
+                end_date: formatDateToPGN(value),
               })
             }
           />

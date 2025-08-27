@@ -1,11 +1,12 @@
 import { ActionIcon, Center, Collapse, Flex, Group, NumberInput, Text, TextInput } from "@mantine/core";
-import { useHotkeys } from "@mantine/hooks";
+import { useForceUpdate, useHotkeys } from "@mantine/hooks";
 import { IconDotsVertical, IconSearch } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
 import { useContext, useState } from "react";
 import useSWR from "swr";
 import { useStore } from "zustand";
 import type { Player, PlayerSort } from "@/bindings";
+import { useLanguageChangeListener } from "@/common/hooks/useLanguageChangeListener";
 import { query_players } from "@/utils/db";
 import { DatabaseViewStateContext } from "./DatabaseViewStateContext";
 import GridLayout from "./GridLayout";
@@ -27,6 +28,8 @@ function PlayerTable() {
   const player = players.find((p) => p.id === selectedPlayer);
 
   const [open, setOpen] = useState(false);
+  const forceUpdate = useForceUpdate();
+  useLanguageChangeListener(forceUpdate);
 
   useHotkeys([
     [
