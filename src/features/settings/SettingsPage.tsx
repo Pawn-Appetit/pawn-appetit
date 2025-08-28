@@ -30,6 +30,7 @@ import {
 import { ThemeSettings } from "@/themes";
 import { computedThemeAtom } from "@/themes/state";
 import type { ThemeDefinition } from "@/themes/types";
+import { hasTranslatedPieceChars } from "@/utils/format";
 import BoardSelect from "./components/BoardSelect";
 import ColorControl from "./components/ColorControl";
 import FontSizeSlider from "./components/FontSizeSlider";
@@ -74,21 +75,60 @@ export default function Page() {
     [i18n],
   );
 
-  const langagues: { value: string; label: string }[] = [];
-  for (const localeCode of Object.keys(i18n.services.resourceStore.data)) {
-    // Not sure why it's an exception in the init of our i18n. But to produce the same list I'll normalize it
-    const normalizedCode = localeCode === "en" ? "en_US" : localeCode;
-    // Load label from specific namespace, in the other language resource.
-    // Would avoid having to load full files if all the translations weren't all already loaded in memory
-    langagues.push({ value: normalizedCode, label: t("language:DisplayName", { lng: normalizedCode }) });
-  }
-  langagues.sort((a, b) => a.label.localeCompare(b.label));
+  const languages = useMemo(() => {
+    const langs: { value: string; label: string }[] = [];
+    for (const localeCode of Object.keys(i18n.services.resourceStore.data)) {
+      // Not sure why it's an exception in the init of our i18n. But to produce the same list I'll normalize it
+      const normalizedCode = localeCode === "en" ? "en_US" : localeCode;
+      // Load label from specific namespace, in the other language resource.
+      // Would avoid having to load full files if all the translations weren't all already loaded in memory
+      langs.push({ value: normalizedCode, label: t("language:DisplayName", { lng: normalizedCode }) });
+    }
+    langs.sort((a, b) => a.label.localeCompare(b.label));
+    return langs;
+  }, [t, i18n.services.resourceStore.data]);
 
   const dateFormatModes = useMemo(
     () => [
       { value: "intl", label: t("Settings.Appearance.DateFormat.International") },
       { value: "locale", label: t("Settings.Appearance.DateFormat.Locale") },
     ],
+    [t],
+  );
+
+  const moveNotationData = useMemo(() => {
+    const data = [
+      { label: t("Settings.MoveNotation.Symbols"), value: "symbols" },
+      { label: t("Settings.MoveNotation.Letters"), value: "letters" },
+    ];
+
+    if (hasTranslatedPieceChars(i18n)) {
+      data.push({ label: t("Settings.MoveNotation.TranslatedLetters"), value: "letters-translated" });
+    }
+
+    return data;
+  }, [t, i18n]);
+
+  // Validate and change to an available option if we've switched to a language that doesn't have the option.
+  const validatedMoveNotationType = useMemo(() => {
+    if (moveNotationType === "letters-translated" && !hasTranslatedPieceChars(i18n)) {
+      setMoveNotationType("letters");
+      return "letters";
+    }
+    return moveNotationType;
+  }, [moveNotationType, i18n, setMoveNotationType]);
+
+  const waysToMoveData = useMemo(
+    () => [
+      { label: t("Settings.WaysToMovePieces.Drag"), value: "drag" },
+      { label: t("Settings.WaysToMovePieces.Click"), value: "select" },
+      { label: t("Settings.WaysToMovePieces.Both"), value: "both" },
+    ],
+    [t],
+  );
+
+  const titleBarData = useMemo(
+    () => [t("Settings.Appearance.TitleBar.Native"), t("Settings.Appearance.TitleBar.Custom")],
     [t],
   );
 
@@ -113,48 +153,41 @@ export default function Page() {
       },
       {
         id: "move-notation",
-        title: "Move notation",
-        description: "Choose how to display pieces in notation",
+        title: t("Settings.MoveNotation"),
+        description: t("Settings.MoveNotation.Desc"),
         tab: "board",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>Move notation</Text>
+              <Text>{t("Settings.MoveNotation")}</Text>
               <Text size="xs" c="dimmed">
-                Choose how to display pieces in notation
+                {t("Settings.MoveNotation.Desc")}
               </Text>
             </div>
             <Select
-              data={[
-                { label: "Letters (K Q R B N)", value: "letters" },
-                { label: "Symbols (♔♕♖♗♘)", value: "symbols" },
-              ]}
+              data={moveNotationData}
               allowDeselect={false}
-              value={moveNotationType}
-              onChange={(val) => setMoveNotationType(val as "letters" | "symbols")}
+              value={validatedMoveNotationType}
+              onChange={(val) => setMoveNotationType(val as "letters" | "symbols" | "letters-translated")}
             />
           </Group>
         ),
       },
       {
         id: "move-pieces",
-        title: "Ways to Move Pieces",
-        description: "Move pieces by dragging, clicking, or both",
+        title: t("Settings.WaysToMovePieces"),
+        description: t("Settings.WaysToMovePieces.Desc"),
         tab: "board",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>Ways to Move Pieces</Text>
+              <Text>{t("Settings.WaysToMovePieces")}</Text>
               <Text size="xs" c="dimmed">
-                Move pieces by dragging, clicking, or both
+                {t("Settings.WaysToMovePieces.Desc")}
               </Text>
             </div>
             <Select
-              data={[
-                { label: "Drag", value: "drag" },
-                { label: "Click", value: "select" },
-                { label: "Both", value: "both" },
-              ]}
+              data={waysToMoveData}
               allowDeselect={false}
               value={moveMethod}
               onChange={(val) => setMoveMethod(val as "drag" | "select" | "both")}
@@ -426,7 +459,7 @@ export default function Page() {
             </div>
             <Select
               allowDeselect={false}
-              data={langagues}
+              data={languages}
               value={i18n.language}
               onChange={(val) => {
                 i18n.changeLanguage(val || "en_US");
@@ -477,10 +510,10 @@ export default function Page() {
             </div>
             <Select
               allowDeselect={false}
-              data={["Native", "Custom"]}
-              value={isNative ? "Native" : "Custom"}
+              data={titleBarData}
+              value={isNative ? t("Settings.Appearance.TitleBar.Native") : t("Settings.Appearance.TitleBar.Custom")}
               onChange={(val) => {
-                setIsNative(val === "Native");
+                setIsNative(val === t("Settings.Appearance.TitleBar.Native"));
               }}
             />
           </Group>
@@ -617,8 +650,8 @@ export default function Page() {
       },
       {
         id: "telemetry",
-        title: "Telemetry",
-        description: "Help improve Pawn Appétit by sharing anonymous usage data",
+        title: t("Settings.Telemetry"),
+        description: t("Settings.Telemetry.Desc"),
         tab: "directories",
         component: <TelemetrySettings className={classes.item} />,
       },
@@ -631,7 +664,7 @@ export default function Page() {
       setIsNative,
       moveMethod,
       setMoveMethod,
-      moveNotationType,
+      validatedMoveNotationType,
       setMoveNotationType,
       filesDirectory,
       setFilesDirectory,
@@ -639,6 +672,10 @@ export default function Page() {
       dateFormatMode,
       dateFormatModes,
       handleDateFormatModeChange,
+      languages,
+      moveNotationData,
+      waysToMoveData,
+      titleBarData,
     ],
   );
 
@@ -703,10 +740,10 @@ export default function Page() {
   return (
     <Box h="100%" style={{ overflow: "hidden" }}>
       <Title order={1} fw={500} p="lg" className={classes.title}>
-        Settings
+        {t("Settings")}
       </Title>
       <TextInput
-        placeholder="Search settings"
+        placeholder={t("Settings.SearchPlaceholder")}
         size="xs"
         mb="lg"
         px="lg"
@@ -730,7 +767,7 @@ export default function Page() {
               ))}
               {filteredSettings.length === 0 && (
                 <Text c="dimmed" ta="center" py="xl">
-                  No settings found for "{search}"
+                  {t("Settings.NoResultsFound")} "{search}"
                 </Text>
               )}
             </Card>
@@ -740,7 +777,7 @@ export default function Page() {
         <Tabs defaultValue="board" orientation="vertical" h="100%">
           <Tabs.List>
             <Text c="dimmed" size="sm" pl="lg">
-              Gameplay
+              {t("Settings.Gameplay")}
             </Text>
             <Tabs.Tab
               value="board"
@@ -773,7 +810,7 @@ export default function Page() {
               {t("Settings.Anarchy")}
             </Tabs.Tab>
             <Text c="dimmed" size="sm" mt="md" pl="lg">
-              Analysis
+              {t("Settings.Analysis")}
             </Text>
             <Tabs.Tab
               value="report"
@@ -786,7 +823,7 @@ export default function Page() {
               {t("Settings.OpeningReport")}
             </Tabs.Tab>
             <Text c="dimmed" size="sm" mt="md" pl="lg">
-              Interface
+              {t("Settings.Interface")}
             </Text>
             <Tabs.Tab
               value="appearance"

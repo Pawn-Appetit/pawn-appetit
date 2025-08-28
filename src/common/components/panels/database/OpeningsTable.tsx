@@ -1,21 +1,17 @@
 import { Group, Progress, Text } from "@mantine/core";
 import { useForceUpdate } from "@mantine/hooks";
-import { useAtom } from "jotai";
 import { DataTable } from "mantine-datatable";
 import { memo, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/common/components/TreeStateContext";
 import { useLanguageChangeListener } from "@/common/hooks/useLanguageChangeListener";
-import { moveNotationTypeAtom } from "@/state/atoms";
-import { addPieceSymbol } from "@/utils/annotation";
 import type { Opening } from "@/utils/db";
 
 function OpeningsTable({ openings, loading }: { openings: Opening[]; loading: boolean }) {
   const { t } = useTranslation();
   const store = useContext(TreeStateContext)!;
   const makeMove = useStore(store, (s) => s.makeMove);
-  const [moveNotationType] = useAtom(moveNotationTypeAtom);
   const forceUpdate = useForceUpdate();
   useLanguageChangeListener(forceUpdate);
 
@@ -63,7 +59,7 @@ function OpeningsTable({ openings, loading }: { openings: Opening[]; loading: bo
                   Game end
                 </Text>
               );
-            return <Text fz="sm">{moveNotationType === "symbols" ? addPieceSymbol(move) : move}</Text>;
+            return <Text fz="sm">{t("{{move, moveNotation}}", { move })}</Text>;
           },
         },
         {

@@ -1,9 +1,8 @@
 import { Box, rgba, useMantineTheme } from "@mantine/core";
 import { IconFlag } from "@tabler/icons-react";
-import { useAtom } from "jotai";
 import { type ForwardedRef, forwardRef } from "react";
-import { moveNotationTypeAtom } from "@/state/atoms";
-import { ANNOTATION_INFO, type Annotation, addPieceSymbol } from "@/utils/annotation";
+import { useTranslation } from "react-i18next";
+import { ANNOTATION_INFO, type Annotation } from "@/utils/annotation";
 import * as classes from "./MoveCell.css";
 
 interface MoveCellProps {
@@ -16,7 +15,7 @@ interface MoveCellProps {
 }
 
 const MoveCell = forwardRef(function MoveCell(props: MoveCellProps, ref: ForwardedRef<HTMLButtonElement>) {
-  const [moveNotationType] = useAtom(moveNotationTypeAtom);
+  const { t } = useTranslation();
 
   const color = ANNOTATION_INFO[props.annotations[0]]?.color || "gray";
   const theme = useMantineTheme();
@@ -59,7 +58,7 @@ const MoveCell = forwardRef(function MoveCell(props: MoveCellProps, ref: Forward
       onContextMenu={props.onContextMenu}
     >
       {props.isStart && <IconFlag style={{ marginRight: 5 }} size="0.875rem" />}
-      {moveNotationType === "symbols" ? addPieceSymbol(props.move) : props.move}
+      {t("{{move, moveNotation}}", { move: props.move })}
       {props.annotations.join("")}
     </Box>
   );
