@@ -1,4 +1,3 @@
-use dashmap::{mapref::entry::Entry, DashMap};
 use diesel::prelude::*;
 use log::info;
 use rayon::prelude::*;
@@ -7,12 +6,10 @@ use shakmaty::{fen::Fen, san::SanPlus, Bitboard, ByColor, Chess, FromSetup, Posi
 use specta::Type;
 use std::{
     path::PathBuf,
-    sync::{
-        atomic::{AtomicUsize, Ordering},
-        Mutex,
-    },
+    sync::{atomic::{AtomicUsize, Ordering}},
     time::Instant,
 };
+use std::collections::HashMap;
 use tauri::Emitter;
 
 use crate::{
@@ -36,7 +33,6 @@ pub struct ExactData {
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone)]
 pub struct PartialData {
-    // piece_counts: Vec<(Piece, u8)>,
     piece_positions: Setup,
     material: MaterialCount,
 }
@@ -222,168 +218,284 @@ pub async fn search_position(
     let mut games = state.db_cache.lock().unwrap();
 
     if games.is_empty() {
-        *games = games::table
-            .select((
-                games::id,
-                games::white_id,
-                games::black_id,
-                games::date,
-                games::result,
-                games::moves,
-                games::fen,
-                games::pawn_home,
-                games::white_material,
-                games::black_material,
-            ))
-            .load(db)?;
+        // Try parallel chunked loading to speed up reading large DBs.
+        // We'll split the id range into several chunks and load each chunk
+        // using a separate connection from the pool, then merge results.
+        use diesel::dsl::{max, min};
 
-        info!("got {} games: {:?}", games.len(), start.elapsed());
+        let db_path_str = file.to_str().unwrap().to_string();
+
+    let min_id: Option<i32> = games::table.select(min(games::id)).first::<Option<i32>>(db).ok().flatten();
+    let max_id: Option<i32> = games::table.select(max(games::id)).first::<Option<i32>>(db).ok().flatten();
+
+        if let (Some(min_id), Some(max_id)) = (min_id, max_id) {
+            // determine number of chunks (cap to avoid too many small queries)
+            let max_workers = std::cmp::max(1, std::cmp::min(8, rayon::current_num_threads()));
+            let total = (max_id - min_id + 1) as usize;
+            let chunk_size = (total + max_workers - 1) / max_workers;
+
+            let ranges: Vec<(i32, i32)> = (0..max_workers)
+                .map(|i| {
+                    let start = min_id + (i * chunk_size) as i32;
+                    let end = std::cmp::min(max_id, start + chunk_size as i32 - 1);
+                    (start, end)
+                })
+                .filter(|(s, e)| s <= e)
+                .collect();
+
+            let load_result: Result<Vec<(
+                i32,
+                i32,
+                i32,
+                Option<String>,
+                Option<String>,
+                Vec<u8>,
+                Option<String>,
+                i32,
+                i32,
+                i32,
+            )>, Error> = ranges
+                .into_par_iter()
+                .map(|(s, e)| {
+                    // each thread gets its own connection from the pool
+                    let mut conn = get_db_or_create(&state, &db_path_str, ConnectionOptions::default())?;
+                    let mut part: Vec<(
+                        i32,
+                        i32,
+                        i32,
+                        Option<String>,
+                        Option<String>,
+                        Vec<u8>,
+                        Option<String>,
+                        i32,
+                        i32,
+                        i32,
+                    )> = games::table
+                        .select((
+                            games::id,
+                            games::white_id,
+                            games::black_id,
+                            games::date,
+                            games::result,
+                            games::moves,
+                            games::fen,
+                            games::pawn_home,
+                            games::white_material,
+                            games::black_material,
+                        ))
+                        .filter(games::id.ge(s).and(games::id.le(e)))
+                        .load(&mut conn)?;
+                    Ok(part)
+                })
+                .reduce(|| Ok(Vec::new()), |a, b| match (a, b) {
+                    (Ok(mut va), Ok(vb)) => {
+                        va.extend(vb);
+                        Ok(va)
+                    }
+                    (Err(e), _) | (_, Err(e)) => Err(e),
+                });
+
+            match load_result {
+                Ok(v) => {
+                    *games = v;
+                    info!("got {} games: {:?}", games.len(), start.elapsed());
+                }
+                Err(_) => {
+                    // Fallback to single-threaded load on error
+                    *games = games::table
+                        .select((
+                            games::id,
+                            games::white_id,
+                            games::black_id,
+                            games::date,
+                            games::result,
+                            games::moves,
+                            games::fen,
+                            games::pawn_home,
+                            games::white_material,
+                            games::black_material,
+                        ))
+                        .load(db)?;
+
+                    info!("got {} games (fallback): {:?}", games.len(), start.elapsed());
+                }
+            }
+        } else {
+            // No rows; load normally to get empty vec
+            *games = games::table
+                .select((
+                    games::id,
+                    games::white_id,
+                    games::black_id,
+                    games::date,
+                    games::result,
+                    games::moves,
+                    games::fen,
+                    games::pawn_home,
+                    games::white_material,
+                    games::black_material,
+                ))
+                .load(db)?;
+
+            info!("got {} games: {:?}", games.len(), start.elapsed());
+        }
     }
 
-    let openings: DashMap<String, PositionStats> = DashMap::new();
-    let sample_games: Mutex<Vec<i32>> = Mutex::new(Vec::new());
+    // openings is now built from per-thread maps and merged later
+    use rayon::iter::ParallelIterator;
+    use rayon::iter::IntoParallelRefIterator;
 
     let processed = AtomicUsize::new(0);
 
     println!("start search on {tab_id}");
 
-    games.par_iter().for_each(
-        |(
-            id,
-            white_id,
-            black_id,
-            date,
-            result,
-            game,
-            fen,
-            end_pawn_home,
-            white_material,
-            black_material,
-        )| {
-            if state.new_request.available_permits() == 0 {
-                return;
-            }
-            let end_material: MaterialCount = ByColor {
-                white: *white_material as u8,
-                black: *black_material as u8,
-            };
-            processed.fetch_add(1, Ordering::Relaxed);
-            let index = processed.load(Ordering::Relaxed);
-            if (index + 1) % 10000 == 0 {
-                info!("{} games processed: {:?}", index + 1, start.elapsed());
-                app.emit(
-                    "search_progress",
-                    ProgressPayload {
-                        progress: (index as f64 / games.len() as f64) * 100.0,
-                        id: tab_id.clone(),
-                        finished: false,
-                    },
-                )
-                .unwrap();
-            }
+    // Pre-convert position_query if present
+    let converted_position_query = query.position.as_ref().map(|pq| convert_position_query(pq.clone()).ok()).flatten();
 
-            if let Some(start_date) = &query.start_date {
-                if let Some(date) = date {
-                    if date < start_date {
-                        return;
+    // Use rayon fold/reduce to keep per-thread local maps and sample vectors, then merge to avoid global locks
+    // acc: (ids, openings_map, local_processed_count)
+    let (ids, openings_map, local_processed) = games
+        .par_iter()
+        .fold(
+            || (Vec::<i32>::new(), HashMap::<String, PositionStats>::new(), 0usize),
+            |mut acc, (
+                id,
+                white_id,
+                black_id,
+                date,
+                result,
+                game,
+                fen,
+                end_pawn_home,
+                white_material,
+                black_material,
+            )| {
+                if state.new_request.available_permits() == 0 {
+                    return acc;
+                }
+                // increment local counter and batch updates to the global atomic to reduce contention
+                acc.2 += 1;
+                if acc.2 >= 1000 {
+                    let prev = processed.fetch_add(acc.2, Ordering::Relaxed);
+                    let index = prev + acc.2;
+                    acc.2 = 0;
+                    if index % 10000 == 0 {
+                        info!("{} games processed: {:?}", index, start.elapsed());
+                        let _ = app.emit(
+                            "search_progress",
+                            ProgressPayload {
+                                progress: (index as f64 / games.len() as f64) * 100.0,
+                                id: tab_id.clone(),
+                                finished: false,
+                            },
+                        );
                     }
                 }
-            }
 
-            if let Some(end_date) = &query.end_date {
-                if let Some(date) = date {
-                    if date > end_date {
-                        return;
+                // Early filtering: date, player, result
+                if let Some(start_date) = &query.start_date {
+                    if let Some(date) = date {
+                        if date < start_date {
+                            return acc;
+                        }
                     }
                 }
-            }
-
-            if let Some(white) = query.player1 {
-                if white != *white_id {
-                    return;
-                }
-            }
-
-            if let Some(black) = query.player2 {
-                if black != *black_id {
-                    return;
-                }
-            }
-
-            if let Some(result) = result {
-                if let Some(wanted_result) = &query.wanted_result {
-                    match wanted_result.as_str() {
-                        "whitewon" => {
-                            if result != "1-0" {
-                                return
-                            } 
+                if let Some(end_date) = &query.end_date {
+                    if let Some(date) = date {
+                        if date > end_date {
+                            return acc;
                         }
-                        "blackwon" => {
-                            if result != "0-1" {
-                                return
-                            } 
-                        }
-                        "draw" => {
-                            if result != "1/2-1/2" {
-                                return
-                            } 
-                        }
-                        &_ => {}
                     }
                 }
-            }
+                if let Some(white) = query.player1 {
+                    if white != *white_id {
+                        return acc;
+                    }
+                }
+                if let Some(black) = query.player2 {
+                    if black != *black_id {
+                        return acc;
+                    }
+                }
+                if let Some(result) = result {
+                    if let Some(wanted_result) = &query.wanted_result {
+                        match wanted_result.as_str() {
+                            "whitewon" => if result != "1-0" { return acc; },
+                            "blackwon" => if result != "0-1" { return acc; },
+                            "draw" => if result != "1/2-1/2" { return acc; },
+                            &_ => {}
+                        }
+                    }
+                }
 
-            if let Some(position_query) = &query.position {
-                    let position_query = match convert_position_query(position_query.clone()) {
-                        Ok(val) => val,
-                        Err(_) => return,
+                // Position query
+                if let Some(position_query) = &converted_position_query {
+                    let end_material: MaterialCount = ByColor {
+                        white: *white_material as u8,
+                        black: *black_material as u8,
                     };
-                if position_query.can_reach(&end_material, *end_pawn_home as u16) {
-                    if let Ok(Some(m)) = get_move_after_match(game, fen, &position_query) {
-                        let mut guard = match sample_games.lock() {
-                            Ok(guard) => guard,
-                            Err(_) => return,
-                        };
-                        if guard.len() < 10 {
-                            guard.push(*id);
-                        }
-                        let entry = openings.entry(m);
-                        match entry {
-                            Entry::Occupied(mut e) => {
-                                let opening = e.get_mut();
-                                match result.as_deref() {
-                                    Some("1-0") => opening.white += 1,
-                                    Some("0-1") => opening.black += 1,
-                                    Some("1/2-1/2") => opening.draw += 1,
-                                    _ => (),
-                                }
+                    if position_query.can_reach(&end_material, *end_pawn_home as u16) {
+                        if let Ok(Some(m)) = get_move_after_match(game, fen, position_query) {
+                            if acc.0.len() < 10 {
+                                acc.0.push(*id);
                             }
-                            Entry::Vacant(e) => {
-                                let mut opening = PositionStats {
-                                    black: 0,
-                                    white: 0,
-                                    draw: 0,
-                                    move_: e.key().to_string(),
-                                };
-                                match result.as_deref() {
-                                    Some("1-0") => opening.white = 1,
-                                    Some("0-1") => opening.black = 1,
-                                    Some("1/2-1/2") => opening.draw = 1,
-                                    _ => (),
+                            match acc.1.get_mut(&m) {
+                                Some(opening) => {
+                                    match result.as_deref() {
+                                        Some("1-0") => opening.white += 1,
+                                        Some("0-1") => opening.black += 1,
+                                        Some("1/2-1/2") => opening.draw += 1,
+                                        _ => (),
+                                    }
                                 }
-                                e.insert(opening);
+                                None => {
+                                    let mut opening = PositionStats {
+                                        black: 0,
+                                        white: 0,
+                                        draw: 0,
+                                        move_: m.clone(),
+                                    };
+                                    match result.as_deref() {
+                                        Some("1-0") => opening.white = 1,
+                                        Some("0-1") => opening.black = 1,
+                                        Some("1/2-1/2") => opening.draw = 1,
+                                        _ => (),
+                                    }
+                                    acc.1.insert(m, opening);
+                                }
                             }
                         }
                     }
                 }
-            }
-        },
-    );
 
-    let openings: Vec<PositionStats> = openings.into_iter().map(|(_, v)| v).collect();
-    let ids: Vec<i32> = sample_games.lock()
-        .map_err(|_| Error::MutexLockFailed("Failed to lock sample_games".to_string()))?
-        .clone();
+                acc
+            },
+        )
+        .reduce(
+            || (Vec::<i32>::new(), HashMap::<String, PositionStats>::new(), 0usize),
+            |mut a, b| {
+                // a and b are (ids, map, local_count)
+                a.0.extend(b.0);
+                for (mv, ps) in b.1 {
+                    if let Some(existing) = a.1.get_mut(&mv) {
+                        existing.white += ps.white;
+                        existing.black += ps.black;
+                        existing.draw += ps.draw;
+                    } else {
+                        a.1.insert(mv, ps);
+                    }
+                }
+                // accumulate local counts into the first accumulator's counter
+                a.2 += b.2;
+                a
+            },
+        );
+
+    // flush any remaining local counter into the global processed counter
+    if local_processed > 0 {
+        processed.fetch_add(local_processed, Ordering::Relaxed);
+    }
+    let openings: Vec<PositionStats> = openings_map.into_iter().map(|(_, v)| v).collect();
 
     info!("finished search in {:?}", start.elapsed());
 
