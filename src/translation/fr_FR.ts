@@ -485,13 +485,11 @@ export const fr_FR = {
     "Settings.Analysis": "Analyse",
     "Settings.Interface": "Interface",
     "Settings.System": "Système",
-
     "PieceChars.K": "R",
     "PieceChars.Q": "D",
     "PieceChars.R": "T",
     "PieceChars.B": "F",
     "PieceChars.N": "C",
-
     "Settings.Appearance.Theme.Auto": "Auto",
     "Settings.Appearance.Theme.Custom": "Personnalisé",
     "Settings.Appearance.hideDashboardOnStartup": "Masquer le tableau de bord au démarrage",

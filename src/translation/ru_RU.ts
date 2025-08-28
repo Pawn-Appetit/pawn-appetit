@@ -1,8 +1,8 @@
 export const ru_RU = {
-  "language": {
-    "DisplayName": "Русский"
+  language: {
+    DisplayName: "Русский",
   },
-  "translation": {
+  translation: {
     "Common.On": "ВКЛ",
     "Common.Off": "ВЫКЛ",
     "Common.Name": "Имя",
@@ -253,7 +253,8 @@ export const ru_RU = {
     "Dashboard.Card.Account.Desc": "Импортируйте свои партии и статистику, подключив аккаунт Chess.com или Lichess.",
     "Dashboard.Card.Account.Button": "Подключить",
     "Dashboard.Card.Import.Title": "Импорт",
-    "Dashboard.Card.Import.Desc": "Загрузите и редактируйте PGN-файлы, чтобы анализировать свои партии или конкретные позиции.",
+    "Dashboard.Card.Import.Desc":
+      "Загрузите и редактируйте PGN-файлы, чтобы анализировать свои партии или конкретные позиции.",
     "Dashboard.Card.Import.Button": "Импорт",
     "Dashboard.Card.Puzzle.Desc": "Тренируйте шахматные навыки",
     "Dashboard.Card.Puzzle.Button": "Тренироваться",
@@ -285,7 +286,8 @@ export const ru_RU = {
     "Board.Practice.ShowLogs": "Показать логи",
     "Board.Practice.PracticedAll1": "Вы уже отработали все позиции.",
     "Board.Practice.ResetOpeningData.Title": "Сброс данных дебюта",
-    "Board.Practice.ResetOpeningData.Desc": "Вы уверены, что хотите сбросить данные дебюта для «{{fileName}}»? Весь прогресс будет потерян.",
+    "Board.Practice.ResetOpeningData.Desc":
+      "Вы уверены, что хотите сбросить данные дебюта для «{{fileName}}»? Весь прогресс будет потерян.",
     "Board.Practice.PracticedAll2": "Следующая проверка через",
     "Board.Practice.CorrectMoveWas": "Правильный ход был {{move}}",
     "Board.Analysis.Engines": "Движки",
@@ -305,7 +307,8 @@ export const ru_RU = {
     "Board.Analysis.Reversed": "Обратный анализ",
     "Board.Analysis.Reversed.Desc": "Анализировать игру с последней позиции.",
     "Board.Analysis.AnnotateNovelties": "Аннотировать новинки",
-    "Board.Analysis.AnnotateNovelties.Desc": "Добавить комментарий в первой позиции, которая отсутствует в базе данных.",
+    "Board.Analysis.AnnotateNovelties.Desc":
+      "Добавить комментарий в первой позиции, которая отсутствует в базе данных.",
     "Board.Analysis.Analyze": "Анализировать",
     "Board.Analysis.Advantage": "Преимущество",
     "Board.Analysis.Accuracy": "Точность",
@@ -368,7 +371,8 @@ export const ru_RU = {
     "Databases.Settings.MergePlayers.Desc": "Заменяет все вхождения первого игрока на второго в базе данных.",
     "Databases.Settings.Merge": "Объединить",
     "Databases.Settings.BatchDelete": "Массовое удаление",
-    "Databases.Settings.BatchDelete.Desc": "Эти действия безвозвратно удалят игры из базы данных. Используйте с осторожностью.",
+    "Databases.Settings.BatchDelete.Desc":
+      "Эти действия безвозвратно удалят игры из базы данных. Используйте с осторожностью.",
     "Databases.Settings.RemoveDup": "Удалить дубликаты",
     "Databases.Settings.RemoveEmpty": "Удалить пустые игры",
     "Databases.Settings.Actions": "Действия",
@@ -447,9 +451,11 @@ export const ru_RU = {
     "Settings.SnapArrows": "Закрепить стрелки",
     "Settings.SnapArrows.Desc": "Закрепить стрелки на допустимые ходы",
     "Settings.ConsecutiveArrows": "Последовательные стрелки",
-    "Settings.ConsecutiveArrows.Desc": "Показывать несколько стрелок для лучшей линии, если она состоит из нескольких ходов одной и той же фигурой",
+    "Settings.ConsecutiveArrows.Desc":
+      "Показывать несколько стрелок для лучшей линии, если она состоит из нескольких ходов одной и той же фигурой",
     "Settings.EraseDrawablesOnClick": "Стереть отметки при клике",
-    "Settings.EraseDrawablesOnClick.Desc": "Очистить доску от нарисованных стрелок и кругов при нажатии левой кнопкой мыши",
+    "Settings.EraseDrawablesOnClick.Desc":
+      "Очистить доску от нарисованных стрелок и кругов при нажатии левой кнопкой мыши",
     "Settings.AutoPromition": "Автоповышение",
     "Settings.AutoPromition.Desc": "Автоматически продвигать до ферзя",
     "Settings.Coordinates": "Координаты",
@@ -506,6 +512,29 @@ export const ru_RU = {
     "Settings.Sound.Volume": "Громкость",
     "Settings.Sound.Volume.Desc": "Общая громкость",
     "Settings.Sound.Collection": "Коллекция звуков",
+    "Settings.Telemetry": "Телеметрия",
+    "Settings.Telemetry.Desc": "Помогите улучшить Pawn Appétit, делясь анонимными данными об использовании",
+    "Settings.MoveNotation": "Обозначение ходов",
+    "Settings.MoveNotation.Desc": "Выберите, как отображать фигуры в нотации",
+    "Settings.MoveNotation.Symbols": "Символы (♔♕♖♗♘)",
+    "Settings.MoveNotation.Letters": "Буквы (K Q R B N)",
+    "Settings.MoveNotation.TranslatedLetters": "Переведённые буквы (K Q R B N)",
+    "Settings.WaysToMovePieces": "Способы перемещения фигур",
+    "Settings.WaysToMovePieces.Desc": "Перемещайте фигуры перетаскиванием, кликом или обоими способами",
+    "Settings.WaysToMovePieces.Drag": "Перетаскивание",
+    "Settings.WaysToMovePieces.Click": "Клик",
+    "Settings.WaysToMovePieces.Both": "Оба",
+    "Settings.SearchPlaceholder": "Поиск настроек",
+    "Settings.NoResultsFound": "Настройки не найдены для",
+    "Settings.Gameplay": "Игровой процесс",
+    "Settings.Analysis": "Анализ",
+    "Settings.Interface": "Интерфейс",
+    "Settings.System": "Система",
+    "PieceChars.K": "K",
+    "PieceChars.Q": "Q",
+    "PieceChars.R": "R",
+    "PieceChars.B": "B",
+    "PieceChars.N": "N",
     "Settings.Sound.Collection.Desc": "Используемая коллекция звуков",
     "Settings.Directories.Desc": "Настроить каталоги, используемые приложением",
     "Settings.Directories.Files": "Каталог для файлов",
@@ -557,6 +586,6 @@ export const ru_RU = {
     "PgnInput.ExtraMarkups": "Дополнительные аннотации",
     "PgnInput.MaxDepth": "Максимальная глубина",
     "PgnInput.TotalMoves": "Всего ходов",
-    "Puzzle.JumpToNextPuzzleImmediately": "Сразу переходить к следующей головоломке"
-  }
+    "Puzzle.JumpToNextPuzzleImmediately": "Сразу переходить к следующей головоломке",
+  },
 };

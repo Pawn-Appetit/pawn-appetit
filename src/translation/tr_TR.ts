@@ -1,8 +1,8 @@
 export const tr_TR = {
-  "language": {
-    "DisplayName": "Türkçe"
+  language: {
+    DisplayName: "Türkçe",
   },
-  "translation": {
+  translation: {
     "Common.On": "Açma",
     "Common.Off": "Kapama",
     "Common.Name": "İsim",
@@ -241,19 +241,23 @@ export const tr_TR = {
     "Dashboard.Card.Analyze.Desc": "Güçlü satranç motorlarıyla konumları, oyunları ve varyasyonları analiz edin.",
     "Dashboard.Card.Analyze.Button": "Analiz Et",
     "Dashboard.Card.Database.Title": "Veritabanı Erişimi",
-    "Dashboard.Card.Database.Desc": "Kapsamlı satranç veritabanlarını keşfedin ve ustaların oyunlarını inceleyerek bilginizi derinleştirin.",
+    "Dashboard.Card.Database.Desc":
+      "Kapsamlı satranç veritabanlarını keşfedin ve ustaların oyunlarını inceleyerek bilginizi derinleştirin.",
     "Dashboard.Card.Database.Button": "Gözat",
     "Dashboard.Card.Engine.Title": "Motor Entegrasyonu",
-    "Dashboard.Card.Engine.Desc": "Analiz düzeninizi özelleştirmek ve esnekliği artırmak için birden fazla satranç motoru ekleyin ve yönetin.",
+    "Dashboard.Card.Engine.Desc":
+      "Analiz düzeninizi özelleştirmek ve esnekliği artırmak için birden fazla satranç motoru ekleyin ve yönetin.",
     "Dashboard.Card.Engine.Button": "Yönet",
     "Dashboard.Card.Puzzle.Title": "Bulmacalar",
     "Dashboard.Card.Puzzle.Desc": "Satranç becelerinizi geliştirin",
     "Dashboard.Card.Puzzle.Button": "Çalış",
     "Dashboard.Card.Account.Title": "Hesaplar",
-    "Dashboard.Card.Account.Desc": "Chess.com veya Lichess hesabınızı bağlayarak oyunlarınızı ve istatistiklerinizi içe aktarın.",
+    "Dashboard.Card.Account.Desc":
+      "Chess.com veya Lichess hesabınızı bağlayarak oyunlarınızı ve istatistiklerinizi içe aktarın.",
     "Dashboard.Card.Account.Button": "Bağlan",
     "Dashboard.Card.Import.Title": "İçe Aktar",
-    "Dashboard.Card.Import.Desc": "Kendi oyunlarınızı analiz etmek veya belirli konumları incelemek için PGN dosyaları yükleyin ve düzenleyin.",
+    "Dashboard.Card.Import.Desc":
+      "Kendi oyunlarınızı analiz etmek veya belirli konumları incelemek için PGN dosyaları yükleyin ve düzenleyin.",
     "Dashboard.Card.Import.Button": "İçe Aktar",
     "Board.Action.TogglePawnStructureView": "Piyon Yapısını Göster/Gizle",
     "Board.Action.TakeSnapshot": "Ekran Görüntüsü Al",
@@ -285,7 +289,8 @@ export const tr_TR = {
     "Board.Practice.PracticedAll2": "Sonraki gözden geçirme tarihi:",
     "Board.Practice.CorrectMoveWas": "Doğru hamle {{move}} idi",
     "Board.Practice.ResetOpeningData.Title": "Açılış verilerini sıfırla",
-    "Board.Practice.ResetOpeningData.Desc": "\"{ { fileName } } \" için açılış verilerini sıfırlamak istediğinize emin misiniz? Tüm öğrenme ilerlemesi kaybolacak.",
+    "Board.Practice.ResetOpeningData.Desc":
+      '"{ { fileName } } " için açılış verilerini sıfırlamak istediğinize emin misiniz? Tüm öğrenme ilerlemesi kaybolacak.',
     "Board.Analysis.Engines": "Motorlar",
     "Board.Analysis.Report": "Rapor",
     "Board.Analysis.Logs": "Kayıtlar",
@@ -307,7 +312,8 @@ export const tr_TR = {
     "Board.Analysis.Analyze": "Analiz",
     "Board.Analysis.Advantage": "Avantaj",
     "Board.Analysis.Accuracy": "Doğruluk",
-    "Board.Analysis.EnableWDL": "Bu özelliği kullanmak için motor ayarlarında UCI_ShowWDL'i etkinleştirmeniz gerekiyor.",
+    "Board.Analysis.EnableWDL":
+      "Bu özelliği kullanmak için motor ayarlarında UCI_ShowWDL'i etkinleştirmeniz gerekiyor.",
     "Board.Database.Local": "Lokal",
     "Board.Database.LichessAll": "Lichess Herkes",
     "Board.Database.LichessMaster": "Lichess Ustalar",
@@ -366,7 +372,8 @@ export const tr_TR = {
     "Databases.Settings.MergePlayers.Desc": "İlk oyuncunun tüm kayıtlarını ikinci oyuncuyla değiştir.",
     "Databases.Settings.Merge": "Birleştir",
     "Databases.Settings.BatchDelete": "Toplu Sil",
-    "Databases.Settings.BatchDelete.Desc": "Bu operasyon veritabanından geri alınamaz şekilde oyun siler. Dikkatli kullanın.",
+    "Databases.Settings.BatchDelete.Desc":
+      "Bu operasyon veritabanından geri alınamaz şekilde oyun siler. Dikkatli kullanın.",
     "Databases.Settings.RemoveDup": "Kopyaları Sil",
     "Databases.Settings.RemoveEmpty": "Boş Oyunları Sil",
     "Databases.Settings.Actions": "Operasyonlar",
@@ -445,7 +452,8 @@ export const tr_TR = {
     "Settings.SnapArrows": "Okları Kısıtla",
     "Settings.SnapArrows.Desc": "Okları sadece geçerli hamlelerle kısıtla",
     "Settings.ConsecutiveArrows": "Ardışık Oklar",
-    "Settings.ConsecutiveArrows.Desc": "Aynı taşı birkaç kez hareket ettirmeyi içeriyorsa en iyi varyant için birden fazla ok göster.",
+    "Settings.ConsecutiveArrows.Desc":
+      "Aynı taşı birkaç kez hareket ettirmeyi içeriyorsa en iyi varyant için birden fazla ok göster.",
     "Settings.EraseDrawablesOnClick": "Tıklandığında Çizilenleri Sil",
     "Settings.EraseDrawablesOnClick.Desc": "Tahtadaki okları ve yuvarlakları sol tıklandığında sil",
     "Settings.AutoPromition": "Otomatik Terfi",
@@ -457,7 +465,8 @@ export const tr_TR = {
     "Settings.PreviewBoard": "Tahtayı Önizle",
     "Settings.PreviewBoard.Desc": "Motor analizinde bir hareketin üzerine gelindiğinde tahtanın önizlemesini göster",
     "Settings.ScrollThroughMoves": "Fare Tekeriyle Hamlelerde Gezin",
-    "Settings.ScrollThroughMoves.Desc": "Satranç tahtasındaki hamleler arasında fare tekeriyle hareketi etkinleştirin veya devre dışı bırakın",
+    "Settings.ScrollThroughMoves.Desc":
+      "Satranç tahtasındaki hamleler arasında fare tekeriyle hareketi etkinleştirin veya devre dışı bırakın",
     "Settings.Inputs.Desc": "Girdi ayarlarını düzenleyin",
     "Settings.Inputs.TextInput": "Yazıyla Hamle Girdisi",
     "Settings.Inputs.TextInput.Desc": "Yazı formatında hamle girdisi al",
@@ -506,6 +515,29 @@ export const tr_TR = {
     "Settings.Sound.Collection": "Ses koleksiyonu",
     "Settings.Sound.Collection.Desc": "Kullanılan seslerin koleksiyonu",
     "Settings.Directories.Desc": "Uygulama tarafından kullanılan klasörleri düzenleyin",
+    "Settings.Telemetry": "Telemetri",
+    "Settings.Telemetry.Desc": "Anonim kullanım verilerini paylaşarak Pawn Appétit’in geliştirilmesine yardımcı olun",
+    "Settings.MoveNotation": "Hamle gösterimi",
+    "Settings.MoveNotation.Desc": "Taşların gösterim biçimini seçin",
+    "Settings.MoveNotation.Symbols": "Semboller (♔♕♖♗♘)",
+    "Settings.MoveNotation.Letters": "Harfler (K Q R B N)",
+    "Settings.MoveNotation.TranslatedLetters": "Çevrilmiş Harfler (K Q R B N)",
+    "Settings.WaysToMovePieces": "Taşları Hareket Ettirme Yöntemleri",
+    "Settings.WaysToMovePieces.Desc": "Taşları sürükleyerek, tıklayarak veya her ikisiyle hareket ettirin",
+    "Settings.WaysToMovePieces.Drag": "Sürükle",
+    "Settings.WaysToMovePieces.Click": "Tıkla",
+    "Settings.WaysToMovePieces.Both": "Her ikisi",
+    "Settings.SearchPlaceholder": "Ayarları ara",
+    "Settings.NoResultsFound": "İlgili ayar bulunamadı:",
+    "Settings.Gameplay": "Oynanış",
+    "Settings.Analysis": "Analiz",
+    "Settings.Interface": "Arayüz",
+    "Settings.System": "Sistem",
+    "PieceChars.K": "Ş",
+    "PieceChars.Q": "V",
+    "PieceChars.R": "K",
+    "PieceChars.B": "F",
+    "PieceChars.N": "A",
     "Settings.Directories.Files": "Dosyalar Klasörü",
     "Settings.Directories.Files.Desc": "Dosyalar sayfasındaki oyunlarınız burada saklanır",
     "PgnInput.Comments": "Yorumlar",
@@ -555,6 +587,6 @@ export const tr_TR = {
     "Tablebase.FiftyMoveRule": "*50 hamle kuralı nedeniyle",
     "PgnInput.MaxDepth": "Maksimum Derinlik",
     "PgnInput.TotalMoves": "Toplam Hamle",
-    "Puzzle.JumpToNextPuzzleImmediately": "Sonraki bulmayaca direkt geç"
-  }
+    "Puzzle.JumpToNextPuzzleImmediately": "Sonraki bulmayaca direkt geç",
+  },
 };

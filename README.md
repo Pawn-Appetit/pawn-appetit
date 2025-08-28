@@ -215,12 +215,12 @@ The binary will be available in your current directory.
 | 🇮🇹 IT | ✅ 100% | [IT](./src/translation/it_IT.ts) |
 | 🇷🇺 RU | ✅ 100% | [RU](./src/translation/ru_RU.ts) |
 | 🇹🇷 TR | ✅ 100% | [TR](./src/translation/tr_TR.ts) |
-| 🇧🇾 BY | 🟡 57% | [BY](./src/translation/be_BY.ts) |
-| 🇳🇴 NO | 🟡 57% | [NO](./src/translation/nb_NO.ts) |
-| 🇵🇱 PL | 🟡 57% | [PL](./src/translation/pl_PL.ts) |
-| 🇵🇹 PT | 🟡 57% | [PT](./src/translation/pt_PT.ts) |
-| 🇺🇦 UA | 🟡 57% | [UA](./src/translation/uk_UA.ts) |
-| 🇨🇳 CN | 🟡 57% | [CN](./src/translation/zh_CN.ts) |
+| 🇨🇳 CN | ✅ 100% | [CN](./src/translation/zh_CN.ts) |
+| 🇧🇾 BY | 🟡 55% | [BY](./src/translation/be_BY.ts) |
+| 🇳🇴 NO | 🟡 55% | [NO](./src/translation/nb_NO.ts) |
+| 🇵🇱 PL | 🟡 55% | [PL](./src/translation/pl_PL.ts) |
+| 🇵🇹 PT | 🟡 55% | [PT](./src/translation/pt_PT.ts) |
+| 🇺🇦 UA | 🟡 55% | [UA](./src/translation/uk_UA.ts) |
 | 🇯🇵 JP | 🔴 9% | [JP](./src/translation/ja_JP.ts) |
 <!-- TRANSLATIONS_END -->
 
