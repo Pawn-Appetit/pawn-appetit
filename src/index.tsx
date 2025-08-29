@@ -2,7 +2,7 @@ import i18n from "i18next";
 import { createRoot } from "react-dom/client";
 import { initReactI18next } from "react-i18next";
 import App from "./App";
-
+import { ar_SA } from "./translation/ar_SA";
 import { be_BY } from "./translation/be_BY";
 import { en_US } from "./translation/en_US";
 import { es_ES } from "./translation/es_ES";
@@ -17,7 +17,6 @@ import { ru_RU } from "./translation/ru_RU";
 import { tr_TR } from "./translation/tr_TR";
 import { uk_UA } from "./translation/uk_UA";
 import { zh_CN } from "./translation/zh_CN";
-import { ar_SA } from "./translation/ar_SA";
 import {
   createBytesFormatter,
   createBytesLongFormatter,
@@ -25,10 +24,10 @@ import {
   createDatetimeFormatter,
   createDurationFormatter,
   createDurationLongFormatter,
+  createMoveNotationFormatter,
   createNodesFormatter,
   createNodesLongFormatter,
   createScoreFormatter,
-  createMoveNotationFormatter,
 } from "./utils/format";
 
 i18n.use(initReactI18next).init({

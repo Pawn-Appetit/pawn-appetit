@@ -1,8 +1,8 @@
 export const zh_CN = {
-  "language": {
-    "DisplayName": "中文"
+  language: {
+    DisplayName: "中文",
   },
-  "translation": {
+  translation: {
     "Common.On": "开",
     "Common.Off": "关",
     "Common.Name": "名称",
@@ -285,7 +285,7 @@ export const zh_CN = {
     "Board.Practice.PracticedAll2": "下次复习将在",
     "Board.Practice.CorrectMoveWas": "正确的着法是 {{move}}",
     "Board.Practice.ResetOpeningData.Title": "重置开局数据",
-    "Board.Practice.ResetOpeningData.Desc": "确定要重置 \"{ { fileName } } \" 的开局数据吗？所有学习进度将会丢失。",
+    "Board.Practice.ResetOpeningData.Desc": '确定要重置 "{ { fileName } } " 的开局数据吗？所有学习进度将会丢失。',
     "Board.Analysis.Engines": "引擎",
     "Board.Analysis.Report": "报告",
     "Board.Analysis.Logs": "日志",
@@ -577,6 +577,6 @@ export const zh_CN = {
     "Tablebase.DTZ": "DTZ {{count}}",
     "Tablebase.FiftyMoveRule": "*因50步规则",
     "PgnInput.MaxDepth": "最大深度",
-    "PgnInput.TotalMoves": "总走法"
-  }
+    "PgnInput.TotalMoves": "总走法",
+  },
 };

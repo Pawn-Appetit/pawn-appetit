@@ -1,8 +1,8 @@
 export const fr_FR = {
-  "language": {
-    "DisplayName": "Français"
+  language: {
+    DisplayName: "Français",
   },
-  "translation": {
+  translation: {
     "Common.On": "On",
     "Common.Off": "Off",
     "Common.Name": "Nom",
@@ -59,7 +59,8 @@ export const fr_FR = {
     "Common.Continue": "Continuer",
     "Common.Review": "Réviser",
     "Common.UnsavedChanges.Title": "Changements non enregistrés",
-    "Common.UnsavedChanges.Desc": "Vous avez des changements non enregistrés. Voulez-vous les enregistrer avant de fermer ?",
+    "Common.UnsavedChanges.Desc":
+      "Vous avez des changements non enregistrés. Voulez-vous les enregistrer avant de fermer ?",
     "Common.SaveAndClose": "Enregistrer et fermer",
     "Common.CloseWithoutSaving": "Fermer sans enregistrer",
     "Common.NoGameSelected": "Chargement de la plage de valeurs nominales...",
@@ -206,10 +207,12 @@ export const fr_FR = {
     "Dashboard.Card.Puzzle.Desc": "Entraînement pour vous améliorer",
     "Dashboard.Card.Puzzle.Button": "S'entraîner",
     "Dashboard.Card.Analyze.Title": "Analyse de l'échiquier",
-    "Dashboard.Card.Analyze.Desc": "Analysez des positions, des parties et des variantes avec de puissants moteurs d'échecs",
+    "Dashboard.Card.Analyze.Desc":
+      "Analysez des positions, des parties et des variantes avec de puissants moteurs d'échecs",
     "Dashboard.Card.Analyze.Button": "Analyser",
     "Dashboard.Card.Database.Title": "Accès aux bases de données",
-    "Dashboard.Card.Database.Desc": "Explorez de vastes bases de données d'échecs et étudiez des parties de maîtres pour progresser",
+    "Dashboard.Card.Database.Desc":
+      "Explorez de vastes bases de données d'échecs et étudiez des parties de maîtres pour progresser",
     "Dashboard.Card.Database.Button": "Parcourir",
     "Dashboard.Card.Engine.Title": "Intégration des moteurs",
     "Dashboard.Card.Engine.Desc": "Ajoutez et gérez plusieurs moteurs d'échecs pour personnaliser vos analyses",
@@ -239,7 +242,8 @@ export const fr_FR = {
     "Board.Tabs.Info": "Info",
     "Board.Practice.Train": "S'entraîner",
     "Board.Practice.Build": "Créer",
-    "Board.Practice.NoPositionForTrain1": "Aucune position pour s'entraîner. Commencez en ajoutant des coups à ce fichier PGN.",
+    "Board.Practice.NoPositionForTrain1":
+      "Aucune position pour s'entraîner. Commencez en ajoutant des coups à ce fichier PGN.",
     "Board.Practice.NoPositionForTrain2": "Vous devez utiliser le mode Analyse pour ajouter des coups.",
     "Board.Practice.SeeAnswer": "Voir la solution",
     "Board.Practice.Practiced": "Entraîné",
@@ -262,12 +266,14 @@ export const fr_FR = {
     "Board.Analysis.GeneratingReport": "Génération en cours",
     "Board.Analysis.NotAnalysed": "Non analysé",
     "Board.Analysis.EngineRequired": "Un moteur est nécessaire",
-    "Board.Analysis.RefDBRequired": "Aucune base de données de référence sélectionnée. Sélectionnez-en une dans la page Base de données",
+    "Board.Analysis.RefDBRequired":
+      "Aucune base de données de référence sélectionnée. Sélectionnez-en une dans la page Base de données",
     "Board.Analysis.Time": "Temps (ms)",
     "Board.Analysis.Reversed": "Analyse inversée",
     "Board.Analysis.Reversed.Desc": "Analyse la partie en commençant par le dernier coup.",
     "Board.Analysis.AnnotateNovelties": "Annoter les nouveautés",
-    "Board.Analysis.AnnotateNovelties.Desc": "Ajoute un commentaire au premier coup qui n'est pas dans la base de données de référence.",
+    "Board.Analysis.AnnotateNovelties.Desc":
+      "Ajoute un commentaire au premier coup qui n'est pas dans la base de données de référence.",
     "Board.Analysis.Analyze": "Analyser",
     "Board.Analysis.Advantage": "Avantage",
     "Board.Analysis.Accuracy": "Précision",
@@ -288,7 +294,8 @@ export const fr_FR = {
     "Board.Tabs.Graph": "Graphe",
     "Board.Tabs.Graph.CenterGraph": "Centrer sur le coup actuel",
     "Board.Practice.ResetOpeningData.Title": "Réinitialiser les données d'ouverture",
-    "Board.Practice.ResetOpeningData.Desc": "Êtes-vous sûr de vouloir réinitialiser les données d'ouverture de « {{fileName}} » ? Tout votre progrès sera perdu.",
+    "Board.Practice.ResetOpeningData.Desc":
+      "Êtes-vous sûr de vouloir réinitialiser les données d'ouverture de « {{fileName}} » ? Tout votre progrès sera perdu.",
     "Board.Analysis.EnableWDL": "Activez UCI_ShowWDL dans les paramètres du moteur.",
     "Opening.EmptyBoard": "Échiquier vide",
     "Opening.StartingPosition": "Position de départ",
@@ -325,15 +332,18 @@ export const fr_FR = {
     "Databases.Add.Convert": "Convertir",
     "Databases.Settings.ReferenceDatabase": "Base de données de référence",
     "Databases.Settings.Indexed": "Indexée",
-    "Databases.Settings.Indexed.Desc": "Les index sont utilisés pour accélérer les recherches. Cependant ils utilisent un peu plus de place de stockage.",
+    "Databases.Settings.Indexed.Desc":
+      "Les index sont utilisés pour accélérer les recherches. Cependant ils utilisent un peu plus de place de stockage.",
     "Databases.Settings.Events": "Évènements",
     "Databases.Settings.Explore": "Explorer",
     "Databases.Settings.AdvancedTools": "Outils avancés",
     "Databases.Settings.MergePlayers": "Fusionner les joueurs",
-    "Databases.Settings.MergePlayers.Desc": "Remplacer toutes les occurences du premier joueur avec le deuxième joueur dans la base de données.",
+    "Databases.Settings.MergePlayers.Desc":
+      "Remplacer toutes les occurences du premier joueur avec le deuxième joueur dans la base de données.",
     "Databases.Settings.Merge": "Fusionner",
     "Databases.Settings.BatchDelete": "Suppression en lot",
-    "Databases.Settings.BatchDelete.Desc": "Ces actions vont supprimer les parties de la base de données de manière irréversible. Utilisez-les avec prudence.",
+    "Databases.Settings.BatchDelete.Desc":
+      "Ces actions vont supprimer les parties de la base de données de manière irréversible. Utilisez-les avec prudence.",
     "Databases.Settings.RemoveDup": "Supprimer les doublons",
     "Databases.Settings.RemoveEmpty": "Supprimer les parties vides",
     "Databases.Settings.Actions": "Actions",
@@ -414,7 +424,8 @@ export const fr_FR = {
     "Settings.SnapArrows": "Flèches magnétiques",
     "Settings.SnapArrows.Desc": "Les flèches s'arrêtent sur les coups valides",
     "Settings.ConsecutiveArrows": "Flèches successives",
-    "Settings.ConsecutiveArrows.Desc": "Affiche plusieurs flèches pour la meilleur ligne, si cela implique de déplacer la même pièce plusieurs fois",
+    "Settings.ConsecutiveArrows.Desc":
+      "Affiche plusieurs flèches pour la meilleur ligne, si cela implique de déplacer la même pièce plusieurs fois",
     "Settings.EraseDrawablesOnClick": "Effacer les indications au clic",
     "Settings.EraseDrawablesOnClick.Desc": "Efface toutes les indications de l'échiquier en cliquant avec la souris",
     "Settings.AutoPromition": "Promotion automatique",
@@ -424,7 +435,8 @@ export const fr_FR = {
     "Settings.AutoSave": "Sauvegarde automatique",
     "Settings.AutoSave.Desc": "Sauvegarde la partie automatiquement après chaque coup",
     "Settings.PreviewBoard": "Aperçu de l'échiquier",
-    "Settings.PreviewBoard.Desc": "Affiche un aperçu de l'échiquier lors du survol d'une variante analysée par le moteur",
+    "Settings.PreviewBoard.Desc":
+      "Affiche un aperçu de l'échiquier lors du survol d'une variante analysée par le moteur",
     "Settings.ScrollThroughMoves": "Défiler les coups",
     "Settings.ScrollThroughMoves.Desc": "Active ou désactive le défilement des coups sur l'échiquier",
     "Settings.Inputs.Desc": "Personnalisation des touches",
@@ -576,6 +588,6 @@ export const fr_FR = {
     "Lessons.Completed": "Terminé",
     "Lessons.ExercisesCompleted": "exercices terminés",
     "Lessons.LessonCompleted": "Félicitations ! Vous avez terminé {{lesson}} !",
-    "Lessons.CompletionMessage": "Vous avez terminé tous les exercices de cette leçon. Continuez ainsi !"
-  }
+    "Lessons.CompletionMessage": "Vous avez terminé tous les exercices de cette leçon. Continuez ainsi !",
+  },
 };
