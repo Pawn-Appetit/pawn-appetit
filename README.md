@@ -74,7 +74,7 @@
 | **App Size** | ~50MB (lightweight) |
 | **Startup Time** | <2 seconds |
 | **Supported Formats** | PGN, FEN, UCI engines |
-| **Languages** | 14+ (70%+ translated) |
+| **Languages** | 9+ |
 | **Platforms** | Windows, macOS, Linux |
 
 </div>
@@ -221,6 +221,7 @@ The binary will be available in your current directory.
 | 🇵🇱 PL | 🟡 55% | [PL](./src/translation/pl_PL.ts) |
 | 🇵🇹 PT | 🟡 55% | [PT](./src/translation/pt_PT.ts) |
 | 🇺🇦 UA | 🟡 55% | [UA](./src/translation/uk_UA.ts) |
+| 🇸🇦 SA | 🔴 26% | [SA](./src/translation/ar_SA.ts) |
 | 🇯🇵 JP | 🔴 9% | [JP](./src/translation/ja_JP.ts) |
 <!-- TRANSLATIONS_END -->
 

@@ -100,6 +100,11 @@ export default function App() {
     document.documentElement.style.fontSize = `${fontSize}%`;
   }, [fontSize]);
 
+  useEffect(() => {
+    const dir = localStorage.getItem("lang") === "ar_SA" ? "rtl" : "ltr";
+    document.documentElement.setAttribute("dir", dir);
+  }, []);
+
   return (
     <>
       <Helmet>

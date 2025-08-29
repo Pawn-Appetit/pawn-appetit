@@ -1,4 +1,4 @@
-import { Box, Card, Group, ScrollArea, Select, Stack, Tabs, Text, TextInput, Title } from "@mantine/core";
+import { Box, Card, Group, ScrollArea, Select, Stack, Tabs, Text, TextInput, Title, useDirection } from "@mantine/core";
 import { IconBook, IconBrush, IconChess, IconFlag, IconFolder, IconMouse, IconVolume } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -52,7 +52,10 @@ interface SettingItem {
 
 export default function Page() {
   const { t, i18n } = useTranslation();
+  const { setDirection, dir } = useDirection();
   const [search, setSearch] = useState("");
+
+  console.log(dir);
 
   const [isNative, setIsNative] = useAtom(nativeBarAtom);
   const {
@@ -464,6 +467,12 @@ export default function Page() {
               onChange={(val) => {
                 i18n.changeLanguage(val || "en_US");
                 localStorage.setItem("lang", val || "en_US");
+
+                if (val === "ar_SA") {
+                  setDirection("rtl");
+                } else {
+                  setDirection("ltr");
+                }
               }}
             />
           </Group>

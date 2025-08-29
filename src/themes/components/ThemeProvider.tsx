@@ -1,4 +1,4 @@
-import { MantineProvider, type MantineThemeOverride } from "@mantine/core";
+import { DirectionProvider, MantineProvider, type MantineThemeOverride } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
@@ -45,9 +45,11 @@ export function ThemeProvider({ children, mantineConfig, spellCheck }: ThemeProv
   }
 
   return (
-    <MantineProvider theme={finalTheme} forceColorScheme={colorScheme}>
-      {children}
-    </MantineProvider>
+    <DirectionProvider>
+      <MantineProvider theme={finalTheme} forceColorScheme={colorScheme}>
+        {children}
+      </MantineProvider>
+    </DirectionProvider>
   );
 }
 

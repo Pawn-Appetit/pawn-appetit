@@ -144,6 +144,7 @@ const LANGUAGE_EMOJIS: LanguageEmoji = {
   uk: "🇺🇦", // Ukrainian
   tr: "🇹🇷", // Turkish
   ja: "🇯🇵", // Japanese
+  ar: "🇸🇦", // Arabic
 };
 
 /**

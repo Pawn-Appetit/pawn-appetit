@@ -17,6 +17,7 @@ import { ru_RU } from "./translation/ru_RU";
 import { tr_TR } from "./translation/tr_TR";
 import { uk_UA } from "./translation/uk_UA";
 import { zh_CN } from "./translation/zh_CN";
+import { ar_SA } from "./translation/ar_SA";
 import {
   createBytesFormatter,
   createBytesLongFormatter,
@@ -46,6 +47,7 @@ i18n.use(initReactI18next).init({
     tr_TR: tr_TR,
     uk_UA: uk_UA,
     zh_CN: zh_CN,
+    ar_SA: ar_SA,
   },
   lng: localStorage.getItem("lang") || "en_US",
   fallbackLng: "en",
