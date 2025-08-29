@@ -52,6 +52,7 @@ export const tr_TR = {
     "Common.Stalemate": "Pat",
     "Common.White": "Beyaz",
     "Common.Black": "Siyah",
+    "Common.Random": "Rastgele",
     "Common.Any": "Herhangi",
     "Common.Player": "Oyuncu",
     "Common.Opponent": "Rakip",

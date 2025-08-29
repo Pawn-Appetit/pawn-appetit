@@ -46,6 +46,7 @@
   "Common.Stalemate": "Stalemate",
   "Common.White": "White",
   "Common.Black": "Black",
+  "Common.Random": "Random",
   "Common.NoGameSelected": "No game selected",
   "Units.Count": "{{count, number}}",
   "Units.Bytes": "{{bytes, bytes}}",

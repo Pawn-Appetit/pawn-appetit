@@ -3,6 +3,7 @@
   "Common.ClickToSelectPGN": "Click to select PGN file",
   "Common.Games_one": "{{count, number}} game",
   "Common.Games_other": "{{count, number}} games",
+  "Common.Random": "Random",
   "Common.Any": "Any",
   "Common.Player": "Player",
   "Common.Opponent": "Opponent",

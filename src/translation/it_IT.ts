@@ -52,6 +52,7 @@ export const it_IT = {
     "Common.Stalemate": "Stallo",
     "Common.White": "Bianco",
     "Common.Black": "Nero",
+    "Common.Random": "Casuale",
     "Common.Any": "Any",
     "Common.Player": "Player",
     "Common.Opponent": "Opponent",

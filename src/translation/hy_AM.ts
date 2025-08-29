@@ -52,6 +52,7 @@ export const hy_AM = {
     "Common.Stalemate": "Պատ",
     "Common.White": "Սպիտակ",
     "Common.Black": "Սև",
+    "Common.Random": "Պատահական",
     "Common.Any": "Ցանկացած",
     "Common.Player": "Խաղացող",
     "Common.Opponent": "Հակառակորդ",

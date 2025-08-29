@@ -52,6 +52,7 @@ export const de_DE = {
     "Common.Stalemate": "Patt",
     "Common.White": "Weiß",
     "Common.Black": "Schwarz",
+    "Common.Random": "Zufällig",
     "Common.Any": "Beliebig",
     "Common.Player": "Spieler",
     "Common.Opponent": "Gegner",

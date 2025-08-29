@@ -52,6 +52,7 @@ export const zh_CN = {
     "Common.Stalemate": "无子可动",
     "Common.White": "白方",
     "Common.Black": "黑方",
+    "Common.Random": "随机",
     "Common.Any": "任意",
     "Common.Player": "玩家",
     "Common.Opponent": "对手",

@@ -103,6 +103,7 @@ export const ru_RU = {
     "Units.Score.CentipawnsLong": "центпауны",
     "Common.White": "Белые",
     "Common.Black": "Чёрные",
+    "Common.Random": "Случайный",
     "GoMode.Time": "Время",
     "GoMode.Depth": "Глубина",
     "Annotate.None": "Нет",

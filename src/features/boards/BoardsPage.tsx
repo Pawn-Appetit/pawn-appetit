@@ -272,6 +272,7 @@ const windowsStateAtom = atomWithStorage<WindowsState>("windowsState", {
       direction: "column",
       first: "topRight",
       second: "bottomRight",
+      splitPercentage: 55,
     },
   },
 });

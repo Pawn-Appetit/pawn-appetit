@@ -52,6 +52,7 @@ export const es_ES = {
     "Common.Stalemate": "Rey ahogado",
     "Common.White": "Blancas",
     "Common.Black": "Negras",
+    "Common.Random": "Aleatorio",
     "Common.Any": "Cualquiera",
     "Common.Player": "Jugador",
     "Common.Opponent": "Oponente",
