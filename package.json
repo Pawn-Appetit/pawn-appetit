@@ -1,6 +1,6 @@
 {
   "name": "pawn-appetit",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "type": "module",
   "packageManager": "pnpm@10.15.0",
   "scripts": {
@@ -33,7 +33,7 @@
     "@mantine/tiptap": "^8.2.7",
     "@mantine/vanilla-extract": "^8.2.7",
     "@tabler/icons-react": "^3.34.1",
-    "@tanstack/react-router": "^1.131.28",
+    "@tanstack/react-router": "^1.131.30",
     "@tanstack/react-virtual": "^3.13.12",
     "@tauri-apps/api": "^2.8.0",
     "@tauri-apps/plugin-cli": "^2.4.0",
@@ -89,7 +89,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.2",
-    "@tanstack/router-vite-plugin": "^1.131.28",
+    "@tanstack/router-vite-plugin": "^1.131.30",
     "@tauri-apps/cli": "2.8.3",
     "@types/d3": "^7.4.3",
     "@types/lodash": "^4.17.20",

@@ -1,5 +1,68 @@
 # Pawn Appétit
 
+## v0.5.0
+
+### ✨ Features
+
+* **Gameplay & Opponent Selection**
+
+  * Enhanced **opponent selection UI** with icons for human and engine options
+
+* **Internationalization (i18n)**
+
+  * Added **Arabic translation** and initial support for **RTL layout**
+  * Added a **setting to change date display** (international or locale) - thanks [dotneB](https://github.com/dotneB) 🎉
+
+* **Puzzles**  - thanks [dotneB](https://github.com/dotneB) 🎉
+
+  * Reorganized **puzzle UI** and improved **Adaptive mode**
+  * Integrated **progressive puzzle mode** with simplified ELO math
+  * Loaded **min/max rating ranges** from puzzle databases with bounds checking
+  * Added **jump to next puzzle** option on failure
+
+### 🛠 Improvements & Refactors
+
+* **Engine & Analysis**
+
+  * Improved **game analysis flow** and enhanced **engine process management**
+  * Enhanced **engine state management** and error handling
+  * Optimized **database loading** with **parallel processing** (removed `DashMap`)
+
+* **Internationalization**
+
+  * Transitioned to using **i18next formatters** - thanks [dotneB](https://github.com/dotneB) 🎉
+  * Updated translations for:
+
+    * **German, Spanish, Italian, Turkish, Armenian, Russian, French, Chinese**
+
+* **UI**
+
+  * Enhanced **Dashboard layout** and responsiveness
+
+### 🐛 Fixes
+
+* **Gameplay**
+
+  * Fixed **Lichess games display** to show all games
+  * Fixed **rating updates** to include **classical ratings** for Lichess
+
+* **Puzzles** - thanks [dotneB](https://github.com/dotneB) 🎉
+
+  * Fixed **puzzle atom key** naming to be puzzle-specific
+  * Fixed **puzzle button state** when Lichess’s database is pre-installed
+
+* **Performance**
+
+  * Adjusted **timing constants** in `chess.rs` for improved performance
+
+### 🧹 Chores
+
+* Updated **dependencies**
+
+### ✅ Tests
+
+* Added support for **timezone option** in CI tests - thanks [dotneB](https://github.com/dotneB) 🎉
+
 ## v0.4.0
 
 ### ✨ Features
