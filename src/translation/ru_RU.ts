@@ -588,5 +588,16 @@ export const ru_RU = {
     "PgnInput.MaxDepth": "Максимальная глубина",
     "PgnInput.TotalMoves": "Всего ходов",
     "Puzzle.JumpToNextPuzzleImmediately": "Сразу переходить к следующей головоломке",
+
+    "Formatters.DateFormat": "{{date, dateformat}}",
+    "Formatters.DateTimeFormat": "{{date, datetimeformat}}",
+    "Formatters.MoveNotation": "{{move, moveNotation}}",
+    "Formatters.Bytes": "{{bytes, bytes}}",
+    "Formatters.BytesLong": "{{bytes, bytesLong}}",
+    "Formatters.Nodes": "{{nodes, nodes}}",
+    "Formatters.NodesLong": "{{nodes, nodesLong}}",
+    "Formatters.Duration": "{{duration, duration}}",
+    "Formatters.DurationLong": "{{duration, durationLong}}",
+    "Formatters.Score": "{{score, score}}",
   },
 };

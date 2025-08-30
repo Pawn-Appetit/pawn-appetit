@@ -33,6 +33,7 @@ import "@/styles/global.css";
 import { documentDir, homeDir, resolve } from "@tauri-apps/api/path";
 import ErrorComponent from "@/common/components/ErrorComponent";
 import { commands } from "./bindings";
+import i18n from "./i18n";
 import { routeTree } from "./routeTree.gen";
 import { ThemeProvider } from "./themes";
 import { openFile } from "./utils/files";
@@ -101,8 +102,7 @@ export default function App() {
   }, [fontSize]);
 
   useEffect(() => {
-    const dir = localStorage.getItem("lang") === "ar_SA" ? "rtl" : "ltr";
-    document.documentElement.setAttribute("dir", dir);
+    document.documentElement.setAttribute("dir", i18n.dir());
   }, []);
 
   return (

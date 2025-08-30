@@ -268,7 +268,7 @@ function Table({
             if (row.type === "directory") return null;
             return (
               <Box ml={20 * depth}>
-                {t("{{date, datetimeformat}}", {
+                {t("Formatters.DateTimeFormat", {
                   date: new Date(row.lastModified * 1000),
                   interpolation: { escapeValue: false },
                 })}

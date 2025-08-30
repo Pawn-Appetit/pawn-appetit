@@ -530,7 +530,7 @@ export default function DashboardPage() {
             </Text>
             <Group gap="xs" mt="xs">
               <Button radius="md" onClick={PLAY_CHESS.onClick} leftSection={<IconChess size={18} />}>
-                {t(PLAY_CHESS.label)}
+                {PLAY_CHESS.label}
               </Button>
               <Button
                 variant="light"
@@ -857,7 +857,7 @@ export default function DashboardPage() {
                               <Text size="xs">{userAccount.username}</Text>
                             </Table.Td>
                             <Table.Td c="dimmed">
-                              {t("{{date, dateformat}}", {
+                              {t("Formatters.DateFormat", {
                                 date: new Date(g.end_time * 1000),
                                 interpolation: { escapeValue: false },
                               })}
@@ -955,7 +955,7 @@ export default function DashboardPage() {
                               <Text size="xs">{userAccount.user?.name}</Text>
                             </Table.Td>
                             <Table.Td c="dimmed">
-                              {t("{{date, dateformat}}", {
+                              {t("Formatters.DateFormat", {
                                 date: new Date(g.createdAt),
                                 interpolation: { escapeValue: false },
                               })}

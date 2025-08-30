@@ -53,5 +53,16 @@ export const ja_JP = {
     "Common.UnsavedChanges.Desc": "未保存の変更があります。閉じる前に保存しますか？",
     "Common.SaveAndClose": "保存して閉じる",
     "Common.CloseWithoutSaving": "保存せずに閉じる",
+
+    "Formatters.DateFormat": "{{date, dateformat}}",
+    "Formatters.DateTimeFormat": "{{date, datetimeformat}}",
+    "Formatters.MoveNotation": "{{move, moveNotation}}",
+    "Formatters.Bytes": "{{bytes, bytes}}",
+    "Formatters.BytesLong": "{{bytes, bytesLong}}",
+    "Formatters.Nodes": "{{nodes, nodes}}",
+    "Formatters.NodesLong": "{{nodes, nodesLong}}",
+    "Formatters.Duration": "{{duration, duration}}",
+    "Formatters.DurationLong": "{{duration, durationLong}}",
+    "Formatters.Score": "{{score, score}}",
   },
 };

@@ -154,5 +154,16 @@ export const ar_SA = {
     "Settings.Appearance.hideDashboardOnStartup": "إخفاء لوحة التحكم عند بدء التشغيل",
     "Settings.Appearance.hideDashboardOnStartup.Desc": "افتح اللوحات بدلًا من لوحة التحكم عند بدء التطبيق",
     "Puzzle.JumpToNextPuzzleImmediately": "انتقل فورًا إلى اللغز التالي",
+
+    "Formatters.DateFormat": "{{date, dateformat}}",
+    "Formatters.DateTimeFormat": "{{date, datetimeformat}}",
+    "Formatters.MoveNotation": "{{move, moveNotation}}",
+    "Formatters.Bytes": "{{bytes, bytes}}",
+    "Formatters.BytesLong": "{{bytes, bytesLong}}",
+    "Formatters.Nodes": "{{nodes, nodes}}",
+    "Formatters.NodesLong": "{{nodes, nodesLong}}",
+    "Formatters.Duration": "{{duration, duration}}",
+    "Formatters.DurationLong": "{{duration, durationLong}}",
+    "Formatters.Score": "{{score, score}}",
   },
 };

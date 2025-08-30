@@ -341,5 +341,16 @@ export const pt_PT = {
     "PgnInput.ExtraMarkups": "Anotações extras",
     "PgnInput.MaxDepth": "Profundidade máxima",
     "PgnInput.TotalMoves": "Total de jogadas",
+
+    "Formatters.DateFormat": "{{date, dateformat}}",
+    "Formatters.DateTimeFormat": "{{date, datetimeformat}}",
+    "Formatters.MoveNotation": "{{move, moveNotation}}",
+    "Formatters.Bytes": "{{bytes, bytes}}",
+    "Formatters.BytesLong": "{{bytes, bytesLong}}",
+    "Formatters.Nodes": "{{nodes, nodes}}",
+    "Formatters.NodesLong": "{{nodes, nodesLong}}",
+    "Formatters.Duration": "{{duration, duration}}",
+    "Formatters.DurationLong": "{{duration, durationLong}}",
+    "Formatters.Score": "{{score, score}}",
   },
 };

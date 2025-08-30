@@ -58,7 +58,7 @@ const MoveCell = forwardRef(function MoveCell(props: MoveCellProps, ref: Forward
       onContextMenu={props.onContextMenu}
     >
       {props.isStart && <IconFlag style={{ marginRight: 5 }} size="0.875rem" />}
-      {t("{{move, moveNotation}}", { move: props.move })}
+      {t("Formatters.MoveNotation", { move: props.move })}
       {props.annotations.join("")}
     </Box>
   );

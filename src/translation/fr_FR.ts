@@ -590,5 +590,16 @@ export const fr_FR = {
     "Lessons.ExercisesCompleted": "exercices terminés",
     "Lessons.LessonCompleted": "Félicitations ! Vous avez terminé {{lesson}} !",
     "Lessons.CompletionMessage": "Vous avez terminé tous les exercices de cette leçon. Continuez ainsi !",
+
+    "Formatters.DateFormat": "{{date, dateformat}}",
+    "Formatters.DateTimeFormat": "{{date, datetimeformat}}",
+    "Formatters.MoveNotation": "{{move, moveNotation}}",
+    "Formatters.Bytes": "{{bytes, bytes}}",
+    "Formatters.BytesLong": "{{bytes, bytesLong}}",
+    "Formatters.Nodes": "{{nodes, nodes}}",
+    "Formatters.NodesLong": "{{nodes, nodesLong}}",
+    "Formatters.Duration": "{{duration, duration}}",
+    "Formatters.DurationLong": "{{duration, durationLong}}",
+    "Formatters.Score": "{{score, score}}",
   },
 };

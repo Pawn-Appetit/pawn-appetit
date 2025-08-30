@@ -328,7 +328,7 @@ export function AccountCard({
       <Accordion.Panel px="0" py="md">
         <SimpleGrid cols={2}>{items}</SimpleGrid>
         <Text mt="xs" size="xs" c="dimmed" ta="right">
-          {`Last update: ${t("{{date, dateformat}}", {
+          {`Last update: ${t("Formatters.DateFormat", {
             date: parseDate(updatedAt),
             interpolation: { escapeValue: false },
           })}`}

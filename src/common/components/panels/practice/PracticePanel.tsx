@@ -160,7 +160,7 @@ function PracticePanel() {
                         {t("Board.Practice.PracticedAll1")}
                         <br />
                         {t("Board.Practice.PracticedAll2")}{" "}
-                        {t("{{date, datetimeformat}}", {
+                        {t("Formatters.DateTimeFormat", {
                           date: stats.nextDue ? new Date(stats.nextDue) : undefined,
                           interpolation: { escapeValue: false },
                         })}
