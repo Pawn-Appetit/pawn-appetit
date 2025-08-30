@@ -2,6 +2,7 @@ import {
   ActionIcon,
   Box,
   Button,
+  Center,
   Checkbox,
   Divider,
   Group,
@@ -15,7 +16,7 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
-import { IconArrowsExchange, IconPlus, IconZoomCheck } from "@tabler/icons-react";
+import { IconArrowsExchange, IconCpu, IconPlus, IconUser, IconZoomCheck } from "@tabler/icons-react";
 import { parseUci } from "chessops";
 import { INITIAL_FEN } from "chessops/fen";
 import equal from "fast-deep-equal";
@@ -120,8 +121,24 @@ function OpponentForm({
     <Stack flex={1}>
       <SegmentedControl
         data={[
-          { value: "human", label: "Human" },
-          { value: "engine", label: "Engine" },
+          {
+            value: "human",
+            label: (
+              <Center style={{ gap: 10 }}>
+                <IconUser size={16} />
+                <span>Human</span>
+              </Center>
+            ),
+          },
+          {
+            value: "engine",
+            label: (
+              <Center style={{ gap: 10 }}>
+                <IconCpu size={16} />
+                <span>Engine</span>
+              </Center>
+            ),
+          },
         ]}
         value={opponent.type}
         onChange={(v) => updateType(v as "human" | "engine")}
