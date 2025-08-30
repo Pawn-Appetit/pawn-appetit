@@ -266,7 +266,7 @@ function GameTable() {
               sortable: true,
               title: t("GameTable.Date"),
               render: ({ date }) =>
-                t("{{date, dateformat}}", {
+                t("Formatters.DateFormat", {
                   date: parseDate(date),
                   interpolation: { escapeValue: false },
                 }),

@@ -588,5 +588,16 @@ export const hy_AM = {
     "Tablebase.FiftyMoveRule": "*ըստ 50 քայլի կանոնի",
     "PgnInput.TotalMoves": "Ընդհանուր քայլեր",
     "Puzzle.JumpToNextPuzzleImmediately": "Անմիջապես անցնել հաջորդ խնդրին",
+
+    "Formatters.DateFormat": "{{date, dateformat}}",
+    "Formatters.DateTimeFormat": "{{date, datetimeformat}}",
+    "Formatters.MoveNotation": "{{move, moveNotation}}",
+    "Formatters.Bytes": "{{bytes, bytes}}",
+    "Formatters.BytesLong": "{{bytes, bytesLong}}",
+    "Formatters.Nodes": "{{nodes, nodes}}",
+    "Formatters.NodesLong": "{{nodes, nodesLong}}",
+    "Formatters.Duration": "{{duration, duration}}",
+    "Formatters.DurationLong": "{{duration, durationLong}}",
+    "Formatters.Score": "{{score, score}}",
   },
 };

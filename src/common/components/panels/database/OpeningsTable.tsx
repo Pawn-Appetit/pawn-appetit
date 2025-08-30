@@ -59,7 +59,7 @@ function OpeningsTable({ openings, loading }: { openings: Opening[]; loading: bo
                   Game end
                 </Text>
               );
-            return <Text fz="sm">{t("{{move, moveNotation}}", { move })}</Text>;
+            return <Text fz="sm">{t("Formatters.MoveNotation", { move })}</Text>;
           },
         },
         {

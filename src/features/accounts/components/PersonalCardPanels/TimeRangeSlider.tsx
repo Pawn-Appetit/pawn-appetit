@@ -25,7 +25,7 @@ const TimeRangeSlider = ({ ratingDates, dateRange, onDateRangeChange }: TimeRang
     <RangeSlider
       pt="lg"
       label={(value) =>
-        t("{{date, dateformat}}", {
+        t("Formatters.DateFormat", {
           date: new Date(ratingDates[value]),
           interpolation: { escapeValue: false },
         })

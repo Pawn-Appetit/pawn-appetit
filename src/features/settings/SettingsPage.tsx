@@ -52,10 +52,8 @@ interface SettingItem {
 
 export default function Page() {
   const { t, i18n } = useTranslation();
-  const { setDirection, dir } = useDirection();
+  const { setDirection } = useDirection();
   const [search, setSearch] = useState("");
-
-  console.log(dir);
 
   const [isNative, setIsNative] = useAtom(nativeBarAtom);
   const {
@@ -81,11 +79,9 @@ export default function Page() {
   const languages = useMemo(() => {
     const langs: { value: string; label: string }[] = [];
     for (const localeCode of Object.keys(i18n.services.resourceStore.data)) {
-      // Not sure why it's an exception in the init of our i18n. But to produce the same list I'll normalize it
-      const normalizedCode = localeCode === "en" ? "en_US" : localeCode;
       // Load label from specific namespace, in the other language resource.
       // Would avoid having to load full files if all the translations weren't all already loaded in memory
-      langs.push({ value: normalizedCode, label: t("language:DisplayName", { lng: normalizedCode }) });
+      langs.push({ value: localeCode, label: t("language:DisplayName", { lng: localeCode }) });
     }
     langs.sort((a, b) => a.label.localeCompare(b.label));
     return langs;
@@ -465,14 +461,9 @@ export default function Page() {
               data={languages}
               value={i18n.language}
               onChange={(val) => {
-                i18n.changeLanguage(val || "en_US");
-                localStorage.setItem("lang", val || "en_US");
-
-                if (val === "ar_SA") {
-                  setDirection("rtl");
-                } else {
-                  setDirection("ltr");
-                }
+                i18n.changeLanguage(val || "en-US");
+                localStorage.setItem("lang", val || "en-US");
+                setDirection(i18n.dir());
               }}
             />
           </Group>
@@ -749,7 +740,7 @@ export default function Page() {
   return (
     <Box h="100%" style={{ overflow: "hidden" }}>
       <Title order={1} fw={500} p="lg" className={classes.title}>
-        {t("Settings")}
+        {t("SideBar.Settings")}
       </Title>
       <TextInput
         placeholder={t("Settings.SearchPlaceholder")}
