@@ -26,8 +26,6 @@ tsconfig.tsbuildinfo
 *.sln
 *.sw?
 
-src-tauri/gen/
-
 # Root env files (secrets)
 .env
 .env.*
