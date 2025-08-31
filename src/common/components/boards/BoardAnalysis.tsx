@@ -10,8 +10,9 @@ import {
 } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
+import type { Piece } from "chessground/types";
 import { useAtom, useAtomValue } from "jotai";
-import { Suspense, useCallback, useContext, useEffect, useRef } from "react";
+import { Suspense, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import GameNotation from "@/common/components/GameNotation";
@@ -43,6 +44,7 @@ function BoardAnalysis() {
   const { t } = useTranslation();
 
   const [editingMode, toggleEditingMode] = useToggle();
+  const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
   const autoSave = useAtomValue(autoSaveAtom);
   const { documentDir } = useLoaderData({ from: "/boards" });
@@ -164,6 +166,8 @@ function BoardAnalysis() {
           saveFile={saveFile}
           reload={reloadBoard}
           addGame={addGame}
+          selectedPiece={selectedPiece}
+          setSelectedPiece={setSelectedPiece}
         />
       </Portal>
       <Portal target="#topRight" style={{ height: "100%" }}>
@@ -250,7 +254,12 @@ function BoardAnalysis() {
       </Portal>
       <Portal target="#bottomRight" style={{ height: "100%" }}>
         {editingMode ? (
-          <EditingCard boardRef={boardRef} setEditingMode={toggleEditingMode} />
+          <EditingCard
+            boardRef={boardRef}
+            setEditingMode={toggleEditingMode}
+            selectedPiece={selectedPiece}
+            setSelectedPiece={setSelectedPiece}
+          />
         ) : (
           <Stack h="100%" gap="xs">
             <GameNotation topBar />

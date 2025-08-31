@@ -1,7 +1,7 @@
 import type { Color, Piece } from "chessground/types";
 import type { Square } from "chessops";
 import { squareFromCoords } from "chessops/util";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Draggable from "react-draggable";
 
 export default function PieceComponent({
@@ -10,15 +10,27 @@ export default function PieceComponent({
   putPiece,
   size,
   orientation,
+  selectedPiece,
+  onSelect,
 }: {
   piece: Piece;
   boardRef?: React.RefObject<HTMLDivElement>;
   putPiece?: (square: Square, piece: Piece) => void;
   size?: number | string;
   orientation?: Color;
+  selectedPiece: Piece | null;
+  onSelect: (piece: Piece, isDragging: boolean) => void;
 }) {
   size = size || "100%";
   const pieceRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [hasDragged, setHasDragged] = useState(false);
+
+  const handleClick = () => {
+    onSelect(piece, hasDragged);
+    setHasDragged(false);
+  };
+
   if (!boardRef || !putPiece) {
     return (
       <div
@@ -32,6 +44,7 @@ export default function PieceComponent({
       />
     );
   }
+
   const handleDrop = (position: { x: number; y: number }) => {
     const boardRect = boardRef?.current?.getBoundingClientRect();
     if (
@@ -60,9 +73,14 @@ export default function PieceComponent({
     <Draggable
       nodeRef={pieceRef}
       position={{ x: 0, y: 0 }}
+      onDrag={() => {
+        setIsDragging(true);
+        setHasDragged(true);
+      }}
       onStop={(e) => {
         const { clientX, clientY } = e as MouseEvent;
         handleDrop({ x: clientX, y: clientY });
+        setIsDragging(false);
       }}
       scale={1}
     >
@@ -74,7 +92,12 @@ export default function PieceComponent({
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center",
           zIndex: 100,
+          backgroundColor:
+            !isDragging && selectedPiece && piece.role === selectedPiece.role && piece.color === selectedPiece.color
+              ? "var(--mantine-primary-color-filled)"
+              : "transparent",
         }}
+        onClick={handleClick}
       />
     </Draggable>
   );
