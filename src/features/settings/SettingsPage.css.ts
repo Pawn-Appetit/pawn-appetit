@@ -2,7 +2,7 @@ import { style } from "@vanilla-extract/css";
 import { vars } from "@/styles/theme";
 
 export const tabItem = style({
-  paddingLeft: vars.spacing.lg,
+  // Removed paddingLeft to fix tab highlight overlap
 });
 
 export const tabLabel = style({

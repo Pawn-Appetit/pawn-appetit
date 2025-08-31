@@ -1,10 +1,12 @@
 import { Box, Card, Group, ScrollArea, Select, Stack, Tabs, Text, TextInput, Title, useDirection } from "@mantine/core";
+
 import { IconBook, IconBrush, IconChess, IconFlag, IconFolder, IconMouse, IconVolume } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAtom } from "jotai";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import AboutModal from "@/common/components/About";
 import FileInput from "@/common/components/FileInput";
 import {
   autoPromoteAtom,
@@ -27,6 +29,7 @@ import {
   spellCheckAtom,
   storedDocumentDirAtom,
 } from "@/state/atoms";
+import { useScreenSize } from "@/styles/theme";
 import { ThemeSettings } from "@/themes";
 import { computedThemeAtom } from "@/themes/state";
 import type { ThemeDefinition } from "@/themes/types";
@@ -54,6 +57,8 @@ export default function Page() {
   const { t, i18n } = useTranslation();
   const { setDirection } = useDirection();
   const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState("board");
+  const { isMobileOrSmallScreen } = useScreenSize();
 
   const [isNative, setIsNative] = useAtom(nativeBarAtom);
   const {
@@ -655,11 +660,20 @@ export default function Page() {
         tab: "directories",
         component: <TelemetrySettings className={classes.item} />,
       },
+      {
+        id: "about",
+        title: t("Settings.About"),
+        description: t("Settings.About.Desc"),
+        tab: "directories",
+        component: <AboutModal />,
+      },
     ],
     [
       t,
       i18n.language,
       i18n.changeLanguage,
+      i18n.dir,
+      setDirection,
       isNative,
       setIsNative,
       moveMethod,
@@ -676,6 +690,7 @@ export default function Page() {
       moveNotationData,
       waysToMoveData,
       titleBarData,
+      AboutModal,
     ],
   );
 
@@ -723,32 +738,108 @@ export default function Page() {
     directories: { title: t("Settings.Directories"), desc: t("Settings.Directories.Desc") },
   };
 
+  const tabConfig = [
+    { value: "board", icon: <IconChess size="1rem" />, label: t("Settings.Board"), header: t("Settings.Gameplay") },
+    { value: "inputs", icon: <IconMouse size="1rem" />, label: t("Settings.Inputs") },
+    { value: "anarchy", icon: <IconFlag size="1rem" />, label: t("Settings.Anarchy") },
+    {
+      value: "report",
+      icon: <IconBook size="1rem" />,
+      label: t("Settings.OpeningReport"),
+      header: t("Settings.Analysis"),
+    },
+    {
+      value: "appearance",
+      icon: <IconBrush size="1rem" />,
+      label: t("Settings.Appearance"),
+      header: t("Settings.Interface"),
+    },
+    { value: "sound", icon: <IconVolume size="1rem" />, label: t("Settings.Sound") },
+    {
+      value: "directories",
+      icon: <IconFolder size="1rem" />,
+      label: t("Settings.Directories"),
+      header: t("Settings.System"),
+    },
+  ];
+
+  const renderTabs = (withHeaders: boolean = false) => {
+    const elements: React.ReactNode[] = [];
+    let currentHeader: string | undefined;
+
+    tabConfig.forEach((tab) => {
+      // Add header if it exists and we're rendering with headers
+      if (withHeaders && tab.header && tab.header !== currentHeader) {
+        elements.push(
+          <Text key={`header-${tab.value}`} c="dimmed" size="sm" pl="lg" mt={currentHeader ? "md" : 0}>
+            {tab.header}
+          </Text>,
+        );
+        currentHeader = tab.header;
+      }
+
+      // Add tab
+      elements.push(
+        <Tabs.Tab
+          key={tab.value}
+          value={tab.value}
+          leftSection={tab.icon}
+          classNames={
+            withHeaders
+              ? {
+                  tab: classes.tabItem,
+                  tabLabel: classes.tabLabel,
+                }
+              : undefined
+          }
+        >
+          {tab.label}
+        </Tabs.Tab>,
+      );
+    });
+
+    return <>{elements}</>;
+  };
+
+  const renderTabPanels = () => (
+    <>
+      {tabConfig.map((tab) => (
+        <Tabs.Panel key={tab.value} value={tab.value}>
+          {renderTabContent(tab.value, settingsByTab[tab.value as keyof typeof settingsByTab] || [])}
+        </Tabs.Panel>
+      ))}
+    </>
+  );
+
   const renderTabContent = (tabId: string, settings: SettingItem[]) => (
     <>
-      <Title order={1} fw={500} className={classes.title}>
+      <Title order={isMobileOrSmallScreen ? 2 : 1} fw={500} className={classes.title}>
         {tabInfo[tabId as keyof typeof tabInfo]?.title}
       </Title>
-      <Text size="xs" c="dimmed" mt={3} mb="lg">
+      <Text size="sm" c="dimmed" mt={3} mb="lg">
         {tabInfo[tabId as keyof typeof tabInfo]?.desc}
       </Text>
-      {settings.map((setting) => (
-        <div key={setting.id}>{setting.component}</div>
-      ))}
+      <Stack gap="md">
+        {settings.map((setting) => (
+          <div key={setting.id}>{setting.component}</div>
+        ))}
+      </Stack>
     </>
   );
 
   return (
     <Box h="100%" style={{ overflow: "hidden" }}>
-      <Title order={1} fw={500} p="lg" className={classes.title}>
+      <Title order={1} fw={500} p={{ base: "md", sm: "lg" }} className={classes.title}>
         {t("SideBar.Settings")}
       </Title>
       <TextInput
         placeholder={t("Settings.SearchPlaceholder")}
         size="xs"
         mb="lg"
-        px="lg"
+        px={{ base: "md", sm: "lg" }}
         value={search}
         onChange={(event) => setSearch(event.currentTarget.value)}
+        visibleFrom="sm"
       />
       {filteredSettings ? (
         <Box h="calc(100vh - 170px)" style={{ overflow: "hidden" }}>
@@ -774,114 +865,44 @@ export default function Page() {
           </ScrollArea>
         </Box>
       ) : (
-        <Tabs defaultValue="board" orientation="vertical" h="100%">
-          <Tabs.List>
-            <Text c="dimmed" size="sm" pl="lg">
-              {t("Settings.Gameplay")}
-            </Text>
-            <Tabs.Tab
-              value="board"
-              leftSection={<IconChess size="1rem" />}
-              classNames={{
-                tab: classes.tabItem,
-                tabLabel: classes.tabLabel,
-              }}
-            >
-              {t("Settings.Board")}
-            </Tabs.Tab>
-            <Tabs.Tab
-              value="inputs"
-              leftSection={<IconMouse size="1rem" />}
-              classNames={{
-                tab: classes.tabItem,
-                tabLabel: classes.tabLabel,
-              }}
-            >
-              {t("Settings.Inputs")}
-            </Tabs.Tab>
-            <Tabs.Tab
-              value="anarchy"
-              leftSection={<IconFlag size="1rem" />}
-              classNames={{
-                tab: classes.tabItem,
-                tabLabel: classes.tabLabel,
-              }}
-            >
-              {t("Settings.Anarchy")}
-            </Tabs.Tab>
-            <Text c="dimmed" size="sm" mt="md" pl="lg">
-              {t("Settings.Analysis")}
-            </Text>
-            <Tabs.Tab
-              value="report"
-              leftSection={<IconBook size="1rem" />}
-              classNames={{
-                tab: classes.tabItem,
-                tabLabel: classes.tabLabel,
-              }}
-            >
-              {t("Settings.OpeningReport")}
-            </Tabs.Tab>
-            <Text c="dimmed" size="sm" mt="md" pl="lg">
-              {t("Settings.Interface")}
-            </Text>
-            <Tabs.Tab
-              value="appearance"
-              leftSection={<IconBrush size="1rem" />}
-              classNames={{
-                tab: classes.tabItem,
-                tabLabel: classes.tabLabel,
-              }}
-            >
-              {t("Settings.Appearance")}
-            </Tabs.Tab>
-            <Tabs.Tab
-              value="sound"
-              leftSection={<IconVolume size="1rem" />}
-              classNames={{
-                tab: classes.tabItem,
-                tabLabel: classes.tabLabel,
-              }}
-            >
-              {t("Settings.Sound")}
-            </Tabs.Tab>
-            <Text c="dimmed" size="sm" mt="md" pl="lg">
-              System
-            </Text>
-            <Tabs.Tab
-              value="directories"
-              leftSection={<IconFolder size="1rem" />}
-              classNames={{
-                tab: classes.tabItem,
-                tabLabel: classes.tabLabel,
-              }}
-            >
-              {t("Settings.Directories")}
-            </Tabs.Tab>
-          </Tabs.List>
-          <Stack flex={1}>
-            <ScrollArea h="calc(100vh - 170px)">
-              <Card className={classes.card} w="100%" pl="lg" pr="xl">
-                <Tabs.Panel value="board">{renderTabContent("board", settingsByTab.board || [])}</Tabs.Panel>
-
-                <Tabs.Panel value="inputs">{renderTabContent("inputs", settingsByTab.inputs || [])}</Tabs.Panel>
-
-                <Tabs.Panel value="anarchy">{renderTabContent("anarchy", settingsByTab.anarchy || [])}</Tabs.Panel>
-
-                <Tabs.Panel value="report">{renderTabContent("report", settingsByTab.report || [])}</Tabs.Panel>
-
-                <Tabs.Panel value="appearance">
-                  {renderTabContent("appearance", settingsByTab.appearance || [])}
-                </Tabs.Panel>
-
-                <Tabs.Panel value="sound">{renderTabContent("sound", settingsByTab.sound || [])}</Tabs.Panel>
-
-                <Tabs.Panel value="directories">
-                  {renderTabContent("directories", settingsByTab.directories || [])}
-                </Tabs.Panel>
-              </Card>
+        <Tabs
+          value={activeTab}
+          onChange={(value) => setActiveTab(value || "board")}
+          orientation={isMobileOrSmallScreen ? "horizontal" : "vertical"}
+          h="100%"
+        >
+          {isMobileOrSmallScreen ? (
+            <ScrollArea scrollbarSize={0} scrollbars="x" type="auto" style={{ overflowX: "auto" }}>
+              <Tabs.List
+                variant="pills"
+                mb="md"
+                style={{
+                  flexWrap: "nowrap",
+                  minWidth: "max-content",
+                  width: "max-content",
+                }}
+              >
+                {renderTabs(false)}
+              </Tabs.List>
             </ScrollArea>
-          </Stack>
+          ) : (
+            <Tabs.List w={160}>{renderTabs(true)}</Tabs.List>
+          )}
+          {isMobileOrSmallScreen ? (
+            <ScrollArea h="calc(100vh - 210px)">
+              <Box p="md" pt="0px">
+                {renderTabPanels()}
+              </Box>
+            </ScrollArea>
+          ) : (
+            <Stack flex={1}>
+              <ScrollArea h="calc(100vh - 170px)">
+                <Card className={classes.card} w="100%" pl="lg" pr="xl">
+                  {renderTabPanels()}
+                </Card>
+              </ScrollArea>
+            </Stack>
+          )}
         </Tabs>
       )}
     </Box>

@@ -10,6 +10,7 @@ function AboutModal() {
     os: string;
     architecture: string;
     osVersion: string;
+    isDevBuild: boolean;
   } | null>(null);
 
   useEffect(() => {
@@ -19,13 +20,16 @@ function AboutModal() {
       const tauri = await getTauriVersion();
       const architecture = await arch();
       const osVersion = await OSVersion();
-      setInfo({ version, tauri, os, architecture, osVersion });
+      const isDevBuild = import.meta.env.DEV;
+      setInfo({ version, tauri, os, architecture, osVersion, isDevBuild });
     }
     load();
   }, []);
   return (
     <>
-      <Text>Version: {info?.version}</Text>
+      <Text>
+        Version: {info?.version} {info?.isDevBuild ? "(DEV BUILD)" : ""}
+      </Text>
       <Text>Tauri version: {info?.tauri}</Text>
       <Text>
         OS: {info?.os} {info?.architecture} {info?.osVersion}

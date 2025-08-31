@@ -9,7 +9,7 @@ function AccountsPage() {
         <Title>Accounts</Title>
       </Group>
 
-      <Group grow flex={1} style={{ overflow: "hidden" }} px="md" pb="md">
+      <Group grow flex={1} style={{ overflow: "hidden" }} px="md" pb="md" align="start">
         <Stack h="100%">
           <Accounts />
         </Stack>

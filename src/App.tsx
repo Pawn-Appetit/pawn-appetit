@@ -35,6 +35,7 @@ import ErrorComponent from "@/common/components/ErrorComponent";
 import { commands } from "./bindings";
 import i18n from "./i18n";
 import { routeTree } from "./routeTree.gen";
+import { useScreenSize } from "./styles/theme";
 import { ThemeProvider } from "./themes";
 import { openFile } from "./utils/files";
 
@@ -72,19 +73,21 @@ export default function App() {
   const pieceSet = useAtomValue(pieceSetAtom);
   const [, setTabs] = useAtom(tabsAtom);
   const [, setActiveTab] = useAtom(activeTabAtom);
+  const { isMobile } = useScreenSize();
 
   useEffect(() => {
     (async () => {
       await commands.closeSplashscreen();
       const detach = await attachConsole();
       info("React app started successfully");
-
-      const matches = await getMatches();
-      if (matches.args.file.occurrences > 0) {
-        info(`Opening file from command line: ${matches.args.file.value}`);
-        if (typeof matches.args.file.value === "string") {
-          const file = matches.args.file.value;
-          openFile(file, setTabs, setActiveTab);
+      if (!isMobile) {
+        const matches = await getMatches();
+        if (matches.args.file.occurrences > 0) {
+          info(`Opening file from command line: ${matches.args.file.value}`);
+          if (typeof matches.args.file.value === "string") {
+            const file = matches.args.file.value;
+            openFile(file, setTabs, setActiveTab);
+          }
         }
       }
 
@@ -92,7 +95,7 @@ export default function App() {
         detach();
       };
     })();
-  }, [setTabs, setActiveTab]);
+  }, [setTabs, setActiveTab, isMobile]);
 
   const fontSize = useAtomValue(fontSizeAtom);
   const spellCheck = useAtomValue(spellCheckAtom);

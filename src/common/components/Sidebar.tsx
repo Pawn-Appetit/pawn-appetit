@@ -1,4 +1,4 @@
-import { AppShellSection, Stack, Tooltip } from "@mantine/core";
+import { ActionIcon, AppShellSection, Box, Group, Menu, Stack, Tooltip } from "@mantine/core";
 import {
   type Icon,
   IconChess,
@@ -7,6 +7,7 @@ import {
   IconFiles,
   IconKeyboard,
   IconLayoutDashboard,
+  IconMenu2,
   IconSchool,
   IconSettings,
   IconUsers,
@@ -25,17 +26,25 @@ interface NavbarLinkProps {
   active?: boolean;
 }
 
-function NavbarLink({ url, icon: Icon, label }: NavbarLinkProps) {
+interface NavbarLinkProps {
+  icon: Icon;
+  label: string;
+  url: string;
+  active?: boolean;
+  isMobile?: boolean;
+}
+
+function NavbarLink({ url, icon: Icon, label, isMobile = false }: NavbarLinkProps) {
   const matcesRoute = useMatchRoute();
   return (
-    <Tooltip label={label} position="right">
+    <Tooltip label={label} position={isMobile ? "top" : "right"}>
       <Link
         to={url}
         className={cx(classes.link, {
           [classes.active]: matcesRoute({ to: url, fuzzy: true }),
         })}
       >
-        <Icon size="1.5rem" stroke={1.5} />
+        <Icon size={isMobile ? "2.0rem" : "1.5rem"} stroke={1.5} />
       </Link>
     </Tooltip>
   );
@@ -44,7 +53,6 @@ function NavbarLink({ url, icon: Icon, label }: NavbarLinkProps) {
 export const linksdata = [
   { icon: IconLayoutDashboard, label: "Dashboard", url: "/" },
   { icon: IconChess, label: "Board", url: "/boards" },
-  { icon: IconCpu, label: "Engines", url: "/engines" },
   {
     icon: IconDatabase,
     label: "Databases",
@@ -53,30 +61,88 @@ export const linksdata = [
   { icon: IconFiles, label: "Files", url: "/files" },
   { icon: IconUsers, label: "Accounts", url: "/accounts" },
   { icon: IconSchool, label: "Learn", url: "/learn" },
+  { icon: IconCpu, label: "Engines", url: "/engines" },
 ];
 
-export function SideBar() {
+interface SideBarProps {
+  isMobile?: boolean;
+}
+
+export function SideBar({ isMobile = false }: SideBarProps) {
   const matcesRoute = useMatchRoute();
   const { t } = useTranslation();
   const [hideDashboardOnStartup] = useAtom(hideDashboardOnStartupAtom);
 
-  const links = linksdata
+  const mainLinks = linksdata
     .filter((link) => {
       if (hideDashboardOnStartup && link.url === "/") return false;
       return link;
     })
-    .map((link) => <NavbarLink {...link} label={t(`SideBar.${link.label}`)} key={link.label} />);
+    .map((link) => <NavbarLink {...link} label={t(`SideBar.${link.label}`)} isMobile={isMobile} key={link.label} />);
+
+  if (isMobile) {
+    // Show only first 4 links on mobile
+    const visibleLinks = mainLinks.slice(0, 4);
+
+    // Remaining links go in burger menu
+    const burgerMenuLinks = [
+      ...mainLinks.slice(4),
+      <NavbarLink
+        key="settings"
+        icon={IconSettings}
+        label={t("SideBar.Settings")}
+        url="/settings"
+        isMobile={isMobile}
+      />,
+    ];
+
+    return (
+      <AppShellSection grow>
+        <Group justify="center" gap="md">
+          {visibleLinks}
+          <Menu shadow="md" position="top">
+            <Menu.Target>
+              <Tooltip label="More" position="top">
+                <ActionIcon variant="subtle" size="xl" className={classes.link}>
+                  <IconMenu2 size="2.0rem" stroke={1.5} />
+                </ActionIcon>
+              </Tooltip>
+            </Menu.Target>
+            <Menu.Dropdown>
+              {burgerMenuLinks.map((link) => {
+                const IconComponent = link.props.icon;
+                return (
+                  <Menu.Item
+                    key={link.key}
+                    component={Link}
+                    to={link.props.url}
+                    leftSection={<IconComponent size={isMobile ? "2.0rem" : "1.2rem"} stroke={1.5} />}
+                  >
+                    {link.props.label}
+                  </Menu.Item>
+                );
+              })}
+            </Menu.Dropdown>
+          </Menu>
+        </Group>
+      </AppShellSection>
+    );
+  }
+
+  // Desktop layout remains the same
+  const Container = Stack;
+  const tooltipPosition = "right";
 
   return (
     <>
       <AppShellSection grow>
-        <Stack justify="center" gap={0}>
-          {links}
-        </Stack>
+        <Container justify="center" gap={0}>
+          {mainLinks}
+        </Container>
       </AppShellSection>
-      <AppShellSection>
-        <Stack justify="center" gap={0}>
-          <Tooltip label={t("SideBar.KeyboardShortcuts")} position="right">
+      <AppShellSection visibleFrom="sm">
+        <Container justify="center" gap={0}>
+          <Tooltip label={t("SideBar.KeyboardShortcuts")} position={tooltipPosition}>
             <Link
               to="/settings/keyboard-shortcuts"
               className={cx(classes.link, {
@@ -86,7 +152,7 @@ export function SideBar() {
               <IconKeyboard size="1.5rem" stroke={1.5} />
             </Link>
           </Tooltip>
-          <Tooltip label={t("SideBar.Settings")} position="right">
+          <Tooltip label={t("SideBar.Settings")} position={tooltipPosition}>
             <Link
               to="/settings"
               className={cx(classes.link, {
@@ -96,7 +162,7 @@ export function SideBar() {
               <IconSettings size="1.5rem" stroke={1.5} />
             </Link>
           </Tooltip>
-        </Stack>
+        </Container>
       </AppShellSection>
     </>
   );

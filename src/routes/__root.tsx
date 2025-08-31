@@ -1,4 +1,4 @@
-import { AppShell } from "@mantine/core";
+import { AppShell, ScrollArea } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import { ModalsProvider, modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
@@ -22,6 +22,7 @@ import TopBar from "@/common/components/TopBar";
 import ImportModal from "@/features/boards/components/ImportModal";
 import { activeTabAtom, nativeBarAtom, tabsAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
+import { useScreenSize } from "@/styles/theme";
 import { openFile } from "@/utils/files";
 import { createTab } from "@/utils/tabs";
 
@@ -80,6 +81,7 @@ export const Route = createRootRouteWithContext<{
 function RootLayout() {
   const isNative = useAtomValue(nativeBarAtom);
   const navigate = useNavigate();
+  const { isMobile, isMobileOrSmallScreen, smallScreenMax } = useScreenSize();
 
   const [, setTabs] = useAtom(tabsAtom);
   const [, setActiveTab] = useAtom(activeTabAtom);
@@ -281,6 +283,7 @@ function RootLayout() {
 
   useEffect(() => {
     if (!menu) return;
+    if (isMobile) return;
     if (isNative) {
       menu.setAsAppMenu();
       getCurrentWebviewWindow().setDecorations(true);
@@ -288,17 +291,26 @@ function RootLayout() {
       Menu.new().then((m) => m.setAsAppMenu());
       getCurrentWebviewWindow().setDecorations(false);
     }
-  }, [menu, isNative]);
+  }, [menu, isNative, isMobile]);
 
   return (
     <ModalsProvider modals={{ importModal: ImportModal, aboutModal: AboutModal }}>
       <AppShell
+        mt={isMobile ? "3rem" : "0rem"}
+        header={{
+          height: "2.3rem",
+          collapsed: isMobile || isNative,
+          offset: true,
+        }}
         navbar={{
           width: "3rem",
-          breakpoint: 0,
+          breakpoint: "sm",
+          collapsed: { desktop: false, mobile: true },
         }}
-        header={{
-          height: "35px",
+        footer={{
+          height: isMobile ? "5rem" : smallScreenMax ? "3rem" : "0rem",
+          collapsed: !isMobileOrSmallScreen,
+          offset: true,
         }}
         styles={{
           main: {
@@ -311,11 +323,20 @@ function RootLayout() {
           <TopBar menuActions={menuActions} />
         </AppShell.Header>
         <AppShell.Navbar>
-          <SideBar />
+          <SideBar isMobile={false} />
         </AppShell.Navbar>
         <AppShell.Main>
-          <Outlet />
+          <ScrollArea
+            style={{
+              height: `calc(100vh - ${isNative ? "0rem" : "2.3rem"} - ${isMobile ? "5rem" : smallScreenMax ? "3rem" : "0rem"})`,
+            }}
+          >
+            <Outlet />
+          </ScrollArea>
         </AppShell.Main>
+        <AppShell.Footer>
+          <SideBar isMobile={true} />
+        </AppShell.Footer>
       </AppShell>
     </ModalsProvider>
   );
