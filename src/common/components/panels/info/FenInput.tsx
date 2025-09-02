@@ -135,7 +135,7 @@ function FenInput({ currentFen }: { currentFen: string }) {
             />
           </Stack>
           <Stack>
-            <Text size="sm">{t("Fen.Black")}</Text>
+            <Text size="sm">{t("Common.Black")}</Text>
             <Checkbox
               label="O-O"
               checked={blackCastling.k}
