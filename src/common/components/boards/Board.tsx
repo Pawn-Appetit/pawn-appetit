@@ -22,6 +22,7 @@ import { documentDir, homeDir } from "@tauri-apps/api/path";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
 import type { DrawShape } from "chessground/draw";
+import type { Piece } from "chessground/types";
 import { makeSquare, type NormalMove, parseSquare, parseUci, type SquareName } from "chessops";
 import { chessgroundDests, chessgroundMove } from "chessops/compat";
 import { makeSan } from "chessops/san";
@@ -86,6 +87,8 @@ interface ChessboardProps {
   whiteTime?: number;
   blackTime?: number;
   practicing?: boolean;
+  selectedPiece: Piece | null;
+  setSelectedPiece: (piece: Piece | null) => void;
 }
 
 function Board({
@@ -103,6 +106,8 @@ function Board({
   whiteTime,
   blackTime,
   practicing,
+  selectedPiece,
+  setSelectedPiece,
 }: ChessboardProps) {
   const { t } = useTranslation();
 
@@ -424,12 +429,12 @@ function Board({
       : editingMode
         ? "both"
         : match(movable)
-            .with("white", () => "white" as const)
-            .with("black", () => "black" as const)
-            .with("turn", () => turn)
-            .with("both", () => "both" as const)
-            .with("none", () => undefined)
-            .exhaustive();
+          .with("white", () => "white" as const)
+          .with("black", () => "black" as const)
+          .with("turn", () => turn)
+          .with("both", () => "both" as const)
+          .with("none", () => undefined)
+          .exhaustive();
   }, [practiceLock, editingMode, movable, turn]);
 
   const theme = useMantineTheme();
@@ -540,9 +545,9 @@ function Board({
               style={
                 isBasicAnnotation(currentNode.annotations[0])
                   ? {
-                      "--light-color": lightColor,
-                      "--dark-color": darkColor,
-                    }
+                    "--light-color": lightColor,
+                    "--dark-color": darkColor,
+                  }
                   : undefined
               }
               className={chessboard}
@@ -577,6 +582,8 @@ function Board({
               />
 
               <Chessground
+                selectedPiece={selectedPiece}
+                setSelectedPiece={setSelectedPiece}
                 setBoardFen={setBoardFen}
                 orientation={orientation}
                 fen={currentNode.fen}
