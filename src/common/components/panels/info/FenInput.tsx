@@ -1,7 +1,7 @@
 import { Button, Checkbox, Group, Select, Stack, Text } from "@mantine/core";
-import { type Setup, SquareSet } from "chessops";
+import type { Setup } from "chessops";
 import { EMPTY_FEN, INITIAL_FEN, makeFen, parseFen } from "chessops/fen";
-import { memo, useCallback, useContext, useEffect, useMemo } from "react";
+import { memo, useCallback, useContext, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/common/components/TreeStateContext";
@@ -18,17 +18,21 @@ function getCastlingRights(setup: Setup) {
   let blackCastling: Castlingrights = { k: false, q: false };
 
   if (setup) {
+    const whiteKingPos = setup.board.white.intersect(setup.board.king).singleSquare();
+    const blackKingPos = setup.board.black.intersect(setup.board.king).singleSquare();
+
     const whiteKingSquare = getCastlingSquare(setup, "w", "k");
     const whiteQueenSquare = getCastlingSquare(setup, "w", "q");
     const blackKingSquare = getCastlingSquare(setup, "b", "k");
     const blackQueenSquare = getCastlingSquare(setup, "b", "q");
+
     whiteCastling = {
-      k: whiteKingSquare !== undefined ? setup.castlingRights.has(whiteKingSquare) : false,
-      q: whiteQueenSquare !== undefined ? setup.castlingRights.has(whiteQueenSquare) : false,
+      k: whiteKingSquare !== undefined && whiteKingPos === 4 ? setup.castlingRights.has(whiteKingSquare) : false,
+      q: whiteQueenSquare !== undefined && whiteKingPos === 4 ? setup.castlingRights.has(whiteQueenSquare) : false,
     };
     blackCastling = {
-      k: blackKingSquare !== undefined ? setup.castlingRights.has(blackKingSquare) : false,
-      q: blackQueenSquare !== undefined ? setup.castlingRights.has(blackQueenSquare) : false,
+      k: blackKingSquare !== undefined && blackKingPos === 60 ? setup.castlingRights.has(blackKingSquare) : false,
+      q: blackQueenSquare !== undefined && blackKingPos === 60 ? setup.castlingRights.has(blackQueenSquare) : false,
     };
   }
 
@@ -62,31 +66,19 @@ function FenInput({ currentFen }: { currentFen: string }) {
     (color: "w" | "b", side: "q" | "k", value: boolean) => {
       if (setup) {
         const castlingSquare = getCastlingSquare(setup, color, side);
-        if (castlingSquare !== undefined) {
-          setup.castlingRights = setup.castlingRights.set(castlingSquare, value);
-          setFen(makeFen(setup));
+        const kingPos = setup.board[color === "w" ? "white" : "black"].intersect(setup.board.king).singleSquare();
+        const initialKingPos = color === "w" ? 4 : 60;
+
+        if (castlingSquare !== undefined && kingPos === initialKingPos) {
+          const newCastlingRights = value
+            ? setup.castlingRights.with(castlingSquare)
+            : setup.castlingRights.without(castlingSquare);
+          setFen(makeFen({ ...setup, castlingRights: newCastlingRights }));
         }
       }
     },
     [setup, setFen],
   );
-
-  useEffect(() => {
-    let newCastlingRights = SquareSet.empty();
-    if (whiteCastling.q) {
-      newCastlingRights = newCastlingRights.set(getCastlingSquare(setup, "w", "q")!, true);
-    }
-    if (blackCastling.q) {
-      newCastlingRights = newCastlingRights.set(getCastlingSquare(setup, "b", "q")!, true);
-    }
-    if (whiteCastling.k) {
-      newCastlingRights = newCastlingRights.set(getCastlingSquare(setup, "w", "k")!, true);
-    }
-    if (blackCastling.k) {
-      newCastlingRights = newCastlingRights.set(getCastlingSquare(setup, "b", "k")!, true);
-    }
-    setFen(makeFen({ ...setup, castlingRights: newCastlingRights }));
-  }, [blackCastling, setCastlingRights, setup, whiteCastling, setFen]);
 
   return (
     <Stack gap="sm">
