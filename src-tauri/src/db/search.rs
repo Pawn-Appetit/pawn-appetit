@@ -259,7 +259,7 @@ pub async fn search_position(
                 .map(|(s, e)| {
                     // each thread gets its own connection from the pool
                     let mut conn = get_db_or_create(&state, &db_path_str, ConnectionOptions::default())?;
-                    let mut part: Vec<(
+                    let part: Vec<(
                         i32,
                         i32,
                         i32,

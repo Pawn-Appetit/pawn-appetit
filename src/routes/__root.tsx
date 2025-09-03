@@ -121,6 +121,146 @@ function RootLayout() {
     }
   }, []);
 
+  const handleCut = useCallback(async () => {
+    const activeElement = document.activeElement as HTMLInputElement | HTMLTextAreaElement;
+    if (activeElement && (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA")) {
+      const selectedText = activeElement.value.substring(
+        activeElement.selectionStart || 0,
+        activeElement.selectionEnd || 0,
+      );
+      if (selectedText) {
+        try {
+          await navigator.clipboard.writeText(selectedText);
+          const start = activeElement.selectionStart || 0;
+          const end = activeElement.selectionEnd || 0;
+          activeElement.value = activeElement.value.substring(0, start) + activeElement.value.substring(end);
+          activeElement.setSelectionRange(start, start);
+        } catch (err) {
+          console.error("Failed to cut text: ", err);
+        }
+      }
+    } else {
+      document.execCommand("cut");
+    }
+  }, []);
+
+  const handleCopy = useCallback(async () => {
+    const activeElement = document.activeElement as HTMLInputElement | HTMLTextAreaElement;
+
+    if (activeElement && (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA")) {
+      const selectedText = activeElement.value.substring(
+        activeElement.selectionStart || 0,
+        activeElement.selectionEnd || 0,
+      );
+      if (selectedText) {
+        try {
+          await navigator.clipboard.writeText(selectedText);
+        } catch (err) {
+          console.error("Failed to copy text: ", err);
+        }
+      }
+    } else {
+      const selection = window.getSelection();
+      if (selection && selection.toString().trim()) {
+        try {
+          await navigator.clipboard.writeText(selection.toString());
+        } catch (err) {
+          console.error("Failed to copy text: ", err);
+          try {
+            document.execCommand("copy");
+          } catch (execErr) {
+            console.error("Failed to copy with execCommand: ", execErr);
+          }
+        }
+      }
+    }
+  }, []);
+
+  const handlePaste = useCallback(async () => {
+    const activeElement = document.activeElement as HTMLInputElement | HTMLTextAreaElement;
+
+    if (activeElement && (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA")) {
+      try {
+        const clipboardText = await navigator.clipboard.readText();
+        if (clipboardText) {
+          const start = activeElement.selectionStart || 0;
+          const end = activeElement.selectionEnd || 0;
+          const currentValue = activeElement.value;
+          const newValue = currentValue.substring(0, start) + clipboardText + currentValue.substring(end);
+          activeElement.value = newValue;
+          activeElement.setSelectionRange(start + clipboardText.length, start + clipboardText.length);
+
+          const inputEvent = new Event("input", { bubbles: true });
+          activeElement.dispatchEvent(inputEvent);
+          const changeEvent = new Event("change", { bubbles: true });
+          activeElement.dispatchEvent(changeEvent);
+        }
+      } catch (err) {
+        console.error("Failed to paste text: ", err);
+        try {
+          document.execCommand("paste");
+        } catch (execErr) {
+          console.error("Failed to paste with execCommand: ", execErr);
+        }
+      }
+    } else {
+      try {
+        document.execCommand("paste");
+      } catch (err) {
+        console.error("Failed to paste with execCommand: ", err);
+      }
+    }
+  }, []);
+
+  const handleSelectAll = useCallback(() => {
+    const activeElement = document.activeElement as HTMLInputElement | HTMLTextAreaElement;
+    if (activeElement && (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA")) {
+      activeElement.select();
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const isMac = navigator.platform.toLowerCase().includes("mac");
+      const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
+
+      if (ctrlOrCmd) {
+        switch (e.key.toLowerCase()) {
+          case "x":
+            if (!e.shiftKey && !e.altKey) {
+              e.preventDefault();
+              handleCut();
+            }
+            break;
+          case "c":
+            if (!e.shiftKey && !e.altKey) {
+              e.preventDefault();
+              handleCopy();
+            }
+            break;
+          case "v":
+            if (!e.shiftKey && !e.altKey) {
+              e.preventDefault();
+              handlePaste();
+            }
+            break;
+          case "a":
+            if (!e.shiftKey && !e.altKey) {
+              e.preventDefault();
+              handleSelectAll();
+            }
+            break;
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleGlobalKeyDown, true);
+
+    return () => {
+      document.removeEventListener("keydown", handleGlobalKeyDown, true);
+    };
+  }, [handleCut, handleCopy, handlePaste, handleSelectAll]);
+
   const [keyMap] = useAtom(keyMapAtom);
 
   useHotkeys([
