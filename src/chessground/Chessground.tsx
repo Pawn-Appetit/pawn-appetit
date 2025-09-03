@@ -10,8 +10,8 @@ import { boardImageAtom, moveMethodAtom } from "@/state/atoms";
 export function Chessground(
   props: Config & {
     setBoardFen?: (fen: string) => void;
-    selectedPiece: Piece | null;
-    setSelectedPiece: (piece: Piece | null) => void;
+    selectedPiece?: Piece | null;
+    setSelectedPiece?: (piece: Piece | null) => void;
   },
 ) {
   const [api, setApi] = useState<Api | null>(null);
@@ -60,7 +60,7 @@ export function Chessground(
   useEffect(() => {
     // if editingMode it's false then reset selected piece
     if (!props.movable?.free && props.selectedPiece) {
-      props.setSelectedPiece(null);
+      props.setSelectedPiece?.(null);
     }
 
     api?.set({

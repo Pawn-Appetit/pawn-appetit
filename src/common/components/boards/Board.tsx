@@ -87,8 +87,8 @@ interface ChessboardProps {
   whiteTime?: number;
   blackTime?: number;
   practicing?: boolean;
-  selectedPiece: Piece | null;
-  setSelectedPiece: (piece: Piece | null) => void;
+  selectedPiece?: Piece | null;
+  setSelectedPiece?: (piece: Piece | null) => void;
 }
 
 function Board({

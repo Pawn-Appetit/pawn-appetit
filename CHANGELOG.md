@@ -1,5 +1,22 @@
 # Pawn Appétit
 
+## v0.5.1
+
+### ✨ Features
+
+* Implemented **cut, copy, paste, and select all** operations for board positions
+* Added **select and paste pieces** functionality in position editor - thanks [gm-m](https://github.com/gm-m) 🎉
+
+### 🐛 Fixes
+
+* Fixed **castling rights** to update correctly after performing a castling move
+* Disabled `hideDetached` option in **BoardSelect** and **PiecesSelect** components
+* Replaced `Fen.Black` translation key with `Common.Black` - thanks [gm-m](https://github.com/gm-m) 🎉
+
+### 🛠 Improvements & Refactors
+
+* Updated **dependencies** to latest versions
+
 ## v0.5.0
 
 ### ✨ Features

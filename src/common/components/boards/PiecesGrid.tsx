@@ -1,8 +1,8 @@
 import { SimpleGrid } from "@mantine/core";
+import type { Piece as PieceType } from "chessground/types";
 import { COLORS, ROLES } from "chessops";
 import { makeFen, parseFen } from "chessops/fen";
 import Piece from "@/common/components/Piece";
-import type { Piece as PieceType } from "chessground/types";
 
 function PiecesGrid({
   fen,
@@ -18,14 +18,14 @@ function PiecesGrid({
   onPut: (newFen: string) => void;
   vertical?: boolean;
   orientation?: "white" | "black";
-  selectedPiece: PieceType | null;
-  setSelectedPiece: (piece: PieceType | null) => void;
+  selectedPiece?: PieceType | null;
+  setSelectedPiece?: (piece: PieceType | null) => void;
 }) {
   const handlePieceSelect = (piece: PieceType, isDragging: boolean) => {
     if (!isDragging && selectedPiece && piece.role === selectedPiece.role && piece.color === selectedPiece.color) {
-      setSelectedPiece(null);
+      setSelectedPiece?.(null);
     } else {
-      setSelectedPiece(piece);
+      setSelectedPiece?.(piece);
     }
   };
 

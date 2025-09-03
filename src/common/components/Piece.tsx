@@ -18,8 +18,8 @@ export default function PieceComponent({
   putPiece?: (square: Square, piece: Piece) => void;
   size?: number | string;
   orientation?: Color;
-  selectedPiece: Piece | null;
-  onSelect: (piece: Piece, isDragging: boolean) => void;
+  selectedPiece?: Piece | null;
+  onSelect?: (piece: Piece, isDragging: boolean) => void;
 }) {
   size = size || "100%";
   const pieceRef = useRef<HTMLDivElement>(null);
@@ -27,7 +27,7 @@ export default function PieceComponent({
   const [hasDragged, setHasDragged] = useState(false);
 
   const handleClick = () => {
-    onSelect(piece, hasDragged);
+    onSelect?.(piece, hasDragged);
     setHasDragged(false);
   };
 
