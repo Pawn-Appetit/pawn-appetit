@@ -1,0 +1,822 @@
+{
+  "common": {
+    "on": "ON",
+    "off": "OFF",
+    "name": "Name",
+    "description": "Description",
+    "version": "Version",
+    "enabled": "Enabled",
+    "remove": "Remove",
+    "delete": "Delete",
+    "add": "Add",
+    "open": "Open",
+    "create": "Create",
+    "save": "Save",
+    "download": "Download",
+    "local": "Local",
+    "install": "Install",
+    "installed": "Installed",
+    "downloading": "Downloading",
+    "extracting": "Extracting",
+    "error": "Error",
+    "addNew": "Add New",
+    "openFolder": "Open folder in file explorer",
+    "unknown": "Unknown",
+    "cancel": "Cancel",
+    "cannotUndo": "This action cannot be undone.",
+    "nameAlreadyUsed": "Name already used",
+    "requireName": "Name is required",
+    "requirePath": "Path is required",
+    "pgnFile": "PGN file",
+    "pgnGame": "PGN Game",
+    "or": "Or",
+    "clickToSelectPGN": "Click to select PGN file",
+    "size": "Size",
+    "generalSettings": "General settings",
+    "data": "Data",
+    "games": {
+      "one": "{{count, number}} game",
+      "other": "{{count, number}} games"
+    },
+    "edit": "Edit",
+    "enterFileName": "Enter your filename",
+    "next": "Next",
+    "skip": "Skip",
+    "reset": "Reset",
+    "incorrect": "Incorrect",
+    "run": "Run",
+    "stop": "Stop",
+    "engine": "Engine",
+    "unsavedChanges": {
+      "title": "Unsaved Changes",
+      "desc": "You have unsaved changes. Do you want to save them before closing?",
+      "saveAndClose": "Save and Close",
+      "closeWithoutSaving": "Close Without Saving"
+    },
+    "loading": "Loading...",
+    "continue": "Continue",
+    "review": "Review",
+    "noGameSelected": "No game selected"
+  },
+  "chess": {
+    "checkmate": "Checkmate",
+    "stalemate": "Stalemate",
+    "white": "White",
+    "black": "Black",
+    "random": "Random",
+    "any": "Any",
+    "player": "Player",
+    "opponent": "Opponent",
+    "goMode": {
+      "time": "Time",
+      "depth": "Depth",
+      "nodes": "Nodes",
+      "infinite": "Infinite"
+    },
+    "annotate": {
+      "none": "None",
+      "brilliant": "Brilliant",
+      "good": "Good",
+      "interesting": "Interesting",
+      "dubious": "Dubious",
+      "mistake": "Mistake",
+      "blunder": "Blunder",
+      "whiteWinning": "White is winning",
+      "whiteAdvantage": "White has a clear advantage",
+      "whiteEdge": "White has a slight advantage",
+      "equal": "Equal position",
+      "unclear": "Unclear position",
+      "blackEdge": "Black has a slight advantage",
+      "blackAdvantage": "Black has a clear advantage",
+      "blackWinning": "Black is winning",
+      "novelty": "Novelty",
+      "development": "Development",
+      "initiative": "Initiative",
+      "attack": "Attack",
+      "counterplay": "Counterplay",
+      "withCompensation": "With compensation",
+      "timeTrouble": "Time Trouble",
+      "withIdea": "With the idea",
+      "onlyMove": "Only move",
+      "zugzwang": "Zugzwang"
+    },
+    "timeControl": {
+      "ultraBullet": "UltraBullet",
+      "bullet": "Bullet",
+      "blitz": "Blitz",
+      "rapid": "Rapid",
+      "classical": "Classical",
+      "correspondence": "Correspondence"
+    },
+    "outcome": {
+      "outcome": "Result",
+      "selectOutcome": "Select result",
+      "draw": "Draw",
+      "whiteWins": "White wins",
+      "blackWins": "Black wins",
+      "unknown": "Unknown"
+    },
+    "opening": {
+      "emptyBoard": "Empty board",
+      "startingPosition": "Starting position"
+    },
+    "fen": {
+      "start": "Start",
+      "empty": "Empty",
+      "whiteToMove": "White to move",
+      "blackToMove": "Black to move"
+    },
+    "pieceChars": {
+      "k": "K",
+      "q": "Q",
+      "r": "R",
+      "b": "B",
+      "n": "N"
+    },
+    "errors": {
+      "emptyBoard": "Empty board",
+      "invalidKings": "Invalid number of kings",
+      "oppositeCheck": "Opposite check",
+      "pawnsOnBackrank": "Pawns on backrank",
+      "invalidBoard": "Invalid board",
+      "invalidCastlingRights": "Invalid castling rights",
+      "invalidEpSquare": "Invalid en passant square",
+      "invalidFen": "Invalid FEN",
+      "invalidFullmoves": "Invalid fullmove number",
+      "invalidHaldmoves": "Invalid halfmove number",
+      "invalidPockets": "Invalid pockets",
+      "invalidRemainingChecks": "Invalid remaining checks",
+      "invalidTurn": "Invalid turn",
+      "unknown": "Unknown error"
+    }
+  },
+  "units": {
+    "count": "{{count, number}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "bytesLabels": {
+      "bytes": "Bytes",
+      "bytesLong": "Bytes",
+      "kilobytes": "KB",
+      "megabytes": "MB",
+      "gigabytes": "GB",
+      "terabytes": "TB",
+      "kilobytesLong": "Kilobytes",
+      "megabytesLong": "Megabytes",
+      "gigabytesLong": "Gigabytes",
+      "terabytesLong": "Terabytes"
+    },
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "nodesLabels": {
+      "thousand": "k",
+      "million": "M",
+      "billion": "B",
+      "trillion": "T",
+      "quadrillion": "Q",
+      "quintillion": "Qi",
+      "nodes": "nodes",
+      "nodesPerSecond": "nodes/s"
+    },
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "durationLabels": {
+      "seconds": "s",
+      "minutes": "m",
+      "hours": "h",
+      "days": "d",
+      "secondsLong": "seconds",
+      "minutesLong": "minutes",
+      "hoursLong": "hours",
+      "daysLong": "days"
+    },
+    "score": "{{score, score}}",
+    "scoreLabels": {
+      "mate": "M",
+      "dtz": "DTZ",
+      "centipawns": "cp",
+      "centipawnsLong": "centipawns"
+    }
+  },
+  "features": {
+    "richText": {
+      "bold": "Bold",
+      "italic": "Italic",
+      "underline": "Underline",
+      "strike": "Strikethrough",
+      "clearFormatting": "Clear formatting",
+      "h1": "Heading 1",
+      "h2": "Heading 2",
+      "h3": "Heading 3",
+      "h4": "Heading 4",
+      "quote": "Blockquote",
+      "hLine": "Horizontal line",
+      "bulletList": "Bullet list",
+      "numberedList": "Ordered list",
+      "link": "Link",
+      "removeLink": "Remove link"
+    },
+    "menu": {
+      "file": "File",
+      "newTab": "New Tab",
+      "openFile": "Open File",
+      "exit": "Exit",
+      "view": "View",
+      "reload": "Reload",
+      "help": "Help",
+      "documentation": "Documentation",
+      "clearSavedData": "Clear saved data",
+      "openLogs": "Open Logs",
+      "checkUpdate": "Check for updates",
+      "about": "About",
+      "markAsStart": "Mark as start",
+      "promoteToMainLine": "Promote to Main Line",
+      "promoteVariation": "Promote Variation",
+      "copyVariationPGN": "Copy Variation PGN",
+      "deleteMove": "Delete Move"
+    },
+    "sidebar": {
+      "dashboard": "Dashboard",
+      "board": "Board",
+      "accounts": "Accounts",
+      "files": "Files",
+      "databases": "Databases",
+      "engines": "Engines",
+      "learn": "Learn",
+      "settings": "Settings",
+      "keyboardShortcuts": "Keyboard Shortcuts"
+    },
+    "dashboard": {
+      "welcome": {
+        "firstOpen": "Welcome to Pawn Appétit!",
+        "back": "Welcome back",
+        "desc": "Ready to make your next best move?"
+      },
+      "cards": {
+        "learn": {
+          "title": "Learn Chess",
+          "desc": "Interactive lessons to learn chess from basics to advanced strategies",
+          "button": "Start Learning"
+        },
+        "playChess": {
+          "title": "Play a game",
+          "desc": "Challenge an engine or a friend",
+          "button": "Play Now"
+        },
+        "analysisBoard": {
+          "title": "Analysis Board",
+          "desc": "Analyze a game or position",
+          "button": "Open"
+        },
+        "importGame": {
+          "title": "Import Game",
+          "desc": "Import a game from a PGN",
+          "button": "Import"
+        },
+        "analyze": {
+          "title": "Board Analysis",
+          "desc": "Analyze positions, games, and variations with powerful chess engines.",
+          "button": "Analyze"
+        },
+        "database": {
+          "title": "Database Access",
+          "desc": "Explore extensive chess databases and study master games to deepen your understanding.",
+          "button": "Browse"
+        },
+        "engine": {
+          "title": "Engine Integration",
+          "desc": "Add and manage multiple chess engines to customize your analysis setup and enhance flexibility.",
+          "button": "Manage"
+        },
+        "puzzle": {
+          "title": "Tactical Puzzles",
+          "desc": "Sharpen your chess skills with tactical puzzles and enhance your pattern recognition.",
+          "button": "Solve"
+        },
+        "account": {
+          "title": "Accounts",
+          "desc": "Import your games and stats by connecting your Chess.com or Lichess account for personalized analysis.",
+          "button": "Connect"
+        },
+        "import": {
+          "title": "Import",
+          "desc": "Upload and edit PGN files to analyze your own games or study specific positions with full control.",
+          "button": "Import"
+        }
+      }
+    },
+    "tabs": {
+      "newTab": "New Tab",
+      "playChess": {
+        "title": "Play a game",
+        "desc": "Challenge an engine or a friend",
+        "button": "Play Now"
+      },
+      "analysisBoard": {
+        "title": "Analysis Board",
+        "desc": "Analyze a game or position",
+        "button": "Analyze"
+      },
+      "importGame": {
+        "title": "Import Game",
+        "desc": "Import a game from a PGN",
+        "button": "Import game",
+        "url": "Game URL (lichess or chess.com)",
+        "saveToCollection": "Save to collection",
+        "online": "Online",
+        "importing": "Importing...",
+        "import": "Import"
+      },
+      "puzzle": {
+        "title": "Puzzles",
+        "desc": "Train your chess skills",
+        "button": "Solve now"
+      }
+    },
+    "board": {
+      "actions": {
+        "togglePawnStructureView": "Toggle Pawn Structure View",
+        "takeSnapshot": "Take Snapshot",
+        "analyzeGame": "Analyze game",
+        "playFromHere": "Play from here",
+        "clearDrawings": "Clear Drawings",
+        "editPosition": "Edit Position",
+        "savePGN": "Save PGN ({{key}})",
+        "addGame": "Add Game",
+        "flipBoard": "Flip Board ({{key}})"
+      },
+      "tabs": {
+        "practice": "Practice",
+        "graph": "Graph",
+        "centerGraph": "Center on current move",
+        "analysis": "Analysis",
+        "database": "Database",
+        "annotate": "Annotate",
+        "info": "Info"
+      },
+      "practice": {
+        "train": "Train",
+        "build": "Build",
+        "noPositionForTrain1": "There are no position to practice. Start by adding moves to this PGN file.",
+        "noPositionForTrain2": "You'll need to change to Analysis mode to be able to add moves.",
+        "seeAnswer": "See Answer",
+        "practiced": "Practiced",
+        "due": "Due",
+        "unseen": "Unseen",
+        "showAll": "Show all positions",
+        "showLogs": "Show logs",
+        "practicedAll1": "You have practiced all positions.",
+        "practicedAll2": "The next review is on",
+        "correctMoveWas": "The correct move was {{move}}",
+        "resetOpeningData": {
+          "title": "Reset opening data",
+          "desc": "Are you sure you want to reset the opening data for \"{{fileName}}\"? All the learning progress will be lost."
+        }
+      },
+      "analysis": {
+        "engines": "Engines",
+        "report": "Report",
+        "logs": "Logs",
+        "summary": "Summary",
+        "inactiveEngine": "Engine isn't enabled",
+        "syncGlobally": "Sync globally",
+        "killEngine": "Kill engine",
+        "generateReport": "Generate report",
+        "reportGenerated": "Report generated",
+        "generatingReport": "Generating report",
+        "notAnalysed": "Not analysed",
+        "engineRequired": "Engine is required",
+        "refDBRequired": "No reference database selected. Select one first in the databases page",
+        "time": "Time (ms)",
+        "reversed": "Reversed analysis",
+        "reversedDesc": "Analyze the game in starting from the last move.",
+        "annotateNovelties": "Annotate Novelties",
+        "annotateNoveltiesDesc": "Add a comment to the first position that is not in the reference database.",
+        "analyze": "Analyze",
+        "advantage": "Advantage",
+        "accuracy": "Accuracy",
+        "enableWDL": "You have to enable UCI_ShowWDL in the engine settings to use this feature."
+      },
+      "database": {
+        "local": "Local",
+        "lichessAll": "Lichess All",
+        "lichessMaster": "Lichess Masters",
+        "matches": "{{matches, number}} matches",
+        "stats": "Stats",
+        "games": "Games",
+        "options": "Options",
+        "noReference1": "No reference database selected.",
+        "noReference2": "Please",
+        "selectReference": "add a database",
+        "noReference3": "first and mark it as the reference.",
+        "timeControl": "Time control",
+        "averageRating": "Average rating"
+      },
+      "annotate": {
+        "writeHere": "Write here..."
+      }
+    },
+    "lessons": {
+      "title": "Chess Lessons",
+      "selectToBegin": "Select a lesson to begin learning chess",
+      "difficulty": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      },
+      "startLesson": "Start Lesson",
+      "backToLessons": "Back to Lessons",
+      "backToLesson": "Back to Lesson",
+      "startExercise": "Start Exercise",
+      "exercises": "Exercises",
+      "correct": "Correct! Well done.",
+      "incorrect": "Incorrect. Try again.",
+      "progress": "Progress",
+      "overallProgress": "Overall Progress",
+      "showHint": "Show Hint",
+      "hint": "Hint",
+      "tryMoves": "Try one of these moves",
+      "completed": "Completed",
+      "exercisesCompleted": "exercises completed",
+      "lessonCompleted": "Congratulations! You've completed {{lesson}}!",
+      "completionMessage": "You've successfully completed all exercises in this lesson. Keep up the great work!"
+    },
+    "practice": {
+      "title": "Chess Practice",
+      "description": "Improve your chess skills with targeted practice exercises",
+      "selectExercise": "Select an exercise to begin practicing",
+      "progress": "Progress",
+      "exercises": "Exercises",
+      "completed": "Completed",
+      "start": "Start Practice",
+      "showHint": "Show Hint",
+      "hintText": "Look for tactical opportunities or key squares that control the position.",
+      "congratulations": "Congratulations!",
+      "completedCategory": "You've completed all exercises in {{category}}!"
+    },
+    "engines": {
+      "title": "Your Engines",
+      "settings": {
+        "noEngine": "No engine selected",
+        "searchSettings": "Search settings",
+        "advancedSettings": "Advanced settings",
+        "numOfLines": "Number of lines",
+        "numOfCores": "Number of cores",
+        "sizeOfHash": "Size of Hash",
+        "editJSON": "Edit JSON",
+        "reset": "Reset to default"
+      },
+      "add": {
+        "title": "Add Engine",
+        "cloud": "Cloud",
+        "errorFetch": "Failed to fetch the engine's info from the server.",
+        "binaryFile": "Binary file",
+        "binaryFileDesc": "Click to select the binary file",
+        "name": "Name",
+        "autodetect": "Autodetect",
+        "eloDesc": "Engine's Elo",
+        "imageFile": "Image file",
+        "imageFileDesc": "Click to select the image file (recommended size: 60x60)"
+      },
+      "remove": {
+        "title": "Remove Engine",
+        "message": "Are you sure you want to remove this engine from Pawn Appétit?"
+      }
+    },
+    "databases": {
+      "title": "Your Databases",
+      "card": {
+        "games": "Games",
+        "players": "Players",
+        "tournaments": "Tournaments",
+        "storage": "Storage"
+      },
+      "add": {
+        "title": "Add Database",
+        "web": "Web",
+        "errorFetch": "Failed to fetch the database's info from the server.",
+        "clickToSelectPGN": "Click to select the PGN file",
+        "convert": "Convert"
+      },
+      "settings": {
+        "referenceDatabase": "Reference Database",
+        "referenceDatabaseShort": "Reference",
+        "indexed": "Indexed",
+        "indexedDesc": "Indexes are used to speed up the search process, but they take up extra space.",
+        "events": "Events",
+        "explore": "Explore",
+        "advancedTools": "Advanced tools",
+        "mergePlayers": "Merge Players",
+        "mergePlayersDesc": "Replace all occurrences of the first player with the second player in the database.",
+        "merge": "Merge",
+        "batchDelete": "Batch Delete",
+        "batchDeleteDesc": "These actions will irreversibly remove games from the database. Use with caution.",
+        "removeDup": "Remove Duplicates",
+        "removeEmpty": "Remove Empty Games",
+        "actions": "Actions",
+        "addGames": "Add Games",
+        "exportPGN": "Export to PGN"
+      },
+      "delete": {
+        "title": "Delete Database",
+        "message": "Are you sure you want to delete this database?"
+      }
+    },
+    "files": {
+      "title": "Files",
+      "fileType": {
+        "fileType": "File type",
+        "game": "Game",
+        "repertoire": "Repertoire",
+        "tournament": "Tournament",
+        "puzzle": "Puzzle",
+        "other": "Other",
+        "folder": "Folder"
+      },
+      "delete": {
+        "title": "Delete file",
+        "message": "Are you sure you want to delete {{fileName}}?",
+        "delete": "Delete"
+      },
+      "editMetadata": "Edit Metadata",
+      "edit": {
+        "title": "Edit file"
+      },
+      "create": {
+        "title": "Create file",
+        "pgnPlaceholder": "Paste your PGN here..."
+      },
+      "search": "Search for files",
+      "noFiles": "No files found",
+      "noFileSelected": "No file selected",
+      "name": "Name",
+      "lastModified": "Last modified",
+      "type": "Type",
+      "folder": "Folder",
+      "game": {
+        "delete": {
+          "title": "Remove game",
+          "desc": "Are you sure you want to remove this game?"
+        }
+      }
+    },
+    "gameTable": {
+      "date": "Date",
+      "plies": "Plies",
+      "event": "Event",
+      "site": "Site",
+      "from": "From",
+      "startDate": "Start date",
+      "to": "To",
+      "endDate": "End date"
+    },
+    "gameNotation": {
+      "showMoves": "Show moves",
+      "hideMoves": "Hide moves",
+      "showComments": "Show comments",
+      "hideComments": "Hide comments",
+      "showVariations": "Show Variations",
+      "repertoireView": "Repertoire View",
+      "mainLine": "Main Line",
+      "showVariationsTooltip": "Show variations"
+    },
+    "pgnInput": {
+      "comments": "Comments",
+      "glyphs": "Glyphs",
+      "variations": "Variations",
+      "extraMarkups": "Extra Markups",
+      "maxDepth": "Max Depth",
+      "totalMoves": "Total Moves"
+    },
+    "puzzle": {
+      "jumpToNext": "Jump to next puzzle",
+      "jumpToNextOff": "Off",
+      "jumpToNextOnSuccess": "On success",
+      "jumpToNextOnSuccessAndFailure": "On success and failure",
+      "playerRating": "Player Rating",
+      "maxRating": "Max Rating",
+      "newMax": "New Max",
+      "rating": "Puzzle Rating",
+      "averageSuccessRating": "Average Success Rating",
+      "averageFailRating": "Average Fail Rating",
+      "selectDatabase": "Select database",
+      "ratingRange": "Rating Range",
+      "progressive": "Adaptive",
+      "hideRating": "Hide Rating",
+      "inOrder": "In Order",
+      "newPuzzle": "New Puzzle",
+      "analyzePosition": "Analyze Position",
+      "clearSession": "Clear Session",
+      "showingSolution": "Showing Solution",
+      "viewSolution": "View Solution",
+      "loadingRatingRange": "Loading rating range...",
+      "enterTitle": "Enter Puzzle Title"
+    },
+    "tablebase": {
+      "title": "Tablebase",
+      "error": "Error: ",
+      "dtm": "DTM {{count}}",
+      "dtz": "DTZ {{count}}",
+      "fiftyMoveRule": "*due to the 50-move rule"
+    }
+  },
+  "settings": {
+    "board": {
+      "title": "Board",
+      "desc": "Customize the analysis board and game controls",
+      "pieceDest": "Piece Destinations",
+      "pieceDestDesc": "Show possible moves for each piece",
+      "arrows": "Arrows",
+      "arrowsDesc": "Show best move arrows",
+      "snapArrows": "Snap Arrows",
+      "snapArrowsDesc": "Snap arrows to valid moves",
+      "consecutiveArrows": "Consecutive Arrows",
+      "consecutiveArrowsDesc": "Show multiple arrows for the best line, if it involves moving the same piece several times",
+      "eraseDrawablesOnClick": "Erase Drawables On Click",
+      "eraseDrawablesOnClickDesc": "Clear the board of drawn arrows & circles by left-clicking the mouse",
+      "autoPromotion": "Auto Promotion",
+      "autoPromotionDesc": "Automatically promote to a queen when a pawn reaches the last rank",
+      "coordinates": "Coordinates",
+      "coordinatesDesc": "Show coordinates on the board",
+      "autoSave": "Auto Save",
+      "autoSaveDesc": "Auto save to file after each move",
+      "previewBoard": "Preview Board",
+      "previewBoardDesc": "Show a preview of the board when hovering over a move in the engine analysis",
+      "scrollThroughMoves": "Scroll Through Moves",
+      "scrollThroughMovesDesc": "Enable or disable scrolling through moves on the chessboard"
+    },
+    "inputs": {
+      "title": "Inputs",
+      "desc": "Customize the input settings",
+      "textInput": "Text Move Input",
+      "textInputDesc": "Enter moves in text format",
+      "spellCheck": "Spell Check",
+      "spellCheckDesc": "Enable or disable spell check on text inputs"
+    },
+    "openingReport": {
+      "title": "Opening Report",
+      "desc": "Customize the opening report settings",
+      "percentCoverage": "Percent Coverage",
+      "percentCoverageDesc": "Percentage of moves covered in each position",
+      "minGames": "Minimum Games",
+      "minGamesDesc": "Minimum number of games in each position for it to be considered"
+    },
+    "anarchy": {
+      "title": "Anarchy",
+      "desc": "Fun options",
+      "forcedEnPassant": "Forced En Passant",
+      "forcedEnPassantDesc": "Forces you to play En Passant, if it's a legal move."
+    },
+    "appearance": {
+      "title": "Appearance",
+      "desc": "Customize the look of the app",
+      "colorScheme": "Color Scheme",
+      "colorSchemeDesc": "Light or dark mode preference",
+      "auto": "Auto",
+      "light": "Light",
+      "dark": "Dark",
+      "theme": {
+        "theme": "Theme",
+        "manage": "Manage",
+        "manageTitle": "Manage Themes",
+        "customThemes": "Custom Themes",
+        "builtInThemes": "Built-in Themes",
+        "createNew": "Create New",
+        "created": "Theme Created",
+        "createdMessage": "Successfully created theme \"{{name}}\"",
+        "edit": "Edit theme",
+        "duplicate": "Duplicate theme",
+        "duplicated": "Theme Duplicated",
+        "duplicatedMessage": "Successfully created \"{{name}}\"",
+        "export": "Export theme",
+        "exported": "Theme Exported",
+        "exportedMessage": "Successfully exported theme \"{{name}}\"",
+        "exportFailed": "Export Failed",
+        "exportFailedMessage": "Could not export theme.",
+        "delete": "Delete theme",
+        "import": "Import Theme",
+        "importFromFile": "Import from file",
+        "importFromJSON": "Import from JSON",
+        "importTheme": "Import Theme",
+        "importDesc": "Paste the JSON content of a theme file below:",
+        "importPlaceholder": "Paste theme JSON here...",
+        "imported": "Theme Imported",
+        "importedMessage": "Successfully imported \"{{name}}\"",
+        "importFailed": "Import Failed",
+        "importFailedMessage": "Invalid theme file format",
+        "noCustomThemes": "No custom themes yet. Create your first custom theme to get started.",
+        "builtIn": "Built-in",
+        "apply": "Apply Theme",
+        "applied": "Theme Applied",
+        "appliedMessage": "Applied theme \"{{name}}\"",
+        "name": "Theme Name",
+        "nameRequired": "Theme name is required",
+        "namePlaceholder": "Enter theme name",
+        "description": "Description",
+        "descriptionPlaceholder": "Enter theme description",
+        "author": "Author",
+        "authorPlaceholder": "Enter author name",
+        "create": "Create",
+        "importFile": "Import File",
+        "createError": "Failed to create theme",
+        "deleteError": "Failed to delete theme",
+        "duplicateError": "Failed to duplicate theme",
+        "exportError": "Failed to export theme",
+        "importError": "Failed to import theme",
+        "deleted": "Theme Deleted",
+        "deletedMessage": "Deleted theme \"{{name}}\"",
+        "visualEditor": "Visual Editor",
+        "updated": "Theme Updated",
+        "updatedMessage": "Successfully updated theme \"{{name}}\"",
+        "saveError": "Failed to save theme",
+        "editTheme": "Edit Theme",
+        "hidePreview": "Hide Preview",
+        "showPreview": "Show Preview",
+        "basic": "Basic Settings",
+        "colors": "Colors",
+        "components": "Components",
+        "primaryColor": "Primary Color",
+        "defaultRadius": "Default Radius",
+        "fontFamily": "Font Family",
+        "monospaceFont": "Monospace Font",
+        "scale": "Scale",
+        "luminanceThreshold": "Luminance Threshold",
+        "fontSmoothing": "Font Smoothing",
+        "autoContrast": "Auto Contrast",
+        "focusRing": "Focus Ring",
+        "white": "White Color",
+        "black": "Black Color",
+        "colorPalettes": "Color Palettes",
+        "addColor": "Add Color",
+        "newColorName": "Enter color name",
+        "autoDesc": "Automatically matches system preference"
+      },
+      "themeDesc": "Choose and customize visual themes",
+      "custom": "Custom",
+      "titleBar": "Title Bar",
+      "titleBarDesc": "Choose between native or custom title bar",
+      "language": "Language",
+      "languageDesc": "Language used in the app",
+      "native": "Native",
+      "fontSize": "Font Size",
+      "fontSizeDesc": "Overall font size",
+      "pieceSet": "Piece Set",
+      "pieceSetDesc": "Pieces used on the boards",
+      "boardImage": "Board Image",
+      "boardImageDesc": "Image used as the background of the board",
+      "accentColor": "Accent Color",
+      "accentColorDesc": "Main color of the app",
+      "hideDashboardOnStartup": "Hide Dashboard on Startup",
+      "hideDashboardOnStartupDesc": "Open Boards instead of Dashboard when the app starts",
+      "dateFormat": "Date Format",
+      "dateFormatDesc": "Choose between international (YYYY-MM-DD) or locale-specific date format",
+      "international": "International",
+      "locale": "Locale-specific"
+    },
+    "sound": {
+      "title": "Sound",
+      "desc": "Customize the sound settings",
+      "volume": "Volume",
+      "volumeDesc": "Overall volume",
+      "collection": "Sound collection",
+      "collectionDesc": "Collection of sounds used"
+    },
+    "keybindings": "Keybindings",
+    "directories": {
+      "title": "Directories",
+      "desc": "Customize the directories used by the app",
+      "files": "Files directory",
+      "filesDesc": "This is where your games in the Files page are stored"
+    },
+    "telemetry": "Telemetry",
+    "telemetryDesc": "Help improve Pawn Appétit by sharing anonymous usage data",
+    "moveNotation": "Move notation",
+    "moveNotationDesc": "Choose how to display pieces in notation",
+    "symbols": "Symbols (♔♕♖♗♘)",
+    "letters": "Letters (K Q R B N)",
+    "translatedLetters": "Translated Letters (K Q R B N)",
+    "waysToMovePieces": "Ways to Move Pieces",
+    "waysToMovePiecesDesc": "Move pieces by dragging, clicking, or both",
+    "drag": "Drag",
+    "click": "Click",
+    "both": "Both",
+    "searchPlaceholder": "Search settings",
+    "noResultsFound": "No settings found for",
+    "gameplay": "Gameplay",
+    "analysis": "Analysis",
+    "interface": "Interface",
+    "system": "System"
+  },
+  "formatters": {
+    "dateFormat": "{{date, dateformat}}",
+    "dateTimeFormat": "{{date, datetimeformat}}",
+    "moveNotation": "{{move, moveNotation}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "score": "{{score, score}}"
+  }
+}

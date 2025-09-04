@@ -49,10 +49,10 @@ function ReportModal({
     initialValues: reportSettings,
     validate: {
       engine: (value) => {
-        if (!value) return t("Board.Analysis.EngineRequired");
+        if (!value) return t("features.board.analysis.engineRequired");
       },
       novelty: (value) => {
-        if (value && !referenceDb) return t("Board.Analysis.RefDBRequired");
+        if (value && !referenceDb) return t("features.board.analysis.refDBRequired");
       },
     },
   });
@@ -104,13 +104,13 @@ function ReportModal({
   }
 
   return (
-    <Modal opened={reportingMode} onClose={() => toggleReportingMode()} title={t("Board.Analysis.GenerateReport")}>
+    <Modal opened={reportingMode} onClose={() => toggleReportingMode()} title={t("features.board.analysis.generateReport")}>
       <form onSubmit={form.onSubmit(() => analyze())}>
         <Stack>
           <Select
             allowDeselect={false}
             withAsterisk
-            label={t("Common.Engine")}
+            label={t("common.engine")}
             placeholder="Pick one"
             data={
               localEngines.map((engine) => {
@@ -130,9 +130,9 @@ function ReportModal({
                 middlewares: { flip: false, shift: false },
               }}
               data={[
-                { label: t("GoMode.Depth"), value: "Depth" },
-                { label: t("Board.Analysis.Time"), value: "Time" },
-                { label: t("GoMode.Nodes"), value: "Nodes" },
+                { label: t("chess.goMode.depth"), value: "Depth" },
+                { label: t("features.board.analysis.time"), value: "Time" },
+                { label: t("chess.goMode.nodes"), value: "Nodes" },
               ]}
               value={form.values.goMode.t}
               onChange={(v) => {
@@ -154,19 +154,19 @@ function ReportModal({
           </Group>
 
           <Checkbox
-            label={t("Board.Analysis.Reversed")}
-            description={t("Board.Analysis.Reversed.Desc")}
+            label={t("features.board.analysis.reversed")}
+            description={t("features.board.analysis.reversed.Desc")}
             {...form.getInputProps("reversed", { type: "checkbox" })}
           />
 
           <Checkbox
-            label={t("Board.Analysis.AnnotateNovelties")}
-            description={t("Board.Analysis.AnnotateNovelties.Desc")}
+            label={t("features.board.analysis.annotateNovelties")}
+            description={t("features.board.analysis.annotateNovelties.Desc")}
             {...form.getInputProps("novelty", { type: "checkbox" })}
           />
 
           <Group justify="right">
-            <Button type="submit">{t("Board.Analysis.Analyze")}</Button>
+            <Button type="submit">{t("features.board.analysis.analyze")}</Button>
           </Group>
         </Stack>
       </form>

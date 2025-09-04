@@ -18,14 +18,14 @@ export default function ThemeSettings() {
 
   const themeOptions = [
     {
-      group: t("Settings.Appearance.Theme.BuiltInThemes"),
+      group: t("settings.appearance.title.Theme.BuiltInThemes"),
       items: builtInThemes.map(theme => ({
         value: theme.id,
         label: theme.name,
       }))
     },
     ...(customThemes.length > 0 ? [{
-      group: t("Settings.Appearance.Theme.CustomThemes"),
+      group: t("settings.appearance.title.Theme.CustomThemes"),
       items: customThemes.map(theme => ({
         value: theme.id,
         label: theme.name,
@@ -45,10 +45,10 @@ export default function ThemeSettings() {
         data={themeOptions}
         value={currentThemeId}
         onChange={handleThemeChange}
-        placeholder={t("Settings.Appearance.Theme")}
+        placeholder={t("settings.appearance.title.Theme")}
         w={200}
       />
-      <Tooltip label={t("Settings.Appearance.Theme.Manage")}>
+      <Tooltip label={t("settings.appearance.title.Theme.Manage")}>
         <ActionIcon 
           variant="light" 
           onClick={() => setManagerOpen(true)}

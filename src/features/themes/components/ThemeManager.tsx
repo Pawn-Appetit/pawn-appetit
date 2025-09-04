@@ -58,7 +58,7 @@ function ThemeCard({ theme, onEdit, onDelete, onDuplicate, onExport, onApply }: 
             <Text fw={500}>{theme.name}</Text>
             {theme.isBuiltIn && (
               <Badge size="xs" variant="light">
-                {t("Settings.Appearance.Theme.BuiltIn")}
+                {t("settings.appearance.theme.builtIn")}
               </Badge>
             )}
           </Group>
@@ -75,32 +75,32 @@ function ThemeCard({ theme, onEdit, onDelete, onDuplicate, onExport, onApply }: 
         </div>
 
         <Group gap="xs">
-          <Tooltip label={t("Settings.Appearance.Theme.Apply")}>
+          <Tooltip label={t("settings.appearance.theme.apply")}>
             <ActionIcon variant="light" color="blue" onClick={() => onApply(theme)}>
               <IconCheck size={16} />
             </ActionIcon>
           </Tooltip>
 
-          <Tooltip label={t("Settings.Appearance.Theme.Duplicate")}>
+          <Tooltip label={t("settings.appearance.theme.duplicate")}>
             <ActionIcon variant="light" onClick={() => onDuplicate(theme)}>
               <IconCopy size={16} />
             </ActionIcon>
           </Tooltip>
 
-          <Tooltip label={t("Settings.Appearance.Theme.Export")}>
+          <Tooltip label={t("settings.appearance.theme.export")}>
             <ActionIcon variant="light" onClick={() => onExport(theme)}>
               <IconDownload size={16} />
             </ActionIcon>
           </Tooltip>
 
-          <Tooltip label={t("Settings.Appearance.Theme.Edit")}>
+          <Tooltip label={t("settings.appearance.theme.edit")}>
             <ActionIcon variant="light" color="yellow" onClick={() => onEdit(theme)}>
               <IconEdit size={16} />
             </ActionIcon>
           </Tooltip>
 
           {!theme.isBuiltIn && (
-            <Tooltip label={t("Settings.Appearance.Theme.Delete")}>
+            <Tooltip label={t("settings.appearance.theme.delete")}>
               <ActionIcon variant="light" color="red" onClick={() => onDelete(theme)}>
                 <IconTrash size={16} />
               </ActionIcon>
@@ -134,7 +134,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
       author: "",
     },
     validate: {
-      name: (value) => (value.length < 2 ? t("Settings.Appearance.Theme.NameRequired") : null),
+      name: (value) => (value.length < 2 ? t("settings.appearance.theme.nameRequired") : null),
     },
   });
 
@@ -150,8 +150,8 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
       });
 
       notifications.show({
-        title: t("Settings.Appearance.Theme.Created"),
-        message: t("Settings.Appearance.Theme.CreatedMessage", newTheme.name),
+        title: t("settings.appearance.theme.created"),
+        message: t("settings.appearance.theme.createdMessage", newTheme.name),
         color: "green",
       });
 
@@ -160,7 +160,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
     } catch {
       notifications.show({
         title: t("Error"),
-        message: t("Settings.Appearance.Theme.CreateError"),
+        message: t("settings.appearance.theme.createError"),
         color: "red",
       });
     }
@@ -171,15 +171,15 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
       const success = deleteTheme(theme.id);
       if (success) {
         notifications.show({
-          title: t("Settings.Appearance.Theme.Deleted"),
-          message: t("Settings.Appearance.Theme.DeletedMessage", theme.name),
+          title: t("settings.appearance.theme.deleted"),
+          message: t("settings.appearance.theme.deletedMessage", theme.name),
           color: "green",
         });
       }
     } catch {
       notifications.show({
         title: t("Error"),
-        message: t("Settings.Appearance.Theme.DeleteError"),
+        message: t("settings.appearance.theme.deleteError"),
         color: "red",
       });
     }
@@ -190,15 +190,15 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
       const duplicatedTheme = duplicateTheme({ id: theme.id, newName: `${theme.name} Copy` });
       if (duplicatedTheme) {
         notifications.show({
-          title: t("Settings.Appearance.Theme.Duplicated"),
-          message: t("Settings.Appearance.Theme.DuplicatedMessage", duplicatedTheme.name),
+          title: t("settings.appearance.theme.duplicated"),
+          message: t("settings.appearance.theme.duplicatedMessage", duplicatedTheme.name),
           color: "green",
         });
       }
     } catch {
       notifications.show({
         title: t("Error"),
-        message: t("Settings.Appearance.Theme.DuplicateError"),
+        message: t("settings.appearance.theme.duplicateError"),
         color: "red",
       });
     }
@@ -221,15 +221,15 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
         URL.revokeObjectURL(url);
 
         notifications.show({
-          title: t("Settings.Appearance.Theme.Exported"),
-          message: t("Settings.Appearance.Theme.ExportedMessage", theme.name),
+          title: t("settings.appearance.theme.exported"),
+          message: t("settings.appearance.theme.exportedMessage", theme.name),
           color: "green",
         });
       }
     } catch {
       notifications.show({
         title: t("Error"),
-        message: t("Settings.Appearance.Theme.ExportError"),
+        message: t("settings.appearance.theme.exportError"),
         color: "red",
       });
     }
@@ -245,8 +245,8 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
       const importedTheme = importTheme(themeData);
 
       notifications.show({
-        title: t("Settings.Appearance.Theme.Imported"),
-        message: t("Settings.Appearance.Theme.ImportedMessage", importedTheme.name),
+        title: t("settings.appearance.theme.imported"),
+        message: t("settings.appearance.theme.importedMessage", importedTheme.name),
         color: "green",
       });
 
@@ -254,7 +254,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
     } catch {
       notifications.show({
         title: t("Error"),
-        message: t("Settings.Appearance.Theme.ImportError"),
+        message: t("settings.appearance.theme.importError"),
         color: "red",
       });
     }
@@ -263,8 +263,8 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
   const handleApplyTheme = (theme: Theme) => {
     setCurrentTheme(theme.id);
     notifications.show({
-      title: t("Settings.Appearance.Theme.Applied"),
-      message: t("Settings.Appearance.Theme.AppliedMessage", theme.name),
+      title: t("settings.appearance.theme.applied"),
+      message: t("settings.appearance.theme.appliedMessage", theme.name),
       color: "blue",
     });
   };
@@ -275,13 +275,13 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title={t("Settings.Appearance.Theme.ManageTitle")} size="xl">
+    <Modal opened={opened} onClose={onClose} title={t("settings.appearance.theme.manageTitle")} size="xl">
       <Stack gap="md">
         {/* Import/Create Actions */}
         <Group justify="space-between">
           <Group>
             <Button leftSection={<IconPlus size={16} />} onClick={() => setCreateModalOpen(true)}>
-              {t("Settings.Appearance.Theme.CreateNew")}
+              {t("settings.appearance.theme.createNew")}
             </Button>
 
             <Button 
@@ -292,11 +292,11 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
                 setVisualEditorOpen(true);
               }}
             >
-              {t("Settings.Appearance.Theme.VisualEditor")}
+              {t("settings.appearance.theme.visualEditor")}
             </Button>
 
             <FileInput
-              placeholder={t("Settings.Appearance.Theme.Import")}
+              placeholder={t("settings.appearance.theme.import")}
               value={importFile}
               onChange={setImportFile}
               accept=".json"
@@ -306,7 +306,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
 
             {importFile && (
               <Button variant="light" onClick={handleImportTheme}>
-                {t("Settings.Appearance.Theme.ImportFile")}
+                {t("settings.appearance.theme.importFile")}
               </Button>
             )}
           </Group>
@@ -317,7 +317,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
         {/* Built-in Themes */}
         <div>
           <Title order={4} mb="sm">
-            {t("Settings.Appearance.Theme.BuiltInThemes")}
+            {t("settings.appearance.theme.builtInThemes")}
           </Title>
           <ScrollArea.Autosize mah={200}>
             <Stack gap="xs">
@@ -341,13 +341,13 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
         {/* Custom Themes */}
         <div>
           <Title order={4} mb="sm">
-            {t("Settings.Appearance.Theme.CustomThemes")}
+            {t("settings.appearance.theme.customThemes")}
           </Title>
           <ScrollArea.Autosize mah={300}>
             <Stack gap="xs">
               {customThemes.length === 0 ? (
                 <Text c="dimmed" ta="center" py="xl">
-                  {t("Settings.Appearance.Theme.NoCustomThemes")}
+                  {t("settings.appearance.theme.noCustomThemes")}
                 </Text>
               ) : (
                 customThemes.map((theme) => (
@@ -374,26 +374,26 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
           setCreateModalOpen(false);
           createForm.reset();
         }}
-        title={t("Settings.Appearance.Theme.CreateNew")}
+        title={t("settings.appearance.theme.createNew")}
       >
         <form onSubmit={createForm.onSubmit(handleCreateTheme)}>
           <Stack gap="md">
             <TextInput
-              label={t("Settings.Appearance.Theme.Name")}
-              placeholder={t("Settings.Appearance.Theme.NamePlaceholder")}
+              label={t("settings.appearance.theme.name")}
+              placeholder={t("settings.appearance.theme.namePlaceholder")}
               required
               {...createForm.getInputProps("name")}
             />
 
             <TextInput
-              label={t("Settings.Appearance.Theme.Description")}
-              placeholder={t("Settings.Appearance.Theme.DescriptionPlaceholder")}
+              label={t("settings.appearance.theme.description")}
+              placeholder={t("settings.appearance.theme.descriptionPlaceholder")}
               {...createForm.getInputProps("description")}
             />
 
             <TextInput
-              label={t("Settings.Appearance.Theme.Author")}
-              placeholder={t("Settings.Appearance.Theme.AuthorPlaceholder")}
+              label={t("settings.appearance.theme.author")}
+              placeholder={t("settings.appearance.theme.authorPlaceholder")}
               {...createForm.getInputProps("author")}
             />
 
@@ -401,7 +401,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
               <Button variant="subtle" onClick={() => setCreateModalOpen(false)}>
                 {t("Cancel")}
               </Button>
-              <Button type="submit">{t("Settings.Appearance.Theme.Create")}</Button>
+              <Button type="submit">{t("settings.appearance.theme.create")}</Button>
             </Group>
           </Stack>
         </form>

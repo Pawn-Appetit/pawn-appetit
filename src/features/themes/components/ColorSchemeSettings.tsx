@@ -19,7 +19,7 @@ export default function ColorSchemeSettings() {
             label: (
               <Center>
                 <IconSunMoon size="1rem" stroke={1.5} />
-                <Box ml={10}>{t("Settings.Appearance.ColorScheme.Auto")}</Box>
+                    <Box ml={10}>{t("settings.appearance.auto")}</Box>
               </Center>
             ),
           },
@@ -28,7 +28,7 @@ export default function ColorSchemeSettings() {
             label: (
               <Center>
                 <IconSun size="1rem" stroke={1.5} />
-                <Box ml={10}>{t("Settings.Appearance.ColorScheme.Light")}</Box>
+                <Box ml={10}>{t("settings.appearance.light")}</Box>
               </Center>
             ),
           },
@@ -37,7 +37,7 @@ export default function ColorSchemeSettings() {
             label: (
               <Center>
                 <IconMoon size="1rem" stroke={1.5} />
-                <Box ml={10}>{t("Settings.Appearance.ColorScheme.Dark")}</Box>
+                <Box ml={10}>{t("settings.appearance.dark")}</Box>
               </Center>
             ),
           },

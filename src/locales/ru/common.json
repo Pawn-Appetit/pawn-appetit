@@ -1,0 +1,745 @@
+{
+  "common": {
+    "on": "ВКЛ",
+    "off": "ВЫКЛ",
+    "name": "Имя",
+    "description": "Описание",
+    "version": "Версия",
+    "enabled": "Включено",
+    "remove": "Удалить",
+    "delete": "Удалить",
+    "add": "Добавить",
+    "open": "Открыть",
+    "create": "Создать",
+    "save": "Сохранить",
+    "download": "Загрузить",
+    "local": "Локально",
+    "install": "Установить",
+    "installed": "Установлено",
+    "downloading": "Загрузка",
+    "extracting": "Извлечение",
+    "error": "Ошибка",
+    "addNew": "Добавить новое",
+    "openFolder": "Открыть папку в проводнике",
+    "unknown": "Неизвестно",
+    "cancel": "Отменить",
+    "cannotUndo": "Это действие нельзя отменить.",
+    "nameAlreadyUsed": "Имя уже используется",
+    "requireName": "Имя обязательно",
+    "requirePath": "Путь обязателен",
+    "pgnFile": "Файл PGN",
+    "pgnGame": "Игра PGN",
+    "or": "Или",
+    "clickToSelectPGN": "Нажмите, чтобы выбрать PGN-файл",
+    "size": "Размер",
+    "generalSettings": "Основные настройки",
+    "data": "Данные",
+    "games": {
+      "one": "{{count}} игра",
+      "other": "{{count}} игры"
+    },
+    "edit": "Редактировать",
+    "enterFileName": "Введите имя файла",
+    "next": "Далее",
+    "skip": "Пропустить",
+    "reset": "Сбросить",
+    "incorrect": "Неверно",
+    "run": "Запустить",
+    "stop": "Остановить",
+    "engine": "Движок",
+    "unsavedChanges": {
+      "title": "Несохранённые изменения",
+      "desc": "У вас есть несохранённые изменения. Сохранить перед закрытием?",
+      "saveAndClose": "Сохранить и закрыть",
+      "closeWithoutSaving": "Закрыть без сохранения"
+    },
+    "loading": "Загрузка...",
+    "continue": "Продолжить",
+    "review": "Обзор",
+    "noGameSelected": "Партия не выбрана"
+  },
+  "chess": {
+    "checkmate": "Мат",
+    "stalemate": "Пат",
+    "white": "Белые",
+    "black": "Чёрные",
+    "random": "Случайный",
+    "any": "Любой",
+    "player": "Игрок",
+    "opponent": "Противник",
+    "goMode": {
+      "time": "Время",
+      "depth": "Глубина",
+      "nodes": "Узлы",
+      "infinite": "Бесконечно"
+    },
+    "annotate": {
+      "none": "Нет",
+      "brilliant": "Блестяще",
+      "good": "Хорошо",
+      "interesting": "Интересно",
+      "dubious": "Сомнительно",
+      "mistake": "Ошибка",
+      "blunder": "Грубая ошибка",
+      "whiteWinning": "Белые побеждают",
+      "whiteAdvantage": "Преимущество у белых",
+      "whiteEdge": "Небольшое преимущество у белых",
+      "equal": "Равная позиция",
+      "unclear": "Неясная позиция",
+      "blackEdge": "Небольшое преимущество у чёрных",
+      "blackAdvantage": "Преимущество у чёрных",
+      "blackWinning": "Чёрные побеждают",
+      "novelty": "Новинка",
+      "development": "Развитие",
+      "initiative": "Инициатива",
+      "attack": "Атака",
+      "counterplay": "Контригра",
+      "withCompensation": "С компенсацией",
+      "timeTrouble": "Цейтнот",
+      "withIdea": "С идеей",
+      "onlyMove": "Единственный ход",
+      "zugzwang": "Цугцванг"
+    },
+    "timeControl": {
+      "ultraBullet": "Ультра Буллет",
+      "bullet": "Буллет",
+      "blitz": "Блиц",
+      "rapid": "Рапид",
+      "classical": "Классика",
+      "correspondence": "Переписка"
+    },
+    "outcome": {
+      "outcome": "Результат",
+      "selectOutcome": "Выберите результат",
+      "draw": "Ничья",
+      "whiteWins": "Белые выиграли",
+      "blackWins": "Чёрные выиграли",
+      "unknown": "Неизвестно"
+    },
+    "opening": {
+      "emptyBoard": "Пустая доска",
+      "startingPosition": "Начальная позиция"
+    },
+    "fen": {
+      "start": "Начало",
+      "empty": "Пусто",
+      "whiteToMove": "Ход белых",
+      "blackToMove": "Ход чёрных"
+    },
+    "pieceChars": {
+      "k": "K",
+      "q": "Q",
+      "r": "R",
+      "b": "B",
+      "n": "N"
+    },
+    "errors": {
+      "emptyBoard": "Пустая доска",
+      "invalidKings": "Неверное количество королей",
+      "oppositeCheck": "Обе стороны под шахом",
+      "pawnsOnBackrank": "Пешки на последней горизонтали",
+      "invalidBoard": "Неверная доска",
+      "invalidCastlingRights": "Неверные права на рокировку",
+      "invalidEpSquare": "Неверная клетка взятия на проходе",
+      "invalidFen": "Неверный FEN",
+      "invalidFullmoves": "Неверное число полных ходов",
+      "invalidHaldmoves": "Неверное число полуходов",
+      "invalidPockets": "Неверные карманы",
+      "invalidRemainingChecks": "Неверное число оставшихся шахов",
+      "invalidTurn": "Неверный ход",
+      "unknown": "Неизвестная ошибка"
+    }
+  },
+  "units": {
+    "count": "{{count, number}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "bytesLabels": {
+      "bytes": "Байт",
+      "bytesLong": "Байты",
+      "kilobytes": "КБ",
+      "megabytes": "МБ",
+      "gigabytes": "ГБ",
+      "terabytes": "ТБ",
+      "kilobytesLong": "Килобайты",
+      "megabytesLong": "Мегабайты",
+      "gigabytesLong": "Гигабайты",
+      "terabytesLong": "Терабайты"
+    },
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "nodesLabels": {
+      "thousand": "тыс.",
+      "million": "млн",
+      "billion": "млрд",
+      "trillion": "трлн",
+      "quadrillion": "квадрлн",
+      "quintillion": "квинтлн",
+      "nodes": "узлы",
+      "nodesPerSecond": "узлов/с"
+    },
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "durationLabels": {
+      "seconds": "с",
+      "minutes": "м",
+      "hours": "ч",
+      "days": "д",
+      "secondsLong": "секунды",
+      "minutesLong": "минуты",
+      "hoursLong": "часы",
+      "daysLong": "дни"
+    },
+    "score": "{{score, score}}",
+    "scoreLabels": {
+      "mate": "М",
+      "dtz": "DTZ",
+      "centipawns": "cp",
+      "centipawnsLong": "центпауны"
+    }
+  },
+  "features": {
+    "richText": {
+      "bold": "Жирный",
+      "italic": "Курсив",
+      "underline": "Подчёркнутый",
+      "strike": "Зачёркнутый",
+      "clearFormatting": "Очистить форматирование",
+      "h1": "Заголовок 1",
+      "h2": "Заголовок 2",
+      "h3": "Заголовок 3",
+      "h4": "Заголовок 4",
+      "quote": "Цитата",
+      "hLine": "Горизонтальная линия",
+      "bulletList": "Маркированный список",
+      "numberedList": "Нумерованный список",
+      "link": "Ссылка",
+      "removeLink": "Удалить ссылку"
+    },
+    "menu": {
+      "file": "Файл",
+      "newTab": "Новая вкладка",
+      "openFile": "Открыть файл",
+      "exit": "Выход",
+      "view": "Вид",
+      "reload": "Перезагрузить",
+      "help": "Помощь",
+      "documentation": "Документация",
+      "clearSavedData": "Очистить сохранённые данные",
+      "openLogs": "Открыть логи",
+      "checkUpdate": "Проверить обновления",
+      "about": "О программе",
+      "markAsStart": "Отметить как начало",
+      "promoteToMainLine": "Повысить до главного варианта",
+      "promoteVariation": "Повысить вариант",
+      "copyVariationPGN": "Скопировать PGN варианта",
+      "deleteMove": "Удалить ход"
+    },
+    "sidebar": {
+      "dashboard": "Главная",
+      "board": "Доска",
+      "accounts": "Пользователь",
+      "files": "Файлы",
+      "databases": "Базы данных",
+      "engines": "Движки",
+      "learn": "Обучение",
+      "settings": "Настройки",
+      "keyboardShortcuts": "Горячие клавиши"
+    },
+    "dashboard": {
+      "welcome": {
+        "firstOpen": "Добро пожаловать в Pawn Appétit!",
+        "back": "С возвращением",
+        "desc": "Готовы сделать лучший ход?"
+      },
+      "cards": {
+        "learn": {
+          "title": "Изучение шахмат",
+          "desc": "Интерактивные уроки от азов шахмат до продвинутых стратегий",
+          "button": "Начать обучение"
+        },
+        "playChess": {
+          "title": "Играть в шахматы",
+          "desc": "Играйте против движка или друга",
+          "button": "Играть"
+        },
+        "analysisBoard": {
+          "title": "Анализ доски",
+          "desc": "Анализируйте игру или позицию",
+          "button": "Открыть"
+        },
+        "importGame": {
+          "title": "Импорт игры",
+          "desc": "Импортируйте игру из файла PGN",
+          "button": "Импорт"
+        },
+        "analyze": {
+          "title": "Анализ доски",
+          "desc": "Анализируйте позиции, партии и варианты с помощью мощных шахматных движков.",
+          "button": "Анализ"
+        },
+        "database": {
+          "title": "База данных",
+          "desc": "Изучайте обширные шахматные базы и партии мастеров, чтобы углубить понимание.",
+          "button": "Открыть"
+        },
+        "engine": {
+          "title": "Интеграция движка",
+          "desc": "Добавляйте и управляйте шахматными движками для гибкой настройки анализа.",
+          "button": "Управлять"
+        },
+        "puzzle": {
+          "title": "Головоломки",
+          "desc": "Тренируйте шахматные навыки",
+          "button": "Тренироваться"
+        },
+        "account": {
+          "title": "Аккаунты",
+          "desc": "Импортируйте свои партии и статистику, подключив аккаунт Chess.com или Lichess.",
+          "button": "Подключить"
+        },
+        "import": {
+          "title": "Импорт",
+          "desc": "Загрузите и редактируйте PGN-файлы, чтобы анализировать свои партии или конкретные позиции.",
+          "button": "Импорт"
+        }
+      }
+    },
+    "tabs": {
+      "newTab": "Новая вкладка",
+      "playChess": {
+        "title": "Играть партию",
+        "desc": "Сразитесь с движком или другом",
+        "button": "Играть"
+      },
+      "analysisBoard": {
+        "title": "Доска анализа",
+        "desc": "Анализ партии или позиции",
+        "button": "Анализ"
+      },
+      "importGame": {
+        "title": "Импорт партии",
+        "desc": "Импортируйте партию из PGN",
+        "button": "Импорт",
+        "url": "URL партии (lichess или chess.com)",
+        "saveToCollection": "Сохранить в коллекцию",
+        "online": "Онлайн",
+        "importing": "Импорт...",
+        "import": "Импорт"
+      },
+      "puzzle": {
+        "title": "Задачи",
+        "desc": "Тренируйте шахматные навыки",
+        "button": "Решить"
+      }
+    },
+    "board": {
+      "actions": {
+        "togglePawnStructureView": "Переключить отображение структуры пешек",
+        "takeSnapshot": "Сделать скриншот",
+        "analyzeGame": "Анализировать партию",
+        "playFromHere": "Играть отсюда",
+        "clearDrawings": "Стереть отметки",
+        "editPosition": "Редактировать позицию",
+        "savePGN": "Сохранить PGN ({{key}})",
+        "addGame": "Добавить партию",
+        "flipBoard": "Инвертировать доску ({{key}})"
+      },
+      "tabs": {
+        "practice": "Практика",
+        "graph": "График",
+        "centerGraph": "Центрировать на текущем ходе",
+        "analysis": "Анализ",
+        "database": "База данных",
+        "annotate": "Аннотация",
+        "info": "Информация"
+      },
+      "practice": {
+        "train": "Тренировать",
+        "build": "Создать",
+        "noPositionForTrain1": "Нет позиций для тренировки. Сначала добавьте ходы в этот файл PGN.",
+        "noPositionForTrain2": "Необходимо переключиться в режим анализа, чтобы добавлять ходы.",
+        "seeAnswer": "Посмотреть ответ",
+        "practiced": "Отработано",
+        "due": "Подлежит тренировке",
+        "unseen": "Не просмотрено",
+        "showAll": "Показать все позиции",
+        "showLogs": "Показать логи",
+        "practicedAll1": "Вы уже отработали все позиции.",
+        "practicedAll2": "Следующая проверка через",
+        "correctMoveWas": "Правильный ход был {{move}}",
+        "resetOpeningData": {
+          "title": "Сброс данных дебюта",
+          "desc": "Вы уверены, что хотите сбросить данные дебюта для «{{fileName}}»? Весь прогресс будет потерян."
+        }
+      },
+      "analysis": {
+        "engines": "Движки",
+        "report": "Отчёт",
+        "logs": "Логи",
+        "summary": "Сводка",
+        "inactiveEngine": "Движок не активен",
+        "syncGlobally": "Синхронизировать глобально",
+        "killEngine": "Остановить движок",
+        "generateReport": "Создать отчёт",
+        "reportGenerated": "Отчёт создан",
+        "generatingReport": "Создание отчёта",
+        "notAnalysed": "Не проанализировано",
+        "engineRequired": "Требуется движок",
+        "refDBRequired": "Не выбрана база данных. Сначала выберите базу данных на странице баз данных.",
+        "time": "Время (мс)",
+        "reversed": "Обратный анализ",
+        "reversedDesc": "Анализировать игру с последней позиции.",
+        "annotateNovelties": "Аннотировать новинки",
+        "annotateNoveltiesDesc": "Добавить комментарий в первой позиции, которая отсутствует в базе данных.",
+        "analyze": "Анализировать",
+        "advantage": "Преимущество",
+        "accuracy": "Точность",
+        "enableWDL": "Чтобы использовать эту функцию, нужно включить UCI_ShowWDL в настройках движка."
+      },
+      "database": {
+        "local": "Локальная",
+        "lichessAll": "Lichess Все",
+        "lichessMaster": "Lichess Мастера",
+        "matches": "{{matches}} игр",
+        "stats": "Статистика",
+        "games": "Игры",
+        "options": "Опции",
+        "noReference1": "Не выбрана база данных.",
+        "noReference2": "Пожалуйста",
+        "selectReference": "добавьте базу данных",
+        "noReference3": "сначала и отметьте её как справочную.",
+        "timeControl": "Контроль времени",
+        "averageRating": "Средний рейтинг"
+      },
+      "annotate": {
+        "writeHere": "Пишите здесь..."
+      }
+    },
+    "lessons": {
+      "title": "Уроки шахмат",
+      "selectToBegin": "Выберите урок, чтобы начать обучение шахматам",
+      "difficulty": {
+        "beginner": "Новичок",
+        "intermediate": "Средний уровень",
+        "advanced": "Продвинутый"
+      },
+      "startLesson": "Начать урок",
+      "backToLessons": "Назад к урокам",
+      "backToLesson": "Назад к уроку",
+      "startExercise": "Начать упражнение",
+      "exercises": "Упражнения",
+      "correct": "Правильно! Отличная работа.",
+      "incorrect": "Неверно. Попробуйте ещё раз.",
+      "progress": "Прогресс",
+      "overallProgress": "Общий прогресс",
+      "showHint": "Показать подсказку",
+      "hint": "Подсказка",
+      "tryMoves": "Попробуйте один из этих ходов",
+      "completed": "Завершено",
+      "exercisesCompleted": "упражнений выполнено",
+      "lessonCompleted": "Поздравляем! Вы завершили {{lesson}}!",
+      "completionMessage": "Вы успешно выполнили все упражнения в этом уроке. Так держать!"
+    },
+    "practice": {
+      "title": "Практика шахмат",
+      "description": "Улучшайте навыки с помощью целевых упражнений",
+      "selectExercise": "Выберите упражнение, чтобы начать практику",
+      "progress": "Прогресс",
+      "exercises": "Упражнения",
+      "completed": "Завершено",
+      "start": "Начать практику",
+      "showHint": "Показать подсказку",
+      "hintText": "Ищите тактические возможности или ключевые поля, контролирующие позицию.",
+      "congratulations": "Поздравляем!",
+      "completedCategory": "Вы завершили все упражнения в категории {{category}}!"
+    },
+    "engines": {
+      "title": "Движки",
+      "settings": {
+        "noEngine": "Движок не выбран",
+        "searchSettings": "Настройки поиска",
+        "advancedSettings": "Дополнительные настройки",
+        "numOfLines": "Количество линий",
+        "numOfCores": "Количество ядер",
+        "sizeOfHash": "Размер хеша",
+        "editJSON": "Редактировать JSON",
+        "reset": "Сбросить по умолчанию"
+      },
+      "add": {
+        "title": "Добавить движок",
+        "cloud": "Облако",
+        "errorFetch": "Не удалось получить движки с сервера.",
+        "binaryFile": "Исполняемый файл",
+        "binaryFileDesc": "Нажмите для выбора исполняемого файла",
+        "name": "Имя",
+        "autodetect": "Автоопределение",
+        "eloDesc": "Эло движка",
+        "imageFile": "Файл изображения",
+        "imageFileDesc": "Нажмите для выбора файла изображения (рекомендуется: 60x60)"
+      },
+      "remove": {
+        "title": "Удалить движок",
+        "message": "Вы уверены, что хотите удалить этот движок из Pawn Appétit?"
+      }
+    },
+    "databases": {
+      "title": "Базы данных",
+      "card": {
+        "games": "Игры",
+        "players": "Игроки",
+        "tournaments": "Турниры",
+        "storage": "Хранилище"
+      },
+      "add": {
+        "title": "Добавить базу данных",
+        "web": "Веб",
+        "errorFetch": "Не удалось получить базы данных с сервера.",
+        "clickToSelectPGN": "Нажмите для выбора файла PGN",
+        "convert": "Конвертировать"
+      },
+      "settings": {
+        "referenceDatabase": "Справочная база данных",
+        "referenceDatabaseShort": "Эталонная",
+        "indexed": "Проиндексировано",
+        "indexedDesc": "Индексы используются для ускорения поиска, но требуют дополнительного места.",
+        "events": "События",
+        "explore": "Исследовать",
+        "advancedTools": "Расширенные инструменты",
+        "mergePlayers": "Объединить игроков",
+        "mergePlayersDesc": "Заменяет все вхождения первого игрока на второго в базе данных.",
+        "merge": "Объединить",
+        "batchDelete": "Массовое удаление",
+        "batchDeleteDesc": "Эти действия безвозвратно удалят игры из базы данных. Используйте с осторожностью.",
+        "removeDup": "Удалить дубликаты",
+        "removeEmpty": "Удалить пустые игры",
+        "actions": "Действия",
+        "addGames": "Добавить игры",
+        "exportPGN": "Экспортировать в PGN"
+      },
+      "delete": {
+        "title": "Удалить базу данных",
+        "message": "Вы уверены, что хотите удалить эту базу данных?"
+      }
+    },
+    "files": {
+      "title": "Файлы",
+      "fileType": {
+        "fileType": "Тип файла",
+        "game": "Игра",
+        "repertoire": "Репертуар",
+        "tournament": "Турнир",
+        "puzzle": "Головоломка",
+        "other": "Другое",
+        "folder": "Папка"
+      },
+      "delete": {
+        "title": "Удалить файл",
+        "message": "Вы уверены, что хотите удалить {{fileName}}?",
+        "delete": "Удалить"
+      },
+      "editMetadata": "Редактировать метаданные",
+      "edit": {
+        "title": "Редактировать файл"
+      },
+      "create": {
+        "title": "Создать файл",
+        "pgnPlaceholder": "Вставьте PGN сюда..."
+      },
+      "search": "Поиск файлов",
+      "noFiles": "Файлы не найдены",
+      "noFileSelected": "Файл не выбран",
+      "name": "Имя",
+      "lastModified": "Изменён",
+      "type": "Тип",
+      "folder": "Папка",
+      "game": {
+        "delete": {
+          "title": "Удалить партию",
+          "desc": "Вы уверены, что хотите удалить эту партию?"
+        }
+      }
+    },
+    "gameTable": {
+      "date": "Дата",
+      "plies": "Полуходы",
+      "event": "Событие",
+      "site": "Место",
+      "from": "С",
+      "startDate": "Дата начала",
+      "to": "По",
+      "endDate": "Дата окончания"
+    },
+    "gameNotation": {
+      "showMoves": "Показать ходы",
+      "hideMoves": "Скрыть ходы",
+      "showComments": "Показать комментарии",
+      "hideComments": "Скрыть комментарии",
+      "showVariations": "Показать варианты",
+      "repertoireView": "Репертуар",
+      "mainLine": "Основная линия",
+      "showVariationsTooltip": "Показать варианты"
+    },
+    "pgnInput": {
+      "comments": "Комментарии",
+      "glyphs": "Символы",
+      "variations": "Вариации",
+      "extraMarkups": "Дополнительные аннотации",
+      "maxDepth": "Максимальная глубина",
+      "totalMoves": "Всего ходов"
+    },
+    "puzzle": {
+      "jumpToNext": "Перейти к следующей задаче",
+      "jumpToNextOff": "Выкл.",
+      "jumpToNextOnSuccess": "При успехе",
+      "jumpToNextOnSuccessAndFailure": "При успехе и ошибке",
+      "playerRating": "Рейтинг игрока",
+      "maxRating": "Макс. рейтинг",
+      "newMax": "Новый максимум",
+      "rating": "Рейтинг задачи",
+      "averageSuccessRating": "Средний рейтинг при успехе",
+      "averageFailRating": "Средний рейтинг при ошибке",
+      "selectDatabase": "Выберите базу данных",
+      "ratingRange": "Диапазон рейтинга",
+      "progressive": "Адаптивный",
+      "hideRating": "Скрыть рейтинг",
+      "inOrder": "По порядку",
+      "newPuzzle": "Новая задача",
+      "analyzePosition": "Анализ позиции",
+      "clearSession": "Очистить сессию",
+      "showingSolution": "Показ решения",
+      "viewSolution": "Просмотреть решение",
+      "loadingRatingRange": "Загрузка диапазона рейтинга...",
+      "enterTitle": "Введите название задачи"
+    },
+    "tablebase": {
+      "title": "Таблица эндшпиля",
+      "error": "Ошибка: ",
+      "dtm": "DTM {{count}}",
+      "dtz": "DTZ {{count}}",
+      "fiftyMoveRule": "*по правилу 50 ходов"
+    }
+  },
+  "settings": {
+    "board": {
+      "title": "Доска",
+      "desc": "Настроить доску анализа и игровые элементы управления",
+      "pieceDest": "Пункты назначения фигур",
+      "pieceDestDesc": "Показать возможные ходы для каждой фигуры",
+      "arrows": "Стрелки",
+      "arrowsDesc": "Показать стрелки для лучших ходов",
+      "snapArrows": "Закрепить стрелки",
+      "snapArrowsDesc": "Закрепить стрелки на допустимые ходы",
+      "consecutiveArrows": "Последовательные стрелки",
+      "consecutiveArrowsDesc": "Показывать несколько стрелок для лучшей линии, если она состоит из нескольких ходов одной и той же фигурой",
+      "eraseDrawablesOnClick": "Стереть отметки при клике",
+      "eraseDrawablesOnClickDesc": "Очистить доску от нарисованных стрелок и кругов при нажатии левой кнопкой мыши",
+      "autoPromotion": "Автоповышение",
+      "autoPromotionDesc": "Автоматически продвигать до ферзя",
+      "coordinates": "Координаты",
+      "coordinatesDesc": "Показать координаты на доске",
+      "autoSave": "Автосохранение",
+      "autoSaveDesc": "Автоматически сохранять после каждого хода",
+      "previewBoard": "Предварительный просмотр доски",
+      "previewBoardDesc": "Показывать доску при наведении курсора на ход в анализе",
+      "scrollThroughMoves": "Прокрутка ходов",
+      "scrollThroughMovesDesc": "Включить или отключить прокрутку ходов на доске"
+    },
+    "inputs": {
+      "title": "Ввод",
+      "desc": "Настроить ввод",
+      "textInput": "Текстовый ввод",
+      "textInputDesc": "Ввод ходов текстом",
+      "spellCheck": "Проверка орфографии",
+      "spellCheckDesc": "Включить или отключить проверку орфографии при вводе текста"
+    },
+    "openingReport": {
+      "title": "Отчёт по дебютам",
+      "desc": "Настроить параметры отчёта по дебютам",
+      "percentCoverage": "Процент охвата",
+      "percentCoverageDesc": "Процент охваченных ходов в каждой позиции",
+      "minGames": "Минимальное количество игр",
+      "minGamesDesc": "Минимальное количество игр для каждой позиции, чтобы быть учтённой"
+    },
+    "anarchy": {
+      "title": "Анархия",
+      "desc": "Весёлые опции",
+      "forcedEnPassant": "Принудительный взятие на проходе",
+      "forcedEnPassantDesc": "Обязывает делать взятие на проходе, если оно доступно."
+    },
+    "appearance": {
+      "title": "Внешний вид",
+      "desc": "Настроить внешний вид приложения",
+      "theme": {
+        "theme": "Тема"
+      },
+      "themeDesc": "Общая цветовая схема",
+      "custom": "Настраиваемая",
+      "auto": "Авто",
+      "titleBar": "Заголовок окна",
+      "titleBarDesc": "Выберите между стандартной или настраиваемой панелью заголовка",
+      "language": "Язык",
+      "languageDesc": "Язык приложения",
+      "native": "Стандартная",
+      "fontSize": "Размер шрифта",
+      "fontSizeDesc": "Общий размер шрифта",
+      "pieceSet": "Набор фигур",
+      "pieceSetDesc": "Фигуры, используемые на доске",
+      "boardImage": "Изображение доски",
+      "boardImageDesc": "Изображение, используемое в качестве фона для доски",
+      "accentColor": "Основной цвет",
+      "accentColorDesc": "Основной цвет приложения",
+      "hideDashboardOnStartup": "Скрывать главную при запуске",
+      "hideDashboardOnStartupDesc": "Открывать доски вместо главной при старте приложения",
+      "dateFormat": "Формат даты",
+      "dateFormatDesc": "Выберите международный (ГГГГ-ММ-ДД) или локальный формат даты",
+      "international": "Международный",
+      "locale": "Локальный"
+    },
+    "sound": {
+      "title": "Звук",
+      "desc": "Настроить параметры звука",
+      "volume": "Громкость",
+      "volumeDesc": "Общая громкость",
+      "collection": "Коллекция звуков",
+      "collectionDesc": "Используемая коллекция звуков"
+    },
+    "keybindings": "Горячие клавиши",
+    "directories": {
+      "title": "Каталоги",
+      "desc": "Настроить каталоги, используемые приложением",
+      "files": "Каталог для файлов",
+      "filesDesc": "Здесь хранятся игровые файлы на странице файлов"
+    },
+    "telemetry": "Телеметрия",
+    "telemetryDesc": "Помогите улучшить Pawn Appétit, делясь анонимными данными об использовании",
+    "moveNotation": "Обозначение ходов",
+    "moveNotationDesc": "Выберите, как отображать фигуры в нотации",
+    "symbols": "Символы (♔♕♖♗♘)",
+    "letters": "Буквы (K Q R B N)",
+    "translatedLetters": "Переведённые буквы (K Q R B N)",
+    "waysToMovePieces": "Способы перемещения фигур",
+    "waysToMovePiecesDesc": "Перемещайте фигуры перетаскиванием, кликом или обоими способами",
+    "drag": "Перетаскивание",
+    "click": "Клик",
+    "both": "Оба",
+    "searchPlaceholder": "Поиск настроек",
+    "noResultsFound": "Настройки не найдены для",
+    "gameplay": "Игровой процесс",
+    "analysis": "Анализ",
+    "interface": "Интерфейс",
+    "system": "Система"
+  },
+  "formatters": {
+    "dateFormat": "{{date, dateformat}}",
+    "dateTimeFormat": "{{date, datetimeformat}}",
+    "moveNotation": "{{move, moveNotation}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "score": "{{score, score}}"
+  }
+}

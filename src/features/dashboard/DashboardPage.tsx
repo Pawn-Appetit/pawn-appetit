@@ -380,9 +380,9 @@ export default function DashboardPage() {
 
   const PLAY_CHESS = {
     icon: <IconChess size={50} />,
-    title: t("Dashboard.Card.PlayChess.Title"),
-    description: t("Dashboard.Card.PlayChess.Desc"),
-    label: t("Dashboard.Card.PlayChess.Button"),
+    title: t("features.dashboard.cards.playChess.title"),
+    description: t("features.dashboard.cards.playChess.desc"),
+    label: t("features.dashboard.cards.playChess.button"),
     onClick: () => {
       const uuid = genID();
       setTabs((prev: Tab[]) => {
@@ -523,10 +523,10 @@ export default function DashboardPage() {
         <Group align="center" justify="space-between" wrap="nowrap">
           <Stack gap={6} flex={6}>
             <Title order={1} fw={800}>
-              {t(isFirstOpen ? "Dashboard.Welcome.FirstOpen" : "Dashboard.Welcome.Back")}
+              {t(isFirstOpen ? "features.dashboard.welcome.firstOpen" : "features.dashboard.welcome.back")}
             </Title>
             <Text size="sm" c="dimmed">
-              {t("Dashboard.Welcome.Desc")}
+              {t("features.dashboard.welcome.desc")}
             </Text>
             <Group gap="xs" mt="xs">
               <Button radius="md" onClick={PLAY_CHESS.onClick} leftSection={<IconChess size={18} />}>
@@ -544,7 +544,7 @@ export default function DashboardPage() {
                 }}
                 leftSection={<IconUpload size={18} />}
               >
-                {t("Tab.ImportGame.Button")}
+                {t("features.tabs.importGame.button")}
               </Button>
             </Group>
           </Stack>
@@ -704,7 +704,7 @@ export default function DashboardPage() {
                       {recentGames.map((g) => {
                         const isUserWhite = g.white.type === "human";
                         const opponent = isUserWhite ? g.black : g.white;
-                        const color = isUserWhite ? t("Common.White") : t("Common.Black");
+                        const color = isUserWhite ? t("chess.white") : t("chess.black");
                         const now = Date.now();
                         const diffMs = now - g.timestamp;
                         let dateStr = "";
@@ -823,7 +823,7 @@ export default function DashboardPage() {
                         const isUserWhite = chessComUsernames.includes(g.white.username);
                         const opponent = isUserWhite ? g.black : g.white;
                         const userAccount = isUserWhite ? g.white : g.black;
-                        const color = isUserWhite ? t("Common.White") : t("Common.Black");
+                        const color = isUserWhite ? t("chess.white") : t("chess.black");
                         const result = isUserWhite ? g.white.result : g.black.result;
                         return (
                           <Table.Tr key={g.url}>
@@ -857,7 +857,7 @@ export default function DashboardPage() {
                               <Text size="xs">{userAccount.username}</Text>
                             </Table.Td>
                             <Table.Td c="dimmed">
-                              {t("Formatters.DateFormat", {
+                              {t("formatters.dateFormat", {
                                 date: new Date(g.end_time * 1000),
                                 interpolation: { escapeValue: false },
                               })}
@@ -930,7 +930,7 @@ export default function DashboardPage() {
                         const isUserWhite = lichessUsernames.includes(g.players.white.user?.name);
                         const opponent = isUserWhite ? g.players.black : g.players.white;
                         const userAccount = isUserWhite ? g.players.white : g.players.black;
-                        const color = isUserWhite ? t("Common.White") : t("Common.Black");
+                        const color = isUserWhite ? t("chess.white") : t("chess.black");
                         return (
                           <Table.Tr key={g.id}>
                             <Table.Td>
@@ -955,7 +955,7 @@ export default function DashboardPage() {
                               <Text size="xs">{userAccount.user?.name}</Text>
                             </Table.Td>
                             <Table.Td c="dimmed">
-                              {t("Formatters.DateFormat", {
+                              {t("formatters.dateFormat", {
                                 date: new Date(g.createdAt),
                                 interpolation: { escapeValue: false },
                               })}
@@ -1024,13 +1024,13 @@ export default function DashboardPage() {
         <Grid.Col span={{ base: 12, sm: 12, md: 5, lg: 5, xl: 5 }}>
           <Card withBorder p="lg" radius="md" h="100%">
             <Group justify="space-between" mb="sm">
-              <Text fw={700}>{t("Tab.Puzzle.Title")}</Text>
+              <Text fw={700}>{t("features.tabs.puzzle.title")}</Text>
               <Button
                 size="xs"
                 variant="light"
                 onClick={() => {
                   createTab({
-                    tab: { name: t("Tab.Puzzle.Title"), type: "puzzles" },
+                    tab: { name: t("features.tabs.puzzle.title"), type: "puzzles" },
                     setTabs,
                     setActiveTab,
                   });
@@ -1038,7 +1038,7 @@ export default function DashboardPage() {
                 }}
                 leftSection={<IconPuzzle size={16} />}
               >
-                {t("Tab.Puzzle.Button")}
+                {t("features.tabs.puzzle.button")}
               </Button>
             </Group>
             <Group align="center" gap="lg">

@@ -159,15 +159,15 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
       if (isCreate) {
         const newTheme = createTheme(themeData);
         notifications.show({
-          title: t("Settings.Appearance.Theme.Created"),
-          message: t("Settings.Appearance.Theme.CreatedMessage", { name: newTheme.name }),
+          title: t("settings.appearance.theme.created"),
+          message: t("settings.appearance.theme.createdMessage", { name: newTheme.name }),
           color: "green",
         });
       } else if (themeId) {
         updateTheme({ id: themeId, updates: themeData });
         notifications.show({
-          title: t("Settings.Appearance.Theme.Updated"),
-          message: t("Settings.Appearance.Theme.UpdatedMessage", { name: themeData.name }),
+          title: t("settings.appearance.theme.Updated"),
+          message: t("settings.appearance.theme.UpdatedMessage", { name: themeData.name }),
           color: "blue",
         });
       }
@@ -176,7 +176,7 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
     } catch {
       notifications.show({
         title: t("Error"),
-        message: t("Settings.Appearance.Theme.SaveError"),
+        message: t("settings.appearance.theme.saveError"),
         color: "red",
       });
     }
@@ -188,7 +188,7 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
     <Modal
       opened={opened}
       onClose={onClose}
-      title={isCreate ? t("Settings.Appearance.Theme.CreateNew") : t("Settings.Appearance.Theme.EditTheme")}
+      title={isCreate ? t("settings.appearance.theme.createNew") : t("settings.appearance.theme.editTheme")}
       size="xl"
       centered
       scrollAreaComponent={ScrollArea.Autosize}
@@ -197,7 +197,7 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
         {/* Preview Toggle */}
         <Group justify="space-between">
           <Button variant="light" leftSection={<IconEye size={16} />} onClick={togglePreview}>
-            {previewOpened ? t("Settings.Appearance.Theme.HidePreview") : t("Settings.Appearance.Theme.ShowPreview")}
+            {previewOpened ? t("settings.appearance.theme.hidePreview") : t("settings.appearance.theme.showPreview")}
           </Button>
           <Group>
             <Button variant="outline" onClick={onClose}>
@@ -222,13 +222,13 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
         <Tabs value={activeTab} onChange={setActiveTab}>
           <Tabs.List>
             <Tabs.Tab value="basic" leftSection={<IconSettings size={16} />}>
-              {t("Settings.Appearance.Theme.Basic")}
+              {t("settings.appearance.theme.basic")}
             </Tabs.Tab>
             <Tabs.Tab value="colors" leftSection={<IconPalette size={16} />}>
-              {t("Settings.Appearance.Theme.Colors")}
+              {t("settings.appearance.theme.colors")}
             </Tabs.Tab>
             <Tabs.Tab value="components" leftSection={<IconColorPicker size={16} />}>
-              {t("Settings.Appearance.Theme.Components")}
+              {t("settings.appearance.theme.components")}
             </Tabs.Tab>
           </Tabs.List>
 
@@ -237,32 +237,32 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
             <Stack gap="md">
               <Group grow>
                 <TextInput
-                  label={t("Settings.Appearance.Theme.Name")}
-                  placeholder={t("Settings.Appearance.Theme.NamePlaceholder")}
+                  label={t("settings.appearance.theme.name")}
+                  placeholder={t("settings.appearance.theme.namePlaceholder")}
                   required
                   {...form.getInputProps("name")}
                 />
                 <TextInput
-                  label={t("Settings.Appearance.Theme.Author")}
-                  placeholder={t("Settings.Appearance.Theme.AuthorPlaceholder")}
+                  label={t("settings.appearance.theme.author")}
+                  placeholder={t("settings.appearance.theme.authorPlaceholder")}
                   {...form.getInputProps("author")}
                 />
               </Group>
 
               <TextInput
-                label={t("Settings.Appearance.Theme.Description")}
-                placeholder={t("Settings.Appearance.Theme.DescriptionPlaceholder")}
+                label={t("settings.appearance.theme.description")}
+                placeholder={t("settings.appearance.theme.descriptionPlaceholder")}
                 {...form.getInputProps("description")}
               />
 
               <Group grow>
                 <Select
-                  label={t("Settings.Appearance.Theme.PrimaryColor")}
+                  label={t("settings.appearance.theme.primaryColor")}
                   data={Object.keys(colors)}
                   {...form.getInputProps("primaryColor")}
                 />
                 <Select
-                  label={t("Settings.Appearance.Theme.DefaultRadius")}
+                  label={t("settings.appearance.theme.defaultRadius")}
                   data={[
                     { value: "xs", label: "XS" },
                     { value: "sm", label: "SM" },
@@ -276,12 +276,12 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
 
               <Group grow>
                 <TextInput
-                  label={t("Settings.Appearance.Theme.FontFamily")}
+                  label={t("settings.appearance.theme.fontFamily")}
                   placeholder="system-ui, sans-serif"
                   {...form.getInputProps("fontFamily")}
                 />
                 <TextInput
-                  label={t("Settings.Appearance.Theme.MonospaceFont")}
+                  label={t("settings.appearance.theme.monospaceFont")}
                   placeholder="ui-monospace, monospace"
                   {...form.getInputProps("fontFamilyMonospace")}
                 />
@@ -289,7 +289,7 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
 
               <Group grow>
                 <NumberInput
-                  label={t("Settings.Appearance.Theme.Scale")}
+                  label={t("settings.appearance.theme.scale")}
                   min={0.5}
                   max={2}
                   step={0.1}
@@ -297,7 +297,7 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
                   {...form.getInputProps("scale")}
                 />
                 <NumberInput
-                  label={t("Settings.Appearance.Theme.LuminanceThreshold")}
+                  label={t("settings.appearance.theme.luminanceThreshold")}
                   min={0}
                   max={1}
                   step={0.05}
@@ -308,14 +308,14 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
 
               <Group grow>
                 <Switch
-                  label={t("Settings.Appearance.Theme.FontSmoothing")}
+                  label={t("settings.appearance.theme.fontSmoothing")}
                   {...form.getInputProps("fontSmoothing", { type: "checkbox" })}
                 />
-                <Switch label={t("Settings.Appearance.Theme.AutoContrast")} {...form.getInputProps("autoContrast", { type: "checkbox" })} />
+                <Switch label={t("settings.appearance.theme.autoContrast")} {...form.getInputProps("autoContrast", { type: "checkbox" })} />
               </Group>
 
               <Select
-                label={t("Settings.Appearance.Theme.FocusRing")}
+                label={t("settings.appearance.theme.focusRing")}
                 data={[
                   { value: "auto", label: "Auto" },
                   { value: "always", label: "Always" },
@@ -331,12 +331,12 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
             <Stack gap="md">
               <Group>
                 <ColorSwatch color={form.values.white} size={30} />
-                <TextInput label={t("Settings.Appearance.Theme.White")} placeholder="#ffffff" {...form.getInputProps("white")} />
+                <TextInput label={t("settings.appearance.theme.white")} placeholder="#ffffff" {...form.getInputProps("white")} />
                 <ColorSwatch color={form.values.black} size={30} />
-                <TextInput label={t("Settings.Appearance.Theme.Black")} placeholder="#000000" {...form.getInputProps("black")} />
+                <TextInput label={t("settings.appearance.theme.black")} placeholder="#000000" {...form.getInputProps("black")} />
               </Group>
 
-              <Divider label={t("Settings.Appearance.Theme.ColorPalettes")} labelPosition="center" />
+              <Divider label={t("settings.appearance.theme.colorPalettes")} labelPosition="center" />
 
               <ScrollArea.Autosize mah={600}>
                 <Stack gap="md">
@@ -355,13 +355,13 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
                 variant="light"
                 leftSection={<IconColorPicker size={16} />}
                 onClick={() => {
-                  const newColorName = prompt(t("Settings.Appearance.Theme.NewColorName"));
+                  const newColorName = prompt(t("settings.appearance.theme.newColorName"));
                   if (newColorName && !colors[newColorName]) {
                     handleColorChange(newColorName, generateColorShades("#228be6"));
                   }
                 }}
               >
-                {t("Settings.Appearance.Theme.AddColor")}
+                {t("settings.appearance.theme.addColor")}
               </Button>
             </Stack>
           </Tabs.Panel>

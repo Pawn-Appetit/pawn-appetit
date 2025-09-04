@@ -194,31 +194,31 @@ function BoardAnalysis() {
             <Tabs.List grow mb="1rem">
               {isRepertoire && (
                 <Tabs.Tab value="practice" leftSection={<IconTargetArrow size="1rem" />}>
-                  {t("Board.Tabs.Practice")}
+                  {t("features.board.tabs.practice")}
                 </Tabs.Tab>
               )}
               {isRepertoire && (
                 <Tabs.Tab value="graph" leftSection={<IconGraphFilled size="1rem" />}>
-                  {t("Board.Tabs.Graph")}
+                  {t("features.board.tabs.graph")}
                 </Tabs.Tab>
               )}
               {!isPuzzle && (
                 <Tabs.Tab value="analysis" leftSection={<IconZoomCheck size="1rem" />}>
-                  {t("Board.Tabs.Analysis")}
+                  {t("features.board.tabs.analysis")}
                 </Tabs.Tab>
               )}
               {!isPuzzle && (
                 <Tabs.Tab value="database" leftSection={<IconDatabase size="1rem" />}>
-                  {t("Board.Tabs.Database")}
+                  {t("features.board.tabs.database")}
                 </Tabs.Tab>
               )}
               {!isPuzzle && (
                 <Tabs.Tab value="annotate" leftSection={<IconNotes size="1rem" />}>
-                  {t("Board.Tabs.Annotate")}
+                  {t("features.board.tabs.annotate")}
                 </Tabs.Tab>
               )}
               <Tabs.Tab value="info" leftSection={<IconInfoCircle size="1rem" />}>
-                {t("Board.Tabs.Info")}
+                {t("features.board.tabs.info")}
               </Tabs.Tab>
             </Tabs.List>
             {isRepertoire && (

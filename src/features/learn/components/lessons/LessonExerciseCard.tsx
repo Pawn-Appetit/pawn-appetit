@@ -67,7 +67,7 @@ export function LessonExerciseCard({
           rightSection={<IconChevronRight size={14} />}
           disabled={disabled}
         >
-          {isCompleted ? t("Common.Review") : t("Lessons.StartExercise")}
+          {isCompleted ? t("common.review") : t("features.lessons.startExercise")}
         </Button>
       </Group>
     </Card>
@@ -125,7 +125,7 @@ export function CategoryCard({
             onClick={onClick}
             color={isCompleted ? "green" : "blue"}
           >
-            {isCompleted ? t("Common.Open") : completedCount > 0 ? t("Common.Continue") : t("Lessons.StartLesson")}
+            {isCompleted ? t("common.open") : completedCount > 0 ? t("common.continue") : t("features.lessons.startLesson")}
           </Button>
         </Group>
       </Stack>

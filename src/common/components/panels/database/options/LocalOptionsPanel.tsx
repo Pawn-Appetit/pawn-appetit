@@ -42,8 +42,8 @@ function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
           <Text fw="bold">Color:</Text>
           <SegmentedControl
             data={[
-              { value: "white", label: t("Common.White") },
-              { value: "black", label: t("Common.Black") },
+              { value: "white", label: t("chess.white") },
+              { value: "black", label: t("chess.black") },
             ]}
             value={options.color}
             onChange={(v) => setOptions({ ...options, color: v as "white" | "black" })}

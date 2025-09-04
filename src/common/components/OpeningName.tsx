@@ -19,9 +19,9 @@ function OpeningName() {
   return (
     <Text style={{ userSelect: "text" }} fz="sm" h="1.5rem">
       {openingName === "Empty Board"
-        ? t("Opening.EmptyBoard")
+        ? t("chess.opening.emptyBoard")
         : openingName === "Starting Position"
-          ? t("Opening.StartingPosition")
+          ? t("chess.opening.startingPosition")
           : openingName}
     </Text>
   );

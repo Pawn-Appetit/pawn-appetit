@@ -100,7 +100,7 @@ function RootLayout() {
   const createNewTab = useCallback(() => {
     navigate({ to: "/boards" });
     createTab({
-      tab: { name: t("Tab.NewTab"), type: "new" },
+      tab: { name: t("features.tabs.newTab"), type: "new" },
       setTabs,
       setActiveTab,
     });
@@ -269,7 +269,7 @@ function RootLayout() {
       () => {
         navigate({ to: "/boards" });
         createTab({
-          tab: { name: t("Tab.NewTab"), type: "new" },
+          tab: { name: t("features.tabs.newTab"), type: "new" },
           setTabs,
           setActiveTab,
         });
@@ -291,7 +291,7 @@ function RootLayout() {
       () => {
         navigate({ to: "/boards" });
         createTab({
-          tab: { name: t("Tab.AnalysisBoard.Title"), type: "analysis" },
+          tab: { name: t("features.tabs.analysisBoard.title"), type: "analysis" },
           setTabs,
           setActiveTab,
         });
@@ -312,7 +312,7 @@ function RootLayout() {
       () => {
         navigate({ to: "/boards" });
         createTab({
-          tab: { name: t("Tab.Puzzle.Title"), type: "puzzles" },
+          tab: { name: t("features.tabs.puzzle.title"), type: "puzzles" },
           setTabs,
           setActiveTab,
         });
@@ -331,22 +331,22 @@ function RootLayout() {
   const menuActions: MenuGroup[] = useMemo(
     () => [
       {
-        label: t("Menu.File"),
+        label: t("features.menu.file"),
         options: [
           {
-            label: t("Menu.File.NewTab"),
+            label: t("features.menu.file.NewTab"),
             id: "new_tab",
             shortcut: keyMap.NEW_BOARD_TAB.keys,
             action: createNewTab,
           },
           {
-            label: t("Menu.File.OpenFile"),
+            label: t("features.menu.file.OpenFile"),
             id: "open_file",
             shortcut: keyMap.OPEN_FILE.keys,
             action: openNewFile,
           },
           {
-            label: t("Menu.File.Exit"),
+            label: t("features.menu.file.Exit"),
             id: "exit",
             shortcut: keyMap.EXIT_APP.keys,
             action: () => exit(0),
@@ -354,10 +354,10 @@ function RootLayout() {
         ],
       },
       {
-        label: t("Menu.View"),
+        label: t("features.menu.view"),
         options: [
           {
-            label: t("Menu.View.Reload"),
+            label: t("features.menu.view.Reload"),
             id: "reload",
             shortcut: keyMap.APP_RELOAD.keys,
             action: () => location.reload(),
@@ -365,10 +365,10 @@ function RootLayout() {
         ],
       },
       {
-        label: t("Menu.Help"),
+        label: t("features.menu.help"),
         options: [
           {
-            label: t("Menu.Help.ClearSavedData"),
+            label: t("features.menu.help.ClearSavedData"),
             id: "clear_saved_data",
             action: () => {
               ask("Are you sure you want to clear all saved data?", {
@@ -383,7 +383,7 @@ function RootLayout() {
             },
           },
           {
-            label: t("Menu.Help.OpenLogs"),
+            label: t("features.menu.help.OpenLogs"),
             id: "logs",
             action: async () => {
               const path = await resolve(await appLogDir(), "pawn-appetit.log");
@@ -396,12 +396,12 @@ function RootLayout() {
           },
           { label: "divider" },
           {
-            label: t("Menu.Help.CheckUpdate"),
+            label: t("features.menu.help.CheckUpdate"),
             id: "check_for_updates",
             action: checkForUpdates,
           },
           {
-            label: t("Menu.Help.About"),
+            label: t("features.menu.help.About"),
             id: "about",
             action: () => {
               modals.openContextModal({

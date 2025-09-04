@@ -85,7 +85,7 @@ export default function EnginesPage() {
     <Stack h="100%">
       <AddEngine opened={opened} setOpened={setOpened} />
       <Group align="center" pl="lg" py="sm">
-        <Title>{t("Engines.Title")}</Title>
+        <Title>{t("features.engines.title")}</Title>
         <OpenFolderButton base="AppDir" folder="engines" />
       </Group>
       <Group grow flex={1} style={{ overflow: "hidden" }} align="start" px="md" pb="md">
@@ -110,7 +110,7 @@ export default function EnginesPage() {
               </Button>
             </Group>
             <Button size="xs" leftSection={<IconPlus size="1rem" />} onClick={() => setOpened(true)} mr="sm">
-              {t("Common.AddNew")}
+              {t("common.addNew")}
             </Button>
           </Group>
           <ScrollArea h="calc(100vh - 190px)" offsetScrollbars aria-live="polite">
@@ -133,7 +133,7 @@ export default function EnginesPage() {
                       : [{ label: "Type", value: "Cloud" }];
                   if (item.type === "local" && item.version) {
                     stats.push({
-                      label: t("Common.Version"),
+                      label: t("common.version"),
                       value: item.version,
                     });
                   }
@@ -155,7 +155,7 @@ export default function EnginesPage() {
         <Paper withBorder p="md" h="100%">
           {!selectedEngine || selected === undefined ? (
             <Stack align="center" justify="center" h="100%">
-              <Text ta="center">{t("Engines.Settings.NoEngine")}</Text>
+              <Text ta="center">{t("features.engines.settings.noEngine")}</Text>
               <Text c="dimmed" size="sm" ta="center">
                 Tip: Select an engine to edit its settings.
               </Text>
@@ -164,11 +164,11 @@ export default function EnginesPage() {
             <EngineSettings selected={selected} setSelected={setSelected} />
           ) : (
             <Stack>
-              <Divider variant="dashed" label={t("Common.GeneralSettings")} />
+              <Divider variant="dashed" label={t("common.generalSettings")} />
 
               <TextInput
                 w="50%"
-                label={t("Common.Name")}
+                label={t("common.name")}
                 value={selectedEngine.name}
                 onChange={(e) => {
                   setEngines(async (prev) => {
@@ -180,7 +180,7 @@ export default function EnginesPage() {
               />
 
               <Switch
-                label={t("Common.Enabled")}
+                label={t("common.enabled")}
                 checked={!!selectedEngine.loaded}
                 onChange={(e) => {
                   const checked = e.currentTarget.checked;
@@ -192,9 +192,9 @@ export default function EnginesPage() {
                 }}
               />
 
-              <Divider variant="dashed" label={t("Engines.Settings.AdvancedSettings")} />
+              <Divider variant="dashed" label={t("features.engines.settings.advancedSettings")} />
               <Stack w="50%">
-                <Text fw="bold">{t("Engines.Settings.NumOfLines")}</Text>
+                <Text fw="bold">{t("features.engines.settings.numOfLines")}</Text>
                 <LinesSlider
                   value={Number(selectedEngine.settings?.find((setting) => setting.name === "MultiPV")?.value) || 1}
                   setValue={(v) => {
@@ -227,7 +227,7 @@ export default function EnginesPage() {
                     setSelected(null);
                   }}
                 >
-                  {t("Common.Remove")}
+                  {t("common.remove")}
                 </Button>
               </Group>
             </Stack>
@@ -411,18 +411,18 @@ function EngineSettings({ selected, setSelected }: { selected: number; setSelect
   return (
     <ScrollArea h="100%" offsetScrollbars>
       <Stack>
-        <Divider variant="dashed" label={t("Common.GeneralSettings")} />
+        <Divider variant="dashed" label={t("common.generalSettings")} />
         <Group grow align="start" wrap="nowrap">
           <Stack>
             <Group wrap="nowrap" w="100%">
               <TextInput
                 flex={1}
-                label={t("Common.Name")}
+                label={t("common.name")}
                 value={engine.name}
                 onChange={(e) => setEngine({ ...engine, name: e.currentTarget.value })}
               />
               <TextInput
-                label={t("Common.Version")}
+                label={t("common.version")}
                 w="5rem"
                 value={engine.version}
                 placeholder="?"
@@ -434,7 +434,7 @@ function EngineSettings({ selected, setSelected }: { selected: number; setSelect
                 label="ELO"
                 value={engine.elo || undefined}
                 min={0}
-                placeholder={t("Common.Unknown")}
+                placeholder={t("common.unknown")}
                 onChange={(v) =>
                   setEngine({
                     ...engine,
@@ -444,7 +444,7 @@ function EngineSettings({ selected, setSelected }: { selected: number; setSelect
               />
             </Group>
             <Switch
-              label={t("Common.Enabled")}
+              label={t("common.enabled")}
               checked={!!engine.loaded}
               onChange={(e) => setEngine({ ...engine, loaded: e.currentTarget.checked })}
             />
@@ -470,10 +470,10 @@ function EngineSettings({ selected, setSelected }: { selected: number; setSelect
             )}
           </Center>
         </Group>
-        <Divider variant="dashed" label={t("Engines.Settings.SearchSettings")} />
+        <Divider variant="dashed" label={t("features.engines.settings.searchSettings")} />
         <GoModeInput goMode={engine.go || null} setGoMode={(v) => setEngine({ ...engine, go: v })} />
 
-        <Divider variant="dashed" label={t("Engines.Settings.AdvancedSettings")} />
+        <Divider variant="dashed" label={t("features.engines.settings.advancedSettings")} />
         <SimpleGrid cols={2}>
           {completeOptions
             .filter((option) => option.type !== "check")
@@ -554,7 +554,7 @@ function EngineSettings({ selected, setSelected }: { selected: number; setSelect
 
         <Group justify="end">
           <Button variant="default" onClick={() => toggleJSONModal(true)}>
-            {t("Engines.Settings.EditJSON")}
+            {t("features.engines.settings.editJSON")}
           </Button>
           <Button
             variant="default"
@@ -571,21 +571,21 @@ function EngineSettings({ selected, setSelected }: { selected: number; setSelect
               })
             }
           >
-            {t("Engines.Settings.Reset")}
+            {t("features.engines.settings.reset")}
           </Button>
           <Button
             color="red"
             onClick={() => {
               modals.openConfirmModal({
-                title: t("Engines.Remove.Title"),
+                title: t("features.engines.remove.title"),
                 withCloseButton: false,
                 children: (
                   <>
-                    <Text>{t("Engines.Remove.Message")}</Text>
-                    <Text>{t("Common.CannotUndo")}</Text>
+                    <Text>{t("features.engines.remove.message")}</Text>
+                    <Text>{t("common.cannotUndo")}</Text>
                   </>
                 ),
-                labels: { confirm: t("Common.Remove"), cancel: t("Common.Cancel") },
+                labels: { confirm: t("common.remove"), cancel: t("common.cancel") },
                 confirmProps: { color: "red" },
                 onConfirm: () => {
                   setEngines(async (prev) => (await prev).filter((e) => e.name !== engine.name));
@@ -594,7 +594,7 @@ function EngineSettings({ selected, setSelected }: { selected: number; setSelect
               });
             }}
           >
-            {t("Common.Remove")}
+            {t("common.remove")}
           </Button>
         </Group>
       </Stack>
@@ -631,7 +631,7 @@ function JSONModal({
   const [value, setValue] = useState(JSON.stringify(engine, null, 2));
   const [error, setError] = useState<string | null>(null);
   return (
-    <Modal opened={opened} onClose={toggleOpened} title={t("Engines.Settings.EditJSON")} size="xl">
+    <Modal opened={opened} onClose={toggleOpened} title={t("features.engines.settings.editJSON")} size="xl">
       <JsonInput
         autosize
         value={value}
@@ -654,7 +654,7 @@ function JSONModal({
           }
         }}
       >
-        {t("Common.Save")}
+        {t("common.save")}
       </Button>
     </Modal>
   );

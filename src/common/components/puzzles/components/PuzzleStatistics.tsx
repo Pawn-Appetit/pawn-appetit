@@ -39,7 +39,7 @@ export const PuzzleStatistics = ({ currentPuzzle }: PuzzleStatisticsProps) => {
     <Group justify="space-between">
       <div>
         <Text size="sm" c="dimmed">
-          {t("Puzzle.Rating")}
+          {t("features.puzzle.rating")}
         </Text>
         <Text fw={500} size="xl">
           {displayRating ? displayRating : "?"}
@@ -47,7 +47,7 @@ export const PuzzleStatistics = ({ currentPuzzle }: PuzzleStatisticsProps) => {
       </div>
       <div>
         <Text size="sm" c="dimmed">
-          {t("Puzzle.PlayerRating")}
+          {t("features.puzzle.playerRating")}
         </Text>
         <Group gap="xs" align="center">
           <Text fw={500} size="xl">
@@ -55,14 +55,14 @@ export const PuzzleStatistics = ({ currentPuzzle }: PuzzleStatisticsProps) => {
           </Text>
           {showNewMax && (
             <Badge color="green" variant="filled" size="sm">
-              {t("Puzzle.NewMax")}!
+              {t("features.puzzle.newMax")}!
             </Badge>
           )}
         </Group>
       </div>
       <div>
         <Text size="sm" c="dimmed">
-          {t("Puzzle.MaxRating")}
+          {t("features.puzzle.maxRating")}
         </Text>
         <Text fw={500} size="xl">
           {maxPlayerRating.toFixed(0)}

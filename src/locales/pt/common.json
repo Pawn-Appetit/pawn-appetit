@@ -1,0 +1,421 @@
+{
+  "common": {
+    "on": "ON",
+    "off": "OFF",
+    "name": "Nome",
+    "description": "Descrição",
+    "version": "Versão",
+    "enabled": "Ativado",
+    "remove": "Remover",
+    "delete": "Remover",
+    "add": "Adicionar",
+    "open": "Abrir",
+    "create": "Criar",
+    "save": "Guardar",
+    "download": "Download",
+    "local": "Local",
+    "install": "Instalar",
+    "installed": "Instalado",
+    "downloading": "Baixando",
+    "extracting": "Extraindo",
+    "error": "Erro",
+    "addNew": "Adicionar novo",
+    "openFolder": "Abrir pasta no explorador de ficheiros",
+    "unknown": "Desconhecido",
+    "cancel": "Cancelar",
+    "cannotUndo": "Esta ação não pode ser desfeita.",
+    "nameAlreadyUsed": "Nome já usado",
+    "requireName": "Nome é obrigatório",
+    "requirePath": "Caminho é obrigatório",
+    "pgnFile": "Ficheiro PGN",
+    "pgnGame": "Jogo PGN",
+    "size": "Tamanho",
+    "generalSettings": "Configurações gerais",
+    "data": "Dados",
+    "games": {
+      "one": "{{count}} jogo",
+      "other": "{{count}} jogos"
+    },
+    "edit": "Editar",
+    "enterFileName": "Insira o nome do ficheiro",
+    "next": "Seguinte",
+    "skip": "Skip",
+    "reset": "Repor",
+    "incorrect": "Incorreto",
+    "run": "Executar",
+    "stop": "Parar",
+    "engine": "Engine"
+  },
+  "chess": {
+    "checkmate": "Chequemate",
+    "stalemate": "Rei afogado",
+    "white": "Brancas",
+    "black": "Pretas",
+    "goMode": {
+      "time": "Tempo",
+      "depth": "Profundidade",
+      "nodes": "Nós",
+      "infinite": "Infinito"
+    },
+    "annotate": {
+      "brilliant": "Brilhante",
+      "good": "Bom",
+      "interesting": "Interessante",
+      "dubious": "Dúbio",
+      "mistake": "Erro",
+      "blunder": "Erro grave",
+      "whiteWinning": "Brancas vencem",
+      "whiteAdvantage": "Brancas têm vantagem",
+      "whiteEdge": "Brancas têm ligeira vantagem",
+      "equal": "Posição igual",
+      "unclear": "Posição incerta",
+      "blackEdge": "Pretas têm ligeira vantagem",
+      "blackAdvantage": "Pretas têm vantagem",
+      "blackWinning": "Pretas vencem",
+      "novelty": "Novidade teórica",
+      "development": "Desenvolvimento",
+      "initiative": "Iniciativa",
+      "attack": "Ataque",
+      "counterplay": "Contra-jogo",
+      "withCompensation": "Com compensação",
+      "timeTrouble": "Pouco tempo",
+      "withIdea": "Com a ideia",
+      "onlyMove": "Única jogada",
+      "zugzwang": "Zugzwang"
+    },
+    "timeControl": {
+      "ultraBullet": "UltraBullet",
+      "bullet": "Bullet",
+      "blitz": "Rápidas",
+      "rapid": "Semi-Rápidas",
+      "classical": "Clássicas",
+      "correspondence": "Correspondência"
+    }
+  },
+  "features": {
+    "richText": {
+      "bold": "Negrito",
+      "italic": "Itálico",
+      "underline": "Sublinhado",
+      "strike": "Riscado",
+      "clearFormatting": "Limpar formatação",
+      "h1": "Título 1",
+      "h2": "Título 2",
+      "h3": "Título 3",
+      "h4": "Título 4",
+      "quote": "Citação",
+      "hLine": "Linha horizontal",
+      "bulletList": "Lista com pontos",
+      "numberedList": "Lista ordenada",
+      "link": "Link",
+      "removeLink": "Remover link"
+    },
+    "menu": {
+      "file": "Ficheiro",
+      "newTab": "Novo separador",
+      "openFile": "Abrir ficheiro",
+      "exit": "Sair",
+      "view": "Ver",
+      "reload": "Recarregar",
+      "help": "Ajuda",
+      "documentation": "Documentação",
+      "clearSavedData": "Limpar dados guardados",
+      "openLogs": "Abrir logs",
+      "checkUpdate": "Verificar atualizações",
+      "about": "Sobre"
+    },
+    "sidebar": {
+      "board": "Tabuleiro",
+      "accounts": "Utilizador",
+      "files": "Ficheiros",
+      "databases": "Bases de dados",
+      "engines": "Engines",
+      "settings": "Configurações"
+    },
+    "dashboard": {
+      "cards": {
+        "playChess": {
+          "title": "Jogar xadrez",
+          "desc": "Jogue contra um engine ou um amigo",
+          "button": "Jogar"
+        },
+        "analysisBoard": {
+          "title": "Tabuleiro de análise",
+          "desc": "Analizar um jogo ou uma posição",
+          "button": "Abrir"
+        },
+        "importGame": {
+          "title": "Importar jogo",
+          "desc": "Importar game de um ficheiro PGN",
+          "button": "Importar"
+        },
+        "puzzle": {
+          "title": "Puzzles",
+          "desc": "Treinar habilidades de xadrez",
+          "button": "Treinar"
+        }
+      }
+    },
+    "tabs": {
+      "newTab": "Novo separador"
+    },
+    "board": {
+      "tabs": {
+        "practice": "Prática",
+        "analysis": "Análise",
+        "database": "Base de dados",
+        "annotate": "Anotar",
+        "info": "Info"
+      },
+      "practice": {
+        "train": "Treinar",
+        "build": "Construir",
+        "noPositionForTrain1": "Não há posições para treinar. Começa por adicionar jogadas a este ficheiro PGN.",
+        "noPositionForTrain2": "É preciso alterar para o modo de análise para se adicionar jogadas.",
+        "seeAnswer": "Ver resposta",
+        "practiced": "Praticado",
+        "due": "Por praticar",
+        "unseen": "Não visto",
+        "showAll": "Mostrar todas as posições",
+        "showLogs": "Mostrar logs",
+        "practicedAll1": "Já praticaste todas as posições.",
+        "practicedAll2": "A próxima revisão é em",
+        "correctMoveWas": "A jogada correta era {{move}}"
+      },
+      "analysis": {
+        "engines": "Engines",
+        "report": "Relatório",
+        "logs": "Logs",
+        "summary": "Sumário",
+        "inactiveEngine": "Engine não está ligado",
+        "syncGlobally": "Sincronizar globalmente",
+        "killEngine": "Matar engine",
+        "generateReport": "Gerar relatório",
+        "reportGenerated": "Relatório gerado",
+        "generatingReport": "Gerando relatório",
+        "notAnalysed": "Não analisado",
+        "engineRequired": "Necessário engine",
+        "refDBRequired": "Nenhuma base de dados selecionada. Começa por selecionar uma na página de bases de dados",
+        "time": "Tempo (ms)",
+        "reversed": "Análise invertida",
+        "reversedDesc": "Analisar jogo a partir da última posição.",
+        "annotateNovelties": "Anotar novidades",
+        "annotateNoveltiesDesc": "Adicionar comentário na primeira posição que não está na base de dados.",
+        "analyze": "Analisar",
+        "advantage": "Vantagem",
+        "accuracy": "Precisão"
+      },
+      "database": {
+        "local": "Local",
+        "lichessAll": "Lichess All",
+        "lichessMaster": "Lichess Masters",
+        "matches": "{{matches}} jogos",
+        "stats": "Estatísticas",
+        "games": "Jogos",
+        "options": "Configurações",
+        "noReference1": "Nenhuma base de dados selecionada.",
+        "noReference2": "Por favor",
+        "selectReference": "adiciona uma base de dados",
+        "noReference3": "primeiro e marca-a como referência.",
+        "timeControl": "Controle de tempo",
+        "averageRating": "Classificação média"
+      },
+      "annotate": {
+        "writeHere": "Escreve aqui..."
+      }
+    },
+    "engines": {
+      "title": "Engines",
+      "settings": {
+        "noEngine": "Nenhum engine selecionado",
+        "searchSettings": "Configurações de pesquisa",
+        "advancedSettings": "Configurações avançadas",
+        "numOfLines": "Número de linhas",
+        "numOfCores": "Número de cores",
+        "sizeOfHash": "Tamanho do hash",
+        "editJSON": "Editar JSON",
+        "reset": "Repor para padrão"
+      },
+      "add": {
+        "title": "Adicionar Engine",
+        "cloud": "Cloud",
+        "errorFetch": "Falha a buscar os engines do servidor.",
+        "binaryFile": "Ficheiro executável",
+        "binaryFileDesc": "Clica para selecionar o ficheiro executável",
+        "name": "Nome",
+        "autodetect": "Autodetetar",
+        "eloDesc": "Elo de engine",
+        "imageFile": "Ficheiro de imagem",
+        "imageFileDesc": "Clica para selecionar o ficheiro de imagem (recomendado: 60x60)"
+      },
+      "remove": {
+        "title": "Remover Engine",
+        "message": "Tens a certeza que queres remover este engine do Pawn Appétit?"
+      }
+    },
+    "databases": {
+      "title": "Bases de dados",
+      "card": {
+        "games": "Jogos",
+        "players": "Jogadores",
+        "storage": "Armazenamento"
+      },
+      "add": {
+        "title": "Adicionar Database",
+        "web": "Web",
+        "errorFetch": "Falha a buscar as bases de dados do servidor.",
+        "clickToSelectPGN": "Clica para selectionar o ficheiro PGN",
+        "convert": "Converter"
+      },
+      "settings": {
+        "referenceDatabase": "Base de dados de referência",
+        "indexed": "Indexado",
+        "indexedDesc": "Indexes são usados para acelerar a pesquisa, mas ocupam armazenamento extra.",
+        "events": "Eventos",
+        "explore": "Explorar",
+        "advancedTools": "Ferramentas avançadas",
+        "mergePlayers": "Juntar Jogadores",
+        "mergePlayersDesc": "Substitui todos as ocorrências de primeiro jogador com o segundo jogador na base de dados.",
+        "merge": "Juntar",
+        "batchDelete": "Remover em lote",
+        "batchDeleteDesc": "Estas ações irão irreversívelmente remover jogos da base de dados. Usar com cuidado.",
+        "removeDup": "Remover duplicadoss",
+        "removeEmpty": "Remover jogos vazios",
+        "actions": "Ações",
+        "addGames": "Adicioanr Games",
+        "exportPGN": "Exportar para PGN"
+      },
+      "delete": {
+        "title": "Apagar base de dados",
+        "message": "Tens a certeza que queres apagar esta base de dados?"
+      }
+    },
+    "files": {
+      "title": "Ficheiros",
+      "fileType": {
+        "fileType": "Tipo de ficheiro",
+        "game": "Jogo",
+        "repertoire": "Repertório",
+        "tournament": "Torneio",
+        "puzzle": "Puzzle",
+        "other": "Outro",
+        "folder": "Pasta"
+      },
+      "delete": {
+        "title": "Apagar ficheiro",
+        "message": "Tens a certeza que queres apagar {{fileName}}?"
+      },
+      "editMetadata": "Editar metadados",
+      "edit": {
+        "title": "Editar ficheiro"
+      },
+      "create": {
+        "title": "Criar ficheiro"
+      },
+      "search": "Procurar ficheiros"
+    },
+    "pgnInput": {
+      "comments": "Comentários",
+      "glyphs": "Símbolos",
+      "variations": "Variações",
+      "extraMarkups": "Anotações extras",
+      "maxDepth": "Profundidade máxima",
+      "totalMoves": "Total de jogadas"
+    }
+  },
+  "settings": {
+    "board": {
+      "title": "Tabuleiro",
+      "desc": "Customizar o tabuleiro de análise e controlos de jogo",
+      "pieceDest": "Destino dos peças",
+      "pieceDestDesc": "Mostra destinos possíveis para cada peça",
+      "arrows": "Setas",
+      "arrowsDesc": "Mostra setas de melhor movimento",
+      "snapArrows": "Encaixar setas",
+      "snapArrowsDesc": "Ajusta setas para movimentos válidos",
+      "consecutiveArrows": "Setas consecutivas",
+      "consecutiveArrowsDesc": "Mostra várias setas para a melhor linha, caso ela consista em mover a mesma peça várias vezes",
+      "eraseDrawablesOnClick": "Apagar desenhos ao clicar",
+      "eraseDrawablesOnClickDesc": "Limpar o tabuleiro das setas e círculos desenhados ao clicar com o botão esquerdo do rato",
+      "autoPromotion": "Auto Promoção",
+      "autoPromotionDesc": "Automaticamente promover para rainha",
+      "coordinates": "Coordenadas",
+      "coordinatesDesc": "Mostra coordenadas no tabuleiro",
+      "autoSave": "Gravar automaticamente",
+      "autoSaveDesc": "Grava automaticamente após cada jogada",
+      "previewBoard": "Tabuleiro de visualização",
+      "previewBoardDesc": "Mostra tabuleiro ao passar rato por cima de uma jogada na análise",
+      "scrollThroughMoves": "Scroll pelas jogadas",
+      "scrollThroughMovesDesc": "Ativa ou desativa scroll pelas jogadas no tabuleiro"
+    },
+    "inputs": {
+      "title": "Inputs",
+      "desc": "Customizar inputs",
+      "textInput": "Input de texto",
+      "textInputDesc": "Insere jogadas a partir de texto",
+      "spellCheck": "Verificar ortografia",
+      "spellCheckDesc": "Ativa ou desativa verificação de ortografia nos inputs de texto"
+    },
+    "openingReport": {
+      "title": "Relatório de abertura",
+      "desc": "Customizar configurações do relatório de abertura",
+      "percentCoverage": "Percentagem de cobertura",
+      "percentCoverageDesc": "Percentagem de jogadas cobertas em cada posição",
+      "minGames": "Jogos mínimos",
+      "minGamesDesc": "Mínimo de jogos em cada posição para ser considerado"
+    },
+    "anarchy": {
+      "title": "Anarquia",
+      "desc": "Opções divertidas"
+    },
+    "appearance": {
+      "title": "Aparência",
+      "desc": "Customizar aspeto da aplicação",
+      "theme": {
+        "theme": "Tema"
+      },
+      "themeDesc": "Esquema de cores geral",
+      "titleBar": "Barra de título",
+      "titleBarDesc": "Choose between native or custom title bar",
+      "language": "Linguagem",
+      "languageDesc": "Linguagem usada na aplicação",
+      "native": "Nativo",
+      "custom": "Custom",
+      "fontSize": "Tamanho de fonte",
+      "fontSizeDesc": "Tamanho geral de fonte",
+      "pieceSet": "Conjunto de peças",
+      "pieceSetDesc": "Peças usadas no tabuleiro",
+      "boardImage": "Imagem do tabuleiro",
+      "boardImageDesc": "Imagem usada como fundo do tabuleiro",
+      "accentColor": "Cor principal",
+      "accentColorDesc": "Cor principal da aplicação"
+    },
+    "sound": {
+      "title": "Som",
+      "desc": "Customizar as configurações de som",
+      "volume": "Volume",
+      "volumeDesc": "Volume geral",
+      "collection": "Coleção de sons",
+      "collectionDesc": "Coleção de sons usados"
+    },
+    "keybindings": "Atalhos de teclado",
+    "directories": {
+      "title": "Diretorias",
+      "desc": "Customizar diretorias usadas pela aplicação",
+      "files": "Diretoria para ficheiros",
+      "filesDesc": "Aqui é onde os ficheiros de jogos estão armazenados na página de ficheiros"
+    }
+  },
+  "formatters": {
+    "dateFormat": "{{date, dateformat}}",
+    "dateTimeFormat": "{{date, datetimeformat}}",
+    "moveNotation": "{{move, moveNotation}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "score": "{{score, score}}"
+  }
+}

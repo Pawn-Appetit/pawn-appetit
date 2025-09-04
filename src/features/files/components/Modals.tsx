@@ -50,7 +50,7 @@ export function CreateModal({
   }
 
   return (
-    <Modal opened={opened} onClose={() => setOpened(false)} title={t("Files.Create.Title")}>
+    <Modal opened={opened} onClose={() => setOpened(false)} title={t("features.files.create.title")}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -64,7 +64,7 @@ export function CreateModal({
           <PgnSourceInput setFilename={setFilename} setPgnTarget={setPgnTarget} pgnTarget={pgnTarget} />
 
           <Button style={{ marginTop: "1rem" }} type="submit">
-            {t("Common.Create")}
+            {t("common.create")}
           </Button>
         </Stack>
       </form>
@@ -122,7 +122,7 @@ export function EditModal({
   }
 
   return (
-    <Modal opened={opened} onClose={() => setOpened(false)} title={t("Files.Edit.Title")}>
+    <Modal opened={opened} onClose={() => setOpened(false)} title={t("features.files.edit.title")}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -134,7 +134,7 @@ export function EditModal({
           <FileTypeSelector value={filetype} onChange={setFiletype} />
 
           <Button style={{ marginTop: "1rem" }} type="submit">
-            {t("Common.Edit")}
+            {t("common.edit")}
           </Button>
         </Stack>
       </form>

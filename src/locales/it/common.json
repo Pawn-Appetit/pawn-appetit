@@ -1,0 +1,745 @@
+{
+  "common": {
+    "on": "ON",
+    "off": "OFF",
+    "name": "Nome",
+    "description": "Descrizione",
+    "version": "Versione",
+    "enabled": "Abilitato",
+    "remove": "Rimuovi",
+    "delete": "Elimina",
+    "add": "Aggiungi",
+    "open": "Apri",
+    "create": "Crea",
+    "save": "Salva",
+    "download": "Scarica",
+    "local": "Locale",
+    "install": "Installare",
+    "installed": "Installato",
+    "downloading": "Scaricato",
+    "extracting": "Estraendo",
+    "error": "Errore",
+    "addNew": "Aggiungi nuovo",
+    "openFolder": "Apri la cartella in esplora risorse",
+    "unknown": "Sconosciuto",
+    "cancel": "Cancella",
+    "cannotUndo": "Questa azione non può essere annullata.",
+    "nameAlreadyUsed": "Nome già in uso",
+    "requireName": "Nome obbligatorio",
+    "requirePath": "Percorso obbligatorio",
+    "pgnFile": "File PGN",
+    "pgnGame": "Partita PGN",
+    "or": "Or",
+    "clickToSelectPGN": "Click to select PGN file",
+    "size": "Dimensione",
+    "generalSettings": "Impostazioni generali",
+    "data": "Data",
+    "games": {
+      "one": "{{count}} partita",
+      "other": "{{count}} partite"
+    },
+    "edit": "Modifica",
+    "enterFileName": "Inserire il nome del file",
+    "next": "Prossimo",
+    "skip": "Salta",
+    "reset": "Reset",
+    "incorrect": "Errato",
+    "run": "Avviare",
+    "stop": "Terminare",
+    "engine": "Motore",
+    "unsavedChanges": {
+      "title": "Modifiche non salvate",
+      "desc": "Hai delle modifiche non salvate. Vuoi salvarle prima di chiudere?",
+      "saveAndClose": "Salva e chiudi",
+      "closeWithoutSaving": "Chiudi senza salvare"
+    },
+    "loading": "Loading...",
+    "continue": "Continua",
+    "review": "Rivedi",
+    "noGameSelected": "No game selected"
+  },
+  "chess": {
+    "checkmate": "Scacco matto",
+    "stalemate": "Stallo",
+    "white": "Bianco",
+    "black": "Nero",
+    "random": "Casuale",
+    "any": "Any",
+    "player": "Player",
+    "opponent": "Opponent",
+    "goMode": {
+      "time": "Tempo",
+      "depth": "Profondità",
+      "nodes": "Nodi",
+      "infinite": "Infinito"
+    },
+    "annotate": {
+      "none": "Nessuno",
+      "brilliant": "Brillante",
+      "good": "Buono",
+      "interesting": "Interessante",
+      "dubious": "Dubbia",
+      "mistake": "Errore",
+      "blunder": "Errore grave",
+      "whiteWinning": "Bianco vincente",
+      "whiteAdvantage": "Bianco in vantaggio",
+      "whiteEdge": "Bianco con leggero vantaggio",
+      "equal": "Pari",
+      "unclear": "Posizione incerta",
+      "blackEdge": "Nero con leggero vantaggio",
+      "blackAdvantage": "Nero in vantaggio",
+      "blackWinning": "Nero vincente",
+      "novelty": "Novità teorica",
+      "development": "Sviluppo",
+      "initiative": "Iniziativa",
+      "attack": "Attacco",
+      "counterplay": "Controgioco",
+      "withCompensation": "Con compenso",
+      "timeTrouble": "Poco tempo",
+      "withIdea": "Con idea",
+      "onlyMove": "Mossa unica",
+      "zugzwang": "Zugzwang"
+    },
+    "timeControl": {
+      "ultraBullet": "UltraBullet",
+      "bullet": "Bullet",
+      "blitz": "Lampo",
+      "rapid": "Semi-lampo",
+      "classical": "Classica",
+      "correspondence": "Corrispondenza"
+    },
+    "outcome": {
+      "outcome": "Risultato",
+      "selectOutcome": "Seleziona risultato",
+      "draw": "Patta",
+      "whiteWins": "Vince il Bianco",
+      "blackWins": "Vince il Nero",
+      "unknown": "Sconosciuto"
+    },
+    "opening": {
+      "emptyBoard": "Scacchiera vuota",
+      "startingPosition": "Posizione iniziale"
+    },
+    "fen": {
+      "start": "Inizio",
+      "empty": "Vuoto",
+      "whiteToMove": "Bianco a muovere",
+      "blackToMove": "Nero a muovere"
+    },
+    "pieceChars": {
+      "k": "K",
+      "q": "Q",
+      "r": "R",
+      "b": "B",
+      "n": "N"
+    },
+    "errors": {
+      "emptyBoard": "Scacchiera vuota",
+      "invalidKings": "Numero di re non valido",
+      "oppositeCheck": "Scacco opposto",
+      "pawnsOnBackrank": "Pedoni sulla traversa di fondo",
+      "invalidBoard": "Scacchiera non valida",
+      "invalidCastlingRights": "Diritti di arrocco non validi",
+      "invalidEpSquare": "Casella en passant non valida",
+      "invalidFen": "FEN non valido",
+      "invalidFullmoves": "Numero di mosse intere non valido",
+      "invalidHaldmoves": "Numero di mezze mosse non valido",
+      "invalidPockets": "Tasche non valide",
+      "invalidRemainingChecks": "Numero di scacchi rimanenti non valido",
+      "invalidTurn": "Turno non valido",
+      "unknown": "Errore sconosciuto"
+    }
+  },
+  "units": {
+    "count": "{{count, number}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "bytesLabels": {
+      "bytes": "Bytes",
+      "bytesLong": "Bytes",
+      "kilobytes": "KB",
+      "megabytes": "MB",
+      "gigabytes": "GB",
+      "terabytes": "TB",
+      "kilobytesLong": "Kilobyte",
+      "megabytesLong": "Megabyte",
+      "gigabytesLong": "Gigabyte",
+      "terabytesLong": "Terabyte"
+    },
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "nodesLabels": {
+      "thousand": "k",
+      "million": "M",
+      "billion": "Mld",
+      "trillion": "T",
+      "quadrillion": "Q",
+      "quintillion": "Qi",
+      "nodes": "nodi",
+      "nodesPerSecond": "nodi/s"
+    },
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "durationLabels": {
+      "seconds": "s",
+      "minutes": "m",
+      "hours": "h",
+      "days": "g",
+      "secondsLong": "secondi",
+      "minutesLong": "minuti",
+      "hoursLong": "ore",
+      "daysLong": "giorni"
+    },
+    "score": "{{score, score}}",
+    "scoreLabels": {
+      "mate": "M",
+      "dtz": "DTZ",
+      "centipawns": "cp",
+      "centipawnsLong": "centipawn"
+    }
+  },
+  "features": {
+    "richText": {
+      "bold": "Grassetto",
+      "italic": "Corsivo",
+      "underline": "Sottolineato",
+      "strike": "Barrato",
+      "clearFormatting": "Cancella formattazione",
+      "h1": "Titolo 1",
+      "h2": "Titolo 2",
+      "h3": "Titolo 3",
+      "h4": "Titolo 4",
+      "quote": "Citazione",
+      "hLine": "Linea orizzontale",
+      "bulletList": "Elenco puntato",
+      "numberedList": "Elenco numerato",
+      "link": "Link",
+      "removeLink": "Rimuovi link"
+    },
+    "menu": {
+      "file": "File",
+      "newTab": "Nuova scheda",
+      "openFile": "Aprì file",
+      "exit": "Esci",
+      "view": "Visualizza",
+      "reload": "Ricarica",
+      "help": "Aiuto",
+      "documentation": "Documentazione",
+      "clearSavedData": "Cancella dati salvati",
+      "openLogs": "Apri log",
+      "checkUpdate": "Verifica aggiornamenti",
+      "about": "Informazioni",
+      "markAsStart": "Segna come inizio",
+      "promoteToMainLine": "Promuovi a linea principale",
+      "promoteVariation": "Promuovi variante",
+      "copyVariationPGN": "Copia PGN della variante",
+      "deleteMove": "Elimina mossa"
+    },
+    "sidebar": {
+      "dashboard": "Dashboard",
+      "board": "Scacchiera",
+      "accounts": "Utente",
+      "files": "Archivio",
+      "databases": "Database",
+      "engines": "Motori",
+      "learn": "Impara",
+      "settings": "Impostazioni",
+      "keyboardShortcuts": "Scorciatoie da tastiera"
+    },
+    "dashboard": {
+      "welcome": {
+        "firstOpen": "Benvenuto su Pawn Appétit!",
+        "back": "Bentornato",
+        "desc": "Pronto a fare la tua prossima mossa migliore?"
+      },
+      "cards": {
+        "learn": {
+          "title": "Impara gli scacchi",
+          "desc": "Lezioni interattive per imparare gli scacchi dalle basi fino alle strategie avanzate",
+          "button": "Inizia a imparare"
+        },
+        "playChess": {
+          "title": "Gioca una partita",
+          "desc": "Sfida un motore o un amico",
+          "button": "Gioca ora"
+        },
+        "analysisBoard": {
+          "title": "Scacchiera di analisi",
+          "desc": "Analizza una partita o una posizione",
+          "button": "Apri"
+        },
+        "importGame": {
+          "title": "Importa partita",
+          "desc": "Importa una partita da un file PGN",
+          "button": "Importa"
+        },
+        "analyze": {
+          "title": "Analisi della scacchiera",
+          "desc": "Analizza posizioni, partite e varianti con potenti motori di scacchi.",
+          "button": "Analizza"
+        },
+        "database": {
+          "title": "Accesso al database",
+          "desc": "Esplora vasti database di scacchi e studia le partite dei maestri per approfondire la tua comprensione.",
+          "button": "Sfoglia"
+        },
+        "engine": {
+          "title": "Integrazione motori",
+          "desc": "Aggiungi e gestisci più motori di scacchi per personalizzare la tua configurazione di analisi e migliorare la flessibilità.",
+          "button": "Gestisci"
+        },
+        "puzzle": {
+          "title": "Puzzle tattici",
+          "desc": "Affina le tue abilità di scacchi con puzzle tattici e migliora il riconoscimento dei pattern",
+          "button": "Risolvi"
+        },
+        "account": {
+          "title": "Account",
+          "desc": "Importa le tue partite e statistiche collegando il tuo account Chess.com o Lichess per un'analisi personalizzata.",
+          "button": "Connetti"
+        },
+        "import": {
+          "title": "Importa",
+          "desc": "Carica e modifica file PGN per analizzare le tue partite o studiare posizioni specifiche con pieno controllo.",
+          "button": "Importa"
+        }
+      }
+    },
+    "tabs": {
+      "newTab": "Nuova scheda",
+      "playChess": {
+        "title": "Gioca una partita",
+        "desc": "Sfida un motore o un amico",
+        "button": "Gioca ora"
+      },
+      "analysisBoard": {
+        "title": "Scacchiera di analisi",
+        "desc": "Analizza una partita o una posizione",
+        "button": "Analizza"
+      },
+      "importGame": {
+        "title": "Importa partita",
+        "desc": "Importa una partita da un file PGN",
+        "button": "Importa",
+        "url": "URL della partita (lichess o chess.com)",
+        "saveToCollection": "Salva nella collezione",
+        "online": "Online",
+        "importing": "Importazione...",
+        "import": "Importa"
+      },
+      "puzzle": {
+        "title": "Puzzle",
+        "desc": "Allenati con gli scacchi",
+        "button": "Allenati"
+      }
+    },
+    "board": {
+      "actions": {
+        "togglePawnStructureView": "Attiva/disattiva vista struttura pedoni",
+        "takeSnapshot": "Cattura istantanea",
+        "analyzeGame": "Analizza partita",
+        "playFromHere": "Gioca da qui",
+        "clearDrawings": "Cancella disegni",
+        "editPosition": "Modifica posizione",
+        "savePGN": "Salva PGN ({{key}})",
+        "addGame": "Aggiungi partita",
+        "flipBoard": "Capovolgi scacchiera ({{key}})"
+      },
+      "tabs": {
+        "practice": "Pratica",
+        "graph": "Grafico",
+        "centerGraph": "Centra sulla mossa attuale",
+        "analysis": "Analisi",
+        "database": "Database",
+        "annotate": "Annota",
+        "info": "Info"
+      },
+      "practice": {
+        "train": "Allenamento",
+        "build": "Costruisci",
+        "noPositionForTrain1": "Nessuna posizione disponibile per l'allenamento. Inizia aggiungendo posizioni a questo file PNG.",
+        "noPositionForTrain2": "È necessario passare alla modalità di analisi per aggiungere posizioni.",
+        "seeAnswer": "Vedi soluzione",
+        "practiced": "Già praticato",
+        "due": "Da fare",
+        "unseen": "Mai visto",
+        "showAll": "Mostra tutte le posizioni",
+        "showLogs": "Mostra log",
+        "practicedAll1": "Hai già praticato tutte le posizioni.",
+        "practicedAll2": "La prossima posizione è",
+        "correctMoveWas": "La mossa corretta era {{move}}",
+        "resetOpeningData": {
+          "title": "Reimposta dati di apertura",
+          "desc": "Sei sicuro di voler reimpostare i dati di apertura per \"{ { fileName } } \"? Tutti i progressi di apprendimento andranno persi."
+        }
+      },
+      "analysis": {
+        "engines": "Motori",
+        "report": "Report",
+        "logs": "Logs",
+        "summary": "Sommario",
+        "inactiveEngine": "Il motore non è attivo",
+        "syncGlobally": "Sincronizza tutto",
+        "killEngine": "Interrompi motore",
+        "generateReport": "Genera report",
+        "reportGenerated": "Report generato",
+        "generatingReport": "Generazione report",
+        "notAnalysed": "Non analizzata",
+        "engineRequired": "Motore richiesto",
+        "refDBRequired": "Nessun database selezionato. Inizia selezionandone uno nella pagina del database",
+        "time": "Tempo (ms)",
+        "reversed": "Analisi inversa",
+        "reversedDesc": "Analizza la partita dall'ultima posizione.",
+        "annotateNovelties": "Annotta novità",
+        "annotateNoveltiesDesc": "Aggiungi un commento nella prima posizione che non è nel database.",
+        "analyze": "Analizza",
+        "advantage": "Vantaggio",
+        "accuracy": "Precisione",
+        "enableWDL": "Devi abilitare UCI_ShowWDL nelle impostazioni del motore per utilizzare questa funzione."
+      },
+      "database": {
+        "local": "Locale",
+        "lichessAll": "Lichess Tutto",
+        "lichessMaster": "Lichess Masters",
+        "matches": "{{matches}} partite",
+        "stats": "Statistiche",
+        "games": "Partite",
+        "options": "Impostazioni",
+        "noReference1": "Nessun database di riferimento selezionato.",
+        "noReference2": "Per favore, seleziona un database di riferimento.",
+        "selectReference": "Seleziona riferimento",
+        "noReference3": "prima contrassegnalo come riferimento",
+        "timeControl": "Cadenza",
+        "averageRating": "Punteggio medio"
+      },
+      "annotate": {
+        "writeHere": "Scrivi qui..."
+      }
+    },
+    "lessons": {
+      "title": "Lezioni di scacchi",
+      "selectToBegin": "Seleziona una lezione per iniziare a imparare gli scacchi",
+      "difficulty": {
+        "beginner": "Principiante",
+        "intermediate": "Intermedio",
+        "advanced": "Avanzato"
+      },
+      "startLesson": "Inizia lezione",
+      "backToLessons": "Torna alle lezioni",
+      "backToLesson": "Torna alla lezione",
+      "startExercise": "Inizia esercizio",
+      "exercises": "Esercizi",
+      "correct": "Corretto! Ben fatto.",
+      "incorrect": "Sbagliato. Riprova.",
+      "progress": "Progresso",
+      "overallProgress": "Progresso complessivo",
+      "showHint": "Mostra suggerimento",
+      "hint": "Suggerimento",
+      "tryMoves": "Prova una di queste mosse",
+      "completed": "Completato",
+      "exercisesCompleted": "esercizi completati",
+      "lessonCompleted": "Congratulazioni! Hai completato {{lesson}}!",
+      "completionMessage": "Hai completato con successo tutti gli esercizi di questa lezione. Continua così!"
+    },
+    "practice": {
+      "title": "Allenamento di scacchi",
+      "description": "Migliora le tue abilità di scacchi con esercizi mirati",
+      "selectExercise": "Seleziona un esercizio per iniziare ad allenarti",
+      "progress": "Progresso",
+      "exercises": "Esercizi",
+      "completed": "Completato",
+      "start": "Inizia allenamento",
+      "showHint": "Mostra suggerimento",
+      "hintText": "Cerca opportunità tattiche o caselle chiave che controllano la posizione.",
+      "congratulations": "Congratulazioni!",
+      "completedCategory": "Hai completato tutti gli esercizi in {{category}}!"
+    },
+    "engines": {
+      "title": "Motori",
+      "settings": {
+        "noEngine": "Nessun motore selezionato",
+        "searchSettings": "Impostazioni di ricerca",
+        "advancedSettings": "Impostazioni avanzate",
+        "numOfLines": "Numero di righe",
+        "numOfCores": "Numero di core",
+        "sizeOfHash": "Dimensione dell'Hash",
+        "editJSON": "Modifica JSON",
+        "reset": "Ripristina impostazioni predefinite"
+      },
+      "add": {
+        "title": "Aggiungi Motore",
+        "cloud": "Cloud",
+        "errorFetch": "Impossibile recuperare le informazioni del motore dal server.",
+        "binaryFile": "File binario",
+        "binaryFileDesc": "Clicca per selezionare il file binario",
+        "name": "Nome",
+        "autodetect": "Rilevamento automatico",
+        "eloDesc": "Elo del motore",
+        "imageFile": "File immagine",
+        "imageFileDesc": "Clicca per selezionare il file immagine (dimensione consigliata: 60x60)"
+      },
+      "remove": {
+        "title": "Rimuovi Motore",
+        "message": "Sei sicuro di voler rimuovere questo motore da Pawn Appétit?"
+      }
+    },
+    "databases": {
+      "title": "Database",
+      "card": {
+        "games": "Partite",
+        "players": "Giocatori",
+        "tournaments": "Tornei",
+        "storage": "Archivio"
+      },
+      "add": {
+        "title": "Aggiungi Database",
+        "web": "Web",
+        "errorFetch": "Impossibile recuperare le informazioni del database dal server.",
+        "clickToSelectPGN": "Clicca per selezionare il file PGN",
+        "convert": "Converti"
+      },
+      "settings": {
+        "referenceDatabase": "Database di Riferimento",
+        "referenceDatabaseShort": "Riferimento",
+        "indexed": "Indicizzato",
+        "indexedDesc": "Gli indici vengono utilizzati per velocizzare il processo di ricerca, ma occupano spazio aggiuntivo.",
+        "events": "Eventi",
+        "explore": "Esplora",
+        "advancedTools": "Strumenti avanzati",
+        "mergePlayers": "Unisci Giocatori",
+        "mergePlayersDesc": "Sostituisci tutte le occorrenze del primo giocatore con il secondo giocatore nel database.",
+        "merge": "Unisci",
+        "batchDelete": "Eliminazione di Gruppo",
+        "batchDeleteDesc": "Queste azioni rimuoveranno irreversibilmente le partite dal database. Usare con cautela.",
+        "removeDup": "Rimuovi Duplicati",
+        "removeEmpty": "Rimuovi Partite Vuote",
+        "actions": "Azioni",
+        "addGames": "Aggiungi Partite",
+        "exportPGN": "Esporta in PGN"
+      },
+      "delete": {
+        "title": "Elimina database",
+        "message": "Sei sicuro di voler eliminare questo database?"
+      }
+    },
+    "files": {
+      "title": "File",
+      "fileType": {
+        "fileType": "Tipo di file",
+        "game": "Partita",
+        "repertoire": "Repertorio",
+        "tournament": "Torneo",
+        "puzzle": "Puzzle",
+        "other": "Altro",
+        "folder": "Cartella"
+      },
+      "delete": {
+        "title": "Elimina file",
+        "message": "Sei sicuro di voler eliminare {{fileName}}?",
+        "delete": "Elimina"
+      },
+      "editMetadata": "Modifica Metadati",
+      "edit": {
+        "title": "Modifica file"
+      },
+      "create": {
+        "title": "Crea file",
+        "pgnPlaceholder": "Incolla qui il tuo PGN..."
+      },
+      "search": "Cerca file",
+      "noFiles": "Nessun file trovato",
+      "noFileSelected": "Nessun file selezionato",
+      "name": "Nome",
+      "lastModified": "Ultima modifica",
+      "type": "Tipo",
+      "folder": "Cartella",
+      "game": {
+        "delete": {
+          "title": "Rimuovi partita",
+          "desc": "Sei sicuro di voler rimuovere questa partita?"
+        }
+      }
+    },
+    "gameTable": {
+      "date": "Data",
+      "plies": "Mezze mosse",
+      "event": "Evento",
+      "site": "Sede",
+      "from": "Da",
+      "startDate": "Data di inizio",
+      "to": "A",
+      "endDate": "Data di fine"
+    },
+    "gameNotation": {
+      "showMoves": "Mostra mosse",
+      "hideMoves": "Nascondi mosse",
+      "showComments": "Mostra commenti",
+      "hideComments": "Nascondi commenti",
+      "showVariations": "Mostra varianti",
+      "repertoireView": "Vista repertorio",
+      "mainLine": "Linea principale",
+      "showVariationsTooltip": "Mostra varianti"
+    },
+    "pgnInput": {
+      "comments": "Commenti",
+      "glyphs": "Simboli",
+      "variations": "Varianti",
+      "extraMarkups": "Annotazioni Extra",
+      "maxDepth": "Profondità Massima",
+      "totalMoves": "Totale di Mosse"
+    },
+    "puzzle": {
+      "jumpToNext": "Passa al prossimo esercizio",
+      "jumpToNextOff": "Disattivato",
+      "jumpToNextOnSuccess": "Al successo",
+      "jumpToNextOnSuccessAndFailure": "Al successo e al fallimento",
+      "playerRating": "Punteggio giocatore",
+      "maxRating": "Punteggio massimo",
+      "newMax": "Nuovo massimo",
+      "rating": "Punteggio esercizio",
+      "averageSuccessRating": "Punteggio medio di successo",
+      "averageFailRating": "Punteggio medio di fallimento",
+      "selectDatabase": "Seleziona database",
+      "ratingRange": "Intervallo punteggio",
+      "progressive": "Adattivo",
+      "hideRating": "Nascondi punteggio",
+      "inOrder": "In ordine",
+      "newPuzzle": "Nuovo esercizio",
+      "analyzePosition": "Analizza posizione",
+      "clearSession": "Cancella sessione",
+      "showingSolution": "Mostrando soluzione",
+      "viewSolution": "Mostra soluzione",
+      "loadingRatingRange": "Caricamento intervallo punteggio...",
+      "enterTitle": "Inserisci titolo esercizio"
+    },
+    "tablebase": {
+      "title": "Tablebase",
+      "error": "Errore: ",
+      "dtm": "DTM {{count}}",
+      "dtz": "DTZ {{count}}",
+      "fiftyMoveRule": "*a causa della regola delle 50 mosse"
+    }
+  },
+  "settings": {
+    "board": {
+      "title": "Scacchiera",
+      "desc": "Personalizza la scacchiera di analisi e i controlli di gioco",
+      "pieceDest": "Destinazioni dei Pezzi",
+      "pieceDestDesc": "Mostra le mosse possibili per ogni pezzo",
+      "arrows": "Frecce",
+      "arrowsDesc": "Mostra le frecce delle mosse migliori",
+      "snapArrows": "Vincola Frecce",
+      "snapArrowsDesc": "Vincola le frecce alle mosse valide",
+      "consecutiveArrows": "Frecce Consecutive",
+      "consecutiveArrowsDesc": "Mostra più frecce per la miglior linea, se comporta muovere lo stesso pezzo più volte",
+      "eraseDrawablesOnClick": "Cancella annotazioni grafiche con un Click",
+      "eraseDrawablesOnClickDesc": "Pulisci la scacchiera da frecce e cerchi disegnati cliccando con il tasto sinistro del mouse",
+      "autoPromotion": "Promozione Automatica",
+      "autoPromotionDesc": "Promuove automaticamente a donna quando un pedone raggiunge l'ultima traversa",
+      "coordinates": "Coordinate",
+      "coordinatesDesc": "Mostra le coordinate sulla scacchiera",
+      "autoSave": "Salvataggio Automatico",
+      "autoSaveDesc": "Salva automaticamente il file dopo ogni mossa",
+      "previewBoard": "Anteprima della Scacchiera",
+      "previewBoardDesc": "Mostra un'anteprima della scacchiera quando si passa con il mouse su una mossa nell'analisi del motore",
+      "scrollThroughMoves": "Scorri tra le Mosse",
+      "scrollThroughMovesDesc": "Abilita o disabilita lo scorrimento tra le mosse sulla scacchiera"
+    },
+    "inputs": {
+      "title": "Input",
+      "desc": "Personalizza le impostazioni di input",
+      "textInput": "Inserimento Mosse Testuali",
+      "textInputDesc": "Inserisci le mosse in formato testuale",
+      "spellCheck": "Correttore Ortografico",
+      "spellCheckDesc": "Abilita o disabilita il correttore ortografico sugli input testuali"
+    },
+    "openingReport": {
+      "title": "Rapporto di Apertura",
+      "desc": "Personalizza le impostazioni del rapporto di apertura",
+      "percentCoverage": "Copertura Percentuale",
+      "percentCoverageDesc": "Percentuale di mosse coperte in ogni posizione",
+      "minGames": "Partite Minime",
+      "minGamesDesc": "Numero minimo di partite in ogni posizione affinché sia considerata"
+    },
+    "anarchy": {
+      "title": "Anarchia",
+      "desc": "Opzioni divertenti",
+      "forcedEnPassant": "En Passant forzato",
+      "forcedEnPassantDesc": "Ti obbliga a giocare En Passant, se è una mossa legale."
+    },
+    "appearance": {
+      "title": "Aspetto",
+      "desc": "Personalizza l'aspetto dell'app",
+      "theme": {
+        "theme": "Tema"
+      },
+      "themeDesc": "Schema di colori generale",
+      "custom": "Personalizzata",
+      "auto": "Automatico",
+      "titleBar": "Barra del Titolo",
+      "titleBarDesc": "Scegli tra la barra del titolo nativa o personalizzata",
+      "language": "Lingua",
+      "languageDesc": "Lingua utilizzata nell'app",
+      "native": "Nativa",
+      "fontSize": "Dimensione del Carattere",
+      "fontSizeDesc": "Dimensione generale del carattere",
+      "pieceSet": "Set di Pezzi",
+      "pieceSetDesc": "Pezzi utilizzati sulle scacchiere",
+      "boardImage": "Immagine della Scacchiera",
+      "boardImageDesc": "Immagine utilizzata come sfondo della scacchiera",
+      "accentColor": "Colore Evidenziazione",
+      "accentColorDesc": "Colore principale dell'app",
+      "hideDashboardOnStartup": "Nascondi Dashboard all'avvio",
+      "hideDashboardOnStartupDesc": "Apri le Scacchiere invece della Dashboard all'avvio dell'app",
+      "dateFormat": "Formato data",
+      "dateFormatDesc": "Scegli tra formato internazionale (YYYY-MM-DD) o specifico per la lingua",
+      "international": "Internazionale",
+      "locale": "Locale"
+    },
+    "sound": {
+      "title": "Suono",
+      "desc": "Personalizza le impostazioni del suono",
+      "volume": "Volume",
+      "volumeDesc": "Volume generale",
+      "collection": "Collezione di Suoni",
+      "collectionDesc": "Collezione di suoni utilizzati"
+    },
+    "keybindings": "Tasti di Scelta Rapida",
+    "directories": {
+      "title": "Cartelle",
+      "desc": "Personalizza le directory utilizzate dall'app",
+      "files": "Directory dei File",
+      "filesDesc": "Qui vengono archiviati i tuoi giochi nella pagina File"
+    },
+    "telemetry": "Telemetry",
+    "telemetryDesc": "Aiuta a migliorare Pawn Appétit condividendo dati di utilizzo anonimi",
+    "moveNotation": "Notazione delle mosse",
+    "moveNotationDesc": "Scegli come visualizzare i pezzi nella notazione",
+    "symbols": "Simboli (♔♕♖♗♘)",
+    "letters": "Lettere (K Q R B N)",
+    "translatedLetters": "Lettere tradotte (K Q R B N)",
+    "waysToMovePieces": "Modalità di spostamento dei pezzi",
+    "waysToMovePiecesDesc": "Muovi i pezzi trascinando, cliccando o entrambi",
+    "drag": "Trascina",
+    "click": "Clicca",
+    "both": "Entrambi",
+    "searchPlaceholder": "Cerca nelle impostazioni",
+    "noResultsFound": "Nessuna impostazione trovata per",
+    "gameplay": "Gioco",
+    "analysis": "Analisi",
+    "interface": "Interfaccia",
+    "system": "Sistema"
+  },
+  "formatters": {
+    "dateFormat": "{{date, dateformat}}",
+    "dateTimeFormat": "{{date, datetimeformat}}",
+    "moveNotation": "{{move, moveNotation}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "score": "{{score, score}}"
+  }
+}

@@ -56,20 +56,20 @@ export function squareToCoordinates(square: Square, orientation: "white" | "blac
 
 export function chessopsError(error: PositionError | FenError) {
   return match(error)
-    .with({ message: IllegalSetup.Empty }, () => "Errors.EmptyBoard")
-    .with({ message: IllegalSetup.Kings }, () => "Errors.InvalidKings")
-    .with({ message: IllegalSetup.OppositeCheck }, () => "Errors.OppositeCheck")
-    .with({ message: IllegalSetup.PawnsOnBackrank }, () => "Errors.PawnsOnBackrank")
-    .with({ message: InvalidFen.Board }, () => "Errors.InvalidBoard")
-    .with({ message: InvalidFen.Castling }, () => "Errors.InvalidCastlingRights")
-    .with({ message: InvalidFen.EpSquare }, () => "Errors.InvalidEpSquare")
-    .with({ message: InvalidFen.Fen }, () => "Errors.InvalidFen")
-    .with({ message: InvalidFen.Fullmoves }, () => "Errors.InvalidFullmoves")
-    .with({ message: InvalidFen.Halfmoves }, () => "Errors.InvalidHalfmoves")
-    .with({ message: InvalidFen.Pockets }, () => "Errors.InvalidPockets")
-    .with({ message: InvalidFen.RemainingChecks }, () => "Errors.InvalidRemainingChecks")
-    .with({ message: InvalidFen.Turn }, () => "Errors.InvalidTurn")
-    .otherwise(() => "Errors.Unknown");
+    .with({ message: IllegalSetup.Empty }, () => "chess.errors.emptyBoard")
+    .with({ message: IllegalSetup.Kings }, () => "chess.errors.invalidKings")
+    .with({ message: IllegalSetup.OppositeCheck }, () => "chess.errors.oppositeCheck")
+    .with({ message: IllegalSetup.PawnsOnBackrank }, () => "chess.errors.pawnsOnBackrank")
+    .with({ message: InvalidFen.Board }, () => "chess.errors.invalidBoard")
+    .with({ message: InvalidFen.Castling }, () => "chess.errors.invalidCastlingRights")
+    .with({ message: InvalidFen.EpSquare }, () => "chess.errors.invalidEpSquare")
+    .with({ message: InvalidFen.Fen }, () => "chess.errors.invalidFen")
+    .with({ message: InvalidFen.Fullmoves }, () => "chess.errors.invalidFullmoves")
+    .with({ message: InvalidFen.Halfmoves }, () => "chess.errors.invalidHalfmoves")
+    .with({ message: InvalidFen.Pockets }, () => "chess.errors.invalidPockets")
+    .with({ message: InvalidFen.RemainingChecks }, () => "chess.errors.invalidRemainingChecks")
+    .with({ message: InvalidFen.Turn }, () => "chess.errors.invalidTurn")
+    .otherwise(() => "chess.errors.unknown");
 }
 
 export function forceEnPassant(dests: Map<SquareName, SquareName[]>, pos: Chess) {

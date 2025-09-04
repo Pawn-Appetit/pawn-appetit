@@ -17,7 +17,7 @@ export function CompletionModal({ opened, onClose, title, onContinue, onBackToLi
     <Modal
       opened={opened}
       onClose={onClose}
-      title={<Title order={3}>{t("Lessons.Completed")}</Title>}
+      title={<Title order={3}>{t("features.lessons.completed")}</Title>}
       centered
       size="md"
     >
@@ -29,18 +29,18 @@ export function CompletionModal({ opened, onClose, title, onContinue, onBackToLi
         </Center>
 
         <Text size="xl" fw={700} ta="center">
-          {t("Lessons.LessonCompleted", { lesson: title })}
+          {t("features.lessons.lessonCompleted", { lesson: title })}
         </Text>
 
-        <Text ta="center">{t("Lessons.CompletionMessage")}</Text>
+        <Text ta="center">{t("features.lessons.completionMessage")}</Text>
 
         <Group mt="md">
           <Button onClick={onContinue} leftSection={<IconCheck size={16} />} color="green">
-            {t("Common.Continue")}
+            {t("common.continue")}
           </Button>
 
           <Button variant="light" onClick={onBackToList} leftSection={<IconArrowLeft size={16} />}>
-            {t("Lessons.BackToLessons")}
+            {t("features.lessons.backToLessons")}
           </Button>
         </Group>
       </Stack>

@@ -14,7 +14,7 @@
     "lint": "tsc --noEmit && biome check ./src",
     "lint:ci": "tsc --noEmit && biome ci ./src --diagnostic-level=error",
     "lint:fix": "npx @biomejs/biome check --write src",
-    "update-readme": "npx tsx scripts/readme-updater.ts",
+    "update-readme": "npx tsx scripts/update-readme.ts",
     "update-missing-translations": "npx tsx scripts/update-missing-translations.ts",
     "update-version": "npx tsx scripts/update-version.ts"
   },

@@ -64,7 +64,7 @@ function EvalChart(props: EvalChartProps) {
   function getEvalText(node: TreeNode, type: "cp" | "wdl"): string {
     if (node.score) {
       if (type === "cp") {
-        return `${t("Board.Analysis.Advantage")}: ${t("Units.Score", { score: node.score.value })}`;
+        return `${t("features.board.analysis.advantage")}: ${t("units.score", { score: node.score.value })}`;
       }
       if (type === "wdl" && node.score.wdl) {
         return `
@@ -76,11 +76,11 @@ function EvalChart(props: EvalChartProps) {
     if (node.children.length === 0) {
       const [pos] = positionFromFen(node.fen);
       if (pos) {
-        if (pos.isCheckmate()) return t("Common.Checkmate");
-        if (pos.isStalemate()) return t("Common.Stalemate");
+        if (pos.isCheckmate()) return t("chess.checkmate");
+        if (pos.isStalemate()) return t("chess.stalemate");
       }
     }
-    return t("Board.Analysis.NotAnalysed");
+    return t("features.board.analysis.notAnalysed");
   }
 
   function getNodes(): ListNode[] {
@@ -187,7 +187,7 @@ function EvalChart(props: EvalChartProps) {
         {chartType === "WDL" &&
           (isWDLDisabled ? (
             <Alert variant="outline" title="Enable WDL" mt="sm">
-              {t("Board.Analysis.EnableWDL")}
+              {t("features.board.analysis.enableWDL")}
             </Alert>
           ) : (
             <AreaChart

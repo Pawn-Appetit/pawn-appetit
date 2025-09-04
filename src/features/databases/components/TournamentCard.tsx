@@ -196,7 +196,7 @@ function TournamentCard({ tournament, file }: { tournament: Event; file: string 
                   accessor: "date",
                   sortable: true,
                   render: ({ date }) =>
-                    t("Formatters.DateFormat", { date: parseDate(date), interpolation: { escapeValue: false } }),
+                    t("formatters.dateFormat", { date: parseDate(date), interpolation: { escapeValue: false } }),
                 },
                 { accessor: "result" },
                 { accessor: "ply_count", sortable: true },

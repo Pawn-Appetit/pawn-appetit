@@ -207,22 +207,22 @@ The binary will be available in your current directory.
 <!-- TRANSLATIONS_START -->
 | Language  | Status   | File                        |
 |-----------|----------|-----------------------------|
-| 🇺🇸 US | ✅ 100% | [US](./src/translation/en_US.ts) |
-| 🇩🇪 DE | ✅ 100% | [DE](./src/translation/de_DE.ts) |
-| 🇪🇸 ES | ✅ 100% | [ES](./src/translation/es_ES.ts) |
-| 🇫🇷 FR | ✅ 100% | [FR](./src/translation/fr_FR.ts) |
-| 🇦🇲 AM | ✅ 100% | [AM](./src/translation/hy_AM.ts) |
-| 🇮🇹 IT | ✅ 100% | [IT](./src/translation/it_IT.ts) |
-| 🇷🇺 RU | ✅ 100% | [RU](./src/translation/ru_RU.ts) |
-| 🇹🇷 TR | ✅ 100% | [TR](./src/translation/tr_TR.ts) |
-| 🇨🇳 CN | ✅ 100% | [CN](./src/translation/zh_CN.ts) |
-| 🇧🇾 BY | 🟡 55% | [BY](./src/translation/be_BY.ts) |
-| 🇳🇴 NO | 🟡 55% | [NO](./src/translation/nb_NO.ts) |
-| 🇵🇱 PL | 🟡 55% | [PL](./src/translation/pl_PL.ts) |
-| 🇵🇹 PT | 🟡 55% | [PT](./src/translation/pt_PT.ts) |
-| 🇺🇦 UA | 🟡 55% | [UA](./src/translation/uk_UA.ts) |
-| 🇸🇦 SA | 🔴 26% | [SA](./src/translation/ar_SA.ts) |
-| 🇯🇵 JP | 🔴 9% | [JP](./src/translation/ja_JP.ts) |
+| 🇺🇸 EN | ✅ 100% | [EN](./src/locales/en) |
+| 🇩🇪 DE | 🟡 88% | [DE](./src/locales/de) |
+| 🇪🇸 ES | 🟡 88% | [ES](./src/locales/es) |
+| 🇫🇷 FR | 🟡 88% | [FR](./src/locales/fr) |
+| 🇦🇲 HY | 🟡 88% | [HY](./src/locales/hy) |
+| 🇮🇹 IT | 🟡 88% | [IT](./src/locales/it) |
+| 🇷🇺 RU | 🟡 88% | [RU](./src/locales/ru) |
+| 🇹🇷 TR | 🟡 88% | [TR](./src/locales/tr) |
+| 🇨🇳 ZH | 🟡 88% | [ZH](./src/locales/zh) |
+| 🇧🇾 BE | 🔴 49% | [BE](./src/locales/be) |
+| 🇳🇴 NB | 🔴 49% | [NB](./src/locales/nb) |
+| 🇵🇱 PL | 🔴 49% | [PL](./src/locales/pl) |
+| 🇵🇹 PT | 🔴 49% | [PT](./src/locales/pt) |
+| 🇺🇦 UK | 🔴 49% | [UK](./src/locales/uk) |
+| 🇸🇦 AR | 🔴 24% | [AR](./src/locales/ar) |
+| 🇯🇵 JA | 🔴 9% | [JA](./src/locales/ja) |
 <!-- TRANSLATIONS_END -->
 
 📢 Want to help translate? See [CONTRIBUTING_TRANSLATIONS.md](./CONTRIBUTING_TRANSLATIONS.md) and [CONTRIBUTING.md](./CONTRIBUTING.md).

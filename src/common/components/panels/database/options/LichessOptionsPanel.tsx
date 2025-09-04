@@ -84,14 +84,14 @@ const LichessOptionsPanel = () => {
   return (
     <Stack justify="flex-start">
       <ToggleButtonGroup
-        label={t("Board.Database.TimeControl")}
+        label={t("features.board.database.timeControl")}
         options={timeControls.map(mapTimeControl)}
         toggleOption={toggleTimeControl}
         minButtonWidth="9ch"
         includeTooltips
       />
       <ToggleButtonGroup
-        label={t("Board.Database.AverageRating")}
+        label={t("features.board.database.averageRating")}
         options={ratings.map(mapRatingOption)}
         toggleOption={toggleRating}
         minButtonWidth="9ch"
@@ -127,8 +127,8 @@ const LichessOptionsPanel = () => {
           label="Color"
           placeholder="Select color"
           data={[
-            { label: t("Common.White"), value: "white" },
-            { label: t("Common.Black"), value: "black" },
+            { label: t("chess.white"), value: "white" },
+            { label: t("chess.black"), value: "black" },
           ]}
           value={options.color}
           onChange={(v) => setOptions({ ...options, color: v as "white" | "black" })}

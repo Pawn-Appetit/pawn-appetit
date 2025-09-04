@@ -51,8 +51,8 @@ function ReportPanel() {
         <Group grow style={{ textAlign: "center" }}>
           {stats.whiteAccuracy && stats.blackAccuracy && (
             <>
-              <AccuracyCard color={t("Common.White")} accuracy={stats.whiteAccuracy} cpl={stats.whiteCPL} />
-              <AccuracyCard color={t("Common.Black")} accuracy={stats.blackAccuracy} cpl={stats.blackCPL} />
+              <AccuracyCard color={t("chess.white")} accuracy={stats.whiteAccuracy} cpl={stats.whiteCPL} />
+              <AccuracyCard color={t("chess.black")} accuracy={stats.blackAccuracy} cpl={stats.blackCPL} />
             </>
           )}
           <div>
@@ -61,9 +61,9 @@ function ReportPanel() {
               onClick={() => toggleReportingMode()}
               leftIcon={<IconZoomCheck size="0.875rem" />}
               labels={{
-                action: t("Board.Analysis.GenerateReport"),
-                completed: t("Board.Analysis.ReportGenerated"),
-                inProgress: t("Board.Analysis.GeneratingReport"),
+                action: t("features.board.analysis.generateReport"),
+                completed: t("features.board.analysis.reportGenerated"),
+                inProgress: t("features.board.analysis.generatingReport"),
               }}
               disabled={root.children.length === 0}
               redoable
@@ -161,7 +161,7 @@ function AccuracyCard({ color, cpl, accuracy }: { color: string; cpl: number; ac
             {accuracy.toFixed(1)}%
           </Text>
           <Text fz="sm" c="dimmed" lh="normal">
-            {t("Board.Analysis.Accuracy")}
+            {t("features.board.analysis.accuracy")}
           </Text>
         </Stack>
       </Group>

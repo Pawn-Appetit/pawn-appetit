@@ -100,7 +100,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
         sessionStorage.setItem(prev.value, JSON.stringify({ version: 0, state: tree }));
         return {
           ...prev,
-          name: t("Tab.AnalysisBoard.Title"),
+          name: t("features.tabs.analysisBoard.title"),
           type: "analysis",
         };
       });
@@ -115,7 +115,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
         <PgnSourceInput setFilename={setFilename} setPgnTarget={setPgnTarget} pgnTarget={pgnTarget} />
 
         <Checkbox
-          label={t("Tab.ImportGame.SaveToCollection")}
+          label={t("features.tabs.importGame.saveToCollection")}
           checked={save}
           onChange={(e) => setSave(e.currentTarget.checked)}
         />
@@ -132,7 +132,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
       <TextInput
         value={link}
         onChange={(event) => setLink(event.currentTarget.value)}
-        label={t("Tab.ImportGame.URL")}
+        label={t("features.tabs.importGame.url")}
         data-autofocus
         onKeyDown={(e) => {
           if (e.key === "Enter") handleSubmit();
@@ -173,7 +173,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
           id={"Link"}
           isSelected={importType === "Link"}
           setSelected={setImportType}
-          content={<Text ta="center">{t("Tab.ImportGame.Online")}</Text>}
+          content={<Text ta="center">{t("features.tabs.importGame.online")}</Text>}
         />
 
         <GenericCard
@@ -187,7 +187,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
       {Input}
 
       <Button fullWidth mt="md" radius="md" loading={loading} disabled={disabled} onClick={handleSubmit}>
-        {loading ? t("Tab.ImportGame.Importing") : t("Tab.ImportGame.Import")}
+        {loading ? t("features.tabs.importGame.importing") : t("features.tabs.importGame.import")}
       </Button>
     </>
   );

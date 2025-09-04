@@ -46,7 +46,7 @@ function GameInfo({
       <Group w="100%" wrap="nowrap">
         {simplified === "repertoire" && (
           <Text c="dimmed" tt="uppercase" fw="bold" className={classes.colorHover} onClick={() => setWhiteOpened(true)}>
-            {t("Common.White")}
+            {t("chess.white")}
           </Text>
         )}
         <Group wrap="nowrap" justify={simplified ? "start" : "center"} w="100%">
@@ -57,7 +57,7 @@ function GameInfo({
               simplified === "repertoire"
                 ? t("Repertoire.EnterOpeningTitle")
                 : simplified === "puzzle"
-                  ? t("Puzzle.EnterTitle")
+                  ? t("features.puzzle.enterTitle")
                   : "Unknown Event"
             }
             className={cx(classes.contentEditable, !event && classes.contentEditablePlaceholder)}
@@ -109,7 +109,7 @@ function GameInfo({
       </Group>
       {simplified === "puzzle" && (
         <Group gap={4}>
-          <Input.Wrapper label={t("Puzzle.Rating")} flex={1}>
+          <Input.Wrapper label={t("features.puzzle.rating")} flex={1}>
             <Slider
               min={600}
               max={2800}
@@ -148,11 +148,11 @@ function GameInfo({
             data={[
               {
                 value: "white",
-                label: t("Common.White"),
+                label: t("chess.white"),
               },
               {
                 value: "black",
-                label: t("Common.Black"),
+                label: t("chess.black"),
               },
             ]}
           />

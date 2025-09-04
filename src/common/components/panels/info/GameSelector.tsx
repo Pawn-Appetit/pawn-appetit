@@ -140,22 +140,22 @@ function GameRow({
           }}
           flex={1}
         >
-          {t("Units.Count", { count: index + 1 })}. {game}
+          {t("units.count", { count: index + 1 })}. {game}
         </Text>
         {deleteGame && (
           <Group>
             <ActionIcon
               onClick={() => {
                 modals.openConfirmModal({
-                  title: t("Files.Game.Delete.Title"),
+                  title: t("features.files.game.delete.title"),
                   withCloseButton: false,
                   children: (
                     <>
-                      <Text>{t("Files.Game.Delete.Desc")}</Text>
-                      <Text>{t("Common.CannotUndo")}</Text>
+                      <Text>{t("features.files.game.delete.desc")}</Text>
+                      <Text>{t("common.cannotUndo")}</Text>
                     </>
                   ),
-                  labels: { confirm: t("Common.Remove"), cancel: t("Common.Cancel") },
+                  labels: { confirm: t("common.remove"), cancel: t("common.cancel") },
                   confirmProps: { color: "red" },
                   onConfirm: () => {
                     deleteGame(index);

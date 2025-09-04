@@ -88,17 +88,17 @@ function FenInput({ currentFen }: { currentFen: string }) {
           <FenSearch currentFen={currentFen} />
           <Group>
             <Button variant="default" onClick={() => setFen(INITIAL_FEN)}>
-              {t("Fen.Start")}
+              {t("chess.fen.start")}
             </Button>
             <Button variant="default" onClick={() => setFen(EMPTY_FEN)}>
-              {t("Fen.Empty")}
+              {t("chess.fen.empty")}
             </Button>
             <Select
               flex={1}
               allowDeselect={false}
               data={[
-                { label: t("Fen.WhiteToMove"), value: "white" },
-                { label: t("Fen.BlackToMove"), value: "black" },
+                { label: t("chess.fen.whiteToMove"), value: "white" },
+                { label: t("chess.fen.blackToMove"), value: "black" },
               ]}
               value={setup?.turn || "white"}
               onChange={(value) => {
@@ -112,7 +112,7 @@ function FenInput({ currentFen }: { currentFen: string }) {
         </Stack>
         <Group>
           <Stack>
-            <Text size="sm">{t("Common.White")}</Text>
+            <Text size="sm">{t("chess.white")}</Text>
             <Checkbox
               label="O-O"
               checked={whiteCastling.k}
@@ -127,7 +127,7 @@ function FenInput({ currentFen }: { currentFen: string }) {
             />
           </Stack>
           <Stack>
-            <Text size="sm">{t("Common.Black")}</Text>
+            <Text size="sm">{t("chess.black")}</Text>
             <Checkbox
               label="O-O"
               checked={blackCastling.k}

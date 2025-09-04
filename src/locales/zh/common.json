@@ -1,0 +1,745 @@
+{
+  "common": {
+    "on": "开",
+    "off": "关",
+    "name": "名称",
+    "description": "描述",
+    "version": "版本",
+    "enabled": "启用",
+    "remove": "移除",
+    "delete": "删除",
+    "add": "添加",
+    "open": "打开",
+    "create": "创建",
+    "save": "保存",
+    "download": "下载",
+    "local": "本地",
+    "install": "安装",
+    "installed": "已安装",
+    "downloading": "下载中",
+    "extracting": "解压中",
+    "error": "错误",
+    "addNew": "新增",
+    "openFolder": "在文件管理器中打开文件夹",
+    "unknown": "未知",
+    "cancel": "取消",
+    "cannotUndo": "这一操作无法撤销",
+    "nameAlreadyUsed": "名称已被使用",
+    "requireName": "必须填写名称",
+    "requirePath": "必须填写路径",
+    "pgnFile": "PGN 文件",
+    "pgnGame": "对局 PGN",
+    "or": "或者",
+    "clickToSelectPGN": "点击选择 PGN 文件",
+    "size": "大小",
+    "generalSettings": "通用设置",
+    "data": "数据",
+    "games": {
+      "one": "{{count}} 游戏",
+      "other": "{{count}} 游戏"
+    },
+    "edit": "编辑",
+    "enterFileName": "输入文件名",
+    "next": "下一个",
+    "skip": "跳过",
+    "reset": "重置",
+    "incorrect": "不正确",
+    "run": "运行",
+    "stop": "停止",
+    "engine": "引擎",
+    "unsavedChanges": {
+      "title": "未保存的更改",
+      "desc": "您有未保存的更改。要在关闭前保存吗？",
+      "saveAndClose": "保存并关闭",
+      "closeWithoutSaving": "不保存并关闭"
+    },
+    "loading": "加载中...",
+    "continue": "继续",
+    "review": "复盘",
+    "noGameSelected": "未選取遊戲"
+  },
+  "chess": {
+    "checkmate": "将杀",
+    "stalemate": "无子可动",
+    "white": "白方",
+    "black": "黑方",
+    "random": "随机",
+    "any": "任意",
+    "player": "玩家",
+    "opponent": "对手",
+    "goMode": {
+      "time": "时间",
+      "depth": "深度",
+      "nodes": "局面数",
+      "infinite": "无限"
+    },
+    "annotate": {
+      "none": "无",
+      "brilliant": "Brilliant",
+      "good": "好",
+      "interesting": "有趣",
+      "dubious": "可疑",
+      "mistake": "错误",
+      "blunder": "失误",
+      "whiteWinning": "白胜",
+      "whiteAdvantage": "白大优",
+      "whiteEdge": "白略优",
+      "equal": "均势",
+      "unclear": "局势不明",
+      "blackEdge": "黑略优",
+      "blackAdvantage": "黑大优",
+      "blackWinning": "黑胜",
+      "novelty": "新奇着法",
+      "development": "发展",
+      "initiative": "主动",
+      "attack": "进攻",
+      "counterplay": "反击",
+      "withCompensation": "优势补偿",
+      "timeTrouble": "无暇多虑",
+      "withIdea": "有想法",
+      "onlyMove": "唯一着法",
+      "zugzwang": "楚茨文克"
+    },
+    "timeControl": {
+      "ultraBullet": "UltraBullet",
+      "bullet": "超超快棋",
+      "blitz": "超快棋",
+      "rapid": "快棋",
+      "classical": "慢棋",
+      "correspondence": "通讯棋"
+    },
+    "outcome": {
+      "outcome": "结果",
+      "selectOutcome": "选择结果",
+      "draw": "平局",
+      "whiteWins": "白方胜",
+      "blackWins": "黑方胜",
+      "unknown": "未知"
+    },
+    "opening": {
+      "emptyBoard": "空棋盘",
+      "startingPosition": "起始局面"
+    },
+    "fen": {
+      "start": "开始",
+      "empty": "空",
+      "whiteToMove": "白方走棋",
+      "blackToMove": "黑方走棋"
+    },
+    "pieceChars": {
+      "k": "K",
+      "q": "Q",
+      "r": "R",
+      "b": "B",
+      "n": "N"
+    },
+    "errors": {
+      "emptyBoard": "空棋盘",
+      "invalidKings": "国王数量无效",
+      "oppositeCheck": "双方将军错误",
+      "pawnsOnBackrank": "兵在底线错误",
+      "invalidBoard": "无效的棋盘",
+      "invalidCastlingRights": "无效的王车易位权",
+      "invalidEpSquare": "无效的吃过路兵格",
+      "invalidFen": "无效的 FEN",
+      "invalidFullmoves": "无效的全回合数",
+      "invalidHaldmoves": "无效的半回合数",
+      "invalidPockets": "无效的口袋棋子",
+      "invalidRemainingChecks": "无效的剩余将军次数",
+      "invalidTurn": "无效的行棋方",
+      "unknown": "未知错误"
+    }
+  },
+  "units": {
+    "count": "{{count, number}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "bytesLabels": {
+      "bytes": "Bytes",
+      "bytesLong": "Bytes",
+      "kilobytes": "KB",
+      "megabytes": "MB",
+      "gigabytes": "GB",
+      "terabytes": "TB",
+      "kilobytesLong": "Kilobytes",
+      "megabytesLong": "Megabytes",
+      "gigabytesLong": "Gigabytes",
+      "terabytesLong": "Terabytes"
+    },
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "nodesLabels": {
+      "thousand": "k",
+      "million": "M",
+      "billion": "B",
+      "trillion": "T",
+      "quadrillion": "Q",
+      "quintillion": "Qi",
+      "nodes": "nodes",
+      "nodesPerSecond": "nodes/s"
+    },
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "durationLabels": {
+      "seconds": "s",
+      "minutes": "m",
+      "hours": "h",
+      "days": "d",
+      "secondsLong": "seconds",
+      "minutesLong": "minutes",
+      "hoursLong": "hours",
+      "daysLong": "days"
+    },
+    "score": "{{score, score}}",
+    "scoreLabels": {
+      "mate": "M",
+      "dtz": "DTZ",
+      "centipawns": "cp",
+      "centipawnsLong": "centipawns"
+    }
+  },
+  "features": {
+    "richText": {
+      "bold": "粗体",
+      "italic": "斜体",
+      "underline": "下划线",
+      "strike": "删除线",
+      "clearFormatting": "清除格式",
+      "h1": "一级标题",
+      "h2": "二级标题",
+      "h3": "三级标题",
+      "h4": "四级标题",
+      "quote": "引用",
+      "hLine": "水平分隔",
+      "bulletList": "无序列表",
+      "numberedList": "有序列表",
+      "link": "链接",
+      "removeLink": "移除链接"
+    },
+    "menu": {
+      "file": "文件",
+      "newTab": "新建标签页",
+      "openFile": "打开文件",
+      "exit": "退出",
+      "view": "视图",
+      "reload": "刷新",
+      "help": "帮助",
+      "documentation": "文档",
+      "clearSavedData": "清除数据",
+      "openLogs": "打开日志",
+      "checkUpdate": "检查更新",
+      "about": "关于",
+      "markAsStart": "标记为起始点",
+      "promoteToMainLine": "升为主线",
+      "promoteVariation": "升为变着",
+      "copyVariationPGN": "复制变着 PGN",
+      "deleteMove": "删除走法"
+    },
+    "sidebar": {
+      "dashboard": "仪表板",
+      "board": "棋盘",
+      "accounts": "用户",
+      "files": "文件",
+      "databases": "数据库",
+      "engines": "引擎",
+      "learn": "学习",
+      "settings": "设置",
+      "keyboardShortcuts": "键盘快捷键"
+    },
+    "dashboard": {
+      "welcome": {
+        "firstOpen": "欢迎使用 Pawn Appétit！",
+        "back": "欢迎回来",
+        "desc": "准备好走出你的下一步好棋了吗？"
+      },
+      "cards": {
+        "learn": {
+          "title": "学习国际象棋",
+          "desc": "交互式课程，从基础到高级策略学习国际象棋",
+          "button": "开始学习"
+        },
+        "playChess": {
+          "title": "开始对局",
+          "desc": "和朋友或者引擎对弈",
+          "button": "开始对局"
+        },
+        "analysisBoard": {
+          "title": "分析面板",
+          "desc": "分析棋局或者局面",
+          "button": "打开面板"
+        },
+        "importGame": {
+          "title": "导入棋局",
+          "desc": "从 PGN 文件导入棋局",
+          "button": "导入棋局"
+        },
+        "analyze": {
+          "title": "棋盘分析",
+          "desc": "利用强大的引擎分析局面、棋局和变化。",
+          "button": "分析"
+        },
+        "database": {
+          "title": "数据库访问",
+          "desc": "探索庞大的国际象棋数据库，研究大师棋局以加深理解。",
+          "button": "浏览"
+        },
+        "engine": {
+          "title": "引擎集成",
+          "desc": "添加并管理多个国际象棋引擎，自定义您的分析设置并增强灵活性。",
+          "button": "管理"
+        },
+        "puzzle": {
+          "title": "谜题",
+          "desc": "训练你的棋战技巧",
+          "button": "开始训练"
+        },
+        "account": {
+          "title": "账户",
+          "desc": "通过连接您的 Chess.com 或 Lichess 账户导入棋局和数据，获得个性化分析。",
+          "button": "连接"
+        },
+        "import": {
+          "title": "导入",
+          "desc": "上传并编辑 PGN 文件，分析您的棋局或在特定局面下进行研究，完全掌控。",
+          "button": "导入"
+        }
+      }
+    },
+    "tabs": {
+      "newTab": "新标签页",
+      "playChess": {
+        "title": "开始对局",
+        "desc": "挑战引擎或朋友",
+        "button": "立即对弈"
+      },
+      "analysisBoard": {
+        "title": "分析棋盘",
+        "desc": "分析棋局或局面",
+        "button": "分析"
+      },
+      "importGame": {
+        "title": "导入棋局",
+        "desc": "从 PGN 导入棋局",
+        "button": "导入棋局",
+        "url": "棋局网址（lichess 或 chess.com）",
+        "saveToCollection": "保存到收藏",
+        "online": "在线",
+        "importing": "正在导入...",
+        "import": "导入"
+      },
+      "puzzle": {
+        "title": "谜题",
+        "desc": "训练您的国际象棋技巧",
+        "button": "立即解题"
+      }
+    },
+    "board": {
+      "actions": {
+        "togglePawnStructureView": "切换兵结构视图",
+        "takeSnapshot": "截图",
+        "analyzeGame": "分析棋局",
+        "playFromHere": "从此处开始对弈",
+        "clearDrawings": "清除标记",
+        "editPosition": "编辑局面",
+        "savePGN": "保存 PGN ({{key}})",
+        "addGame": "添加棋局",
+        "flipBoard": "翻转棋盘 ({{key}})"
+      },
+      "tabs": {
+        "practice": "练习",
+        "graph": "图表",
+        "centerGraph": "定位到当前走法",
+        "analysis": "分析",
+        "database": "数据库",
+        "annotate": "评注",
+        "info": "信息"
+      },
+      "practice": {
+        "train": "训练",
+        "build": "构建",
+        "noPositionForTrain1": "没有可供练习的局面，请先向 PGN 文件中添加着法。",
+        "noPositionForTrain2": "你需要切换到分析模式来向 PGN 文件中添加着法。",
+        "seeAnswer": "查看答案",
+        "practiced": "已练习",
+        "due": "需复习",
+        "unseen": "未学习",
+        "showAll": "显示所有局面",
+        "showLogs": "显示日志",
+        "practicedAll1": "你已经练习了所有的局面",
+        "practicedAll2": "下次复习将在",
+        "correctMoveWas": "正确的着法是 {{move}}",
+        "resetOpeningData": {
+          "title": "重置开局数据",
+          "desc": "确定要重置 \"{ { fileName } } \" 的开局数据吗？所有学习进度将会丢失。"
+        }
+      },
+      "analysis": {
+        "engines": "引擎",
+        "report": "报告",
+        "logs": "日志",
+        "summary": "总结",
+        "inactiveEngine": "引擎未启用",
+        "syncGlobally": "全局同步",
+        "killEngine": "杀死引擎",
+        "generateReport": "生成报告",
+        "reportGenerated": "报告已生成",
+        "generatingReport": "正在生成报告",
+        "notAnalysed": "尚未分析",
+        "engineRequired": "请指定一个引擎",
+        "refDBRequired": "没有参考数据库，请在数据库页面选择一个参考数据库",
+        "time": "时间 (ms)",
+        "reversed": "反向分析",
+        "reversedDesc": "从最后一步开始分析",
+        "annotateNovelties": "评注新奇着法",
+        "annotateNoveltiesDesc": "在不在参考数据库中的第一个着法上添加注释",
+        "analyze": "分析",
+        "advantage": "优势",
+        "accuracy": "精度",
+        "enableWDL": "您需要在引擎设置中启用 UCI_ShowWDL 才能使用此功能。"
+      },
+      "database": {
+        "local": "本地",
+        "lichessAll": "Lichess 全部对局",
+        "lichessMaster": "Lichess 大师对局",
+        "matches": "{{matches}} 个匹配的对局",
+        "stats": "统计",
+        "games": "对局",
+        "options": "选项",
+        "noReference1": "没有参考数据库",
+        "noReference2": "请先",
+        "selectReference": "添加一个数据库",
+        "noReference3": "并将其作为参考",
+        "timeControl": "时间控制",
+        "averageRating": "平均等级分"
+      },
+      "annotate": {
+        "writeHere": "在这里写评注..."
+      }
+    },
+    "lessons": {
+      "title": "国际象棋课程",
+      "selectToBegin": "选择一节课开始学习国际象棋",
+      "difficulty": {
+        "beginner": "初级",
+        "intermediate": "中级",
+        "advanced": "高级"
+      },
+      "startLesson": "开始课程",
+      "backToLessons": "返回课程列表",
+      "backToLesson": "返回课程",
+      "startExercise": "开始练习",
+      "exercises": "练习",
+      "correct": "正确！做得好。",
+      "incorrect": "错误。再试一次。",
+      "progress": "进度",
+      "overallProgress": "总体进度",
+      "showHint": "显示提示",
+      "hint": "提示",
+      "tryMoves": "尝试以下走法之一",
+      "completed": "已完成",
+      "exercisesCompleted": "个练习已完成",
+      "lessonCompleted": "恭喜！您已完成 {{lesson}}！",
+      "completionMessage": "您已成功完成本课程中的所有练习。继续保持！"
+    },
+    "practice": {
+      "title": "国际象棋练习",
+      "description": "通过针对性练习提升国际象棋技巧",
+      "selectExercise": "选择一个练习开始训练",
+      "progress": "进度",
+      "exercises": "练习",
+      "completed": "已完成",
+      "start": "开始练习",
+      "showHint": "显示提示",
+      "hintText": "寻找战术机会或控制局面的关键格子。",
+      "congratulations": "恭喜！",
+      "completedCategory": "您已完成 {{category}} 中的所有练习！"
+    },
+    "engines": {
+      "title": "引擎管理",
+      "settings": {
+        "noEngine": "没有选中的引擎",
+        "searchSettings": "搜索设置",
+        "advancedSettings": "高级设置",
+        "numOfLines": "分支数量",
+        "numOfCores": "CPU 核心数量",
+        "sizeOfHash": "Hash 大小",
+        "editJSON": "编辑 JSON",
+        "reset": "重置为默认"
+      },
+      "add": {
+        "title": "添加引擎",
+        "cloud": "云引擎",
+        "errorFetch": "无法从服务器获取引擎信息",
+        "binaryFile": "二进制文件",
+        "binaryFileDesc": "点击选择二进制文件",
+        "name": "名称",
+        "autodetect": "自动检测",
+        "eloDesc": "引擎的 Elo 等级分",
+        "imageFile": "图片文件",
+        "imageFileDesc": "点击选择图片文件 (推荐尺寸: 60x60)"
+      },
+      "remove": {
+        "title": "移除引擎",
+        "message": "你确定要从 Pawn Appétit 中移除这个引擎吗？"
+      }
+    },
+    "databases": {
+      "title": "数据库管理",
+      "card": {
+        "games": "对局数量",
+        "players": "棋手数量",
+        "tournaments": "锦标赛",
+        "storage": "磁盘使用"
+      },
+      "add": {
+        "title": "添加数据库",
+        "web": "网络数据库",
+        "errorFetch": "无法从服务器获取数据库信息",
+        "clickToSelectPGN": "点击选择 PGN 文件",
+        "convert": "转换"
+      },
+      "settings": {
+        "referenceDatabase": "作为参考数据库",
+        "referenceDatabaseShort": "参考库",
+        "indexed": "建立索引",
+        "indexedDesc": "索引可以加速搜索，但会占用额外的磁盘空间",
+        "events": "赛事数量",
+        "explore": "查看对局",
+        "advancedTools": "高级工具",
+        "mergePlayers": "合并棋手",
+        "mergePlayersDesc": "将数据库中第一位棋手替换为第二位棋手",
+        "merge": "合并",
+        "batchDelete": "批量删除",
+        "batchDeleteDesc": "这会不可逆地从数据库中删除对局，小心地使用",
+        "removeDup": "删除重复对局",
+        "removeEmpty": "删除空对局",
+        "actions": "动作",
+        "addGames": "添加对局",
+        "exportPGN": "导出为 PGN"
+      },
+      "delete": {
+        "title": "删除数据库",
+        "message": "你确定要删除这个数据库吗？"
+      }
+    },
+    "files": {
+      "title": "文件",
+      "fileType": {
+        "fileType": "文件类型",
+        "game": "对局",
+        "repertoire": "开局库",
+        "tournament": "锦标赛",
+        "puzzle": "谜题",
+        "other": "其他",
+        "folder": "文件夹"
+      },
+      "delete": {
+        "title": "删除文件",
+        "message": "你确定要删除文件 {{fileName}}?",
+        "delete": "删除"
+      },
+      "editMetadata": "编辑元数据",
+      "edit": {
+        "title": "编辑文件"
+      },
+      "create": {
+        "title": "新建文件",
+        "pgnPlaceholder": "在此粘贴您的 PGN..."
+      },
+      "search": "搜索文件",
+      "noFiles": "未找到文件",
+      "noFileSelected": "未选择文件",
+      "name": "名称",
+      "lastModified": "最后修改",
+      "type": "类型",
+      "folder": "文件夹",
+      "game": {
+        "delete": {
+          "title": "删除棋局",
+          "desc": "确定要删除此棋局吗？"
+        }
+      }
+    },
+    "gameTable": {
+      "date": "日期",
+      "plies": "回合数",
+      "event": "赛事",
+      "site": "地点",
+      "from": "从",
+      "startDate": "开始日期",
+      "to": "到",
+      "endDate": "结束日期"
+    },
+    "gameNotation": {
+      "showMoves": "显示走法",
+      "hideMoves": "隐藏走法",
+      "showComments": "显示评论",
+      "hideComments": "隐藏评论",
+      "showVariations": "显示变化",
+      "repertoireView": "开局库视图",
+      "mainLine": "主线",
+      "showVariationsTooltip": "显示变化"
+    },
+    "pgnInput": {
+      "comments": "评论",
+      "glyphs": "符号",
+      "variations": "变着",
+      "extraMarkups": "额外标记",
+      "maxDepth": "最大深度",
+      "totalMoves": "总走法"
+    },
+    "puzzle": {
+      "jumpToNext": "跳到下一个谜题",
+      "jumpToNextOff": "关闭",
+      "jumpToNextOnSuccess": "成功时",
+      "jumpToNextOnSuccessAndFailure": "成功或失败时",
+      "playerRating": "玩家等级分",
+      "maxRating": "最高等级分",
+      "newMax": "新最高分",
+      "rating": "谜题等级分",
+      "averageSuccessRating": "平均成功等级分",
+      "averageFailRating": "平均失败等级分",
+      "selectDatabase": "选择数据库",
+      "ratingRange": "等级分范围",
+      "progressive": "自适应",
+      "hideRating": "隐藏等级分",
+      "inOrder": "按顺序",
+      "newPuzzle": "新谜题",
+      "analyzePosition": "分析局面",
+      "clearSession": "清除会话",
+      "showingSolution": "显示解答",
+      "viewSolution": "查看解答",
+      "loadingRatingRange": "正在加载等级分范围...",
+      "enterTitle": "输入谜题标题"
+    },
+    "tablebase": {
+      "title": "残局数据库",
+      "error": "错误: ",
+      "dtm": "DTM {{count}}",
+      "dtz": "DTZ {{count}}",
+      "fiftyMoveRule": "*因50步规则"
+    }
+  },
+  "settings": {
+    "board": {
+      "title": "棋盘",
+      "desc": "自定义分析面板和游戏控制",
+      "pieceDest": "棋子目的地",
+      "pieceDestDesc": "显示棋子可以到达的位置",
+      "arrows": "箭头",
+      "arrowsDesc": "用箭头显示最佳着法",
+      "snapArrows": "吸附箭头",
+      "snapArrowsDesc": "将箭头吸附到合法的移动上",
+      "consecutiveArrows": "连续箭头",
+      "consecutiveArrowsDesc": "如果最佳着法中会多次移动同一个棋子，显示多个箭头",
+      "eraseDrawablesOnClick": "单击时擦除可绘制对象",
+      "eraseDrawablesOnClickDesc": "通过单击鼠标左键清除棋盘上绘制的箭头和圆圈",
+      "autoPromotion": "自动升变",
+      "autoPromotionDesc": "兵抵达底线时自动升变为后",
+      "coordinates": "坐标",
+      "coordinatesDesc": "在棋盘上显示坐标",
+      "autoSave": "自动保存",
+      "autoSaveDesc": "每走一步棋都自动保存棋局",
+      "previewBoard": "预览棋盘",
+      "previewBoardDesc": "在引擎分析中，当鼠标悬停在着法上时显示一个预览棋盘",
+      "scrollThroughMoves": "滚动着法",
+      "scrollThroughMovesDesc": "在引擎分析中，用鼠标滚轮在着法之间快速切换"
+    },
+    "inputs": {
+      "title": "输入",
+      "desc": "自定义输入选项",
+      "textInput": "文本输入着法",
+      "textInputDesc": "以文本方式输入着法",
+      "spellCheck": "拼写检查",
+      "spellCheckDesc": "启用或禁用文本输入的拼写检查"
+    },
+    "openingReport": {
+      "title": "开局报告",
+      "desc": "自定义开局报告",
+      "percentCoverage": "覆盖率百分比",
+      "percentCoverageDesc": "每个局面中的着法覆盖率百分比",
+      "minGames": "最小对局数",
+      "minGamesDesc": "每个局面中被考虑的最小对局数"
+    },
+    "anarchy": {
+      "title": "安那其",
+      "desc": "有趣的选项",
+      "forcedEnPassant": "强制吃过路兵",
+      "forcedEnPassantDesc": "如果过路兵是合法走法，则强制你执行过路兵。"
+    },
+    "appearance": {
+      "title": "外观",
+      "desc": "自定义应用程序的外观",
+      "theme": {
+        "theme": "主题"
+      },
+      "themeDesc": "总体的颜色主题",
+      "custom": "Custom",
+      "auto": "自动",
+      "titleBar": "标题栏",
+      "titleBarDesc": "使用原生或自定义标题栏",
+      "language": "语言",
+      "languageDesc": "应用程序中使用的语言",
+      "native": "Native",
+      "fontSize": "字体大小",
+      "fontSizeDesc": "应用程序中的字体大小",
+      "pieceSet": "棋子",
+      "pieceSetDesc": "棋盘上使用的棋子",
+      "boardImage": "棋盘图案",
+      "boardImageDesc": "棋盘背景图案",
+      "accentColor": "主题色",
+      "accentColorDesc": "应用程序的主题色",
+      "hideDashboardOnStartup": "启动时隐藏仪表板",
+      "hideDashboardOnStartupDesc": "应用启动时直接打开棋盘而不是仪表板",
+      "dateFormat": "日期格式",
+      "dateFormatDesc": "在国际标准（YYYY-MM-DD）和本地日期格式之间选择",
+      "international": "国际标准",
+      "locale": "本地格式"
+    },
+    "sound": {
+      "title": "声音",
+      "desc": "自定义声音选项",
+      "volume": "音量",
+      "volumeDesc": "总音量",
+      "collection": "声音集",
+      "collectionDesc": "使用的声音集"
+    },
+    "keybindings": "快捷键",
+    "directories": {
+      "title": "目录",
+      "desc": "自定义应用程序使用的目录",
+      "files": "文件目录",
+      "filesDesc": "这是你在文件页面中的对局存储的位置"
+    },
+    "telemetry": "遥测",
+    "telemetryDesc": "通过共享匿名使用数据来帮助改进 Pawn Appétit",
+    "moveNotation": "棋谱记法",
+    "moveNotationDesc": "选择在记谱中显示棋子的方式",
+    "symbols": "符号 (♔♕♖♗♘)",
+    "letters": "字母 (K Q R B N)",
+    "translatedLetters": "翻译后的字母 (K Q R B N)",
+    "waysToMovePieces": "移动棋子的方式",
+    "waysToMovePiecesDesc": "通过拖动、点击或两者来移动棋子",
+    "drag": "拖动",
+    "click": "点击",
+    "both": "两者",
+    "searchPlaceholder": "搜索设置",
+    "noResultsFound": "未找到相关设置",
+    "gameplay": "游戏玩法",
+    "analysis": "分析",
+    "interface": "界面",
+    "system": "系统"
+  },
+  "formatters": {
+    "dateFormat": "{{date, dateformat}}",
+    "dateTimeFormat": "{{date, datetimeformat}}",
+    "moveNotation": "{{move, moveNotation}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "score": "{{score, score}}"
+  }
+}

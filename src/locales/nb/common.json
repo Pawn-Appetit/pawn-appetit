@@ -1,0 +1,421 @@
+{
+  "common": {
+    "on": "PÅ",
+    "off": "AV",
+    "name": "Navn",
+    "description": "Beskrivelse",
+    "version": "Versjon",
+    "enabled": "Aktivert",
+    "remove": "Fjern",
+    "delete": "Slett",
+    "add": "Legg til",
+    "open": "Åpne",
+    "create": "Legg til",
+    "save": "Lagre",
+    "download": "Last ned",
+    "local": "Lokal",
+    "install": "Installer",
+    "installed": "Installert",
+    "downloading": "Laster ned",
+    "extracting": "Pakker ut",
+    "error": "Feil",
+    "addNew": "Legg til ny",
+    "openFolder": "Åpne mappen i filutforsker",
+    "unknown": "Ukjent",
+    "cancel": "Avbryt",
+    "cannotUndo": "Denne handlingen kan ikke angres",
+    "nameAlreadyUsed": "Navn er allerede brukt",
+    "requireName": "Navn kreves",
+    "requirePath": "Fil kreves",
+    "pgnFile": "PGN file",
+    "pgnGame": "PGN parti",
+    "size": "Størrelse",
+    "generalSettings": "Generelle innstillinger",
+    "data": "Data",
+    "games": {
+      "one": "{{count}} spill",
+      "other": "{{count}} spill"
+    },
+    "edit": "Rediger",
+    "enterFileName": "Fyll inn filnavnet",
+    "next": "Neste",
+    "skip": "Hopp over",
+    "reset": "Tilbakestill",
+    "incorrect": "Feil",
+    "run": "Kjør",
+    "stop": "Stopp",
+    "engine": "Computer"
+  },
+  "chess": {
+    "checkmate": "Sjakkmatt",
+    "stalemate": "Patt",
+    "white": "Hvit",
+    "black": "Svart",
+    "goMode": {
+      "time": "Tid",
+      "depth": "Dybde",
+      "nodes": "Noder",
+      "infinite": "Uendelig"
+    },
+    "annotate": {
+      "brilliant": "Briljant",
+      "good": "Bra",
+      "interesting": "Interessant",
+      "dubious": "Tvilsomt",
+      "mistake": "Tabbe",
+      "blunder": "Bukk",
+      "whiteWinning": "Hvit vinner",
+      "whiteAdvantage": "Hvit har en stor fordel",
+      "whiteEdge": "Hvit har en liten fordel",
+      "equal": "Lik stilling",
+      "unclear": "Uklar posisjon",
+      "blackEdge": "Svart har en liten fordel",
+      "blackAdvantage": "Svart har en stor fordel",
+      "blackWinning": "Svart vinner",
+      "novelty": "Nyhet",
+      "development": "Utvikling",
+      "initiative": "Initiativ",
+      "attack": "Angrep",
+      "counterplay": "Motspill",
+      "withCompensation": "Med kompensasjon",
+      "timeTrouble": "Tidsnød",
+      "withIdea": "Med ideen",
+      "onlyMove": "Eneste trekk",
+      "zugzwang": "Zugzwang"
+    },
+    "timeControl": {
+      "ultraBullet": "UltraBullet",
+      "bullet": "Bullet",
+      "blitz": "Blitz",
+      "rapid": "Hurtig",
+      "classical": "Klassisk",
+      "correspondence": "Fjernsjakk"
+    }
+  },
+  "features": {
+    "richText": {
+      "bold": "Fet",
+      "italic": "Kursiv",
+      "underline": "Understrek",
+      "strike": "Gjennomstreking",
+      "clearFormatting": "Fjern formatering",
+      "h1": "Overskrift 1",
+      "h2": "Overskrift 2",
+      "h3": "Overskrift 3",
+      "h4": "Overskrift 4",
+      "quote": "Sitat",
+      "hLine": "Horisontal linje",
+      "bulletList": "Punktliste",
+      "numberedList": "Nummerert liste",
+      "link": "Lenke",
+      "removeLink": "Fjern lenke"
+    },
+    "menu": {
+      "file": "Fil",
+      "newTab": "Ny fane",
+      "openFile": "Åpne fil",
+      "exit": "Avslutt",
+      "view": "Vis",
+      "reload": "Last inn på nytt",
+      "help": "Hjelp",
+      "documentation": "Dokumentasjon",
+      "clearSavedData": "Fjern lagrede data",
+      "openLogs": "Åpne logger",
+      "checkUpdate": "Se etter oppdateringer",
+      "about": "Om Pawn Appétit"
+    },
+    "sidebar": {
+      "board": "Brett",
+      "accounts": "Bruker",
+      "files": "Filer",
+      "databases": "Databaser",
+      "engines": "Computerene",
+      "settings": "Innstillinger"
+    },
+    "dashboard": {
+      "cards": {
+        "playChess": {
+          "title": "Spill Sjakk",
+          "desc": "Spill mot computer eller en venn",
+          "button": "Spill"
+        },
+        "analysisBoard": {
+          "title": "Analysebrett",
+          "desc": "Analyser et parti eller en stilling",
+          "button": "Åpne"
+        },
+        "importGame": {
+          "title": "Importer Parti",
+          "desc": "Importer et parti fra en PGN",
+          "button": "Importer"
+        },
+        "puzzle": {
+          "title": "Sjakknøtter",
+          "desc": "Tren sjakkferdighetene dine",
+          "button": "Tren"
+        }
+      }
+    },
+    "tabs": {
+      "newTab": "Ny fane"
+    },
+    "board": {
+      "tabs": {
+        "practice": "Trening",
+        "analysis": "Analyse",
+        "database": "Database",
+        "annotate": "Kommenter",
+        "info": "Info"
+      },
+      "practice": {
+        "train": "Tren",
+        "build": "Bygg",
+        "noPositionForTrain1": "Det er ingen stillinger å trene på. Start med å legge til trekk i denne PGN-filen.",
+        "noPositionForTrain2": "Det er ingen stillinger å trene på. Start med å legge til trekk i denne PGN-filen.",
+        "seeAnswer": "Se svar",
+        "practiced": "Øvd",
+        "due": "Forfaller",
+        "unseen": "Usett",
+        "showAll": "Vis alle stillinger",
+        "showLogs": "Vis logger",
+        "practicedAll1": "Du har øvd på alle stillinger.",
+        "practicedAll2": "Neste øvelse er på",
+        "correctMoveWas": "Riktig trekk var {{move}}"
+      },
+      "analysis": {
+        "engines": "Sjakkcomputere",
+        "report": "Rapport",
+        "logs": "Logger",
+        "summary": "Oppsumering",
+        "inactiveEngine": "Computern er ikke aktivert",
+        "syncGlobally": "Synkroniser globalt",
+        "killEngine": "Stopp computer",
+        "generateReport": "Lag rapport",
+        "reportGenerated": "Rapport lagd",
+        "generatingReport": "Lagger rapport",
+        "notAnalysed": "Ikke analysert",
+        "engineRequired": "Computer kreves",
+        "refDBRequired": "Ingen referansedatabase funnet. Velg en database i databasesiden.",
+        "time": "Tid (ms)",
+        "reversed": "Baklengs analyse",
+        "reversedDesc": "Analyser partiet fra siste til første trekk.",
+        "annotateNovelties": "Kommenter nye trekk",
+        "annotateNoveltiesDesc": "Legger til en kommentar for den første stillingen som ikke er i referansedatabasen.",
+        "analyze": "Analyser",
+        "advantage": "Fordel",
+        "accuracy": "Presisjon"
+      },
+      "database": {
+        "local": "Lokal",
+        "lichessAll": "Lichess Spillere",
+        "lichessMaster": "Lichess Mestere",
+        "matches": "{{matches}} partier",
+        "stats": "Statestikk",
+        "games": "Partier",
+        "options": "Valg",
+        "noReference1": "Ingen referansedatabase valgt.",
+        "noReference2": "Vennligst",
+        "selectReference": "legg til en database",
+        "noReference3": "først og merk den som refereanse.",
+        "timeControl": "Tidskontroll",
+        "averageRating": "Gjennomsnittsrating"
+      },
+      "annotate": {
+        "writeHere": "Skriv her..."
+      }
+    },
+    "engines": {
+      "title": "Dine sjakkcomputere",
+      "settings": {
+        "noEngine": "Ingen computer valgt",
+        "searchSettings": "Instilinger for søk",
+        "advancedSettings": "Avanserte innstillinger",
+        "numOfLines": "Antall varianter",
+        "numOfCores": "Antall kjerner",
+        "sizeOfHash": "Størrelse på hash",
+        "editJSON": "Rediger JSON",
+        "reset": "Tilbakestill til standard"
+      },
+      "add": {
+        "title": "Legg til computer",
+        "cloud": "Sky",
+        "errorFetch": "Klarte ikke å hente computer info fra serveren.",
+        "binaryFile": "Binær fil",
+        "binaryFileDesc": "Klikk for å velge binærfilen",
+        "name": "Navn",
+        "autodetect": "Automatisk",
+        "eloDesc": "Computeren sin Elo",
+        "imageFile": "Bildefil",
+        "imageFileDesc": "Klikk for å velge bildefilen (anbefalt størrelse: 60x60)"
+      },
+      "remove": {
+        "title": "Fjern computer",
+        "message": "Er du sikker på at du vil fjerne denne computeren fra Pawn Appétit?"
+      }
+    },
+    "databases": {
+      "title": "Dine databaser",
+      "card": {
+        "games": "Partier",
+        "players": "Spillere",
+        "storage": "Lagring"
+      },
+      "add": {
+        "title": "Legg til database",
+        "web": "Internett",
+        "errorFetch": "Kunne ikke hente databasens info fra serveren.",
+        "clickToSelectPGN": "Klikk for å velge PGN-filen",
+        "convert": "Konverter"
+      },
+      "settings": {
+        "referenceDatabase": "Referansedatabase",
+        "indexed": "Indeksert",
+        "indexedDesc": "Indekser brukes for raskere søk, men tar ekstra plass.",
+        "events": "Turneringer",
+        "explore": "Åpne",
+        "advancedTools": "Avanserte verktøy",
+        "mergePlayers": "Slå sammen spillere",
+        "mergePlayersDesc": "Erstatter den første spilleren med den andre spilleren i databasen.",
+        "merge": "Slå sammen",
+        "batchDelete": "Slett flere",
+        "batchDeleteDesc": "Disse handlingene vil permanent fjerne partier fra databasen. Bruk med forsiktighet.",
+        "removeDup": "Fjern duplicater",
+        "removeEmpty": "Slett tomme partier",
+        "actions": "Valg",
+        "addGames": "Legg til partier",
+        "exportPGN": "Exporter til PGN"
+      },
+      "delete": {
+        "title": "Slett databasen",
+        "message": "Er du sikker på at du vil sletter databasen?"
+      }
+    },
+    "files": {
+      "title": "Filer",
+      "fileType": {
+        "fileType": "Fil type",
+        "game": "Partier",
+        "repertoire": "Repertoar",
+        "tournament": "Turnering",
+        "puzzle": "Oppgaver",
+        "other": "Annet",
+        "folder": "Mappe"
+      },
+      "delete": {
+        "title": "Slett fil",
+        "message": "Er du sikker på at du vil slette {{fileName}}?"
+      },
+      "editMetadata": "Rediger metadata",
+      "edit": {
+        "title": "Rediger fil"
+      },
+      "create": {
+        "title": "Lag fil"
+      },
+      "search": "Søk etter filer"
+    },
+    "pgnInput": {
+      "comments": "Kommentarer",
+      "glyphs": "Symboler",
+      "variations": "Varianter",
+      "extraMarkups": "Markups",
+      "maxDepth": "Maks dybde",
+      "totalMoves": "Totalt antall trekk"
+    }
+  },
+  "settings": {
+    "board": {
+      "title": "Brett",
+      "desc": "Tilpass analysebrett",
+      "pieceDest": "Brikker",
+      "pieceDestDesc": "Vis mulige trekk",
+      "arrows": "Piler",
+      "arrowsDesc": "Vis beste trekk",
+      "snapArrows": "Lås piler",
+      "snapArrowsDesc": "Lås piller til lovelige trekk",
+      "consecutiveArrows": "Konskutive Piler",
+      "consecutiveArrowsDesc": "Vis flere piler for den beste linjen, hvis det innebærer å flytte den samme brikken flere ganger",
+      "eraseDrawablesOnClick": "Slett tegninger ved klikk",
+      "eraseDrawablesOnClickDesc": "Fjern piler og sirkler fra brette med venstre museklikk",
+      "autoPromotion": "Automatisk forvandeling",
+      "autoPromotionDesc": "Bonden blir til en dronning når den kommer til siste rad.",
+      "coordinates": "Kordinater",
+      "coordinatesDesc": "Vis kordinater på brette",
+      "autoSave": "Lagre automatisk",
+      "autoSaveDesc": "Lagre til filen etter hvert trekk",
+      "previewBoard": "Forhåndshvis brett",
+      "previewBoardDesc": "Vis sjakkbrett når musen er over trekk i komputeranalysen.",
+      "scrollThroughMoves": "Bla gjennom trekk",
+      "scrollThroughMovesDesc": "Slå av eller på muligheten til å bla gjennom trekk på brettet"
+    },
+    "inputs": {
+      "title": "Inputs",
+      "desc": "Tilpass input instillinger",
+      "textInput": "Tekst for trekk",
+      "textInputDesc": "Legg til trekk i tekstformat",
+      "spellCheck": "Stavekontroll",
+      "spellCheckDesc": "Slå av eller på stavekontroll på tekst"
+    },
+    "openingReport": {
+      "title": "Åpningsrapport",
+      "desc": "Tilpass innstillinger for åpningsrapporter",
+      "percentCoverage": "Dekning i prosent",
+      "percentCoverageDesc": "Prosentandel av trekk dekket i hver posisjon",
+      "minGames": "Minimum partier",
+      "minGamesDesc": "Minimum antall partier i hver posisjon for at den skal tas med"
+    },
+    "anarchy": {
+      "title": "Anarki",
+      "desc": "Morsome valg"
+    },
+    "appearance": {
+      "title": "Utseende",
+      "desc": "Tilpass hvordan appen ser ut",
+      "theme": {
+        "theme": "Tema"
+      },
+      "themeDesc": "Generell fargemodus",
+      "titleBar": "Tittelbar",
+      "titleBarDesc": "Velg mellom standard eller tilpasset tittelbar",
+      "language": "Språk",
+      "languageDesc": "Språk brukt i appen",
+      "native": "Standard",
+      "custom": "Tilpasset",
+      "fontSize": "Skriftstørelse",
+      "fontSizeDesc": "Generell skriftstørrelse",
+      "pieceSet": "Brikker",
+      "pieceSetDesc": "Brikker på sjakkbrette",
+      "boardImage": "Sjakkbrett",
+      "boardImageDesc": "Fargen på sjakkbrette",
+      "accentColor": "Aksentfarge",
+      "accentColorDesc": "Sekundær farge"
+    },
+    "sound": {
+      "title": "Lyd",
+      "desc": "Tilpass lydinnstillingene",
+      "volume": "Volum",
+      "volumeDesc": "Generelt volum",
+      "collection": "Lyd",
+      "collectionDesc": "Velg mellom flere lydprofiler"
+    },
+    "keybindings": "Tastaturbindinger",
+    "directories": {
+      "title": "Mapper",
+      "desc": "Tilpass mappene brukt av appen",
+      "files": "Filmappe",
+      "filesDesc": "Dette er hvor partiene fra Fil-siden blir lagret"
+    }
+  },
+  "formatters": {
+    "dateFormat": "{{date, dateformat}}",
+    "dateTimeFormat": "{{date, datetimeformat}}",
+    "moveNotation": "{{move, moveNotation}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "score": "{{score, score}}"
+  }
+}

@@ -1,0 +1,421 @@
+{
+  "common": {
+    "on": "WŁĄCZONE",
+    "off": "WYŁĄCZONE",
+    "name": "Nazwa",
+    "description": "Opis",
+    "version": "Wersja",
+    "enabled": "Włączone",
+    "remove": "Usuń",
+    "delete": "Usuń",
+    "add": "Dodaj",
+    "open": "Otwórz",
+    "create": "Utwórz",
+    "save": "Zapisz",
+    "download": "Pobierz",
+    "local": "Lokalne",
+    "install": "Zainstaluj",
+    "installed": "Zainstalowane",
+    "downloading": "Pobieranie",
+    "extracting": "Rozpakowywanie",
+    "error": "Błąd",
+    "addNew": "Dodaj nowe",
+    "openFolder": "Otwórz folder w eksploratorze plików",
+    "unknown": "Nieznane",
+    "cancel": "Anuluj",
+    "cannotUndo": "Ta operacja nie może być cofnięta.",
+    "nameAlreadyUsed": "Nazwa już używana",
+    "requireName": "Nazwa jest wymagana",
+    "requirePath": "Ścieżka jest wymagana",
+    "pgnFile": "Plik PGN",
+    "pgnGame": "Gra PGN",
+    "size": "Rozmiar",
+    "generalSettings": "Ustawienia ogólne",
+    "data": "Dane",
+    "games": {
+      "one": "{{count}} gra",
+      "other": "{{count}} gry"
+    },
+    "edit": "Edytuj",
+    "enterFileName": "Wprowadź nazwę pliku",
+    "next": "Dalej",
+    "skip": "Pomiń",
+    "reset": "Zresetuj",
+    "incorrect": "Niepoprawne",
+    "run": "Uruchom",
+    "stop": "Zatrzymaj",
+    "engine": "Silnik"
+  },
+  "chess": {
+    "checkmate": "Szach-mat",
+    "stalemate": "Patt",
+    "white": "Białe",
+    "black": "Czarne",
+    "goMode": {
+      "time": "Czas",
+      "depth": "Głębokość",
+      "nodes": "Węzły",
+      "infinite": "Nieskończone"
+    },
+    "annotate": {
+      "brilliant": "Genialne",
+      "good": "Dobre",
+      "interesting": "Interesujące",
+      "dubious": "Wątpliwe",
+      "mistake": "Błąd",
+      "blunder": "Poważny błąd",
+      "whiteWinning": "Białe wygrywają",
+      "whiteAdvantage": "Białe mają wyraźną przewagę",
+      "whiteEdge": "Białe mają lekką przewagę",
+      "equal": "Równa pozycja",
+      "unclear": "Niejasna pozycja",
+      "blackEdge": "Czarne mają lekką przewagę",
+      "blackAdvantage": "Czarne mają wyraźną przewagę",
+      "blackWinning": "Czarne wygrywają",
+      "novelty": "Nowość",
+      "development": "Rozwój",
+      "initiative": "Inicjatywa",
+      "attack": "Atak",
+      "counterplay": "Kontrgra",
+      "withCompensation": "Z rekompensatą",
+      "timeTrouble": "Czasowa presja",
+      "withIdea": "Z ideą",
+      "onlyMove": "Jedyny ruch",
+      "zugzwang": "Zugzwang"
+    },
+    "timeControl": {
+      "ultraBullet": "UltraBullet",
+      "bullet": "Bullet",
+      "blitz": "Blitz",
+      "rapid": "Rapid",
+      "classical": "Klasyczny",
+      "correspondence": "Korespondencja"
+    }
+  },
+  "features": {
+    "richText": {
+      "bold": "Pogrubienie",
+      "italic": "Kursywa",
+      "underline": "Podkreślenie",
+      "strike": "Przekreślenie",
+      "clearFormatting": "Wyczyść formatowanie",
+      "h1": "Nagłówek 1",
+      "h2": "Nagłówek 2",
+      "h3": "Nagłówek 3",
+      "h4": "Nagłówek 4",
+      "quote": "Blok cytatu",
+      "hLine": "Linia pozioma",
+      "bulletList": "Lista punktowana",
+      "numberedList": "Lista numerowana",
+      "link": "Link",
+      "removeLink": "Usuń link"
+    },
+    "menu": {
+      "file": "Plik",
+      "newTab": "Nowa karta",
+      "openFile": "Otwórz plik",
+      "exit": "Zamknij",
+      "view": "Widok",
+      "reload": "Przeładuj",
+      "help": "Pomoc",
+      "documentation": "Dokumentacja",
+      "clearSavedData": "Wyczyść zapisane dane",
+      "openLogs": "Otwórz dzienniki",
+      "checkUpdate": "Sprawdź aktualizacje",
+      "about": "O programie"
+    },
+    "sidebar": {
+      "board": "Szachownica",
+      "accounts": "Użytkownik",
+      "files": "Pliki",
+      "databases": "Bazy danych",
+      "engines": "Silniki",
+      "settings": "Ustawienia"
+    },
+    "dashboard": {
+      "cards": {
+        "playChess": {
+          "title": "Graj w szachy",
+          "desc": "Graj przeciwko silnikowi lub przyjacielowi",
+          "button": "Graj"
+        },
+        "analysisBoard": {
+          "title": "Tablica analizy",
+          "desc": "Analizuj grę lub pozycję",
+          "button": "Otwórz"
+        },
+        "importGame": {
+          "title": "Importuj grę",
+          "desc": "Importuj grę z pliku PGN",
+          "button": "Importuj"
+        },
+        "puzzle": {
+          "title": "Zagadki",
+          "desc": "Trenuj swoje umiejętności szachowe",
+          "button": "Trenuj"
+        }
+      }
+    },
+    "tabs": {
+      "newTab": "Nowa karta"
+    },
+    "board": {
+      "tabs": {
+        "practice": "Ćwiczenia",
+        "analysis": "Analiza",
+        "database": "Baza danych",
+        "annotate": "Adnotacja",
+        "info": "Informacje"
+      },
+      "practice": {
+        "train": "Trenuj",
+        "build": "Buduj",
+        "noPositionForTrain1": "Brak pozycji do ćwiczenia. Rozpocznij od dodania ruchów do tego pliku PGN.",
+        "noPositionForTrain2": "Musisz przełączyć się na tryb Analizy, aby móc dodawać ruchy.",
+        "seeAnswer": "Zobacz odpowiedź",
+        "practiced": "Przećwiczone",
+        "due": "Termin",
+        "unseen": "Nieprzećwiczone",
+        "showAll": "Pokaż wszystkie pozycje",
+        "showLogs": "Pokaż dzienniki",
+        "practicedAll1": "Przećwiczyłeś wszystkie pozycje.",
+        "practicedAll2": "Następny przegląd odbędzie się",
+        "correctMoveWas": "Prawidłowy ruch to {{move}}"
+      },
+      "analysis": {
+        "engines": "Silniki",
+        "report": "Raport",
+        "logs": "Dzienniki",
+        "summary": "Podsumowanie",
+        "inactiveEngine": "Silnik nie jest włączony",
+        "syncGlobally": "Synchronizuj globalnie",
+        "killEngine": "Zatrzymaj silnik",
+        "generateReport": "Generuj raport",
+        "reportGenerated": "Raport wygenerowany",
+        "generatingReport": "Generowanie raportu",
+        "notAnalysed": "Nie przeanalizowane",
+        "engineRequired": "Wymagany silnik",
+        "refDBRequired": "Nie wybrano bazy odniesienia. Wybierz ją najpierw na stronie bazy danych",
+        "time": "Czas (ms)",
+        "reversed": "Odwrócona analiza",
+        "reversedDesc": "Analizuj grę od ostatniego ruchu.",
+        "annotateNovelties": "Adnotuj nowości",
+        "annotateNoveltiesDesc": "Dodaj komentarz do pierwszej pozycji, która nie znajduje się w bazie odniesienia.",
+        "analyze": "Analizuj",
+        "advantage": "Przewaga",
+        "accuracy": "Dokładność"
+      },
+      "database": {
+        "local": "Lokalna",
+        "lichessAll": "Lichess Wszystkie",
+        "lichessMaster": "Lichess Mistrzowie",
+        "matches": "{{matches}} meczów",
+        "stats": "Statystyki",
+        "games": "Gry",
+        "options": "Opcje",
+        "noReference1": "Nie wybrano bazy odniesienia.",
+        "noReference2": "Proszę",
+        "selectReference": "dodaj bazę danych",
+        "noReference3": "i oznacz ją jako bazę odniesienia.",
+        "timeControl": "Kontrola czasu",
+        "averageRating": "Średnia ocena"
+      },
+      "annotate": {
+        "writeHere": "Napisz tutaj..."
+      }
+    },
+    "engines": {
+      "title": "Twoje silniki",
+      "settings": {
+        "noEngine": "Nie wybrano silnika",
+        "searchSettings": "Ustawienia wyszukiwania",
+        "advancedSettings": "Zaawansowane ustawienia",
+        "numOfLines": "Liczba linii",
+        "numOfCores": "Liczba rdzeni",
+        "sizeOfHash": "Rozmiar hashu",
+        "editJSON": "Edytuj JSON",
+        "reset": "Przywróć domyślne"
+      },
+      "add": {
+        "title": "Dodaj silnik",
+        "cloud": "Chmura",
+        "errorFetch": "Nie udało się pobrać informacji o silniku z serwera.",
+        "binaryFile": "Plik binarny",
+        "binaryFileDesc": "Kliknij, aby wybrać plik binarny",
+        "name": "Nazwa",
+        "autodetect": "Autodetekcja",
+        "eloDesc": "Elo silnika",
+        "imageFile": "Plik graficzny",
+        "imageFileDesc": "Kliknij, aby wybrać plik graficzny (zalecany rozmiar: 60x60)"
+      },
+      "remove": {
+        "title": "Usuń silnik",
+        "message": "Czy na pewno chcesz usunąć ten silnik z Pawn Appétit?"
+      }
+    },
+    "databases": {
+      "title": "Twoje bazy danych",
+      "card": {
+        "games": "Gry",
+        "players": "Gracze",
+        "storage": "Przechowywanie"
+      },
+      "add": {
+        "title": "Dodaj bazę danych",
+        "web": "Sieć",
+        "errorFetch": "Nie udało się pobrać informacji o bazie danych z serwera.",
+        "clickToSelectPGN": "Kliknij, aby wybrać plik PGN",
+        "convert": "Konwertuj"
+      },
+      "settings": {
+        "referenceDatabase": "Baza odniesienia",
+        "indexed": "Zindeksowane",
+        "indexedDesc": "Indeksy są używane do przyspieszenia procesu wyszukiwania, ale zajmują dodatkowe miejsce.",
+        "events": "Wydarzenia",
+        "explore": "Eksploruj",
+        "advancedTools": "Zaawansowane narzędzia",
+        "mergePlayers": "Scal graczy",
+        "mergePlayersDesc": "Zastąp wszystkie wystąpienia pierwszego gracza drugim graczem w bazie danych.",
+        "merge": "Scal",
+        "batchDelete": "Usuń zbiorczo",
+        "batchDeleteDesc": "Te operacje nieodwracalnie usuną gry z bazy danych. Używaj ostrożnie.",
+        "removeDup": "Usuń duplikaty",
+        "removeEmpty": "Usuń puste gry",
+        "actions": "Akcje",
+        "addGames": "Dodaj gry",
+        "exportPGN": "Eksportuj do PGN"
+      },
+      "delete": {
+        "title": "Usuń bazę danych",
+        "message": "Czy na pewno chcesz usunąć tę bazę danych?"
+      }
+    },
+    "files": {
+      "title": "Pliki",
+      "fileType": {
+        "fileType": "Typ pliku",
+        "game": "Gra",
+        "repertoire": "Repertuar",
+        "tournament": "Turniej",
+        "puzzle": "Zagadka",
+        "other": "Inny",
+        "folder": "Folder"
+      },
+      "delete": {
+        "title": "Usuń plik",
+        "message": "Czy na pewno chcesz usunąć {{fileName}}?"
+      },
+      "editMetadata": "Edytuj metadane",
+      "edit": {
+        "title": "Edytuj plik"
+      },
+      "create": {
+        "title": "Utwórz plik"
+      },
+      "search": "Wyszukaj pliki"
+    },
+    "pgnInput": {
+      "comments": "Komentarze",
+      "glyphs": "Symbole",
+      "variations": "Wariacje",
+      "extraMarkups": "Dodatkowe oznaczenia",
+      "maxDepth": "Maksymalna głębokość",
+      "totalMoves": "Całkowita liczba ruchów"
+    }
+  },
+  "settings": {
+    "board": {
+      "title": "Szachownica",
+      "desc": "Dostosuj tablicę analizy i sterowanie grą",
+      "pieceDest": "Miejsca docelowe figur",
+      "pieceDestDesc": "Pokaż możliwe ruchy dla każdej figury",
+      "arrows": "Strzałki",
+      "arrowsDesc": "Pokaż strzałki najlepszych ruchów",
+      "snapArrows": "Zablokuj strzałki",
+      "snapArrowsDesc": "Zablokuj strzałki na prawidłowych ruchach",
+      "consecutiveArrows": "Kolejne strzałki",
+      "consecutiveArrowsDesc": "Pokaż wiele strzałek dla najlepszego ciągu ruchów, jeśli obejmuje on wielokrotne przesuwanie tej samej figury",
+      "eraseDrawablesOnClick": "Usuń rysunki po kliknięciu",
+      "eraseDrawablesOnClickDesc": "Wyczyść szachownicę z narysowanych strzałek i okręgów, klikając lewym przyciskiem myszy",
+      "autoPromotion": "Automatyczna promocja",
+      "autoPromotionDesc": "Automatycznie promuj na hetmana, gdy pionek dotrze do ostatniego rzędu",
+      "coordinates": "Współrzędne",
+      "coordinatesDesc": "Pokaż współrzędne na szachownicy",
+      "autoSave": "Automatyczne zapisywanie",
+      "autoSaveDesc": "Automatycznie zapisuj do pliku po każdym ruchu",
+      "previewBoard": "Podgląd szachownicy",
+      "previewBoardDesc": "Pokaż podgląd szachownicy po najechaniu kursorem na ruch w analizie silnika",
+      "scrollThroughMoves": "Przewijaj ruchy",
+      "scrollThroughMovesDesc": "Włącz lub wyłącz przewijanie ruchów na szachownicy"
+    },
+    "inputs": {
+      "title": "Wejścia",
+      "desc": "Dostosuj ustawienia wejścia",
+      "textInput": "Tekstowe wprowadzanie ruchów",
+      "textInputDesc": "Wprowadzaj ruchy w formacie tekstowym",
+      "spellCheck": "Sprawdzanie pisowni",
+      "spellCheckDesc": "Włącz lub wyłącz sprawdzanie pisowni w tekstowych polach wprowadzania"
+    },
+    "openingReport": {
+      "title": "Raport otwarcia",
+      "desc": "Dostosuj ustawienia raportu otwarcia",
+      "percentCoverage": "Procentowe pokrycie",
+      "percentCoverageDesc": "Procent ruchów objętych w każdej pozycji",
+      "minGames": "Minimalna liczba gier",
+      "minGamesDesc": "Minimalna liczba gier w każdej pozycji, aby była brana pod uwagę"
+    },
+    "anarchy": {
+      "title": "Anarchia",
+      "desc": "Zabawne opcje"
+    },
+    "appearance": {
+      "title": "Wygląd",
+      "desc": "Dostosuj wygląd aplikacji",
+      "theme": {
+        "theme": "Motyw"
+      },
+      "themeDesc": "Ogólny schemat kolorów",
+      "titleBar": "Pasek tytułu",
+      "titleBarDesc": "Wybierz między natywnym a niestandardowym paskiem tytułu",
+      "language": "Język",
+      "languageDesc": "Język używany w aplikacji",
+      "native": "Natywny",
+      "custom": "Niestandardowy",
+      "fontSize": "Rozmiar czcionki",
+      "fontSizeDesc": "Ogólny rozmiar czcionki",
+      "pieceSet": "Zestaw figur",
+      "pieceSetDesc": "Figury używane na szachownicach",
+      "boardImage": "Obraz szachownicy",
+      "boardImageDesc": "Obraz używany jako tło szachownicy",
+      "accentColor": "Kolor akcentu",
+      "accentColorDesc": "Główny kolor aplikacji"
+    },
+    "sound": {
+      "title": "Dźwięk",
+      "desc": "Dostosuj ustawienia dźwięku",
+      "volume": "Głośność",
+      "volumeDesc": "Ogólna głośność",
+      "collection": "Kolekcja dźwięków",
+      "collectionDesc": "Kolekcja używanych dźwięków"
+    },
+    "keybindings": "Skróty klawiszowe",
+    "directories": {
+      "title": "Katalogi",
+      "desc": "Dostosuj katalogi używane przez aplikację",
+      "files": "Katalog plików",
+      "filesDesc": "To miejsce, gdzie są przechowywane twoje gry na stronie Pliki"
+    }
+  },
+  "formatters": {
+    "dateFormat": "{{date, dateformat}}",
+    "dateTimeFormat": "{{date, datetimeformat}}",
+    "moveNotation": "{{move, moveNotation}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "score": "{{score, score}}"
+  }
+}

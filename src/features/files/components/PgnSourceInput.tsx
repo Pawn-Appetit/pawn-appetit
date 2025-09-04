@@ -54,22 +54,22 @@ type PgnSourceInputProps = {
   pgnTarget: PgnTarget;
   setFilename?: (name: string) => void;
   // Optional override keys; if omitted defaults are used
-  fileInputLabelKey?: string; // default: "Common.PGNFile"
-  fileInputDescriptionKey?: string; // default: "Common.ClickToSelectPGN"
+  fileInputLabelKey?: string; // default: "common.pgnFile"
+  fileInputDescriptionKey?: string; // default: "common.clickToSelectPGN"
   dividerLabelKey?: string; // default: "Common.OR"
-  textareaLabelKey?: string; // default: "Common.PGNGame"
-  textareaPlaceholderKey?: string; // default: "Files.Create.PGNPlaceholder"
+  textareaLabelKey?: string; // default: "common.pgnGame"
+  textareaPlaceholderKey?: string; // default: "features.files.create.pgnPlaceholder"
 };
 
 export function PgnSourceInput({
   setPgnTarget,
   pgnTarget,
   setFilename,
-  fileInputLabelKey = "Common.PGNFile",
-  fileInputDescriptionKey = "Common.ClickToSelectPGN",
-  dividerLabelKey = "Common.Or",
-  textareaLabelKey = "Common.PGNGame",
-  textareaPlaceholderKey = "Files.Create.PGNPlaceholder",
+  fileInputLabelKey = "common.pgnFile",
+  fileInputDescriptionKey = "common.clickToSelectPGN",
+  dividerLabelKey = "common.or",
+  textareaLabelKey = "common.pgnGame",
+  textareaPlaceholderKey = "features.files.create.pgnPlaceholder",
 }: PgnSourceInputProps) {
   const { t } = useTranslation();
   const [pgn, setPgn] = useState(pgnTarget.type === "pgn" ? pgnTarget.target : "");

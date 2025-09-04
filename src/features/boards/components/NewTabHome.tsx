@@ -15,9 +15,9 @@ export default function NewTabHome({ id }: { id: string }) {
   const cards = [
     {
       icon: <IconChess size={60} />,
-      title: t("Tab.PlayChess.Title"),
-      description: t("Tab.PlayChess.Desc"),
-      label: t("Tab.PlayChess.Button"),
+      title: t("features.tabs.playChess.title"),
+      description: t("features.tabs.playChess.desc"),
+      label: t("features.tabs.playChess.button"),
       onClick: () => {
         setTabs((prev: Tab[]) => {
           const tab = prev.find((t) => t.value === id);
@@ -30,14 +30,14 @@ export default function NewTabHome({ id }: { id: string }) {
     },
     {
       icon: <Chessboard size={60} />,
-      title: t("Tab.AnalysisBoard.Title"),
-      description: t("Tab.AnalysisBoard.Desc"),
-      label: t("Tab.AnalysisBoard.Button"),
+      title: t("features.tabs.analysisBoard.title"),
+      description: t("features.tabs.analysisBoard.desc"),
+      label: t("features.tabs.analysisBoard.button"),
       onClick: () => {
         setTabs((prev: Tab[]) => {
           const tab = prev.find((t) => t.value === id);
           if (!tab) return prev;
-          tab.name = t("Tab.AnalysisBoard.Title");
+          tab.name = t("features.tabs.analysisBoard.title");
           tab.type = "analysis";
           return [...prev];
         });
@@ -45,14 +45,14 @@ export default function NewTabHome({ id }: { id: string }) {
     },
     {
       icon: <IconPuzzle size={60} />,
-      title: t("Tab.Puzzle.Title"),
-      description: t("Tab.Puzzle.Desc"),
-      label: t("Tab.Puzzle.Button"),
+      title: t("features.tabs.puzzle.title"),
+      description: t("features.tabs.puzzle.desc"),
+      label: t("features.tabs.puzzle.button"),
       onClick: () => {
         setTabs((prev) => {
           const tab = prev.find((t) => t.value === id);
           if (!tab) return prev;
-          tab.name = t("Tab.Puzzle.Title");
+          tab.name = t("features.tabs.puzzle.title");
           tab.type = "puzzles";
           return [...prev];
         });
@@ -60,9 +60,9 @@ export default function NewTabHome({ id }: { id: string }) {
     },
     {
       icon: <IconFileImport size={60} />,
-      title: t("Tab.ImportGame.Title"),
-      description: t("Tab.ImportGame.Desc"),
-      label: t("Tab.ImportGame.Button"),
+      title: t("features.tabs.importGame.title"),
+      description: t("features.tabs.importGame.desc"),
+      label: t("features.tabs.importGame.button"),
       onClick: () => {
         modals.openContextModal({
           modal: "importModal",

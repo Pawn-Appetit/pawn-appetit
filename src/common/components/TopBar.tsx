@@ -104,15 +104,15 @@ function getActions(
       actions: [
         {
           id: "keybindings",
-          label: t("SideBar.KeyboardShortcuts"),
-          description: `Open ${t("SideBar.KeyboardShortcuts")} page`,
+          label: t("features.sidebar.keyboardShortcuts"),
+          description: `Open ${t("features.sidebar.keyboardShortcuts")} page`,
           onClick: () => navigate({ to: "/settings/keyboard-shortcuts" }),
           leftSection: <IconSettings size={24} stroke={1.5} />,
         },
         {
           id: "settings",
-          label: t("SideBar.Settings"),
-          description: `Open ${t("SideBar.Settings")} page`,
+          label: t("features.sidebar.settings"),
+          description: `Open ${t("features.sidebar.settings")} page`,
           onClick: () => navigate({ to: "/settings" }),
           leftSection: <IconSettings size={24} stroke={1.5} />,
         },

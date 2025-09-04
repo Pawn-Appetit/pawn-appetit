@@ -627,9 +627,9 @@ function BoardGame() {
                 <Group>
                   <Text flex={1} ta="center" fz="lg" fw="bold">
                     {match(inputColor)
-                      .with("white", () => t("Common.White"))
-                      .with("random", () => t("Common.Random"))
-                      .with("black", () => t("Common.Black"))
+                      .with("white", () => t("chess.white"))
+                      .with("random", () => t("chess.random"))
+                      .with("black", () => t("chess.black"))
                       .exhaustive()}
                   </Text>
                   <ActionIcon onClick={cycleColor}>
@@ -637,9 +637,9 @@ function BoardGame() {
                   </ActionIcon>
                   <Text flex={1} ta="center" fz="lg" fw="bold">
                     {match(inputColor)
-                      .with("white", () => t("Common.Black"))
-                      .with("random", () => t("Common.Random"))
-                      .with("black", () => t("Common.White"))
+                      .with("white", () => t("chess.black"))
+                      .with("random", () => t("chess.random"))
+                      .with("black", () => t("chess.white"))
                       .exhaustive()}
                   </Text>
                 </Group>

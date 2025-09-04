@@ -230,8 +230,8 @@ function Board({
 
       if (!isRecalled) {
         notifications.show({
-          title: t("Common.Incorrect"),
-          message: t("Board.Practice.CorrectMoveWas", { move: c.answer }),
+          title: t("common.incorrect"),
+          message: t("features.board.practice.correctMoveWas", { move: c.answer }),
           color: "red",
         });
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -341,10 +341,10 @@ function Board({
               leftSection={viewPawnStructure ? <IconChessFilled size="1.3rem" /> : <IconChess size="1.3rem" />}
               onClick={() => setViewPawnStructure(!viewPawnStructure)}
             >
-              {t("Board.Action.TogglePawnStructureView")}
+              {t("features.board.actions.togglePawnStructureView")}
             </Menu.Item>
             <Menu.Item leftSection={<IconCamera size="1.3rem" />} onClick={() => takeSnapshot()}>
-              {t("Board.Action.TakeSnapshot")}
+              {t("features.board.actions.takeSnapshot")}
             </Menu.Item>
           </Menu.Dropdown>
         </Menu>
@@ -355,20 +355,20 @@ function Board({
             </ActionIcon>
           </Tooltip>
         )}
-        <Tooltip label={t(currentTab?.type === "analysis" ? "Board.Action.PlayFromHere" : "Board.Action.AnalyzeGame")}>
+        <Tooltip label={t(currentTab?.type === "analysis" ? "features.board.actions.playFromHere" : "features.board.actions.analyzeGame")}>
           <ActionIcon variant="default" size="lg" onClick={changeTabType}>
             {currentTab?.type === "analysis" ? <IconTarget size="1.3rem" /> : <IconZoomCheck size="1.3rem" />}
           </ActionIcon>
         </Tooltip>
         {!eraseDrawablesOnClick && (
-          <Tooltip label={t("Board.Action.ClearDrawings")}>
+          <Tooltip label={t("features.board.actions.clearDrawings")}>
             <ActionIcon variant="default" size="lg" onClick={() => clearShapes()}>
               <IconEraser size="1.3rem" />
             </ActionIcon>
           </Tooltip>
         )}
         {!disableVariations && (
-          <Tooltip label={t("Board.Action.EditPosition")}>
+          <Tooltip label={t("features.board.actions.editPosition")}>
             <ActionIcon variant={editingMode ? "filled" : "default"} size="lg" onClick={() => toggleEditingMode()}>
               {editingMode ? <IconEditOff size="1.3rem" /> : <IconEdit size="1.3rem" />}
             </ActionIcon>
@@ -376,28 +376,28 @@ function Board({
         )}
 
         {saveFile && (
-          <Tooltip label={t("Board.Action.SavePGN", { key: keyMap.SAVE_FILE.keys })}>
+          <Tooltip label={t("features.board.actions.savePGN", { key: keyMap.SAVE_FILE.keys })}>
             <ActionIcon onClick={() => saveFile()} size="lg" variant={dirty && !autoSave ? "outline" : "default"}>
               <IconDeviceFloppy size="1.3rem" />
             </ActionIcon>
           </Tooltip>
         )}
         {reload && (
-          <Tooltip label={t("Menu.View.Reload")}>
+          <Tooltip label={t("features.menu.view.Reload")}>
             <ActionIcon onClick={() => reload()} size="lg" variant={dirty ? "outline" : "default"}>
               <IconReload size="1.3rem" />
             </ActionIcon>
           </Tooltip>
         )}
         {addGame && currentTab?.source?.type === "file" && (
-          <Tooltip label={t("Board.Action.AddGame")}>
+          <Tooltip label={t("features.board.actions.addGame")}>
             <ActionIcon variant="default" size="lg" onClick={() => addGame()}>
               <IconPlus size="1.3rem" />
             </ActionIcon>
           </Tooltip>
         )}
         <Tooltip
-          label={t("Board.Action.FlipBoard", {
+          label={t("features.board.actions.flipBoard", {
             key: keyMap.SWAP_ORIENTATION.keys,
           })}
         >

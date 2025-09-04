@@ -58,15 +58,15 @@ export const PuzzleSettings = ({
             label: p.title.split(".db3")[0],
             value: p.path,
           }))
-          .concat({ label: `+ ${t("Common.AddNew")}`, value: "add" })}
+          .concat({ label: `+ ${t("common.addNew")}`, value: "add" })}
         value={selectedDb}
         clearable={false}
-        placeholder={t("Puzzle.SelectDatabase")}
+        placeholder={t("features.puzzle.selectDatabase")}
         onChange={handleDatabaseChange}
       />
       <Divider my="sm" />
       <Group>
-        <Input.Wrapper label={t("Puzzle.RatingRange")} flex={1}>
+        <Input.Wrapper label={t("features.puzzle.ratingRange")} flex={1}>
           <RangeSlider
             min={minRating}
             max={maxRating}
@@ -76,11 +76,11 @@ export const PuzzleSettings = ({
           />
           {!dbRatingRange && selectedDb && (
             <div style={{ fontSize: "0.75rem", color: "var(--mantine-color-dimmed)", marginTop: "4px" }}>
-              {t("Puzzle.LoadingRatingRange")}
+              {t("features.puzzle.loadingRatingRange")}
             </div>
           )}
         </Input.Wrapper>
-        <Input.Wrapper label={t("Puzzle.Progressive")}>
+        <Input.Wrapper label={t("features.puzzle.progressive")}>
           <Center>
             <Checkbox
               checked={isProgressiveChecked}
@@ -89,12 +89,12 @@ export const PuzzleSettings = ({
             />
           </Center>
         </Input.Wrapper>
-        <Input.Wrapper label={t("Puzzle.HideRating")}>
+        <Input.Wrapper label={t("features.puzzle.hideRating")}>
           <Center>
             <Checkbox checked={hideRating} onChange={(event) => onHideRatingChange(event.currentTarget.checked)} />
           </Center>
         </Input.Wrapper>
-        <Input.Wrapper label={t("Puzzle.InOrder")}>
+        <Input.Wrapper label={t("features.puzzle.inOrder")}>
           <Center>
             <Checkbox checked={inOrder} onChange={(event) => onInOrderChange(event.currentTarget.checked)} />
           </Center>

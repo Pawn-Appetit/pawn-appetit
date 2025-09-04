@@ -67,17 +67,17 @@ function FileCard({
         <Text ta="center" fz="xl" fw="bold">
           {selected?.name}
         </Text>
-        <Badge>{t(`Files.FileType.${capitalize(selected.metadata.type)}`)}</Badge>
+        <Badge>{t(`features.files.fileType.fileType.${capitalize(selected.metadata.type)}`)}</Badge>
       </Stack>
 
       <Group align="center" grow>
         <Group>
-          <Tooltip label={t("Common.Open")}>
+          <Tooltip label={t("common.open")}>
             <ActionIcon onClick={openGame}>
               <IconEye />
             </ActionIcon>
           </Tooltip>
-          <Tooltip label={t("Files.EditMetadata")}>
+          <Tooltip label={t("features.files.editMetadata")}>
             <ActionIcon onClick={() => toggleEditModal()}>
               <IconEdit />
             </ActionIcon>
