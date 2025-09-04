@@ -6,6 +6,8 @@ import { useAtom } from "jotai";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import FileInput from "@/common/components/FileInput";
+import ColorSchemeSettings from "@/features/themes/components/ColorSchemeSettings";
+import ThemeSelectionSettings from "@/features/themes/components/ThemeSettings";
 import {
   autoPromoteAtom,
   autoSaveAtom,
@@ -27,13 +29,10 @@ import {
   spellCheckAtom,
   storedDocumentDirAtom,
 } from "@/state/atoms";
-import { ThemeSettings } from "@/themes";
-import { computedThemeAtom } from "@/themes/state";
-import type { ThemeDefinition } from "@/themes/types";
 import { hasTranslatedPieceChars } from "@/utils/format";
+import ColorControl from "../themes/components/ColorControl";
+import FontSizeSlider from "../themes/components/FontSizeSlider";
 import BoardSelect from "./components/BoardSelect";
-import ColorControl from "./components/ColorControl";
-import FontSizeSlider from "./components/FontSizeSlider";
 import PiecesSelect from "./components/PiecesSelect";
 import SettingsNumberInput from "./components/SettingsNumberInput";
 import SettingsSwitch from "./components/SettingsSwitch";
@@ -64,7 +63,6 @@ export default function Page() {
 
   const [moveMethod, setMoveMethod] = useAtom(moveMethodAtom);
   const [moveNotationType, setMoveNotationType] = useAtom(moveNotationTypeAtom);
-  const [computedTheme] = useAtom<ThemeDefinition | null>(computedThemeAtom);
   const [dateFormatMode, setDateFormatMode] = useState(localStorage.getItem("dateFormatMode") || "intl");
 
   const handleDateFormatModeChange = useCallback(
@@ -416,11 +414,42 @@ export default function Page() {
         ),
       },
       {
+        id: "color-scheme",
+        title: t("Settings.Appearance.ColorScheme"),
+        description: t("Settings.Appearance.ColorScheme.Desc"),
+        tab: "appearance",
+        component: (
+          <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
+            <div>
+              <Text>{t("Settings.Appearance.ColorScheme")}</Text>
+              <Text size="xs" c="dimmed">
+                {t("Settings.Appearance.ColorScheme.Desc")}
+              </Text>
+            </div>
+            <div>
+              <ColorSchemeSettings />
+            </div>
+          </Group>
+        ),
+      },
+      {
         id: "theme",
         title: t("Settings.Appearance.Theme"),
         description: t("Settings.Appearance.Theme.Desc"),
         tab: "appearance",
-        component: <ThemeSettings />,
+        component: (
+          <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
+            <div>
+              <Text>{t("Settings.Appearance.Theme")}</Text>
+              <Text size="xs" c="dimmed">
+                {t("Settings.Appearance.Theme.Desc")}
+              </Text>
+            </div>
+            <div>
+              <ThemeSelectionSettings />
+            </div>
+          </Group>
+        ),
       },
       {
         id: "accent-color",
@@ -436,10 +465,25 @@ export default function Page() {
               </Text>
             </div>
             <div>
-              <ColorControl
-                disabled={computedTheme?.name !== "classic-light" && computedTheme?.name !== "classic-dark"}
-              />
+              <ColorControl />
             </div>
+          </Group>
+        ),
+      },
+      {
+        id: "font-size",
+        title: t("Settings.Appearance.FontSize"),
+        description: t("Settings.Appearance.FontSize.Desc"),
+        tab: "appearance",
+        component: (
+          <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
+            <div>
+              <Text>{t("Settings.Appearance.FontSize")}</Text>
+              <Text size="xs" c="dimmed">
+                {t("Settings.Appearance.FontSize.Desc")}
+              </Text>
+            </div>
+            <FontSizeSlider />
           </Group>
         ),
       },
@@ -533,23 +577,6 @@ export default function Page() {
               </Text>
             </div>
             <SettingsSwitch atom={hideDashboardOnStartupAtom} />
-          </Group>
-        ),
-      },
-      {
-        id: "font-size",
-        title: t("Settings.Appearance.FontSize"),
-        description: t("Settings.Appearance.FontSize.Desc"),
-        tab: "appearance",
-        component: (
-          <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
-            <div>
-              <Text>{t("Settings.Appearance.FontSize")}</Text>
-              <Text size="xs" c="dimmed">
-                {t("Settings.Appearance.FontSize.Desc")}
-              </Text>
-            </div>
-            <FontSizeSlider />
           </Group>
         ),
       },
@@ -668,7 +695,6 @@ export default function Page() {
       setMoveNotationType,
       filesDirectory,
       setFilesDirectory,
-      computedTheme,
       dateFormatMode,
       dateFormatModes,
       handleDateFormatModeChange,

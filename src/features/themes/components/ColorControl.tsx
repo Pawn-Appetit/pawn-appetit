@@ -1,13 +1,18 @@
 import { CheckIcon, ColorSwatch, Input, SimpleGrid, useMantineColorScheme, useMantineTheme } from "@mantine/core";
 import { useColorScheme } from "@mantine/hooks";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
+import { currentThemeAtom } from "@/features/themes/state/themeAtoms";
 import { primaryColorAtom } from "@/state/atoms";
 
 export default function ColorControl({ disabled }: { disabled?: boolean }) {
-  const [primaryColor, setPrimaryColor] = useAtom(primaryColorAtom);
+  const [, setPrimaryColor] = useAtom(primaryColorAtom);
   const theme = useMantineTheme();
+  const currentTheme = useAtomValue(currentThemeAtom);
   const { colorScheme } = useMantineColorScheme();
   const osColorScheme = useColorScheme();
+
+  // Use primary color from current theme (which includes overrides)
+  const effectivePrimaryColor = currentTheme.primaryColor;
 
   const colors = Object.keys(theme.colors).map((color) => (
     <ColorSwatch
@@ -34,7 +39,7 @@ export default function ColorControl({ disabled }: { disabled?: boolean }) {
         ...(disabled ? { cursor: "not-allowed", opacity: 0.5 } : {}),
       }}
     >
-      {primaryColor === color && <CheckIcon width={12} height={12} />}
+      {effectivePrimaryColor === color && <CheckIcon width={12} height={12} />}
     </ColorSwatch>
   ));
 

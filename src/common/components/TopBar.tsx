@@ -21,7 +21,6 @@ import { type JSX, type SVGProps, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { nativeBarAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
-import { useTheme, useThemeDetection } from "@/themes";
 import { linksdata } from "./Sidebar";
 import * as classes from "./TopBar.css";
 
@@ -83,30 +82,8 @@ const Icons = {
 
 function getActions(
   navigate: ReturnType<typeof useNavigate>,
-  colorScheme: MantineColorScheme,
-  handleQuickThemeChange: (value: string) => void,
   t: (key: string) => string,
 ): (SpotlightActionGroupData | SpotlightActionData)[] {
-  const themeActions = [];
-
-  if (colorScheme === "light") {
-    themeActions.push({
-      id: "dark",
-      label: t("Settings.Appearance.Theme.Dark"),
-      description: "Switch to dark theme",
-      onClick: () => handleQuickThemeChange("dark"),
-      leftSection: <IconMoon size={24} stroke={1.5} />,
-    });
-  } else {
-    themeActions.push({
-      id: "light",
-      label: t("Settings.Appearance.Theme.Light"),
-      description: "Switch to light theme",
-      onClick: () => handleQuickThemeChange("light"),
-      leftSection: <IconSun size={24} stroke={1.5} />,
-    });
-  }
-
   return [
     {
       group: "Pages",
@@ -141,19 +118,6 @@ function getActions(
         },
       ],
     },
-    {
-      group: "Switch theme",
-      actions: [
-        ...themeActions,
-        {
-          id: "auto",
-          label: t("Settings.Appearance.Theme.Auto"),
-          description: "Follow the system's color scheme",
-          onClick: () => handleQuickThemeChange("auto"),
-          leftSection: <IconSunMoon size={24} stroke={1.5} />,
-        },
-      ],
-    },
   ];
 }
 
@@ -163,29 +127,9 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
   const { t } = useTranslation();
   const { colorScheme } = useMantineColorScheme();
   const osColorScheme = useColorScheme();
-  const { availableThemes, autoDetectEnabled, setTheme } = useTheme();
-  const { toggleAutoDetection } = useThemeDetection();
 
   const [maximized, setMaximized] = useState(true);
   const [keyMap] = useAtom(keyMapAtom);
-
-  const handleQuickThemeChange = (value: string) => {
-    if (value === "auto") {
-      if (!autoDetectEnabled) {
-        toggleAutoDetection();
-      }
-    } else {
-      if (autoDetectEnabled) {
-        toggleAutoDetection();
-      }
-
-      const targetTheme = availableThemes.find((theme) => theme.type === value && !theme.isCustom);
-
-      if (targetTheme) {
-        setTheme(targetTheme.name);
-      }
-    }
-  };
 
   return (
     <Group h="100%">
@@ -267,7 +211,7 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
           </Group>
         </UnstyledButton>
         <Spotlight
-          actions={getActions(navigate, colorScheme, handleQuickThemeChange, t)}
+          actions={getActions(navigate, t)}
           shortcut={keyMap.SPOTLIGHT_SEARCH.keys}
           nothingFound="Nothing found..."
           highlightQuery

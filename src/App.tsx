@@ -6,14 +6,7 @@ import { getDefaultStore, useAtom, useAtomValue } from "jotai";
 import { ContextMenuProvider } from "mantine-contextmenu";
 import { useEffect } from "react";
 import { Helmet } from "react-helmet";
-import {
-  activeTabAtom,
-  fontSizeAtom,
-  pieceSetAtom,
-  spellCheckAtom,
-  storedDocumentDirAtom,
-  tabsAtom,
-} from "./state/atoms";
+import { activeTabAtom, fontSizeAtom, pieceSetAtom, storedDocumentDirAtom, tabsAtom } from "./state/atoms";
 
 import "@/styles/chessgroundBaseOverride.css";
 import "@/styles/chessgroundColorsOverride.css";
@@ -32,10 +25,10 @@ import "@/styles/global.css";
 
 import { documentDir, homeDir, resolve } from "@tauri-apps/api/path";
 import ErrorComponent from "@/common/components/ErrorComponent";
+import ThemeProvider from "@/features/themes/components/ThemeProvider";
 import { commands } from "./bindings";
 import i18n from "./i18n";
 import { routeTree } from "./routeTree.gen";
-import { ThemeProvider } from "./themes";
 import { openFile } from "./utils/files";
 
 export type Dirs = {
@@ -95,7 +88,6 @@ export default function App() {
   }, [setTabs, setActiveTab]);
 
   const fontSize = useAtomValue(fontSizeAtom);
-  const spellCheck = useAtomValue(spellCheckAtom);
 
   useEffect(() => {
     document.documentElement.style.fontSize = `${fontSize}%`;
@@ -110,29 +102,7 @@ export default function App() {
       <Helmet>
         <link rel="stylesheet" href={`/pieces/${pieceSet}.css`} />
       </Helmet>
-      <ThemeProvider
-        // Pass the component extensions and other Mantine config
-        mantineConfig={
-          {
-            //   primaryColor,
-            //   colors: {
-            //     dark: [
-            //       "#C1C2C5",
-            //       "#A6A7AB",
-            //       "#909296",
-            //       "#5c5f66",
-            //       "#373A40",
-            //       "#2C2E33",
-            //       "#25262b",
-            //       "#1A1B1E",
-            //       "#141517",
-            //       "#101113",
-            //     ],
-            //   },
-          }
-        }
-        spellCheck={spellCheck}
-      >
+      <ThemeProvider>
         <ContextMenuProvider>
           <Notifications />
           <RouterProvider router={router} />
