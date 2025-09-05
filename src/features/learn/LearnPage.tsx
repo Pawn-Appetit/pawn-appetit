@@ -159,7 +159,7 @@ export default function LearnPage() {
       id: "lessons",
       icon: <IconBook size={32} />,
       title: t("features.lessons.title"),
-      description: t("features.dashboard.cards.learn.desc"),
+      description: t("features.lessons.description"),
       label: t("features.lessons.startLesson"),
       progress: { completed: userStats.lessonsCompleted, total: userStats.totalLessons },
       color: "blue",
@@ -191,7 +191,7 @@ export default function LearnPage() {
           <Box>
             <Title mb="xs">Chess Mastery Hub</Title>
             <Text size="lg" c="dimmed">
-              Your central hub to learn, practice, and master chess step by step
+              Your personalized journey to chess excellence
             </Text>
           </Box>
         </Group>
@@ -199,36 +199,47 @@ export default function LearnPage() {
 
       <Stack gap="xl">
         <Stack gap="md">
-          <Title order={2}>Your Progress</Title>
+          <Title order={3} mb="xs">
+            Your Progress
+          </Title>
           <Grid gutter="md">
             <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Card p="md" radius="md" withBorder h="105px">
-                <Group gap="sm">
-                  <ThemeIcon color="gray" variant="light" size="lg">
+              <Card p="md" radius="md" withBorder h="120px">
+                <Group gap="sm" align="center">
+                  <ThemeIcon color="blue" variant="light" size="lg" gradient={{ from: "blue", to: "cyan" }}>
                     <IconTrophy size={20} />
                   </ThemeIcon>
                   <Text size="sm" c="dimmed">
                     Overall Progress
                   </Text>
+                  <Tooltip label="How much of all lessons and practice you've completed">
+                    <IconInfoCircle size={14} color="#888" style={{ marginLeft: 4 }} />
+                  </Tooltip>
                 </Group>
-                <Progress.Root mt="lg" radius="xl" size="md">
+                <Progress.Root mt="md" radius="xl" size="md">
                   <Tooltip label={`${overallProgress.toFixed(1)}%`}>
-                    <Progress.Section value={overallProgress} />
+                    <Progress.Section value={overallProgress} color="blue" />
                   </Tooltip>
                 </Progress.Root>
+                <Text size="xs" mt={4} c="dimmed">
+                  {overallProgress.toFixed(1)}%
+                </Text>
               </Card>
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Card p="md" radius="md" withBorder h="105px">
-                <Group gap="sm">
-                  <ThemeIcon color="gray" variant="light" size="lg">
+              <Card p="md" radius="md" withBorder h="120px">
+                <Group gap="sm" align="center">
+                  <ThemeIcon color="yellow" variant="light" size="lg" gradient={{ from: "yellow", to: "orange" }}>
                     <IconStar size={20} />
                   </ThemeIcon>
                   <Text size="sm" c="dimmed">
                     Skill Level
                   </Text>
+                  <Tooltip label="Your current chess mastery level">
+                    <IconInfoCircle size={14} color="#888" style={{ marginLeft: 4 }} />
+                  </Tooltip>
                 </Group>
-                <Text fw={600} size="lg" mt="xs">
+                <Text fw={700} size="lg" mt="xs" style={{ letterSpacing: 1 }}>
                   {(() => {
                     const percent = overallProgress;
                     if (percent >= 90) return "Master";
@@ -240,32 +251,38 @@ export default function LearnPage() {
               </Card>
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Card p="md" radius="md" withBorder h="105px">
-                <Group gap="sm">
-                  <ThemeIcon color="gray" variant="light" size="lg">
-                    <IconStar size={20} />
+              <Card p="md" radius="md" withBorder h="120px">
+                <Group gap="sm" align="center">
+                  <ThemeIcon color="green" variant="light" size="lg" gradient={{ from: "green", to: "lime" }}>
+                    <IconClock size={20} />
                   </ThemeIcon>
                   <Text size="sm" c="dimmed">
                     Streak
                   </Text>
+                  <Tooltip label="How many days in a row you've practiced or learned">
+                    <IconInfoCircle size={14} color="#888" style={{ marginLeft: 4 }} />
+                  </Tooltip>
                 </Group>
-                <Text fw={600} size="lg" mt="xs">
-                  {currentStreak} days
+                <Text fw={700} size="lg" mt="xs">
+                  {currentStreak} <span style={{ fontWeight: 400, fontSize: 12 }}>days</span>
                 </Text>
               </Card>
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Card p="md" radius="md" withBorder h="105px">
-                <Group gap="sm">
-                  <ThemeIcon color="gray" variant="light" size="lg">
+              <Card p="md" radius="md" withBorder h="120px">
+                <Group gap="sm" align="center">
+                  <ThemeIcon color="violet" variant="light" size="lg" gradient={{ from: "violet", to: "pink" }}>
                     <IconTrophy size={20} />
                   </ThemeIcon>
                   <Text size="sm" c="dimmed">
                     Points
                   </Text>
+                  <Tooltip label="Total points earned from all activities">
+                    <IconInfoCircle size={14} color="#888" style={{ marginLeft: 4 }} />
+                  </Tooltip>
                 </Group>
-                <Text fw={600} size="lg" mt="xs">
-                  {userStats.totalPoints} pts
+                <Text fw={700} size="lg" mt="xs">
+                  {userStats.totalPoints} <span style={{ fontWeight: 400, fontSize: 12 }}>pts</span>
                 </Text>
               </Card>
             </Grid.Col>
@@ -273,30 +290,53 @@ export default function LearnPage() {
         </Stack>
 
         <Stack gap="md">
-          <Title order={3}>Learning Modules</Title>
-          <Grid>
+          <Title order={3} mb="xs">
+            Learning Modules
+          </Title>
+          <Grid gutter="md">
             {learningPaths.map((path) => (
               <Grid.Col key={path.id} span={{ base: 12, sm: 6 }}>
-                <Card shadow="sm" p="lg" radius="md" withBorder onClick={path.onClick}>
+                <Card
+                  shadow="md"
+                  p="lg"
+                  radius="md"
+                  withBorder
+                  onClick={path.onClick}
+                  style={{
+                    cursor: "pointer",
+                    transition: "box-shadow 0.2s, transform 0.2s",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.10)";
+                    e.currentTarget.style.transform = "translateY(-2px) scale(1.01)";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.04)";
+                    e.currentTarget.style.transform = "none";
+                  }}
+                >
                   <Stack gap="md" h="100%">
-                    <Group justify="space-between" align="flex-start">
-                      <ThemeIcon size={60} radius="md" variant="gradient" gradient={path.gradient}>
+                    <Group justify="space-between" align="flex-start" mb="xs">
+                      <ThemeIcon size={60} radius="md" variant="light" color={path.color}>
                         {path.icon}
                       </ThemeIcon>
-                      <Badge color={path.color} variant="light">
-                        {Math.round((path.progress.completed / path.progress.total) * 100)}%
-                      </Badge>
+                      <Box style={{ flex: 1 }}>
+                        <Group gap="xs" align="center">
+                          <Text fw={700} size="xl">
+                            {path.title}
+                          </Text>
+                          <Tooltip label="Your progress in this module">
+                            <Badge color={path.color} variant="filled" size="md">
+                              {Math.round((path.progress.completed / path.progress.total) * 100)}%
+                            </Badge>
+                          </Tooltip>
+                        </Group>
+                        <Text size="sm" c="dimmed" lineClamp={3}>
+                          {path.description}
+                        </Text>
+                      </Box>
                     </Group>
-
-                    <Box style={{ flex: 1 }}>
-                      <Text fw={600} size="xl" mb="xs">
-                        {path.title}
-                      </Text>
-                      <Text size="sm" c="dimmed" lineClamp={3}>
-                        {path.description}
-                      </Text>
-                    </Box>
-
                     <Box>
                       <Group justify="space-between" mb="xs">
                         <Text size="sm" fw={500}>
@@ -313,8 +353,17 @@ export default function LearnPage() {
                         color={path.color}
                         style={{ marginBottom: 16 }}
                       />
-
-                      <Button variant="light" color={path.color} fullWidth radius="md">
+                      <Button
+                        variant="light"
+                        color={path.color}
+                        fullWidth
+                        radius="md"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          path.onClick();
+                        }}
+                        style={{ fontWeight: 600, letterSpacing: 0.5 }}
+                      >
                         {path.label}
                       </Button>
                     </Box>
@@ -326,15 +375,23 @@ export default function LearnPage() {
         </Stack>
 
         <Stack gap="md">
-          <Title order={3}>Recommendations</Title>
+          <Title order={3} mb="xs">
+            Recommendations
+          </Title>
           <Alert
-            icon={<IconBrain size={16} />}
-            title="Adaptive Learning Active"
+            icon={<IconBrain size={18} />}
+            title={
+              <Text fw={600} size="sm">
+                Adaptive Learning Active
+              </Text>
+            }
             color={getDifficultyColor(difficulty)}
             variant="light"
+            style={{ borderLeft: `6px solid var(--mantine-color-${getDifficultyColor(difficulty)}-filled)` }}
           >
-            <Text size="sm">{getDifficultyMessage(difficulty)}</Text>
-
+            <Group gap="xs" align="center">
+              <Text size="sm">{getDifficultyMessage(difficulty)}</Text>
+            </Group>
             <Group gap="xs" mt="xs">
               <Text size="xs" c="dimmed">
                 Adaptation:
@@ -349,33 +406,47 @@ export default function LearnPage() {
             </Group>
           </Alert>
 
-          {recommendedExercises.map((exercise) => (
-            <Card key={exercise.id} withBorder p="md" radius="md">
-              <Group justify="space-between" align="flex-start">
-                <Box flex={1}>
-                  <Group gap="xs" mb="xs">
-                    <Text fw={600} size="sm">
-                      {exercise.title}
-                    </Text>
-                    <Badge
+          <Grid gutter="md" mt="xs">
+            {recommendedExercises.map((exercise) => (
+              <Grid.Col key={exercise.id} span={{ base: 12, sm: 6, md: 4 }}>
+                <Card
+                  withBorder
+                  p="md"
+                  radius="md"
+                  shadow="sm"
+                  style={{ minHeight: 180, display: "flex", flexDirection: "column", justifyContent: "space-between" }}
+                >
+                  <Group justify="space-between" align="flex-start" mb="xs">
+                    <Group gap="xs">
+                      <Text fw={700} size="md">
+                        {exercise.title}
+                      </Text>
+                      <Badge
+                        size="xs"
+                        variant="filled"
+                        color={
+                          exercise.difficulty === "beginner"
+                            ? "green"
+                            : exercise.difficulty === "intermediate"
+                              ? "blue"
+                              : "red"
+                        }
+                      >
+                        {exercise.difficulty}
+                      </Badge>
+                    </Group>
+                    <Button
                       size="xs"
                       variant="light"
-                      color={
-                        exercise.difficulty === "beginner"
-                          ? "green"
-                          : exercise.difficulty === "intermediate"
-                            ? "blue"
-                            : "red"
-                      }
+                      gradient={{ from: "blue", to: "cyan" }}
+                      onClick={() => handleExerciseSelect(exercise.id, exercise.type)}
                     >
-                      {exercise.difficulty}
-                    </Badge>
+                      Start
+                    </Button>
                   </Group>
-
                   <Text size="xs" c="dimmed" mb="xs" lineClamp={2}>
                     {exercise.description}
                   </Text>
-
                   <Group gap="lg" mb="xs">
                     <Group gap="xs">
                       <IconClock size={14} />
@@ -390,21 +461,16 @@ export default function LearnPage() {
                       </Text>
                     </Group>
                   </Group>
-
                   <Group gap="xs">
-                    <IconInfoCircle size={12} />
+                    <IconInfoCircle size={12} color="#228be6" />
                     <Text size="xs" c="blue" fw={500}>
                       {exercise.adaptationReason}
                     </Text>
                   </Group>
-                </Box>
-
-                <Button size="xs" variant="light" onClick={() => handleExerciseSelect(exercise.id, exercise.type)}>
-                  Start
-                </Button>
-              </Group>
-            </Card>
-          ))}
+                </Card>
+              </Grid.Col>
+            ))}
+          </Grid>
 
           {recommendedExercises.length === 0 && (
             <Alert icon={<IconInfoCircle size={16} />} title="No exercises available" color="yellow">

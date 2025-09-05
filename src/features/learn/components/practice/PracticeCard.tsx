@@ -53,26 +53,32 @@ export function PracticeCard({
         e.currentTarget.style.transform = "translateY(0)";
         e.currentTarget.style.boxShadow = "";
       }}
-      onClick={onClick}
+      onClick={() => {
+        if (category.exercises.length) onClick();
+      }}
     >
       <Stack gap="md" style={{ height: "100%" }}>
         <Group justify="space-between" align="flex-start">
           <ThemeIcon size={50} radius="md" variant="gradient" gradient={{ from: category.color, to: "cyan" }}>
             {category.icon}
           </ThemeIcon>
-          <Badge color={category.color} variant="light" size="sm">
-            {completionPercentage || 0}%
-          </Badge>
+          <Box flex={1}>
+            <Group align="baseline">
+              <Text fw={600} size="lg" flex={1}>
+                {category.title}
+              </Text>
+              <Badge color={category.color} variant="light" size="sm">
+                {completionPercentage || 0}%
+              </Badge>
+            </Group>
+
+            <Text size="sm" c="dimmed" lineClamp={3} mb="md">
+              {category.description}
+            </Text>
+          </Box>
         </Group>
 
-        <Box style={{ flex: 1 }}>
-          <Text fw={600} size="lg" mb="xs">
-            {category.title}
-          </Text>
-          <Text size="sm" c="dimmed" lineClamp={3} mb="md">
-            {category.description}
-          </Text>
-
+        <Box flex={1}>
           <Group gap="lg" mb="md">
             <Group gap="xs">
               <IconTarget size={16} />
@@ -109,9 +115,10 @@ export function PracticeCard({
             color={category.color}
             fullWidth
             radius="md"
-            rightSection={<IconChevronRight size={16} />}
+            rightSection={!!category.exercises.length && <IconChevronRight size={16} />}
+            disabled={category.exercises.length === 0}
           >
-            {progress.completed === 0 ? "Start Training" : "Continue"}
+            {category.exercises.length === 0 ? "Coming Soon" : progress.completed === 0 ? "Start Training" : "Continue"}
           </Button>
         </Box>
       </Stack>
