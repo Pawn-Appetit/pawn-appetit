@@ -124,10 +124,7 @@ export default function Page() {
     [t],
   );
 
-  const titleBarData = useMemo(
-    () => [t("settings.appearance.native"), t("settings.appearance.custom")],
-    [t],
-  );
+  const titleBarData = useMemo(() => [t("settings.appearance.native"), t("settings.appearance.custom")], [t]);
 
   const allSettings = useMemo(
     (): SettingItem[] => [

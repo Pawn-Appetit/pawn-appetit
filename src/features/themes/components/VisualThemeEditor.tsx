@@ -311,7 +311,10 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
                   label={t("settings.appearance.theme.fontSmoothing")}
                   {...form.getInputProps("fontSmoothing", { type: "checkbox" })}
                 />
-                <Switch label={t("settings.appearance.theme.autoContrast")} {...form.getInputProps("autoContrast", { type: "checkbox" })} />
+                <Switch
+                  label={t("settings.appearance.theme.autoContrast")}
+                  {...form.getInputProps("autoContrast", { type: "checkbox" })}
+                />
               </Group>
 
               <Select
@@ -331,9 +334,17 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
             <Stack gap="md">
               <Group>
                 <ColorSwatch color={form.values.white} size={30} />
-                <TextInput label={t("settings.appearance.theme.white")} placeholder="#ffffff" {...form.getInputProps("white")} />
+                <TextInput
+                  label={t("settings.appearance.theme.white")}
+                  placeholder="#ffffff"
+                  {...form.getInputProps("white")}
+                />
                 <ColorSwatch color={form.values.black} size={30} />
-                <TextInput label={t("settings.appearance.theme.black")} placeholder="#000000" {...form.getInputProps("black")} />
+                <TextInput
+                  label={t("settings.appearance.theme.black")}
+                  placeholder="#000000"
+                  {...form.getInputProps("black")}
+                />
               </Group>
 
               <Divider label={t("settings.appearance.theme.colorPalettes")} labelPosition="center" />

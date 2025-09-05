@@ -65,7 +65,7 @@ export function SideBar() {
       if (hideDashboardOnStartup && link.url === "/") return false;
       return link;
     })
-      .map((link) => <NavbarLink {...link} label={t(`features.sidebar.${link.label}`)} key={link.label} />);
+    .map((link) => <NavbarLink {...link} label={t(`features.sidebar.${link.label}`)} key={link.label} />);
 
   return (
     <>

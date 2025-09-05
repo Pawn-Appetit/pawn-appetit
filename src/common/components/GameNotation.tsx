@@ -250,7 +250,9 @@ function NotationHeader({
               {invisible ? <IconEyeOff size="1rem" /> : <IconEye size="1rem" />}
             </ActionIcon>
           </Tooltip>
-          <Tooltip label={showComments ? t("features.gameNotation.hideComments") : t("features.gameNotation.showComments")}>
+          <Tooltip
+            label={showComments ? t("features.gameNotation.hideComments") : t("features.gameNotation.showComments")}
+          >
             <ActionIcon onClick={toggleComments}>
               {showComments ? <IconArticle size="1rem" /> : <IconArticleOff size="1rem" />}
             </ActionIcon>

@@ -136,7 +136,9 @@ export const PuzzleControls = ({
         >
           {showingSolution ? t("features.puzzle.showingSolution") : t("features.puzzle.viewSolution")}
         </Button>
-        {turnToMove && <Text fz="1.50rem">{turnToMove === "white" ? t("chess.fen.blackToMove") : t("chess.fen.whiteToMove")}</Text>}
+        {turnToMove && (
+          <Text fz="1.50rem">{turnToMove === "white" ? t("chess.fen.blackToMove") : t("chess.fen.whiteToMove")}</Text>
+        )}
       </Group>
     </>
   );

@@ -104,7 +104,11 @@ function ReportModal({
   }
 
   return (
-    <Modal opened={reportingMode} onClose={() => toggleReportingMode()} title={t("features.board.analysis.generateReport")}>
+    <Modal
+      opened={reportingMode}
+      onClose={() => toggleReportingMode()}
+      title={t("features.board.analysis.generateReport")}
+    >
       <form onSubmit={form.onSubmit(() => analyze())}>
         <Stack>
           <Select

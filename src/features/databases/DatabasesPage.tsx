@@ -499,7 +499,7 @@ function PlayerMerger({ selectedDatabase }: { selectedDatabase: DatabaseInfo }) 
       <Text fz="lg" fw="bold">
         {t("features.databases.settings.mergePlayers")}
       </Text>
-      <Text fz="sm">{t("features.databases.settings.mergePlayers.Desc")}</Text>
+      <Text fz="sm">{t("features.databases.settings.mergePlayersDesc")}</Text>
       <Group grow>
         <PlayerSearchInput label="Player 1" file={selectedDatabase.file} setValue={setPlayer1} />
         <Button loading={loading} onClick={mergePlayers} rightSection={<IconArrowRight size="1rem" />}>
@@ -520,7 +520,7 @@ function DuplicateRemover({ selectedDatabase, reload }: { selectedDatabase: Data
       <Text fz="lg" fw="bold">
         {t("features.databases.settings.batchDelete")}
       </Text>
-      <Text fz="sm">{t("features.databases.settings.batchDelete.Desc")}</Text>
+      <Text fz="sm">{t("features.databases.settings.batchDeleteDesc")}</Text>
       <Group>
         <Button
           loading={loading}

@@ -19,7 +19,7 @@ export default function ColorSchemeSettings() {
             label: (
               <Center>
                 <IconSunMoon size="1rem" stroke={1.5} />
-                    <Box ml={10}>{t("settings.appearance.auto")}</Box>
+                <Box ml={10}>{t("settings.appearance.auto")}</Box>
               </Center>
             ),
           },

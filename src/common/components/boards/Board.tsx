@@ -355,7 +355,13 @@ function Board({
             </ActionIcon>
           </Tooltip>
         )}
-        <Tooltip label={t(currentTab?.type === "analysis" ? "features.board.actions.playFromHere" : "features.board.actions.analyzeGame")}>
+        <Tooltip
+          label={t(
+            currentTab?.type === "analysis"
+              ? "features.board.actions.playFromHere"
+              : "features.board.actions.analyzeGame",
+          )}
+        >
           <ActionIcon variant="default" size="lg" onClick={changeTabType}>
             {currentTab?.type === "analysis" ? <IconTarget size="1.3rem" /> : <IconZoomCheck size="1.3rem" />}
           </ActionIcon>
@@ -429,12 +435,12 @@ function Board({
       : editingMode
         ? "both"
         : match(movable)
-          .with("white", () => "white" as const)
-          .with("black", () => "black" as const)
-          .with("turn", () => turn)
-          .with("both", () => "both" as const)
-          .with("none", () => undefined)
-          .exhaustive();
+            .with("white", () => "white" as const)
+            .with("black", () => "black" as const)
+            .with("turn", () => turn)
+            .with("both", () => "both" as const)
+            .with("none", () => undefined)
+            .exhaustive();
   }, [practiceLock, editingMode, movable, turn]);
 
   const theme = useMantineTheme();
@@ -545,9 +551,9 @@ function Board({
               style={
                 isBasicAnnotation(currentNode.annotations[0])
                   ? {
-                    "--light-color": lightColor,
-                    "--dark-color": darkColor,
-                  }
+                      "--light-color": lightColor,
+                      "--dark-color": darkColor,
+                    }
                   : undefined
               }
               className={chessboard}

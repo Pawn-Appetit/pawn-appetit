@@ -284,9 +284,9 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
               {t("settings.appearance.theme.createNew")}
             </Button>
 
-            <Button 
-              variant="light" 
-              leftSection={<IconEdit size={16} />} 
+            <Button
+              variant="light"
+              leftSection={<IconEdit size={16} />}
               onClick={() => {
                 setEditingTheme(null);
                 setVisualEditorOpen(true);

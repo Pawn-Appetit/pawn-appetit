@@ -14,11 +14,11 @@ export function createBytesFormatter(i18n: {
     const dm = decimals < 0 ? 0 : decimals;
     const currentLng = lng || i18n.language;
     const sizes = [
-      i18n.t("units.bytes.Bytes", { lng: currentLng }),
-      i18n.t("units.bytes.Kilobytes", { lng: currentLng }),
-      i18n.t("units.bytes.Megabytes", { lng: currentLng }),
-      i18n.t("units.bytes.Gigabytes", { lng: currentLng }),
-      i18n.t("units.bytes.Terabytes", { lng: currentLng }),
+      i18n.t("units.bytesLabels.bytes", { lng: currentLng }),
+      i18n.t("units.bytesLabels.kilobytes", { lng: currentLng }),
+      i18n.t("units.bytesLabels.megabytes", { lng: currentLng }),
+      i18n.t("units.bytesLabels.gigabytes", { lng: currentLng }),
+      i18n.t("units.bytesLabels.terabytes", { lng: currentLng }),
     ];
 
     if (bytes === 0) {
@@ -42,11 +42,11 @@ export function createBytesLongFormatter(i18n: {
     const dm = decimals < 0 ? 0 : decimals;
     const currentLng = lng || i18n.language;
     const sizes = [
-      i18n.t("units.bytes.BytesLong", { lng: currentLng }),
-      i18n.t("units.bytes.KilobytesLong", { lng: currentLng }),
-      i18n.t("units.bytes.MegabytesLong", { lng: currentLng }),
-      i18n.t("units.bytes.GigabytesLong", { lng: currentLng }),
-      i18n.t("units.bytes.TerabytesLong", { lng: currentLng }),
+      i18n.t("units.bytesLabels.bytesLong", { lng: currentLng }),
+      i18n.t("units.bytesLabels.kilobytesLong", { lng: currentLng }),
+      i18n.t("units.bytesLabels.megabytesLong", { lng: currentLng }),
+      i18n.t("units.bytesLabels.gigabytesLong", { lng: currentLng }),
+      i18n.t("units.bytesLabels.terabytesLong", { lng: currentLng }),
     ];
 
     if (bytes === 0) {
@@ -70,12 +70,12 @@ export function createNodesFormatter(i18n: {
     const currentLng = lng || i18n.language;
     const units = [
       "",
-      i18n.t("units.nodes.Thousand", { lng: currentLng }),
-      i18n.t("units.nodes.Million", { lng: currentLng }),
-      i18n.t("units.nodes.Billion", { lng: currentLng }),
-      i18n.t("units.nodes.Trillion", { lng: currentLng }),
-      i18n.t("units.nodes.Quadrillion", { lng: currentLng }),
-      i18n.t("units.nodes.Quintillion", { lng: currentLng }),
+      i18n.t("units.nodesLabels.thousand", { lng: currentLng }),
+      i18n.t("units.nodesLabels.million", { lng: currentLng }),
+      i18n.t("units.nodesLabels.billion", { lng: currentLng }),
+      i18n.t("units.nodesLabels.trillion", { lng: currentLng }),
+      i18n.t("units.nodesLabels.quadrillion", { lng: currentLng }),
+      i18n.t("units.nodesLabels.quintillion", { lng: currentLng }),
     ];
     let i = 0;
     let nodeValue = nodes;
@@ -97,7 +97,7 @@ export function createNodesLongFormatter(i18n: {
   return (value: unknown, lng?: string) => {
     const nodes = Math.abs(Number(value));
     const currentLng = lng || i18n.language;
-    return `${nodes.toLocaleString()} ${i18n.t("units.nodes.Nodes", { lng: currentLng })}`;
+    return `${nodes.toLocaleString()} ${i18n.t("units.nodesLabels.nodes", { lng: currentLng })}`;
   };
 }
 
@@ -116,10 +116,12 @@ export function createDurationFormatter(i18n: {
     const minutesRemainder = minutes % 60;
     const hoursRemainder = hours % 24;
     const parts: string[] = [];
-    if (hoursRemainder > 0) parts.push(`${hoursRemainder}${i18n.t("units.duration.Hours", { lng: currentLng })}`);
-    if (minutesRemainder > 0) parts.push(`${minutesRemainder}${i18n.t("units.duration.Minutes", { lng: currentLng })}`);
-    if (secondsRemainder > 0) parts.push(`${secondsRemainder}${i18n.t("units.duration.Seconds", { lng: currentLng })}`);
-    return parts.join(" ") || `0${i18n.t("units.duration.Seconds", { lng: currentLng })}`;
+    if (hoursRemainder > 0) parts.push(`${hoursRemainder}${i18n.t("units.durationLabels.hours", { lng: currentLng })}`);
+    if (minutesRemainder > 0)
+      parts.push(`${minutesRemainder}${i18n.t("units.durationLabels.minutes", { lng: currentLng })}`);
+    if (secondsRemainder > 0)
+      parts.push(`${secondsRemainder}${i18n.t("units.durationLabels.seconds", { lng: currentLng })}`);
+    return parts.join(" ") || `0${i18n.t("units.durationLabels.seconds", { lng: currentLng })}`;
   };
 }
 
@@ -138,12 +140,13 @@ export function createDurationLongFormatter(i18n: {
     const minutesRemainder = minutes % 60;
     const hoursRemainder = hours % 24;
     const parts: string[] = [];
-    if (hoursRemainder > 0) parts.push(`${hoursRemainder} ${i18n.t("units.duration.HoursLong", { lng: currentLng })}`);
+    if (hoursRemainder > 0)
+      parts.push(`${hoursRemainder} ${i18n.t("units.durationLabels.hoursLong", { lng: currentLng })}`);
     if (minutesRemainder > 0)
-      parts.push(`${minutesRemainder} ${i18n.t("units.duration.MinutesLong", { lng: currentLng })}`);
+      parts.push(`${minutesRemainder} ${i18n.t("units.durationLabels.minutesLong", { lng: currentLng })}`);
     if (secondsRemainder > 0)
-      parts.push(`${secondsRemainder} ${i18n.t("units.duration.SecondsLong", { lng: currentLng })}`);
-    return parts.join(", ") || `0 ${i18n.t("units.duration.SecondsLong", { lng: currentLng })}`;
+      parts.push(`${secondsRemainder} ${i18n.t("units.durationLabels.secondsLong", { lng: currentLng })}`);
+    return parts.join(", ") || `0 ${i18n.t("units.durationLabels.secondsLong", { lng: currentLng })}`;
   };
 }
 
@@ -160,9 +163,9 @@ export function createScoreFormatter(i18n: {
     if (score.type === "cp") {
       scoreText = Math.abs(score.value / 100).toFixed(precision);
     } else if (score.type === "mate") {
-      scoreText = `${i18n.t("units.score.Mate", { lng: currentLng })}${Math.abs(score.value)}`;
+      scoreText = `${i18n.t("units.scoreLabels.mate", { lng: currentLng })}${Math.abs(score.value)}`;
     } else if (score.type === "dtz") {
-      scoreText = `${i18n.t("units.score.DTZ", { lng: currentLng })}${Math.abs(score.value)}`;
+      scoreText = `${i18n.t("units.scoreLabels.dtz", { lng: currentLng })}${Math.abs(score.value)}`;
     }
 
     if (score.type !== "dtz") {

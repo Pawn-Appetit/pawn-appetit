@@ -73,7 +73,7 @@ export function Chessground(
         },
         select: (key) => {
           if (props.movable?.free && props.selectedPiece) {
-            api.setPieces(new Map([[key, props.selectedPiece]]))
+            api.setPieces(new Map([[key, props.selectedPiece]]));
 
             if (props.setBoardFen) {
               props.setBoardFen(api.getFen());

@@ -125,7 +125,11 @@ export function CategoryCard({
             onClick={onClick}
             color={isCompleted ? "green" : "blue"}
           >
-            {isCompleted ? t("common.open") : completedCount > 0 ? t("common.continue") : t("features.lessons.startLesson")}
+            {isCompleted
+              ? t("common.open")
+              : completedCount > 0
+                ? t("common.continue")
+                : t("features.lessons.startLesson")}
           </Button>
         </Group>
       </Stack>

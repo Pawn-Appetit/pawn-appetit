@@ -38,7 +38,7 @@ export default function EngineForm({
     <form onSubmit={form.onSubmit(async (values) => onSubmit({ ...values, loaded: true, settings: settings || [] }))}>
       <FileInput
         label={t("features.engines.add.binaryFile")}
-        description={t("features.engines.add.binaryFile.Desc")}
+        description={t("features.engines.add.binaryFileDesc")}
         filename={form.values.path}
         withAsterisk
         onClick={async () => {
@@ -56,7 +56,7 @@ export default function EngineForm({
 
       <TextInput
         label={t("features.engines.add.name")}
-        placeholder={t("features.engines.add.name.Autodetect")}
+        placeholder={t("features.engines.add.autodetect")}
         withAsterisk
         {...form.getInputProps("name")}
       />
@@ -65,7 +65,7 @@ export default function EngineForm({
 
       <Input.Wrapper
         label={t("features.engines.add.imageFile")}
-        description={t("features.engines.add.imageFile.Desc")}
+        description={t("features.engines.add.imageFileDesc")}
         {...form.getInputProps("image")}
       >
         <Input

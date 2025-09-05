@@ -129,7 +129,9 @@ function OutcomeBadge({
     : match(category)
         .with("draw", () => t("chess.outcome.draw"))
         .with("unknown", () => t("Tablebase.Unknown"))
-        .otherwise(() => (dtm ? t("features.tablebase.dtm", { count: Math.abs(dtm) }) : t("features.tablebase.dtz", { count: dtz })));
+        .otherwise(() =>
+          dtm ? t("features.tablebase.dtm", { count: Math.abs(dtm) }) : t("features.tablebase.dtz", { count: dtz }),
+        );
 
   return (
     <Group p="xs">

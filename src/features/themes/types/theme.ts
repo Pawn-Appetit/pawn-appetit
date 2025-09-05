@@ -31,12 +31,12 @@ export const themeSchema = z.object({
   isBuiltIn: z.boolean().default(false),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
-  
+
   // Core theme properties
   scale: z.number().default(1),
   fontSmoothing: z.boolean().default(true),
   focusRing: z.enum(["auto", "always", "never"]).default("auto"),
-  
+
   // Colors
   white: z.string().default("#ffffff"),
   black: z.string().default("#000000"),
@@ -45,15 +45,15 @@ export const themeSchema = z.object({
   primaryColor: z.string(),
   autoContrast: z.boolean().default(true),
   luminanceThreshold: z.number().default(0.3),
-  
+
   // Typography
   fontFamily: z.string().default("system-ui, sans-serif"),
   fontFamilyMonospace: z.string().default("ui-monospace, monospace"),
   headings: themeHeadingsSchema.optional(),
-  
+
   // Layout
   defaultRadius: z.enum(["xs", "sm", "md", "lg", "xl"]).default("md"),
-  
+
   // Components
   components: themeComponentsSchema.optional(),
 });

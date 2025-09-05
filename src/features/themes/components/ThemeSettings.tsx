@@ -13,24 +13,28 @@ export default function ThemeSettings() {
   const [, setCurrentTheme] = useAtom(setCurrentThemeAtom);
   const [managerOpen, setManagerOpen] = useState(false);
 
-  const builtInThemes = allThemes.filter(theme => theme.isBuiltIn);
-  const customThemes = allThemes.filter(theme => !theme.isBuiltIn);
+  const builtInThemes = allThemes.filter((theme) => theme.isBuiltIn);
+  const customThemes = allThemes.filter((theme) => !theme.isBuiltIn);
 
   const themeOptions = [
     {
-      group: t("settings.appearance.title.Theme.BuiltInThemes"),
-      items: builtInThemes.map(theme => ({
+      group: t("settings.appearance.theme.builtInThemes"),
+      items: builtInThemes.map((theme) => ({
         value: theme.id,
         label: theme.name,
-      }))
+      })),
     },
-    ...(customThemes.length > 0 ? [{
-      group: t("settings.appearance.title.Theme.CustomThemes"),
-      items: customThemes.map(theme => ({
-        value: theme.id,
-        label: theme.name,
-      }))
-    }] : [])
+    ...(customThemes.length > 0
+      ? [
+          {
+            group: t("settings.appearance.theme.customThemes"),
+            items: customThemes.map((theme) => ({
+              value: theme.id,
+              label: theme.name,
+            })),
+          },
+        ]
+      : []),
   ];
 
   const handleThemeChange = (themeId: string | null) => {
@@ -49,19 +53,12 @@ export default function ThemeSettings() {
         w={200}
       />
       <Tooltip label={t("settings.appearance.title.Theme.Manage")}>
-        <ActionIcon 
-          variant="light" 
-          onClick={() => setManagerOpen(true)}
-          size="lg"
-        >
+        <ActionIcon variant="light" onClick={() => setManagerOpen(true)} size="lg">
           <IconSettings size={16} />
         </ActionIcon>
       </Tooltip>
-      
-      <ThemeManager 
-        opened={managerOpen} 
-        onClose={() => setManagerOpen(false)} 
-      />
+
+      <ThemeManager opened={managerOpen} onClose={() => setManagerOpen(false)} />
     </Group>
   );
 }

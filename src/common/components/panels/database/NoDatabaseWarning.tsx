@@ -9,7 +9,8 @@ function NoDatabaseWarning() {
     <>
       <Text>{t("features.board.database.noReference1")}</Text>
       <Text>
-        {t("features.board.database.noReference2")} <Link to="/databases">{t("features.board.database.selectReference")}</Link>{" "}
+        {t("features.board.database.noReference2")}{" "}
+        <Link to="/databases">{t("features.board.database.selectReference")}</Link>{" "}
         {t("features.board.database.noReference3")}
       </Text>
     </>

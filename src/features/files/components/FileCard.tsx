@@ -67,7 +67,7 @@ function FileCard({
         <Text ta="center" fz="xl" fw="bold">
           {selected?.name}
         </Text>
-        <Badge>{t(`features.files.fileType.fileType.${capitalize(selected.metadata.type)}`)}</Badge>
+        <Badge>{t(`features.files.fileType.${selected.metadata.type.toLowerCase()}`)}</Badge>
       </Stack>
 
       <Group align="center" grow>
@@ -84,7 +84,8 @@ function FileCard({
           </Tooltip>
         </Group>
         <Text ta="center" c="dimmed">
-          {t("Common.Games", { count: selected?.numGames || 0 })}
+          {selected?.numGames === 1 && t("common.games.one", { count: selected?.numGames || 0 })}
+          {selected?.numGames > 1 && t("common.games.other", { count: selected?.numGames || 0 })}
         </Text>
         <div />
       </Group>

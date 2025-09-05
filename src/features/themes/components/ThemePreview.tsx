@@ -17,14 +17,7 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
-import {
-  IconBell,
-  IconHeart,
-  IconSearch,
-  IconSettings,
-  IconStar,
-  IconUser,
-} from "@tabler/icons-react";
+import { IconBell, IconHeart, IconSearch, IconSettings, IconStar, IconUser } from "@tabler/icons-react";
 import type { Theme } from "../types/theme";
 
 interface ThemePreviewProps {
@@ -61,36 +54,44 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
 
         {/* Color Palette Preview */}
         <Card withBorder p="md">
-          <Title order={4} mb="sm">Color Palette</Title>
+          <Title order={4} mb="sm">
+            Color Palette
+          </Title>
           <Stack gap="xs">
-            {Object.entries(theme.colors).slice(0, 6).map(([colorName, shades]) => (
-              <Group key={colorName} gap="xs">
-                <Text size="sm" w={80} tt="capitalize">{colorName}:</Text>
-                <Group gap={2}>
-                  {shades.map((shade, index) => (
-                    <Tooltip key={`${colorName}-shade-${index}`} label={`${colorName}.${index}: ${shade}`}>
-                      <div
-                        style={{
-                          width: 24,
-                          height: 24,
-                          backgroundColor: shade,
-                          borderRadius: 4,
-                          border: '1px solid var(--mantine-color-gray-3)',
-                          cursor: 'pointer',
-                        }}
-                      />
-                    </Tooltip>
-                  ))}
+            {Object.entries(theme.colors)
+              .slice(0, 6)
+              .map(([colorName, shades]) => (
+                <Group key={colorName} gap="xs">
+                  <Text size="sm" w={80} tt="capitalize">
+                    {colorName}:
+                  </Text>
+                  <Group gap={2}>
+                    {shades.map((shade, index) => (
+                      <Tooltip key={`${colorName}-shade-${index}`} label={`${colorName}.${index}: ${shade}`}>
+                        <div
+                          style={{
+                            width: 24,
+                            height: 24,
+                            backgroundColor: shade,
+                            borderRadius: 4,
+                            border: "1px solid var(--mantine-color-gray-3)",
+                            cursor: "pointer",
+                          }}
+                        />
+                      </Tooltip>
+                    ))}
+                  </Group>
                 </Group>
-              </Group>
-            ))}
+              ))}
           </Stack>
         </Card>
 
         {/* Component Examples */}
         <Card withBorder p="md">
-          <Title order={4} mb="md">Component Examples</Title>
-          
+          <Title order={4} mb="md">
+            Component Examples
+          </Title>
+
           <Tabs defaultValue="buttons" variant="outline">
             <Tabs.List>
               <Tabs.Tab value="buttons">Buttons</Tabs.Tab>
@@ -103,11 +104,17 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
               <Stack gap="md">
                 <Group>
                   <Button color={theme.primaryColor}>Primary Button</Button>
-                  <Button variant="outline" color={theme.primaryColor}>Outline</Button>
-                  <Button variant="light" color={theme.primaryColor}>Light</Button>
-                  <Button variant="subtle" color={theme.primaryColor}>Subtle</Button>
+                  <Button variant="outline" color={theme.primaryColor}>
+                    Outline
+                  </Button>
+                  <Button variant="light" color={theme.primaryColor}>
+                    Light
+                  </Button>
+                  <Button variant="subtle" color={theme.primaryColor}>
+                    Subtle
+                  </Button>
                 </Group>
-                
+
                 <Group>
                   <Button size="xs">Extra Small</Button>
                   <Button size="sm">Small</Button>
@@ -132,11 +139,7 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
             <Tabs.Panel value="inputs" pt="md">
               <Stack gap="md">
                 <Group grow>
-                  <TextInput
-                    label="Text Input"
-                    placeholder="Enter text"
-                    radius={theme.defaultRadius}
-                  />
+                  <TextInput label="Text Input" placeholder="Enter text" radius={theme.defaultRadius} />
                   <TextInput
                     label="With Icon"
                     placeholder="Search..."
@@ -147,19 +150,10 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
 
                 <Group grow>
                   <Input.Wrapper label="Switch">
-                    <Switch 
-                      label="Enable notifications" 
-                      color={theme.primaryColor}
-                      mt={5}
-                    />
+                    <Switch label="Enable notifications" color={theme.primaryColor} mt={5} />
                   </Input.Wrapper>
                   <Input.Wrapper label="Slider">
-                    <Slider
-                      mt={5}
-                      defaultValue={40}
-                      color={theme.primaryColor}
-                      radius={theme.defaultRadius}
-                    />
+                    <Slider mt={5} defaultValue={40} color={theme.primaryColor} radius={theme.defaultRadius} />
                   </Input.Wrapper>
                 </Group>
               </Stack>
@@ -181,9 +175,9 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
                         <Table.Td>{row.name}</Table.Td>
                         <Table.Td>{row.email}</Table.Td>
                         <Table.Td>
-                          <Badge 
-                            variant="light" 
-                            color={row.role === 'Admin' ? 'red' : row.role === 'Moderator' ? 'blue' : 'gray'}
+                          <Badge
+                            variant="light"
+                            color={row.role === "Admin" ? "red" : row.role === "Moderator" ? "blue" : "gray"}
                           >
                             {row.role}
                           </Badge>
@@ -197,19 +191,21 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
 
             <Tabs.Panel value="feedback" pt="md">
               <Stack gap="md">
-                <Progress 
-                  value={65} 
-                  color={theme.primaryColor}
-                  radius={theme.defaultRadius}
-                  striped
-                  animated
-                />
-                
+                <Progress value={65} color={theme.primaryColor} radius={theme.defaultRadius} striped animated />
+
                 <Group>
-                  <Badge variant="filled" color={theme.primaryColor}>Filled</Badge>
-                  <Badge variant="light" color={theme.primaryColor}>Light</Badge>
-                  <Badge variant="outline" color={theme.primaryColor}>Outline</Badge>
-                  <Badge variant="dot" color={theme.primaryColor}>Dot</Badge>
+                  <Badge variant="filled" color={theme.primaryColor}>
+                    Filled
+                  </Badge>
+                  <Badge variant="light" color={theme.primaryColor}>
+                    Light
+                  </Badge>
+                  <Badge variant="outline" color={theme.primaryColor}>
+                    Outline
+                  </Badge>
+                  <Badge variant="dot" color={theme.primaryColor}>
+                    Dot
+                  </Badge>
                 </Group>
 
                 <Group>
@@ -231,7 +227,9 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
 
         {/* Typography Preview */}
         <Card withBorder p="md">
-          <Title order={4} mb="md">Typography</Title>
+          <Title order={4} mb="md">
+            Typography
+          </Title>
           <Stack gap="sm">
             <Title order={1} style={{ fontFamily: theme.headings?.fontFamily || theme.fontFamily }}>
               Heading 1
@@ -244,7 +242,9 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
             </Title>
             <Text size="lg">Large text with font family: {theme.fontFamily}</Text>
             <Text>Regular text that demonstrates the default font styling.</Text>
-            <Text size="sm" c="dimmed">Small dimmed text for secondary information.</Text>
+            <Text size="sm" c="dimmed">
+              Small dimmed text for secondary information.
+            </Text>
             <Text ff={theme.fontFamilyMonospace} size="sm">
               Monospace text: {theme.fontFamilyMonospace}
             </Text>
@@ -253,25 +253,21 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
 
         {/* Layout Preview */}
         <Card withBorder p="md">
-          <Title order={4} mb="md">Layout & Spacing</Title>
+          <Title order={4} mb="md">
+            Layout & Spacing
+          </Title>
           <Group gap="md">
-            <Paper 
-              p="md" 
-              withBorder 
-              radius={theme.defaultRadius}
-              style={{ flex: 1 }}
-            >
+            <Paper p="md" withBorder radius={theme.defaultRadius} style={{ flex: 1 }}>
               <Text fw={500}>Card with {theme.defaultRadius} radius</Text>
-              <Text size="sm" c="dimmed">Scale factor: {theme.scale}</Text>
+              <Text size="sm" c="dimmed">
+                Scale factor: {theme.scale}
+              </Text>
             </Paper>
-            <Paper 
-              p="lg" 
-              shadow="md" 
-              radius={theme.defaultRadius}
-              style={{ flex: 1 }}
-            >
+            <Paper p="lg" shadow="md" radius={theme.defaultRadius} style={{ flex: 1 }}>
               <Text fw={500}>Card with shadow</Text>
-              <Text size="sm" c="dimmed">Using theme colors and spacing</Text>
+              <Text size="sm" c="dimmed">
+                Using theme colors and spacing
+              </Text>
             </Paper>
           </Group>
         </Card>
