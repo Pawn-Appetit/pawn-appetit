@@ -334,19 +334,19 @@ function RootLayout() {
         label: t("features.menu.file"),
         options: [
           {
-            label: t("features.menu.file.NewTab"),
+            label: t("features.menu.newTab"),
             id: "new_tab",
             shortcut: keyMap.NEW_BOARD_TAB.keys,
             action: createNewTab,
           },
           {
-            label: t("features.menu.file.OpenFile"),
+            label: t("features.menu.openFile"),
             id: "open_file",
             shortcut: keyMap.OPEN_FILE.keys,
             action: openNewFile,
           },
           {
-            label: t("features.menu.file.Exit"),
+            label: t("features.menu.exit"),
             id: "exit",
             shortcut: keyMap.EXIT_APP.keys,
             action: () => exit(0),
@@ -357,7 +357,7 @@ function RootLayout() {
         label: t("features.menu.view"),
         options: [
           {
-            label: t("features.menu.view.Reload"),
+            label: t("features.menu.reload"),
             id: "reload",
             shortcut: keyMap.APP_RELOAD.keys,
             action: () => location.reload(),
@@ -368,7 +368,7 @@ function RootLayout() {
         label: t("features.menu.help"),
         options: [
           {
-            label: t("features.menu.help.ClearSavedData"),
+            label: t("features.menu.clearSavedData"),
             id: "clear_saved_data",
             action: () => {
               ask("Are you sure you want to clear all saved data?", {
@@ -383,7 +383,7 @@ function RootLayout() {
             },
           },
           {
-            label: t("features.menu.help.OpenLogs"),
+            label: t("features.menu.openLogs"),
             id: "logs",
             action: async () => {
               const path = await resolve(await appLogDir(), "pawn-appetit.log");
@@ -396,12 +396,12 @@ function RootLayout() {
           },
           { label: "divider" },
           {
-            label: t("features.menu.help.CheckUpdate"),
+            label: t("features.menu.checkUpdate"),
             id: "check_for_updates",
             action: checkForUpdates,
           },
           {
-            label: t("features.menu.help.About"),
+            label: t("features.menu.about"),
             id: "about",
             action: () => {
               modals.openContextModal({

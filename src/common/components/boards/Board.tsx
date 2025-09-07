@@ -389,7 +389,7 @@ function Board({
           </Tooltip>
         )}
         {reload && (
-          <Tooltip label={t("features.menu.view.Reload")}>
+          <Tooltip label={t("features.menu.reload")}>
             <ActionIcon onClick={() => reload()} size="lg" variant={dirty ? "outline" : "default"}>
               <IconReload size="1.3rem" />
             </ActionIcon>
