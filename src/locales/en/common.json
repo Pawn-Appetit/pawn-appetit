@@ -28,9 +28,12 @@
     "requireName": "Name is required",
     "requirePath": "Path is required",
     "pgnFile": "PGN file",
+    "pgnFiles": "PGN files",
     "pgnGame": "PGN Game",
     "or": "Or",
     "clickToSelectPGN": "Click to select PGN file",
+    "clickToSelectMultiplePGN": "Click to select PGN files (multiple selection supported)",
+    "multipleFiles": "{{count}} files selected",
     "size": "Size",
     "generalSettings": "General settings",
     "data": "Data",
@@ -56,7 +59,9 @@
     "loading": "Loading...",
     "continue": "Continue",
     "review": "Review",
-    "noGameSelected": "No game selected"
+    "noGameSelected": "No game selected",
+    "importMore": "Import More",
+    "close": "Close"
   },
   "chess": {
     "checkmate": "Checkmate",
@@ -325,7 +330,24 @@
         "saveToCollection": "Save to collection",
         "online": "Online",
         "importing": "Importing...",
-        "import": "Import"
+        "import": "Import",
+        "importComplete": "Import Complete",
+        "gamesImported": {
+          "one": "{{count}} game imported",
+          "other": "{{count}} games imported"
+        },
+        "errorCount": {
+          "one": "{{count}} error",
+          "other": "{{count}} errors"
+        },
+        "allGamesImported": "All games were imported successfully!",
+        "partialImport": "{{imported}} of {{total}} games imported successfully",
+        "showErrors": "Show errors",
+        "fileError": "Error in file: {{file}}",
+        "generalError": "Import error",
+        "gameError": "Error in game {{gameIndex}}",
+        "importedFiles": "Imported Files",
+        "analyzeFile": "Analyze"
       },
       "puzzle": {
         "title": "Puzzles",

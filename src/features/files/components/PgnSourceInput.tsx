@@ -8,8 +8,8 @@ import { createTempImportFile, getFileNameWithoutExtension } from "@/utils/files
 import { unwrap } from "@/utils/unwrap";
 
 export type PgnTarget = {
-  type: "file" | "pgn";
-  target: string; // filePath if type is "file", pgn content if type is "pgn"
+  type: "file" | "files" | "pgn";
+  target: string | string[]; // filePath if type is "file", filePaths if type is "files", pgn content if type is "pgn"
 };
 
 export type ResolvedPgnTarget = PgnTarget & {
@@ -17,14 +17,15 @@ export type ResolvedPgnTarget = PgnTarget & {
   games: string[];
   count: number;
   file: FileMetadata;
+  errors?: { file?: string; error: string }[]; // Track import errors
 };
 
 export async function resolvePgnTarget(target: PgnTarget): Promise<ResolvedPgnTarget> {
   if (target.type === "file") {
     // Read the file and create a temp file with the content.
     // The temp file can be used to open the analysis board if we don't save it.
-    const count = unwrap(await commands.countPgnGames(target.target));
-    const games = unwrap(await commands.readGames(target.target, 0, count - 1));
+    const count = unwrap(await commands.countPgnGames(target.target as string));
+    const games = unwrap(await commands.readGames(target.target as string, 0, count - 1));
     const content = games.join("");
     const file = await createTempImportFile(content);
     return {
@@ -35,9 +36,42 @@ export async function resolvePgnTarget(target: PgnTarget): Promise<ResolvedPgnTa
       file,
     };
   }
+  
+  if (target.type === "files") {
+    // Handle multiple files
+    const allGames: string[] = [];
+    const errors: { file?: string; error: string }[] = [];
+    const filePaths = target.target as string[];
+    
+    for (const filePath of filePaths) {
+      try {
+        const count = unwrap(await commands.countPgnGames(filePath));
+        const games = unwrap(await commands.readGames(filePath, 0, count - 1));
+        allGames.push(...games);
+      } catch (error) {
+        errors.push({
+          file: filePath,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+    
+    const content = allGames.join("");
+    const file = await createTempImportFile(content);
+    
+    return {
+      ...target,
+      content,
+      games: allGames,
+      count: allGames.length,
+      file,
+      errors: errors.length > 0 ? errors : undefined,
+    };
+  }
+  
   // Create a temp file with the content of the text area. Allow to reuse the same parsing flow for normal files.
   // Here again, the temp file can be used to open the analysis board if we don't save it.
-  const file = await createTempImportFile(target.target);
+  const file = await createTempImportFile(target.target as string);
   const count = unwrap(await commands.countPgnGames(file.path));
   const games = unwrap(await commands.readGames(file.path, 0, count - 1));
   return {
@@ -59,6 +93,7 @@ type PgnSourceInputProps = {
   dividerLabelKey?: string; // default: "Common.OR"
   textareaLabelKey?: string; // default: "common.pgnGame"
   textareaPlaceholderKey?: string; // default: "features.files.create.pgnPlaceholder"
+  allowMultiple?: boolean; // Allow multiple file selection
 };
 
 export function PgnSourceInput({
@@ -70,37 +105,63 @@ export function PgnSourceInput({
   dividerLabelKey = "common.or",
   textareaLabelKey = "common.pgnGame",
   textareaPlaceholderKey = "features.files.create.pgnPlaceholder",
+  allowMultiple = false,
 }: PgnSourceInputProps) {
   const { t } = useTranslation();
-  const [pgn, setPgn] = useState(pgnTarget.type === "pgn" ? pgnTarget.target : "");
-  const [file, setFile] = useState<string | null>(pgnTarget.type === "file" ? pgnTarget.target : null);
+  const [pgn, setPgn] = useState(pgnTarget.type === "pgn" ? pgnTarget.target as string : "");
+  const [files, setFiles] = useState<string[]>(
+    pgnTarget.type === "file" 
+      ? [pgnTarget.target as string] 
+      : pgnTarget.type === "files" 
+        ? pgnTarget.target as string[]
+        : []
+  );
+
+  const hasFiles = files.length > 0;
+  const fileDisplayText = hasFiles 
+    ? files.length === 1 
+      ? files[0].split('/').pop() || files[0]
+      : t("common.multipleFiles", { count: files.length })
+    : "";
 
   return (
     <div>
       <FileInput
-        label={t(fileInputLabelKey)}
-        description={t(fileInputDescriptionKey)}
+        label={allowMultiple ? t("common.pgnFiles") : t(fileInputLabelKey)}
+        description={allowMultiple ? t("common.clickToSelectMultiplePGN") : t(fileInputDescriptionKey)}
         onClick={async () => {
           const selected = (await open({
-            multiple: false,
+            multiple: allowMultiple,
             filters: [
               {
                 name: "PGN file",
                 extensions: ["pgn"],
               },
             ],
-          })) as string;
-          setFile(selected);
-          setPgn("");
-          setPgnTarget({ type: "file", target: selected });
-          if (setFilename) {
-            setFilename(await getFileNameWithoutExtension(selected));
+          })) as string | string[];
+          
+          if (selected) {
+            const selectedFiles = Array.isArray(selected) ? selected : [selected];
+            setFiles(selectedFiles);
+            setPgn("");
+            
+            if (selectedFiles.length === 1) {
+              setPgnTarget({ type: "file", target: selectedFiles[0] });
+              if (setFilename) {
+                setFilename(await getFileNameWithoutExtension(selectedFiles[0]));
+              }
+            } else {
+              setPgnTarget({ type: "files", target: selectedFiles });
+              if (setFilename) {
+                setFilename(`${selectedFiles.length}_games`);
+              }
+            }
           }
         }}
-        value={new File([new Blob()], file || "")}
+        value={hasFiles ? new File([new Blob()], fileDisplayText) : null}
         onChange={(e) => {
           if (e === null) {
-            setFile(null);
+            setFiles([]);
             setPgnTarget({ type: "pgn", target: "" });
             if (setFilename) {
               setFilename("");
@@ -112,9 +173,9 @@ export function PgnSourceInput({
       <Divider pt="xs" label={t(dividerLabelKey).toUpperCase()} labelPosition="center" />
       <Textarea
         value={pgn}
-        disabled={file !== null}
+        disabled={hasFiles}
         onChange={(event) => {
-          setFile(null);
+          setFiles([]);
           setPgn(event.currentTarget.value);
           setPgnTarget({ type: "pgn", target: event.currentTarget.value });
         }}
