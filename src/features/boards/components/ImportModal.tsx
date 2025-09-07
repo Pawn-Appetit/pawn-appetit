@@ -19,7 +19,7 @@ import { activeTabAtom, currentTabAtom, storedDocumentDirAtom, tabsAtom } from "
 import { parsePGN } from "@/utils/chess";
 import { getChesscomGame } from "@/utils/chess.com/api";
 import { chessopsError } from "@/utils/chessops";
-import { createFile, openFile } from "@/utils/files";
+import { createFile, createTempImportFile, openFile } from "@/utils/files";
 import { getLichessGame } from "@/utils/lichess/api";
 import { parseMultiplePgnGames } from "@/utils/pgnUtils";
 import { defaultTree, getGameName, type TreeState } from "@/utils/treeReducer";
@@ -115,6 +115,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
               name: filename,
               gameCount: trees.length,
             });
+            await openFile(newFile.value.path, setTabs, setActiveTab);
           } else {
             return {
               successCount: 0,
@@ -125,11 +126,13 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
             };
           }
         } else {
+          const tempFile = await createTempImportFile(resolvedTarget.content);
           importedFiles.push({
-            path: resolvedTarget.file.path,
+            path: tempFile.path,
             name: "Pasted Content",
             gameCount: trees.length,
           });
+          await openFile(tempFile.path, setTabs, setActiveTab);
         }
       }
       
@@ -183,6 +186,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
                   name: finalFileName,
                   gameCount: trees.length,
                 });
+                await openFile(newFile.value.path, setTabs, setActiveTab);
               } else {
                 allErrors.push({
                   file: fileName,
@@ -195,6 +199,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
                 name: fileName,
                 gameCount: trees.length,
               });
+              await openFile(singleFileTarget.file.path, setTabs, setActiveTab);
             }
           }
 
@@ -238,6 +243,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
             name: filename,
             gameCount: trees.length,
           });
+          await openFile(newFile.value.path, setTabs, setActiveTab);
         } else {
           return {
             successCount: 0,
@@ -253,6 +259,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
           name: resolvedTarget.file.name || "Imported Game",
           gameCount: trees.length,
         });
+        await openFile(resolvedTarget.file.path, setTabs, setActiveTab);
       }
     }
 
@@ -391,15 +398,10 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
     .with("FEN", () => !fen)
     .exhaustive();
 
-  const handleAnalyzeFile = async (filePath: string) => {
-    await openFile(filePath, setTabs, setActiveTab);
-    context.closeModal(id);
-  };
-
   if (importResult) {
     return (
       <Stack>
-        <ImportSummary result={importResult} onAnalyzeFile={handleAnalyzeFile} />
+        <ImportSummary result={importResult} />
         <Group>
           <Button variant="default" onClick={() => setImportResult(null)}>
             {t("common.importMore")}

@@ -1,5 +1,5 @@
-import { Alert, Badge, Box, Button, Collapse, Group, Stack, Text } from "@mantine/core";
-import { IconAlertTriangle, IconCheck, IconFileAnalytics } from "@tabler/icons-react";
+import { Alert, Badge, Box, Collapse, Group, Stack, Text } from "@mantine/core";
+import { IconAlertTriangle, IconCheck } from "@tabler/icons-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -13,11 +13,10 @@ interface ImportResult {
 
 interface ImportSummaryProps {
   result: ImportResult;
-  onAnalyzeFile?: (filePath: string) => void;
   onClose?: () => void;
 }
 
-export function ImportSummary({ result, onAnalyzeFile }: ImportSummaryProps) {
+export function ImportSummary({ result }: ImportSummaryProps) {
   const { t } = useTranslation();
   const [showErrors, setShowErrors] = useState(false);
 
@@ -67,7 +66,7 @@ export function ImportSummary({ result, onAnalyzeFile }: ImportSummaryProps) {
         </Stack>
       </Alert>
 
-      {/* Show imported files with analyze buttons */}
+      {/* Show imported files */}
       {result.importedFiles && result.importedFiles.length > 0 && (
         <Stack gap="xs">
           <Text size="sm" fw={500}>
@@ -89,16 +88,6 @@ export function ImportSummary({ result, onAnalyzeFile }: ImportSummaryProps) {
                   {file.gameCount > 1 && t("common.games.other", { count: file.gameCount })}
                 </Text>
               </Box>
-              {onAnalyzeFile && (
-                <Button
-                  size="xs"
-                  variant="light"
-                  leftSection={<IconFileAnalytics size={14} />}
-                  onClick={() => onAnalyzeFile(file.path)}
-                >
-                  {t("features.tabs.importGame.analyzeFile")}
-                </Button>
-              )}
             </Group>
           ))}
         </Stack>
