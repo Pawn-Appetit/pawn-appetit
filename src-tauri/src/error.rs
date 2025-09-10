@@ -1,7 +1,10 @@
 use shakmaty::Chess;
 use specta::Type;
 
-#[derive(Debug, thiserror::Error)]
+use std::path::PathBuf;
+use crate::engine::EngineState;
+
+#[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
     Io(#[from] std::io::Error),
@@ -110,14 +113,14 @@ pub enum Error {
 
     #[error("Invalid state transition from {from:?} to {to:?}")]
     InvalidStateTransition {
-        from: crate::chess::EngineState,
-        to: crate::chess::EngineState,
+        from: EngineState,
+        to: EngineState,
     },
 
-    #[error("Engine not in expected state: expected {expected:?}, found {actual:?}")]
-    InvalidEngineState {
-        expected: crate::chess::EngineState,
-        actual: crate::chess::EngineState,
+    #[error("Unexpected engine state - expected {expected:?}, got {actual:?}")]
+    UnexpectedState {
+        expected: EngineState,
+        actual: EngineState,
     },
 
     #[error("Engine stop timeout")]
@@ -125,6 +128,18 @@ pub enum Error {
 
     #[error("Event emission failed")]
     EventEmissionFailed,
+
+    #[error("FEN parsing error: {0}")]
+    FenError(String),
+
+    #[error("Position setup error: {0}")]
+    PositionError(String),
+
+    #[error("UCI move parsing error: {0}")]
+    UciMoveError(String),
+
+    #[error("Illegal move error: {0}")]
+    IllegalMoveError(String),
 }
 
 impl serde::Serialize for Error {
