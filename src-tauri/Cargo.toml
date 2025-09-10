@@ -34,7 +34,7 @@ diesel = { version = "2.2.12", features = [
     "r2d2",
 ] }
 rayon = "1.11.0"
-chrono = "0.4.41"
+chrono = "0.4.42"
 derivative = "2.2.0"
 dashmap = "6.1.0"
 once_cell = "1.21.3"
@@ -43,7 +43,7 @@ vampirc-uci = { git = "https://github.com/ChessKitchen/vampirc-uci.git", rev = "
     "specta",
     "serde",
 ] }
-tempfile = "3.21.0"
+tempfile = "3.22.0"
 quick-xml = { version = "0.31.0", features = ["serialize"] }
 specta = { version = "^2.0.0-rc.20", features = ["derive"] }
 tauri-specta = { version = "^2.0.0-rc.20", features = ["derive", "typescript"] }
