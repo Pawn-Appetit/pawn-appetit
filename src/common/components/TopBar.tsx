@@ -5,7 +5,6 @@ import {
   Group,
   Image,
   Kbd,
-  type MantineColorScheme,
   Menu,
   Text,
   UnstyledButton,
@@ -13,7 +12,7 @@ import {
 } from "@mantine/core";
 import { useColorScheme } from "@mantine/hooks";
 import { Spotlight, type SpotlightActionData, type SpotlightActionGroupData, spotlight } from "@mantine/spotlight";
-import { IconMoon, IconSearch, IconSettings, IconSun, IconSunMoon } from "@tabler/icons-react";
+import { IconSearch, IconSettings } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useAtom, useAtomValue } from "jotai";
@@ -21,10 +20,11 @@ import { type JSX, type SVGProps, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { nativeBarAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
+import { env } from "@/utils/detectEnvironment";
 import { linksdata } from "./Sidebar";
 import * as classes from "./TopBar.css";
 
-const appWindow = getCurrentWebviewWindow();
+const appWindow = env.isDesktop() ? getCurrentWebviewWindow() : null;
 
 type MenuAction = {
   label: string;
@@ -222,10 +222,10 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
           scrollable
         />
       </Group>
-      {!isNative && (
+      {env.isDesktop() && !isNative && (
         <Center h="30" mr="xs">
           <Group gap="5px" data-tauri-drag-region>
-            <ActionIcon h={25} w={25} radius="lg" onClick={() => appWindow.minimize()} className={classes.icon}>
+            <ActionIcon h={25} w={25} radius="lg" onClick={() => appWindow?.minimize()} className={classes.icon}>
               <Icons.minimizeWin />
             </ActionIcon>
             <ActionIcon
@@ -233,14 +233,14 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
               w={25}
               radius="lg"
               onClick={() => {
-                appWindow.toggleMaximize();
+                appWindow?.toggleMaximize();
                 setMaximized((prev) => !prev);
               }}
               className={classes.icon}
             >
               {maximized ? <Icons.maximizeRestoreWin /> : <Icons.maximizeWin />}
             </ActionIcon>
-            <ActionIcon h={25} w={25} radius="lg" onClick={() => appWindow.close()} className={classes.icon}>
+            <ActionIcon h={25} w={25} radius="lg" onClick={() => appWindow?.close()} className={classes.icon}>
               <Icons.closeWin />
             </ActionIcon>
           </Group>
