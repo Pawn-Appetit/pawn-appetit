@@ -497,9 +497,14 @@ export function getPgnHeaders(tokens: Token[]): GameHeaders {
     Variant,
   } = Object.fromEntries(headersN);
 
+  const fenToUse = FEN ?? INITIAL_FEN;
+  const fenParts = fenToUse.split(" ");
+  const activeColor = fenParts[1];
+  const orientationFromFen = activeColor === "b" ? "black" : "white";
+  
   const headers: GameHeaders = {
     id: 0,
-    fen: FEN ?? INITIAL_FEN,
+    fen: fenToUse,
     result: (Result as Outcome) ?? "*",
     black: Black ?? "?",
     white: White ?? "?",
@@ -510,7 +515,7 @@ export function getPgnHeaders(tokens: Token[]): GameHeaders {
     site: Site ?? "",
     event: Event ?? "",
     start: JSON.parse(Start ?? "[]"),
-    orientation: (Orientation as "white" | "black") ?? "white",
+    orientation: (Orientation as "white" | "black") ?? orientationFromFen,
     time_control: TimeControl,
     variant: Variant,
   };
