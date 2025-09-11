@@ -208,20 +208,20 @@ The binary will be available in your current directory.
 | Language  | Status   | File                        |
 |-----------|----------|-----------------------------|
 | 🇺🇸 EN | ✅ 100% | [EN](./src/locales/en) |
-| 🇩🇪 DE | 🟡 88% | [DE](./src/locales/de) |
-| 🇪🇸 ES | 🟡 88% | [ES](./src/locales/es) |
-| 🇫🇷 FR | 🟡 88% | [FR](./src/locales/fr) |
-| 🇦🇲 HY | 🟡 88% | [HY](./src/locales/hy) |
-| 🇮🇹 IT | 🟡 88% | [IT](./src/locales/it) |
-| 🇷🇺 RU | 🟡 88% | [RU](./src/locales/ru) |
-| 🇹🇷 TR | 🟡 88% | [TR](./src/locales/tr) |
-| 🇨🇳 ZH | 🟡 88% | [ZH](./src/locales/zh) |
-| 🇧🇾 BE | 🔴 49% | [BE](./src/locales/be) |
-| 🇳🇴 NB | 🔴 49% | [NB](./src/locales/nb) |
-| 🇵🇱 PL | 🔴 49% | [PL](./src/locales/pl) |
-| 🇵🇹 PT | 🔴 49% | [PT](./src/locales/pt) |
-| 🇺🇦 UK | 🔴 49% | [UK](./src/locales/uk) |
-| 🇸🇦 AR | 🔴 24% | [AR](./src/locales/ar) |
+| 🇩🇪 DE | 🟡 86% | [DE](./src/locales/de) |
+| 🇪🇸 ES | 🟡 86% | [ES](./src/locales/es) |
+| 🇫🇷 FR | 🟡 86% | [FR](./src/locales/fr) |
+| 🇦🇲 HY | 🟡 86% | [HY](./src/locales/hy) |
+| 🇮🇹 IT | 🟡 86% | [IT](./src/locales/it) |
+| 🇷🇺 RU | 🟡 86% | [RU](./src/locales/ru) |
+| 🇹🇷 TR | 🟡 86% | [TR](./src/locales/tr) |
+| 🇨🇳 ZH | 🟡 86% | [ZH](./src/locales/zh) |
+| 🇧🇾 BE | 🔴 48% | [BE](./src/locales/be) |
+| 🇳🇴 NB | 🔴 48% | [NB](./src/locales/nb) |
+| 🇵🇱 PL | 🔴 48% | [PL](./src/locales/pl) |
+| 🇵🇹 PT | 🔴 48% | [PT](./src/locales/pt) |
+| 🇺🇦 UK | 🔴 48% | [UK](./src/locales/uk) |
+| 🇸🇦 AR | 🔴 23% | [AR](./src/locales/ar) |
 | 🇯🇵 JA | 🔴 9% | [JA](./src/locales/ja) |
 <!-- TRANSLATIONS_END -->
 

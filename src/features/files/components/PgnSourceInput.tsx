@@ -36,13 +36,13 @@ export async function resolvePgnTarget(target: PgnTarget): Promise<ResolvedPgnTa
       file,
     };
   }
-  
+
   if (target.type === "files") {
     // Handle multiple files
     const allGames: string[] = [];
     const errors: { file?: string; error: string }[] = [];
     const filePaths = target.target as string[];
-    
+
     for (const filePath of filePaths) {
       try {
         const count = unwrap(await commands.countPgnGames(filePath));
@@ -55,10 +55,10 @@ export async function resolvePgnTarget(target: PgnTarget): Promise<ResolvedPgnTa
         });
       }
     }
-    
+
     const content = allGames.join("");
     const file = await createTempImportFile(content);
-    
+
     return {
       ...target,
       content,
@@ -68,7 +68,7 @@ export async function resolvePgnTarget(target: PgnTarget): Promise<ResolvedPgnTa
       errors: errors.length > 0 ? errors : undefined,
     };
   }
-  
+
   // Create a temp file with the content of the text area. Allow to reuse the same parsing flow for normal files.
   // Here again, the temp file can be used to open the analysis board if we don't save it.
   const file = await createTempImportFile(target.target as string);
@@ -108,19 +108,19 @@ export function PgnSourceInput({
   allowMultiple = false,
 }: PgnSourceInputProps) {
   const { t } = useTranslation();
-  const [pgn, setPgn] = useState(pgnTarget.type === "pgn" ? pgnTarget.target as string : "");
+  const [pgn, setPgn] = useState(pgnTarget.type === "pgn" ? (pgnTarget.target as string) : "");
   const [files, setFiles] = useState<string[]>(
-    pgnTarget.type === "file" 
-      ? [pgnTarget.target as string] 
-      : pgnTarget.type === "files" 
-        ? pgnTarget.target as string[]
-        : []
+    pgnTarget.type === "file"
+      ? [pgnTarget.target as string]
+      : pgnTarget.type === "files"
+        ? (pgnTarget.target as string[])
+        : [],
   );
 
   const hasFiles = files.length > 0;
-  const fileDisplayText = hasFiles 
-    ? files.length === 1 
-      ? files[0].split('/').pop() || files[0]
+  const fileDisplayText = hasFiles
+    ? files.length === 1
+      ? files[0].split("/").pop() || files[0]
       : t("common.multipleFiles", { count: files.length })
     : "";
 
@@ -139,12 +139,12 @@ export function PgnSourceInput({
               },
             ],
           })) as string | string[];
-          
+
           if (selected) {
             const selectedFiles = Array.isArray(selected) ? selected : [selected];
             setFiles(selectedFiles);
             setPgn("");
-            
+
             if (selectedFiles.length === 1) {
               setPgnTarget({ type: "file", target: selectedFiles[0] });
               if (setFilename) {

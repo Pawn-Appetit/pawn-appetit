@@ -3,7 +3,7 @@ import { useElementSize } from "@mantine/hooks";
 import { useContext } from "react";
 import useSWRImmutable from "swr/immutable";
 import { useStore } from "zustand";
-import { Chessground } from "@/chessground/Chessground";
+import { Chessground } from "@/common/components/Chessground";
 import GameNotation from "@/common/components/GameNotation";
 import MoveControls from "@/common/components/MoveControls";
 import OpeningName from "@/common/components/OpeningName";

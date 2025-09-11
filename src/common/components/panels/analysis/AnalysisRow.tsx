@@ -9,7 +9,7 @@ import { useAtom, useAtomValue } from "jotai";
 import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useStore } from "zustand";
 import type { Score } from "@/bindings";
-import { Chessground } from "@/chessground/Chessground";
+import { Chessground } from "@/common/components/Chessground";
 import MoveCell from "@/common/components/MoveCell";
 import { TreeStateContext } from "@/common/components/TreeStateContext";
 import { previewBoardOnHoverAtom, scoreTypeFamily } from "@/state/atoms";

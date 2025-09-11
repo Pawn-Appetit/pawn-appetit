@@ -34,7 +34,6 @@ import zh from "./locales/zh";
 
 let lang = localStorage.getItem("lang");
 if (lang) {
-  // Migrate from _ to - from the old format
   lang = lang.replace("_", "-");
   localStorage.setItem("lang", lang);
 }
@@ -60,24 +59,15 @@ const resources = {
 
 i18n.use(initReactI18next).init({
   resources,
-
-  // Language configuration
   lng: lang || "en-US",
   fallbackLng: "en-US",
-
-  // Namespace configuration
   ns: ["language", "translation"],
   defaultNS: "translation",
   fallbackNS: "translation",
-
-  // Debug configuration (set to true for development)
   debug: isDev,
-
-  // Load configuration
   load: "currentOnly",
 });
 
-// Add custom formatters
 i18n.services.formatter?.add("bytes", createBytesFormatter(i18n));
 i18n.services.formatter?.add("bytesLong", createBytesLongFormatter(i18n));
 i18n.services.formatter?.add("nodes", createNodesFormatter(i18n));

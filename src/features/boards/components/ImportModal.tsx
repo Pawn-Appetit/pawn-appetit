@@ -52,7 +52,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
   const [save, setSave] = useState(false);
   const [filename, setFilename] = useState("");
   const [error, setError] = useState("");
-  const documentDir = useAtomValue(storedDocumentDirAtom) || "";  
+  const documentDir = useAtomValue(storedDocumentDirAtom) || "";
 
   async function parseGamesFromTarget(
     resolvedTarget: ResolvedPgnTarget,
@@ -92,14 +92,12 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
     return { trees, errors };
   }
 
-  async function processMultipleFiles(
-    resolvedTarget: ResolvedPgnTarget,
-  ): Promise<ImportResult> {
+  async function processMultipleFiles(resolvedTarget: ResolvedPgnTarget): Promise<ImportResult> {
     if (resolvedTarget.type === "pgn") {
       const { trees, errors } = await parseGamesFromTarget(resolvedTarget);
-      
+
       const importedFiles: { path: string; name: string; gameCount: number }[] = [];
-      
+
       if (trees.length > 0) {
         if (save) {
           const newFile = await createFile({
@@ -135,7 +133,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
           await openFile(tempFile.path, setTabs, setActiveTab);
         }
       }
-      
+
       return {
         successCount: trees.length,
         totalGames: resolvedTarget.count,
@@ -154,15 +152,15 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
 
       for (const filePath of resolvedTarget.target) {
         try {
-          const fileName = filePath.split('/').pop() || filePath;
-          
+          const fileName = filePath.split("/").pop() || filePath;
+
           const singleFileTarget = await resolvePgnTarget({ type: "file", target: filePath });
           const { trees, errors } = await parseGamesFromTarget(singleFileTarget);
-          
+
           totalGames += singleFileTarget.count;
           totalSuccessfulGames += trees.length;
 
-          errors.forEach(error => {
+          errors.forEach((error) => {
             failedGames.push({
               ...error,
               fileName,
@@ -171,7 +169,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
 
           if (trees.length > 0) {
             if (save) {
-              const baseFileName = fileName.replace(/\.pgn$/i, '');
+              const baseFileName = fileName.replace(/\.pgn$/i, "");
               const finalFileName = `${filename}_${baseFileName}`;
               const newFile = await createFile({
                 filename: finalFileName,
@@ -206,9 +204,8 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
           if (singleFileTarget.errors) {
             allErrors.push(...singleFileTarget.errors);
           }
-
         } catch (error) {
-          const fileName = filePath.split('/').pop() || filePath;
+          const fileName = filePath.split("/").pop() || filePath;
           allErrors.push({
             file: fileName,
             error: error instanceof Error ? error.message : String(error),

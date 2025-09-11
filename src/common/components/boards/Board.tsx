@@ -34,7 +34,7 @@ import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
-import { Chessground } from "@/chessground/Chessground";
+import { Chessground } from "@/common/components/Chessground";
 import ShowMaterial from "@/common/components/ShowMaterial";
 import { TreeStateContext } from "@/common/components/TreeStateContext";
 import { updateCardPerformance } from "@/features/files/components/opening";

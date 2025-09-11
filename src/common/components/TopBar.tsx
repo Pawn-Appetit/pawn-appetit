@@ -88,7 +88,7 @@ function getActions(
     {
       group: "Pages",
       actions: linksdata.map((link) => {
-        const label = t(`SideBar.${link.label}`);
+        const label = t(`features.sidebar.${link.label}`);
 
         return {
           id: link.label,

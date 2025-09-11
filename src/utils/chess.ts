@@ -501,7 +501,7 @@ export function getPgnHeaders(tokens: Token[]): GameHeaders {
   const fenParts = fenToUse.split(" ");
   const activeColor = fenParts[1];
   const orientationFromFen = activeColor === "b" ? "black" : "white";
-  
+
   const headers: GameHeaders = {
     id: 0,
     fen: fenToUse,

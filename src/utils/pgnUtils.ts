@@ -21,15 +21,13 @@ export interface GameParseError {
  */
 export function splitPgnGames(content: string): string[] {
   // Normalize line endings and remove excessive whitespace
-  const normalized = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  
+  const normalized = content.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
   // Split on [Event tag which typically starts a new game
   const games = normalized.split(/(?=\[Event\s)/);
-  
+
   // Filter out empty or whitespace-only games
-  return games
-    .map(game => game.trim())
-    .filter(game => game.length > 0 && game.includes('[Event'));
+  return games.map((game) => game.trim()).filter((game) => game.length > 0 && game.includes("[Event"));
 }
 
 /**
@@ -55,7 +53,7 @@ export async function parseMultiplePgnGames(content: string): Promise<{
       errors.push({
         gameIndex: i,
         error: error instanceof Error ? error.message : String(error),
-        gameContent: gameStrings[i].substring(0, 200) + (gameStrings[i].length > 200 ? '...' : ''),
+        gameContent: gameStrings[i].substring(0, 200) + (gameStrings[i].length > 200 ? "..." : ""),
       });
     }
   }
@@ -69,7 +67,7 @@ export async function parseMultiplePgnGames(content: string): Promise<{
 export function validatePgnContent(content: string): { isValid: boolean; gameCount: number; error?: string } {
   try {
     const games = splitPgnGames(content);
-    
+
     if (games.length === 0) {
       return {
         isValid: false,
@@ -80,7 +78,7 @@ export function validatePgnContent(content: string): { isValid: boolean; gameCou
 
     // Check if each game has basic required headers
     for (const game of games) {
-      if (!game.includes('[Event') || !game.includes('[Result')) {
+      if (!game.includes("[Event") || !game.includes("[Result")) {
         return {
           isValid: false,
           gameCount: games.length,

@@ -6,7 +6,7 @@ import equal from "fast-deep-equal";
 import { useAtomValue } from "jotai";
 import { useContext, useState } from "react";
 import { useStore } from "zustand";
-import { Chessground } from "@/chessground/Chessground";
+import { Chessground } from "@/common/components/Chessground";
 import { TreeStateContext } from "@/common/components/TreeStateContext";
 import { showCoordinatesAtom } from "@/state/atoms";
 import { chessboard } from "@/styles/Chessboard.css";
