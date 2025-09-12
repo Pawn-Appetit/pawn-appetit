@@ -2,7 +2,7 @@
   "name": "pawn-appetit",
   "version": "0.5.1",
   "type": "module",
-  "packageManager": "pnpm@10.15.1",
+  "packageManager": "pnpm@10.16.0",
   "scripts": {
     "start-vite": "vite",
     "build-vite": "tsc --noEmit && vite build",
@@ -33,7 +33,7 @@
     "@mantine/tiptap": "^8.3.1",
     "@mantine/vanilla-extract": "^8.3.1",
     "@tabler/icons-react": "^3.34.1",
-    "@tanstack/react-router": "^1.131.37",
+    "@tanstack/react-router": "^1.131.41",
     "@tanstack/react-virtual": "^3.13.12",
     "@tauri-apps/api": "^2.8.0",
     "@tauri-apps/plugin-cli": "^2.4.0",
@@ -84,12 +84,12 @@
     "ts-fsrs": "^5.2.3",
     "ts-pattern": "^5.8.0",
     "vite": "^7.1.5",
-    "zod": "^4.1.7",
+    "zod": "^4.1.8",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.4",
-    "@tanstack/router-vite-plugin": "^1.131.37",
+    "@tanstack/router-vite-plugin": "^1.131.41",
     "@tauri-apps/cli": "2.8.4",
     "@types/d3": "^7.4.3",
     "@types/lodash": "^4.17.20",
