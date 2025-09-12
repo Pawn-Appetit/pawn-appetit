@@ -1,5 +1,69 @@
 # Pawn Appétit
 
+## v0.6.0
+
+### ✨ Features
+
+* **PGN & Board**
+
+  * Added **multi-file PGN import** with error handling
+  * Open **tabs for each imported file** instead of showing analyze buttons
+  * Set **board orientation based on FEN active color** during PGN import
+
+* **Chess Engines**
+
+  * Added **alert for unavailable engines** and improved engine selection UI
+  * Refactored engine module into **focused components** for better maintainability
+
+* **Theme & Visual Editor**
+
+  * Introduced **Visual Theme Editor** for customizing themes
+  * Added **Theme Preview** component to see changes in real-time
+  * Included **predefined built-in themes** for quick use
+  * Separated **color scheme management** from theme selection
+
+* **Environment Utilities**
+
+  * Implemented **environment detection utility functions**
+
+### 🛠 Improvements & Refactors
+
+* **Clipboard & Menu**
+
+  * Improved **clipboard handling** (cut, copy, paste, select all)
+  * Refactored **menu creation logic** and **Chessground component**
+
+* **Internationalization (i18n)**
+
+  * Moved **translations to locales folder** and restructured format
+  * Updated **translation keys** for menu actions and reload feature
+
+* **Lessons & Practice**
+
+  * Updated **lesson and practice card layouts**
+  * Enhanced **descriptions and UI clarity**
+
+* **Codebase**
+
+  * Updated **Rust and npm dependencies**
+  * Linted code and fixed translation keys
+
+* **Board & Analysis**
+
+  * Replaced **hover effect** with **popover** for move details in `BoardPopover`
+
+### 🐛 Fixes
+
+* Fixed **PGN preview display issues**
+* Fixed **i18n translation keys** in menus and reload feature
+* Fixed **board orientation** on PGN import based on active color
+* Fixed **tabs opening** for imported PGN files
+
+### 🧹 Chores
+
+* Updated **pnpm CLI to v10.16.0** in release and test workflows
+* Updated project dependencies
+
 ## v0.5.1
 
 ### ✨ Features
