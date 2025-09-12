@@ -8,7 +8,6 @@ import { commands } from "@/bindings";
 import GameSelector from "@/common/components/panels/info/GameSelector";
 import GamePreview from "@/features/databases/components/GamePreview";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
-import { capitalize } from "@/utils/format";
 import { createTab } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
 import type { FileMetadata } from "./file";
