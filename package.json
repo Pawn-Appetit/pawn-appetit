@@ -8,6 +8,8 @@
     "build-vite": "tsc --noEmit && vite build",
     "build": "tauri build --no-bundle",
     "dev": "tauri dev",
+    "android:build": "tauri android build",
+    "android:dev": "tauri android dev",
     "tauri": "tauri",
     "format": "biome format --write ./src",
     "test": "vitest run",
