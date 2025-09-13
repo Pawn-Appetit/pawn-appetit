@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Alert,
   Box,
   Button,
   Center,
@@ -15,8 +16,10 @@ import {
   Stack,
   Text,
   TextInput,
+  ThemeIcon,
 } from "@mantine/core";
-import { IconArrowsExchange, IconCpu, IconPlus, IconUser, IconZoomCheck } from "@tabler/icons-react";
+import { IconAlertCircle, IconArrowsExchange, IconCpu, IconPlus, IconUser, IconZoomCheck } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 import { parseUci } from "chessops";
 import { INITIAL_FEN } from "chessops/fen";
 import equal from "fast-deep-equal";
@@ -48,6 +51,7 @@ function EnginesSelect({
   engine: LocalEngine | null;
   setEngine: (engine: LocalEngine | null) => void;
 }) {
+  const navigate = useNavigate();
   const engines = useAtomValue(enginesAtom).filter((e): e is LocalEngine => e.type === "local");
 
   useEffect(() => {
@@ -55,6 +59,22 @@ function EnginesSelect({
       setEngine(engines[0]);
     }
   }, [engine, engines[0], setEngine]);
+
+  if (engines.length === 0) {
+    return (
+      <Stack gap="md">
+        <Alert icon={<IconAlertCircle size={16} />} title="No Chess Engines Available" color="orange" variant="light">
+          <Text size="sm">
+            No chess engines are currently installed or detected on your system. To play against an engine, you'll need
+            to install one first.
+          </Text>
+        </Alert>
+        <Button variant="outline" size="sm" onClick={() => navigate({ to: "/engines" })}>
+          Install Engine
+        </Button>
+      </Stack>
+    );
+  }
 
   return (
     <Suspense>
@@ -68,6 +88,7 @@ function EnginesSelect({
         onChange={(e) => {
           setEngine(engines.find((engine) => engine.path === e) ?? null);
         }}
+        placeholder="Select engine"
       />
     </Suspense>
   );
@@ -97,6 +118,8 @@ function OpponentForm({
   setOpponent: React.Dispatch<React.SetStateAction<OpponentSettings>>;
   setOtherOpponent: React.Dispatch<React.SetStateAction<OpponentSettings>>;
 }) {
+  const engines = useAtomValue(enginesAtom).filter((e): e is LocalEngine => e.type === "local");
+
   function updateType(type: "engine" | "human") {
     if (type === "human") {
       setOpponent((prev) => ({
@@ -136,6 +159,11 @@ function OpponentForm({
               <Center style={{ gap: 10 }}>
                 <IconCpu size={16} />
                 <span>Engine</span>
+                {engines.length === 0 && (
+                  <ThemeIcon size="xs" color="orange" variant="light">
+                    <IconAlertCircle size={10} />
+                  </ThemeIcon>
+                )}
               </Center>
             ),
           },
@@ -327,6 +355,7 @@ function BoardGame() {
 
   const boardRef = useRef(null);
   const [gameState, setGameState] = useAtom(currentGameStateAtom);
+  const engines = useAtomValue(enginesAtom).filter((e): e is LocalEngine => e.type === "local");
 
   function changeToAnalysisMode() {
     setTabs((prev) => prev.map((tab) => (tab.value === activeTab ? { ...tab, type: "analysis" } : tab)));
@@ -657,9 +686,9 @@ function BoardGame() {
                     <Group>
                       <Text flex={1} ta="center" fz="lg" fw="bold">
                         {match(inputColor)
-                          .with("white", () => t("Common.White"))
-                          .with("random", () => t("Common.Random"))
-                          .with("black", () => t("Common.Black"))
+                          .with("white", () => t("chess.white"))
+                          .with("random", () => t("chess.random"))
+                          .with("black", () => t("chess.black"))
                           .exhaustive()}
                       </Text>
                       <ActionIcon onClick={cycleColor}>
@@ -667,9 +696,9 @@ function BoardGame() {
                       </ActionIcon>
                       <Text flex={1} ta="center" fz="lg" fw="bold">
                         {match(inputColor)
-                          .with("white", () => t("Common.Black"))
-                          .with("random", () => t("Common.Random"))
-                          .with("black", () => t("Common.White"))
+                          .with("white", () => t("chess.black"))
+                          .with("random", () => t("chess.random"))
+                          .with("black", () => t("chess.white"))
                           .exhaustive()}
                       </Text>
                     </Group>

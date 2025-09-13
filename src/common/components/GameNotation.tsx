@@ -212,10 +212,10 @@ function GameNotation({ topBar }: { topBar?: boolean }) {
                 <br />
                 <Text span fs="italic">
                   {headers.result === "1/2-1/2"
-                    ? t("Outcome.Draw")
+                    ? t("chess.outcome.draw")
                     : headers.result === "1-0"
-                      ? t("Outcome.WhiteWins")
-                      : t("Outcome.BlackWins")}
+                      ? t("chess.outcome.whiteWins")
+                      : t("chess.outcome.blackWins")}
                 </Text>
               </Text>
             )}
@@ -245,12 +245,14 @@ function NotationHeader({
       <Group justify="space-between">
         <OpeningName />
         <Group gap="sm">
-          <Tooltip label={invisible ? t("GameNotation.ShowMoves") : t("GameNotation.HideMoves")}>
+          <Tooltip label={invisible ? t("features.gameNotation.showMoves") : t("features.gameNotation.hideMoves")}>
             <ActionIcon onClick={() => setInvisible((prev: boolean) => !prev)}>
               {invisible ? <IconEyeOff size="1rem" /> : <IconEye size="1rem" />}
             </ActionIcon>
           </Tooltip>
-          <Tooltip label={showComments ? t("GameNotation.HideComments") : t("GameNotation.ShowComments")}>
+          <Tooltip
+            label={showComments ? t("features.gameNotation.hideComments") : t("features.gameNotation.showComments")}
+          >
             <ActionIcon onClick={toggleComments}>
               {showComments ? <IconArticle size="1rem" /> : <IconArticleOff size="1rem" />}
             </ActionIcon>
@@ -258,10 +260,10 @@ function NotationHeader({
           <Tooltip
             label={
               variationState === "variations"
-                ? t("GameNotation.ShowVariations")
+                ? t("features.gameNotation.showVariations")
                 : variationState === "repertoire"
-                  ? t("GameNotation.RepertoireView")
-                  : t("GameNotation.MainLine")
+                  ? t("features.gameNotation.repertoireView")
+                  : t("features.gameNotation.mainLine")
             }
           >
             <ActionIcon onClick={toggleVariationState}>
@@ -327,7 +329,7 @@ function RenderMainline({
             fontSize: "80%",
           }}
         >
-          <Tooltip label={t("GameNotation.ShowVariationsTooltip")}>
+          <Tooltip label={t("features.gameNotation.showVariationsTooltip")}>
             <Box
               component="button"
               className={moveStyles.cell}

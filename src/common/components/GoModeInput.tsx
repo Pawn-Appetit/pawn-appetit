@@ -23,7 +23,7 @@ function GoModeInput({
   return (
     <Group>
       <SegmentedControl
-        data={timeTypes.map((v) => ({ value: v, label: t(`GoMode.${v}`) }))}
+        data={timeTypes.map((v) => ({ value: v, label: t(`chess.goMode.${v.toLowerCase()}`) }))}
         value={goMode?.t || (gameMode ? "Time" : "Infinite")}
         onChange={(v) => {
           const newGo = match<string | null, GoMode>(v)

@@ -5,16 +5,16 @@ type FilenameInputProps = {
   value: string;
   onChange: (value: string) => void;
   error?: string;
-  labelKey?: string; // defaults to "Common.Name"
-  placeholderKey?: string; // defaults to "Common.EnterFileName"
+  labelKey?: string; // defaults to "common.name"
+  placeholderKey?: string; // defaults to "common.enterFileName"
 };
 
 export function FilenameInput({
   value,
   onChange,
   error,
-  labelKey = "Common.Name",
-  placeholderKey = "Common.EnterFileName",
+  labelKey = "common.name",
+  placeholderKey = "common.enterFileName",
 }: FilenameInputProps) {
   const { t } = useTranslation();
 

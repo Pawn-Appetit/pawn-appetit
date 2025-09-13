@@ -8,7 +8,6 @@ import { commands } from "@/bindings";
 import GameSelector from "@/common/components/panels/info/GameSelector";
 import GamePreview from "@/features/databases/components/GamePreview";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
-import { capitalize } from "@/utils/format";
 import { createTab } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
 import type { FileMetadata } from "./file";
@@ -67,24 +66,25 @@ function FileCard({
         <Text ta="center" fz="xl" fw="bold">
           {selected?.name}
         </Text>
-        <Badge>{t(`Files.FileType.${capitalize(selected.metadata.type)}`)}</Badge>
+        <Badge>{t(`features.files.fileType.${selected.metadata.type.toLowerCase()}`)}</Badge>
       </Stack>
 
       <Group align="center" grow>
         <Group>
-          <Tooltip label={t("Common.Open")}>
+          <Tooltip label={t("common.open")}>
             <ActionIcon onClick={openGame}>
               <IconEye />
             </ActionIcon>
           </Tooltip>
-          <Tooltip label={t("Files.EditMetadata")}>
+          <Tooltip label={t("features.files.editMetadata")}>
             <ActionIcon onClick={() => toggleEditModal()}>
               <IconEdit />
             </ActionIcon>
           </Tooltip>
         </Group>
         <Text ta="center" c="dimmed">
-          {t("Common.Games", { count: selected?.numGames || 0 })}
+          {selected?.numGames === 1 && t("common.games.one", { count: selected?.numGames || 0 })}
+          {selected?.numGames > 1 && t("common.games.other", { count: selected?.numGames || 0 })}
         </Text>
         <div />
       </Group>

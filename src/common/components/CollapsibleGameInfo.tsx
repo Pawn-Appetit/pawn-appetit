@@ -86,9 +86,9 @@ function CollapsibleGameInfo({
             html={event}
             data-placeholder={
               simplified === "repertoire"
-                ? t("Repertoire.EnterOpeningTitle")
+                ? t("features.repertoire.enterOpeningTitle")
                 : simplified === "puzzle"
-                  ? t("Puzzle.EnterTitle")
+                  ? t("features.puzzle.enterTitle")
                   : "Unknown Event"
             }
             className={cx(classes.contentEditable, !event && classes.contentEditablePlaceholder)}
@@ -132,7 +132,7 @@ function CollapsibleGameInfo({
 
       {simplified === "puzzle" && (
         <Group gap={4}>
-          <Input.Wrapper label={t("Puzzle.Rating")} flex={1}>
+          <Input.Wrapper label={t("features.puzzle.rating")} flex={1}>
             <Slider
               min={600}
               max={2800}
@@ -171,11 +171,11 @@ function CollapsibleGameInfo({
             data={[
               {
                 value: "white",
-                label: t("Common.White"),
+                label: t("chess.white"),
               },
               {
                 value: "black",
-                label: t("Common.Black"),
+                label: t("chess.black"),
               },
             ]}
           />

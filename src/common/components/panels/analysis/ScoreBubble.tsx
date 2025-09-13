@@ -80,7 +80,7 @@ function ScoreBubble({
           fontFamily: theme.fontFamilyMonospace,
         })}
       >
-        {t("Units.Score", { score: score.value })}
+        {t("units.score", { score: score.value })}
       </Text>
     </Box>
   );

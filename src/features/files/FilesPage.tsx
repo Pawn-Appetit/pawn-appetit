@@ -74,7 +74,7 @@ function FilesPage() {
         />
       )}
       <Group align="baseline" pl="lg" py="sm">
-        <Title>{t("Files.Title")}</Title>
+        <Title>{t("features.files.title")}</Title>
         <OpenFolderButton folder={documentDir} />
       </Group>
 
@@ -85,7 +85,7 @@ function FilesPage() {
               <Input
                 style={{ flexGrow: 1, minWidth: isMobile ? "100%" : "200px" }}
                 rightSection={<IconSearch size="1rem" />}
-                placeholder={t("Files.Search")}
+                placeholder={t("features.files.search")}
                 value={search}
                 onChange={(e) => setSearch(e.currentTarget.value)}
               />
@@ -95,7 +95,7 @@ function FilesPage() {
                   leftSection={<IconPlus size="1rem" />}
                   onClick={() => toggleCreateModal()}
                 >
-                  {t("Common.Create")}
+                  {t("common.create")}
                 </Button>
                 <Button
                   size={isMobile ? "sm" : "xs"}
@@ -104,19 +104,19 @@ function FilesPage() {
                   leftSection={<IconX size="1rem" />}
                   onClick={() => {
                     modals.openConfirmModal({
-                      title: t("Files.Delete.Title"),
+                      title: t("features.files.delete.title"),
                       withCloseButton: false,
                       children: (
                         <>
                           <Text>
-                            {t("Files.Delete.Message", {
+                            {t("features.files.delete.message", {
                               fileName: selected?.name,
                             })}
                           </Text>
-                          <Text>{t("Common.CannotUndo")}</Text>
+                          <Text>{t("common.cannotUndo")}</Text>
                         </>
                       ),
-                      labels: { confirm: t("Common.Remove"), cancel: t("Common.Cancel") },
+                      labels: { confirm: t("common.remove"), cancel: t("common.cancel") },
                       confirmProps: { color: "red" },
                       onConfirm: async () => {
                         if (selected) {
@@ -129,7 +129,7 @@ function FilesPage() {
                     });
                   }}
                 >
-                  {t("Common.Delete")}
+                  {t("common.delete")}
                 </Button>
               </Group>
             </Group>
@@ -163,7 +163,7 @@ function FilesPage() {
               <FileCard selected={selected} games={games} setGames={setGames} toggleEditModal={toggleEditModal} />
             ) : (
               <Center h="100%">
-                <Text>{t("Files.NoFileSelected")}</Text>
+                <Text>{t("features.files.noFileSelected")}</Text>
               </Center>
             )}
           </Paper>

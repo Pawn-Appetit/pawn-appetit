@@ -40,7 +40,7 @@ export default function BoardsPage() {
   useEffect(() => {
     if (tabs.length === 0) {
       createTab({
-        tab: { name: t("Tab.NewTab"), type: "new" },
+        tab: { name: t("features.tabs.newTab"), type: "new" },
         setTabs,
         setActiveTab,
       });
@@ -225,7 +225,7 @@ export default function BoardsPage() {
                   onClick={() =>
                     createTab({
                       tab: {
-                        name: t("Tab.NewTab"),
+                        name: t("features.tabs.newTab"),
                         type: "new",
                       },
                       setTabs,

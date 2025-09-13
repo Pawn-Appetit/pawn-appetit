@@ -1,5 +1,5 @@
 import { AppShell, ScrollArea } from "@mantine/core";
-import { useHotkeys } from "@mantine/hooks";
+import { type HotkeyItem, useHotkeys } from "@mantine/hooks";
 import { ModalsProvider, modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { createRootRouteWithContext, Outlet, useNavigate } from "@tanstack/react-router";
@@ -38,38 +38,95 @@ type MenuAction = {
   action?: () => void;
 };
 
-async function createMenu(menuActions: MenuGroup[]) {
-  const items = await Promise.all(
-    menuActions.map(async (group) => {
-      const submenuItems = await Promise.all(
-        group.options.map(async (option) => {
-          return match(option.label)
-            .with("divider", () =>
-              PredefinedMenuItem.new({
-                item: "Separator",
-              }),
-            )
-            .otherwise(() => {
-              return MenuItem.new({
-                id: option.id,
-                text: option.label,
-                accelerator: option.shortcut,
-                action: option.action,
+const INPUT_ELEMENT_TAGS = new Set(["INPUT", "TEXTAREA"]);
+const CLIPBOARD_OPERATIONS = {
+  CUT: "cut",
+  COPY: "copy",
+  PASTE: "paste",
+  SELECT_ALL: "selectAll",
+} as const;
+
+const APP_CONSTANTS = {
+  NAVBAR_WIDTH: "3rem",
+  HEADER_HEIGHT: "35px",
+  LOG_FILENAME: "pawn-appetit.log",
+} as const;
+
+const isInputElement = (element: Element): element is HTMLInputElement | HTMLTextAreaElement => {
+  return INPUT_ELEMENT_TAGS.has(element.tagName);
+};
+
+const getSelectedText = (element: HTMLInputElement | HTMLTextAreaElement): string => {
+  const start = element.selectionStart ?? 0;
+  const end = element.selectionEnd ?? 0;
+  return element.value.substring(start, end);
+};
+
+const replaceSelection = (element: HTMLInputElement | HTMLTextAreaElement, newText: string): void => {
+  const start = element.selectionStart ?? 0;
+  const end = element.selectionEnd ?? 0;
+  const currentValue = element.value;
+
+  element.value = currentValue.substring(0, start) + newText + currentValue.substring(end);
+  element.setSelectionRange(start + newText.length, start + newText.length);
+
+  element.dispatchEvent(new Event("input", { bubbles: true }));
+  element.dispatchEvent(new Event("change", { bubbles: true }));
+};
+
+const writeToClipboard = async (text: string): Promise<void> => {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (error) {
+    console.error("Failed to write to clipboard:", error);
+    throw error;
+  }
+};
+
+const readFromClipboard = async (): Promise<string> => {
+  try {
+    return await navigator.clipboard.readText();
+  } catch (error) {
+    console.error("Failed to read from clipboard:", error);
+    throw error;
+  }
+};
+
+async function createMenu(menuActions: MenuGroup[]): Promise<Menu> {
+  try {
+    const items = await Promise.all(
+      menuActions.map(async (group) => {
+        const submenuItems = await Promise.all(
+          group.options.map(async (option) => {
+            return match(option.label)
+              .with("divider", () =>
+                PredefinedMenuItem.new({
+                  item: "Separator",
+                }),
+              )
+              .otherwise(() => {
+                return MenuItem.new({
+                  id: option.id,
+                  text: option.label,
+                  accelerator: option.shortcut,
+                  action: option.action,
+                });
               });
-            });
-        }),
-      );
+          }),
+        );
 
-      return Submenu.new({
-        text: group.label,
-        items: submenuItems,
-      });
-    }),
-  );
+        return Submenu.new({
+          text: group.label,
+          items: submenuItems,
+        });
+      }),
+    );
 
-  return Menu.new({
-    items: items,
-  });
+    return Menu.new({ items });
+  } catch (error) {
+    console.error("Failed to create menu:", error);
+    throw error;
+  }
 }
 
 export const Route = createRootRouteWithContext<{
@@ -80,134 +137,335 @@ export const Route = createRootRouteWithContext<{
 
 function RootLayout() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { layout } = useResponsiveLayout();
 
   const [, setTabs] = useAtom(tabsAtom);
   const [, setActiveTab] = useAtom(activeTabAtom);
-
-  const { t } = useTranslation();
+  const [keyMap] = useAtom(keyMapAtom);
 
   const openNewFile = useCallback(async () => {
-    const selected = await open({
-      multiple: false,
-      filters: [{ name: "PGN file", extensions: ["pgn"] }],
-    });
-    if (typeof selected === "string") {
-      navigate({ to: "/" });
-      openFile(selected, setTabs, setActiveTab);
+    try {
+      const selected = await open({
+        multiple: false,
+        filters: [{ name: "PGN file", extensions: ["pgn"] }],
+      });
+
+      if (typeof selected === "string") {
+        navigate({ to: "/" });
+        openFile(selected, setTabs, setActiveTab);
+      }
+    } catch (error) {
+      console.error("Failed to open file:", error);
+      notifications.show({
+        title: "Error",
+        message: "Failed to open file",
+        color: "red",
+      });
     }
   }, [navigate, setActiveTab, setTabs]);
 
   const createNewTab = useCallback(() => {
     navigate({ to: "/boards" });
     createTab({
-      tab: { name: t("Tab.NewTab"), type: "new" },
+      tab: { name: t("features.tabs.newTab"), type: "new" },
       setTabs,
       setActiveTab,
     });
   }, [navigate, setActiveTab, setTabs, t]);
 
   const checkForUpdates = useCallback(async () => {
-    const update = await check();
-    if (update) {
-      const yes = await ask("Do you want to install them now?", {
-        title: "New version available",
-      });
-      if (yes) {
-        await update.downloadAndInstall();
-        await relaunch();
+    try {
+      const update = await check();
+      if (update) {
+        const shouldInstall = await ask(
+          `A new version (${update.version}) is available. Do you want to install it now?`,
+          { title: "New version available" },
+        );
+
+        if (shouldInstall) {
+          notifications.show({
+            title: "Updating",
+            message: "Downloading and installing update...",
+            loading: true,
+          });
+
+          await update.downloadAndInstall();
+          await relaunch();
+        }
+      } else {
+        await message("You're running the latest version!");
       }
-    } else {
-      await message("No updates available");
+    } catch (error) {
+      console.error("Update check failed:", error);
+      await message("Failed to check for updates. Please try again later.");
     }
   }, []);
 
-  const [keyMap] = useAtom(keyMapAtom);
+  const handleCut = useCallback(async () => {
+    const activeElement = document.activeElement;
 
-  useHotkeys([
-    [
-      keyMap.NEW_BOARD_TAB.keys,
-      () => {
-        navigate({ to: "/boards" });
-        createTab({
-          tab: { name: t("Tab.NewTab"), type: "new" },
-          setTabs,
-          setActiveTab,
+    if (activeElement && isInputElement(activeElement)) {
+      const selectedText = getSelectedText(activeElement);
+      if (!selectedText) return;
+
+      try {
+        await writeToClipboard(selectedText);
+        replaceSelection(activeElement, "");
+      } catch {
+        try {
+          document.execCommand(CLIPBOARD_OPERATIONS.CUT);
+        } catch (execError) {
+          console.error("All cut operations failed:", execError);
+        }
+      }
+    } else {
+      try {
+        document.execCommand(CLIPBOARD_OPERATIONS.CUT);
+      } catch (error) {
+        console.error("Cut operation failed:", error);
+      }
+    }
+  }, []);
+
+  const handleCopy = useCallback(async () => {
+    const activeElement = document.activeElement;
+
+    if (activeElement && isInputElement(activeElement)) {
+      const selectedText = getSelectedText(activeElement);
+      if (selectedText) {
+        try {
+          await writeToClipboard(selectedText);
+        } catch {
+          // Silent fallback - copy operations often fail silently anyway
+        }
+      }
+    } else {
+      const selection = window.getSelection();
+      const selectedText = selection?.toString().trim();
+
+      if (selectedText) {
+        try {
+          await writeToClipboard(selectedText);
+        } catch {
+          try {
+            document.execCommand(CLIPBOARD_OPERATIONS.COPY);
+          } catch (error) {
+            console.error("All copy operations failed:", error);
+          }
+        }
+      }
+    }
+  }, []);
+
+  const handlePaste = useCallback(async () => {
+    const activeElement = document.activeElement;
+
+    if (activeElement && isInputElement(activeElement)) {
+      try {
+        const clipboardText = await readFromClipboard();
+        if (clipboardText) {
+          replaceSelection(activeElement, clipboardText);
+        }
+      } catch {
+        try {
+          document.execCommand(CLIPBOARD_OPERATIONS.PASTE);
+        } catch (error) {
+          console.error("All paste operations failed:", error);
+        }
+      }
+    } else {
+      try {
+        document.execCommand(CLIPBOARD_OPERATIONS.PASTE);
+      } catch (error) {
+        console.error("Paste operation failed:", error);
+      }
+    }
+  }, []);
+
+  const handleSelectAll = useCallback(() => {
+    const activeElement = document.activeElement;
+
+    if (activeElement && isInputElement(activeElement)) {
+      activeElement.select();
+    } else {
+      try {
+        document.execCommand(CLIPBOARD_OPERATIONS.SELECT_ALL);
+      } catch (error) {
+        console.error("Select all operation failed:", error);
+      }
+    }
+  }, []);
+
+  const handleGlobalKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      const isMac = navigator.platform.toLowerCase().includes("mac");
+      const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
+
+      if (!ctrlOrCmd || e.shiftKey || e.altKey) return;
+
+      const keyActions: Record<string, () => void> = {
+        x: () => {
+          e.preventDefault();
+          handleCut();
+        },
+        c: () => {
+          e.preventDefault();
+          handleCopy();
+        },
+        v: () => {
+          e.preventDefault();
+          handlePaste();
+        },
+        a: () => {
+          e.preventDefault();
+          handleSelectAll();
+        },
+      };
+
+      const action = keyActions[e.key.toLowerCase()];
+      if (action) {
+        action();
+      }
+    },
+    [handleCut, handleCopy, handlePaste, handleSelectAll],
+  );
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleGlobalKeyDown, true);
+    return () => document.removeEventListener("keydown", handleGlobalKeyDown, true);
+  }, [handleGlobalKeyDown]);
+
+  const hotkeyBindings = useMemo(
+    () =>
+      [
+        [keyMap.NEW_BOARD_TAB.keys, createNewTab],
+        [
+          keyMap.PLAY_BOARD.keys,
+          () => {
+            navigate({ to: "/boards" });
+            createTab({
+              tab: { name: "Play", type: "play" },
+              setTabs,
+              setActiveTab,
+            });
+          },
+        ],
+        [
+          keyMap.ANALYZE_BOARD.keys,
+          () => {
+            navigate({ to: "/boards" });
+            createTab({
+              tab: { name: t("features.tabs.analysisBoard.title"), type: "analysis" },
+              setTabs,
+              setActiveTab,
+            });
+          },
+        ],
+        [
+          keyMap.IMPORT_BOARD.keys,
+          () => {
+            navigate({ to: "/boards" });
+            modals.openContextModal({
+              modal: "importModal",
+              innerProps: {},
+            });
+          },
+        ],
+        [
+          keyMap.TRAIN_BOARD.keys,
+          () => {
+            navigate({ to: "/boards" });
+            createTab({
+              tab: { name: t("features.tabs.puzzle.title"), type: "puzzles" },
+              setTabs,
+              setActiveTab,
+            });
+          },
+        ],
+        [keyMap.OPEN_FILE.keys, openNewFile],
+        [keyMap.APP_RELOAD.keys, () => location.reload()],
+        [keyMap.EXIT_APP.keys, () => exit(0)],
+      ] as HotkeyItem[],
+    [keyMap, createNewTab, navigate, t, setTabs, setActiveTab, openNewFile],
+  );
+
+  useHotkeys(hotkeyBindings);
+
+  const handleClearData = useCallback(async () => {
+    const confirmed = await ask(
+      "This will clear all saved data including settings, tabs, and preferences. This action cannot be undone.",
+      { title: "Clear all data" },
+    );
+
+    if (confirmed) {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+        notifications.show({
+          title: "Data cleared",
+          message: "All saved data has been cleared. The app will reload.",
         });
-      },
-    ],
-    [
-      keyMap.PLAY_BOARD.keys,
-      () => {
-        navigate({ to: "/boards" });
-        createTab({
-          tab: { name: "Play", type: "play" },
-          setTabs,
-          setActiveTab,
+        setTimeout(() => location.reload(), 1000);
+      } catch (error) {
+        console.error("Failed to clear data:", error);
+        notifications.show({
+          title: "Error",
+          message: "Failed to clear data",
+          color: "red",
         });
-      },
-    ],
-    [
-      keyMap.ANALYZE_BOARD.keys,
-      () => {
-        navigate({ to: "/boards" });
-        createTab({
-          tab: { name: t("Tab.AnalysisBoard.Title"), type: "analysis" },
-          setTabs,
-          setActiveTab,
-        });
-      },
-    ],
-    [
-      keyMap.IMPORT_BOARD.keys,
-      () => {
-        navigate({ to: "/boards" });
-        modals.openContextModal({
-          modal: "importModal",
-          innerProps: {},
-        });
-      },
-    ],
-    [
-      keyMap.TRAIN_BOARD.keys,
-      () => {
-        navigate({ to: "/boards" });
-        createTab({
-          tab: { name: t("Tab.Puzzle.Title"), type: "puzzles" },
-          setTabs,
-          setActiveTab,
-        });
-      },
-    ],
-    [keyMap.OPEN_FILE.keys, openNewFile],
-    [
-      keyMap.APP_RELOAD.keys,
-      () => {
-        location.reload();
-      },
-    ],
-    [keyMap.EXIT_APP.keys, () => exit(0)],
-  ]);
+      }
+    }
+  }, []);
+
+  const handleOpenLogs = useCallback(async () => {
+    try {
+      const logDir = await appLogDir();
+      const logPath = await resolve(logDir, APP_CONSTANTS.LOG_FILENAME);
+
+      notifications.show({
+        title: "Opening Logs",
+        message: `Log file: ${logPath}`,
+      });
+
+      await openPath(logPath);
+    } catch (error) {
+      console.error("Failed to open logs:", error);
+      notifications.show({
+        title: "Error",
+        message: "Failed to open log file",
+        color: "red",
+      });
+    }
+  }, []);
+
+  const handleAbout = useCallback(() => {
+    modals.openContextModal({
+      modal: "aboutModal",
+      title: "Pawn Appétit",
+      innerProps: {},
+    });
+  }, []);
 
   const menuActions: MenuGroup[] = useMemo(
     () => [
       {
-        label: t("Menu.File"),
+        label: t("features.menu.file"),
         options: [
           {
-            label: t("Menu.File.NewTab"),
+            label: t("features.menu.newTab"),
             id: "new_tab",
             shortcut: keyMap.NEW_BOARD_TAB.keys,
             action: createNewTab,
           },
           {
-            label: t("Menu.File.OpenFile"),
+            label: t("features.menu.openFile"),
             id: "open_file",
             shortcut: keyMap.OPEN_FILE.keys,
             action: openNewFile,
           },
           {
-            label: t("Menu.File.Exit"),
+            label: t("features.menu.exit"),
             id: "exit",
             shortcut: keyMap.EXIT_APP.keys,
             action: () => exit(0),
@@ -215,10 +473,10 @@ function RootLayout() {
         ],
       },
       {
-        label: t("Menu.View"),
+        label: t("features.menu.view"),
         options: [
           {
-            label: t("Menu.View.Reload"),
+            label: t("features.menu.reload"),
             id: "reload",
             shortcut: keyMap.APP_RELOAD.keys,
             action: () => location.reload(),
@@ -226,72 +484,71 @@ function RootLayout() {
         ],
       },
       {
-        label: t("Menu.Help"),
+        label: t("features.menu.help"),
         options: [
           {
-            label: t("Menu.Help.ClearSavedData"),
+            label: t("features.menu.clearSavedData"),
             id: "clear_saved_data",
-            action: () => {
-              ask("Are you sure you want to clear all saved data?", {
-                title: "Clear data",
-              }).then((res) => {
-                if (res) {
-                  localStorage.clear();
-                  sessionStorage.clear();
-                  location.reload();
-                }
-              });
-            },
+            action: handleClearData,
           },
           {
-            label: t("Menu.Help.OpenLogs"),
+            label: t("features.menu.openLogs"),
             id: "logs",
-            action: async () => {
-              const path = await resolve(await appLogDir(), "pawn-appetit.log");
-              notifications.show({
-                title: "Logs",
-                message: `Opened logs in ${path}`,
-              });
-              await openPath(path);
-            },
+            action: handleOpenLogs,
           },
           { label: "divider" },
           {
-            label: t("Menu.Help.CheckUpdate"),
+            label: t("features.menu.checkUpdate"),
             id: "check_for_updates",
             action: checkForUpdates,
           },
           {
-            label: t("Menu.Help.About"),
+            label: t("features.menu.about"),
             id: "about",
-            action: () => {
-              modals.openContextModal({
-                modal: "aboutModal",
-                title: "Pawn Appétit",
-                innerProps: {},
-              });
-            },
+            action: handleAbout,
           },
         ],
       },
     ],
-    [t, checkForUpdates, keyMap, openNewFile, createNewTab],
+    [t, keyMap, createNewTab, openNewFile, handleClearData, handleOpenLogs, checkForUpdates, handleAbout],
   );
 
-  const { data: menu } = useSWRImmutable(["menu", menuActions], () => createMenu(menuActions));
+  const { data: menu, error: menuError } = useSWRImmutable(["menu", menuActions], () => createMenu(menuActions));
+
+  useEffect(() => {
+    if (menuError) {
+      console.error("Menu creation failed:", menuError);
+      notifications.show({
+        title: "Menu Error",
+        message: "Failed to create application menu",
+        color: "red",
+      });
+    }
+  }, [menuError]);
 
   useEffect(() => {
     if (!menu) return;
-    if (layout.menuBar.mode === "disabled") return;
 
-    if (layout.menuBar.mode === "native") {
-      menu.setAsAppMenu();
-      getCurrentWebviewWindow().setDecorations(true);
-    } else {
-      Menu.new().then((m) => m.setAsAppMenu());
-      getCurrentWebviewWindow().setDecorations(false);
-    }
-  }, [menu, layout.menuBar.mode]);
+    const applyMenu = async () => {
+      if (layout.menuBar.mode === "disabled") return;
+      try {
+        const webviewWindow = getCurrentWebviewWindow();
+
+        if (layout.menuBar.mode === "native") {
+          await menu.setAsAppMenu();
+          await webviewWindow.setDecorations(true);
+        } else {
+          const emptyMenu = await Menu.new();
+          await emptyMenu.setAsAppMenu();
+          await webviewWindow.setDecorations(false);
+        }
+      } catch (error) {
+        console.error("Failed to apply menu configuration:", error);
+      }
+    };
+
+    applyMenu();
+  }, [menu, , layout.menuBar.mode]);
 
   return (
     <ModalsProvider modals={{ importModal: ImportModal, aboutModal: AboutModal }}>

@@ -7,6 +7,7 @@ import { documentDir, homeDir } from "@tauri-apps/api/path";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
 import type { DrawShape } from "chessground/draw";
+import type { Piece } from "chessground/types";
 import { makeSquare, type NormalMove, parseSquare, parseUci, type SquareName } from "chessops";
 import { chessgroundDests, chessgroundMove } from "chessops/compat";
 import { makeSan } from "chessops/san";
@@ -19,7 +20,7 @@ import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
-import { Chessground } from "@/chessground/Chessground";
+import { Chessground } from "@/common/components/Chessground";
 import ShowMaterial from "@/common/components/ShowMaterial";
 import { TreeStateContext } from "@/common/components/TreeStateContext";
 import { updateCardPerformance } from "@/features/files/components/opening";
@@ -83,6 +84,8 @@ interface ChessboardProps {
   clearShapes?: () => void;
   toggleOrientation?: () => void;
   currentTabSourceType?: string;
+  selectedPiece?: Piece | null;
+  setSelectedPiece?: (piece: Piece | null) => void;
 }
 
 function Board({
@@ -111,6 +114,8 @@ function Board({
   clearShapes,
   toggleOrientation,
   currentTabSourceType,
+  selectedPiece,
+  setSelectedPiece,
 }: ChessboardProps) {
   const { t } = useTranslation();
   const { layout } = useResponsiveLayout();
@@ -234,8 +239,8 @@ function Board({
 
       if (!isRecalled) {
         notifications.show({
-          title: t("Common.Incorrect"),
-          message: t("Board.Practice.CorrectMoveWas", { move: c.answer }),
+          title: t("common.incorrect"),
+          message: t("features.board.practice.correctMoveWas", { move: c.answer }),
           color: "red",
         });
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -493,6 +498,8 @@ function Board({
               />
 
               <Chessground
+                selectedPiece={selectedPiece}
+                setSelectedPiece={setSelectedPiece}
                 setBoardFen={setBoardFen}
                 orientation={orientation}
                 fen={currentNode.fen}

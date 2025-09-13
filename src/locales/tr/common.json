@@ -1,0 +1,745 @@
+{
+  "common": {
+    "on": "Açma",
+    "off": "Kapama",
+    "name": "İsim",
+    "description": "Açıklama",
+    "version": "Versiyon",
+    "enabled": "Aktif",
+    "remove": "Kaldır",
+    "delete": "Sil",
+    "add": "Ekle",
+    "open": "Aç",
+    "create": "Oluştur",
+    "save": "Kaydet",
+    "download": "İndir",
+    "local": "Lokal",
+    "install": "Yükle",
+    "installed": "Yüklendi",
+    "downloading": "İndiriliyor",
+    "extracting": "Çıkartılıyor",
+    "error": "Hata",
+    "addNew": "Yeni Ekle",
+    "openFolder": "Klasörü dosya gezgininde aç",
+    "unknown": "Bilinmeyen",
+    "cancel": "İptal",
+    "cannotUndo": "Bu etkinlik geri alınamaz.",
+    "nameAlreadyUsed": "İsim zaten kullanılıyor",
+    "requireName": "İsim gerekli",
+    "requirePath": "Dosya yolu gerekli",
+    "pgnFile": "PGN dosyası",
+    "pgnGame": "PGN Oyunu",
+    "or": "Veya",
+    "clickToSelectPGN": "PGN dosyası seçmek için tıklayın",
+    "size": "Boyut",
+    "generalSettings": "Genel ayarlar",
+    "data": "Veri",
+    "games": {
+      "one": "{{count}} oyun",
+      "other": "{{count}} oyun"
+    },
+    "edit": "Düzenle",
+    "enterFileName": "Dosya adını girin",
+    "next": "Sonraki",
+    "skip": "Atla",
+    "reset": "Sıfırla",
+    "incorrect": "Yanlış",
+    "run": "Çalıştır",
+    "stop": "Durdur",
+    "engine": "Motor",
+    "unsavedChanges": {
+      "title": "Kaydedilmemiş Değişiklikler",
+      "desc": "Kaydedilmemiş değişiklikleriniz var. Kapatmadan önce kaydetmek ister misiniz?",
+      "saveAndClose": "Kaydet ve Kapat",
+      "closeWithoutSaving": "Kaydetmeden Kapat"
+    },
+    "loading": "Yükleniyor...",
+    "continue": "Devam Et",
+    "review": "İncele",
+    "noGameSelected": "Hiçbir oyun seçilmedi"
+  },
+  "chess": {
+    "checkmate": "Mat",
+    "stalemate": "Pat",
+    "white": "Beyaz",
+    "black": "Siyah",
+    "random": "Rastgele",
+    "any": "Herhangi",
+    "player": "Oyuncu",
+    "opponent": "Rakip",
+    "goMode": {
+      "time": "Zaman",
+      "depth": "Derinlik",
+      "nodes": "Nodelar",
+      "infinite": "Sınırsız"
+    },
+    "annotate": {
+      "none": "Hiçbiri",
+      "brilliant": "Dahice",
+      "good": "İyi",
+      "interesting": "İlginç",
+      "dubious": "Şüpheli",
+      "mistake": "Hata",
+      "blunder": "Büyük hata",
+      "whiteWinning": "Beyaz kazanıyor",
+      "whiteAdvantage": "Beyaz net üstün",
+      "whiteEdge": "Beyaz biraz üstün",
+      "equal": "Eşit pozisyon",
+      "unclear": "Pozisyon net değil",
+      "blackEdge": "Siyah biraz üstün",
+      "blackAdvantage": "Siyah net üstün",
+      "blackWinning": "Siyah kazanıyor",
+      "novelty": "Yenilik",
+      "development": "Gelişim",
+      "initiative": "İnsiyatif",
+      "attack": "Atak",
+      "counterplay": "Karşı oyun",
+      "withCompensation": "Kompanseyle beraber",
+      "timeTrouble": "Zaman Sıkışması",
+      "withIdea": "Fikirle beraber",
+      "onlyMove": "Tek hamle",
+      "zugzwang": "Zugzwang"
+    },
+    "timeControl": {
+      "ultraBullet": "UltraBullet",
+      "bullet": "Bullet",
+      "blitz": "Blitz",
+      "rapid": "Rapid",
+      "classical": "Klasik",
+      "correspondence": "Yazışma"
+    },
+    "outcome": {
+      "outcome": "Sonuç",
+      "selectOutcome": "Sonuç seç",
+      "draw": "Berabere",
+      "whiteWins": "Beyaz kazandı",
+      "blackWins": "Siyah kazandı",
+      "unknown": "Bilinmiyor"
+    },
+    "opening": {
+      "emptyBoard": "Boş tahta",
+      "startingPosition": "Başlangıç konumu"
+    },
+    "fen": {
+      "start": "Başla",
+      "empty": "Boş",
+      "whiteToMove": "Beyazın hamlesi",
+      "blackToMove": "Siyahın hamlesi"
+    },
+    "pieceChars": {
+      "k": "Ş",
+      "q": "V",
+      "r": "K",
+      "b": "F",
+      "n": "A"
+    },
+    "errors": {
+      "emptyBoard": "Boş tahta",
+      "invalidKings": "Geçersiz kral sayısı",
+      "oppositeCheck": "Karşılıklı şah",
+      "pawnsOnBackrank": "Piyonlar arka sırada",
+      "invalidBoard": "Geçersiz tahta",
+      "invalidCastlingRights": "Geçersiz rok hakları",
+      "invalidEpSquare": "Geçersiz geçerken alma karesi",
+      "invalidFen": "Geçersiz FEN",
+      "invalidFullmoves": "Geçersiz tam hamle numarası",
+      "invalidHaldmoves": "Geçersiz yarım hamle numarası",
+      "invalidPockets": "Geçersiz cepler",
+      "invalidRemainingChecks": "Geçersiz kalan şah hakları",
+      "invalidTurn": "Geçersiz sıra",
+      "unknown": "Bilinmeyen hata"
+    }
+  },
+  "units": {
+    "count": "{{count, number}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "bytesLabels": {
+      "bytes": "Bayt",
+      "bytesLong": "Bayt",
+      "kilobytes": "KB",
+      "megabytes": "MB",
+      "gigabytes": "GB",
+      "terabytes": "TB",
+      "kilobytesLong": "Kilobayt",
+      "megabytesLong": "Megabayt",
+      "gigabytesLong": "Gigabayt",
+      "terabytesLong": "Terabayt"
+    },
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "nodesLabels": {
+      "thousand": "k",
+      "million": "M",
+      "billion": "B",
+      "trillion": "T",
+      "quadrillion": "Q",
+      "quintillion": "Qi",
+      "nodes": "düğüm",
+      "nodesPerSecond": "düğüm/sn"
+    },
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "durationLabels": {
+      "seconds": "sn",
+      "minutes": "dk",
+      "hours": "sa",
+      "days": "g",
+      "secondsLong": "saniye",
+      "minutesLong": "dakika",
+      "hoursLong": "saat",
+      "daysLong": "gün"
+    },
+    "score": "{{score, score}}",
+    "scoreLabels": {
+      "mate": "M",
+      "dtz": "DTZ",
+      "centipawns": "cp",
+      "centipawnsLong": "sentipuan"
+    }
+  },
+  "features": {
+    "richText": {
+      "bold": "Kalın",
+      "italic": "İtalik",
+      "underline": "Altı çizili",
+      "strike": "Üstü çizili",
+      "clearFormatting": "Formatı temizle",
+      "h1": "Başlık 1",
+      "h2": "Başlık 2",
+      "h3": "Başlık 3",
+      "h4": "Başlık 4",
+      "quote": "Alıntı",
+      "hLine": "Yatay çizgi",
+      "bulletList": "Sırasız liste",
+      "numberedList": "Sıralı liste",
+      "link": "Bağlantı",
+      "removeLink": "Bağlantıyı kaldır"
+    },
+    "menu": {
+      "file": "Dosya",
+      "newTab": "Yeni Sekme",
+      "openFile": "Dosya Aç",
+      "exit": "Çık",
+      "view": "Görüntü",
+      "reload": "Yenile",
+      "help": "Yardım",
+      "documentation": "Dokümantasyon",
+      "clearSavedData": "Kaydedilmiş veriyi sil",
+      "openLogs": "Kayıtları Aç",
+      "checkUpdate": "Güncellemeleri kontrol et",
+      "about": "Hakkında",
+      "markAsStart": "Başlangıç olarak işaretle",
+      "promoteToMainLine": "Ana Varyanta Yükselt",
+      "promoteVariation": "Varyantı Yükselt",
+      "copyVariationPGN": "Varyant PGN'sini Kopyala",
+      "deleteMove": "Hamleyi Sil"
+    },
+    "sidebar": {
+      "dashboard": "Kontrol Paneli",
+      "board": "Tahta",
+      "accounts": "Kullanıcı",
+      "files": "Dosyalar",
+      "databases": "Veritabanları",
+      "engines": "Motorlar",
+      "learn": "Öğren",
+      "settings": "Ayarlar",
+      "keyboardShortcuts": "Klavye Kısayolları"
+    },
+    "dashboard": {
+      "welcome": {
+        "firstOpen": "Pawn Appétit'e Hoş Geldiniz!",
+        "back": "Tekrar hoş geldiniz",
+        "desc": "Bir sonraki en iyi hamlenizi yapmaya hazır mısınız?"
+      },
+      "cards": {
+        "learn": {
+          "title": "Satranç Öğren",
+          "desc": "Temel bilgilerden ileri stratejilere kadar satranç öğrenmek için etkileşimli dersler",
+          "button": "Öğrenmeye Başla"
+        },
+        "playChess": {
+          "title": "Satranç Oyna",
+          "desc": "Motora veya bir arkadaşa karşı oyna",
+          "button": "Oyna"
+        },
+        "analysisBoard": {
+          "title": "Analiz Tahtası",
+          "desc": "Bir pozisyonu veya oyunu analiz et",
+          "button": "Aç"
+        },
+        "importGame": {
+          "title": "Oyun içe aktar",
+          "desc": "Bir PGN'den oyun içe aktar",
+          "button": "İçe aktar"
+        },
+        "analyze": {
+          "title": "Tahta Analizi",
+          "desc": "Güçlü satranç motorlarıyla konumları, oyunları ve varyasyonları analiz edin.",
+          "button": "Analiz Et"
+        },
+        "database": {
+          "title": "Veritabanı Erişimi",
+          "desc": "Kapsamlı satranç veritabanlarını keşfedin ve ustaların oyunlarını inceleyerek bilginizi derinleştirin.",
+          "button": "Gözat"
+        },
+        "engine": {
+          "title": "Motor Entegrasyonu",
+          "desc": "Analiz düzeninizi özelleştirmek ve esnekliği artırmak için birden fazla satranç motoru ekleyin ve yönetin.",
+          "button": "Yönet"
+        },
+        "puzzle": {
+          "title": "Bulmacalar",
+          "desc": "Satranç becelerinizi geliştirin",
+          "button": "Çalış"
+        },
+        "account": {
+          "title": "Hesaplar",
+          "desc": "Chess.com veya Lichess hesabınızı bağlayarak oyunlarınızı ve istatistiklerinizi içe aktarın.",
+          "button": "Bağlan"
+        },
+        "import": {
+          "title": "İçe Aktar",
+          "desc": "Kendi oyunlarınızı analiz etmek veya belirli konumları incelemek için PGN dosyaları yükleyin ve düzenleyin.",
+          "button": "İçe Aktar"
+        }
+      }
+    },
+    "tabs": {
+      "newTab": "Yeni Sekme",
+      "playChess": {
+        "title": "Oyun Oyna",
+        "desc": "Bir motor veya arkadaşına meydan oku",
+        "button": "Hemen Oyna"
+      },
+      "analysisBoard": {
+        "title": "Analiz Tahtası",
+        "desc": "Bir oyunu veya konumu analiz et",
+        "button": "Analiz Et"
+      },
+      "importGame": {
+        "title": "Oyun İçe Aktar",
+        "desc": "Bir PGN'den oyun içe aktar",
+        "button": "Oyunu İçe Aktar",
+        "url": "Oyun URL’si (lichess veya chess.com)",
+        "saveToCollection": "Koleksiyona kaydet",
+        "online": "Çevrimiçi",
+        "importing": "İçe aktarılıyor...",
+        "import": "İçe Aktar"
+      },
+      "puzzle": {
+        "title": "Bulmacalar",
+        "desc": "Satranç becerilerini geliştir",
+        "button": "Şimdi Çöz"
+      }
+    },
+    "board": {
+      "actions": {
+        "togglePawnStructureView": "Piyon Yapısını Göster/Gizle",
+        "takeSnapshot": "Ekran Görüntüsü Al",
+        "analyzeGame": "Oyunu analiz et",
+        "playFromHere": "Buradan Oyna",
+        "clearDrawings": "Çizimleri Temizle",
+        "editPosition": "Konumu Düzenle",
+        "savePGN": "PGN Kaydet ({{key}})",
+        "addGame": "Oyun Ekle",
+        "flipBoard": "Tahtayı Çevir ({{key}})"
+      },
+      "tabs": {
+        "practice": "Egzersis",
+        "graph": "Grafik",
+        "centerGraph": "Geçerli hamleye odaklan",
+        "analysis": "Analiz",
+        "database": "Veritabanı",
+        "annotate": "Not",
+        "info": "Bilgi"
+      },
+      "practice": {
+        "train": "Çalış",
+        "build": "Oluştur",
+        "noPositionForTrain1": "Çalışılacak pozisyon yok. Bu PGN dosyasına hamle ekleyerek başlayın.",
+        "noPositionForTrain2": "Hamle ekleyebilmeniz için Analiz moduna geçmelisiniz.",
+        "seeAnswer": "Cevabı Gör",
+        "practiced": "Çalışıldı",
+        "due": "Çalışılmalı",
+        "unseen": "Görülmeyen",
+        "showAll": "Tüm pozisyonları göster",
+        "showLogs": "Kayıtları göster",
+        "practicedAll1": "Tüm pozisyonları çalıştınız.",
+        "practicedAll2": "Sonraki gözden geçirme tarihi:",
+        "correctMoveWas": "Doğru hamle {{move}} idi",
+        "resetOpeningData": {
+          "title": "Açılış verilerini sıfırla",
+          "desc": "\"{ { fileName } } \" için açılış verilerini sıfırlamak istediğinize emin misiniz? Tüm öğrenme ilerlemesi kaybolacak."
+        }
+      },
+      "analysis": {
+        "engines": "Motorlar",
+        "report": "Rapor",
+        "logs": "Kayıtlar",
+        "summary": "Özet",
+        "inactiveEngine": "Motor aktif değil",
+        "syncGlobally": "Global olarak senkron et",
+        "killEngine": "Motoru kapat",
+        "generateReport": "Rapor oluştur",
+        "reportGenerated": "Rapor oluşturuldu",
+        "generatingReport": "Rapor oluşturuluyor",
+        "notAnalysed": "Analiz edilmedi",
+        "engineRequired": "Motor gerekli",
+        "refDBRequired": "Referans veritabanı seçilmedi. Önce veritabanları sayfasından birini seçin",
+        "time": "Süre (ms)",
+        "reversed": "Tersten analiz",
+        "reversedDesc": "Oyunu son hamleden ilk hamleye analiz eder.",
+        "annotateNovelties": "Yenilikleri İşaretle",
+        "annotateNoveltiesDesc": "Referans veritabanında bulunmayan ilk pozisyona not ekler.",
+        "analyze": "Analiz",
+        "advantage": "Avantaj",
+        "accuracy": "Doğruluk",
+        "enableWDL": "Bu özelliği kullanmak için motor ayarlarında UCI_ShowWDL'i etkinleştirmeniz gerekiyor."
+      },
+      "database": {
+        "local": "Lokal",
+        "lichessAll": "Lichess Herkes",
+        "lichessMaster": "Lichess Ustalar",
+        "matches": "{{matches}} oyun",
+        "stats": "İstatistik",
+        "games": "Oyunlar",
+        "options": "Ayarlar",
+        "noReference1": "Referans veritabanı seçilmedi.",
+        "noReference2": "Lütfen",
+        "selectReference": "bir veritabanı ekleyin",
+        "noReference3": "sonra referans olarak işaretleyin.",
+        "timeControl": "Zaman temposu",
+        "averageRating": "Ortalama puan"
+      },
+      "annotate": {
+        "writeHere": "Buraya yazın..."
+      }
+    },
+    "lessons": {
+      "title": "Satranç Dersleri",
+      "selectToBegin": "Satranç öğrenmeye başlamak için bir ders seçin",
+      "difficulty": {
+        "beginner": "Başlangıç",
+        "intermediate": "Orta",
+        "advanced": "İleri"
+      },
+      "startLesson": "Derse Başla",
+      "backToLessons": "Derslere Geri Dön",
+      "backToLesson": "Derse Geri Dön",
+      "startExercise": "Alıştırmaya Başla",
+      "exercises": "Alıştırmalar",
+      "correct": "Doğru! Aferin.",
+      "incorrect": "Yanlış. Tekrar dene.",
+      "progress": "İlerleme",
+      "overallProgress": "Genel İlerleme",
+      "showHint": "İpucu Göster",
+      "hint": "İpucu",
+      "tryMoves": "Bu hamlelerden birini dene",
+      "completed": "Tamamlandı",
+      "exercisesCompleted": "alıştırma tamamlandı",
+      "lessonCompleted": "Tebrikler! {{lesson}} dersini tamamladınız!",
+      "completionMessage": "Bu dersteki tüm alıştırmaları başarıyla tamamladınız. Harika bir iş çıkardınız!"
+    },
+    "practice": {
+      "title": "Satranç Pratiği",
+      "description": "Hedefe yönelik alıştırmalarla satranç becerilerinizi geliştirin",
+      "selectExercise": "Pratik yapmak için bir alıştırma seçin",
+      "progress": "İlerleme",
+      "exercises": "Alıştırmalar",
+      "completed": "Tamamlandı",
+      "start": "Pratiğe Başla",
+      "showHint": "İpucu Göster",
+      "hintText": "Taktik fırsatları veya konumu kontrol eden önemli kareleri arayın.",
+      "congratulations": "Tebrikler!",
+      "completedCategory": "{{category}} kategorisindeki tüm alıştırmaları tamamladınız!"
+    },
+    "engines": {
+      "title": "Motorlarınız",
+      "settings": {
+        "noEngine": "Hiçbir motor seçili değil",
+        "searchSettings": "Arama ayarları",
+        "advancedSettings": "Gelişmiş ayarlar",
+        "numOfLines": "Varyant sayısı",
+        "numOfCores": "Çekirdek sayısı",
+        "sizeOfHash": "Hash boyutu",
+        "editJSON": "JSON olarak düzenle",
+        "reset": "Varsayılana sıfırla"
+      },
+      "add": {
+        "title": "Motor Ekle",
+        "cloud": "Bulut",
+        "errorFetch": "Motorun bilgileri sunucudan aktarılamadı.",
+        "binaryFile": "Binary dosyası",
+        "binaryFileDesc": "Binary dosyası eklemek için tıklayın",
+        "name": "İsim",
+        "autodetect": "Otomatik bul",
+        "eloDesc": "Motor ELO'su",
+        "imageFile": "Görsel dosyası",
+        "imageFileDesc": "Görsel dosyası seçmek için tıklayın (önerilen boyut: 60x60)"
+      },
+      "remove": {
+        "title": "Motor Kaldır",
+        "message": "Bu motoru Pawn Appétit'tan kaldırmak istediğinize emin misiniz?"
+      }
+    },
+    "databases": {
+      "title": "Veritabanlarınız",
+      "card": {
+        "games": "Oyunlar",
+        "players": "Oyuncular",
+        "tournaments": "Turnuvalar",
+        "storage": "Depolama"
+      },
+      "add": {
+        "title": "Veritabanı Ekle",
+        "web": "Web",
+        "errorFetch": "Veritabanı bilgileri sunucudan aktarılamadı.",
+        "clickToSelectPGN": "PGN dosyası seçmek için tıklayın",
+        "convert": "Dönüştür"
+      },
+      "settings": {
+        "referenceDatabase": "Referans Veritabanı",
+        "referenceDatabaseShort": "Referans",
+        "indexed": "İndeksli",
+        "indexedDesc": "İndeksler arama hızını arttırır ama daha fazla depolama kullanır.",
+        "events": "Etkinlikler",
+        "explore": "Keşfed",
+        "advancedTools": "Gelişmiş aletler",
+        "mergePlayers": "Oyuncuları Birleştir",
+        "mergePlayersDesc": "İlk oyuncunun tüm kayıtlarını ikinci oyuncuyla değiştir.",
+        "merge": "Birleştir",
+        "batchDelete": "Toplu Sil",
+        "batchDeleteDesc": "Bu operasyon veritabanından geri alınamaz şekilde oyun siler. Dikkatli kullanın.",
+        "removeDup": "Kopyaları Sil",
+        "removeEmpty": "Boş Oyunları Sil",
+        "actions": "Operasyonlar",
+        "addGames": "Oyun Ekle",
+        "exportPGN": "PGN olarak çıkart"
+      },
+      "delete": {
+        "title": "Veritabanını Sil",
+        "message": "Bu veritabanını silmek istediğine emin misin?"
+      }
+    },
+    "files": {
+      "title": "Dosyalar",
+      "fileType": {
+        "fileType": "Dosya türü",
+        "game": "Oyun",
+        "repertoire": "Repertuvar",
+        "tournament": "Turnuva",
+        "puzzle": "Bulmaca",
+        "other": "Diğer",
+        "folder": "Klasör"
+      },
+      "delete": {
+        "title": "Dosyayı sil",
+        "message": "Bu dosyayı silmek istediğine emin misin: {{fileName}}?",
+        "delete": "Sil"
+      },
+      "editMetadata": "Metadata Düzenle",
+      "edit": {
+        "title": "Dosya düzenle"
+      },
+      "create": {
+        "title": "Dosya oluştur",
+        "pgnPlaceholder": "PGN’nizi buraya yapıştırın..."
+      },
+      "search": "Dosyalar için arat",
+      "noFiles": "Dosya bulunamadı",
+      "noFileSelected": "Dosya seçilmedi",
+      "name": "Ad",
+      "lastModified": "Son değişiklik",
+      "type": "Tür",
+      "folder": "Klasör",
+      "game": {
+        "delete": {
+          "title": "Oyunu kaldır",
+          "desc": "Bu oyunu kaldırmak istediğinize emin misiniz?"
+        }
+      }
+    },
+    "gameTable": {
+      "date": "Tarih",
+      "plies": "Yarım hamle",
+      "event": "Etkinlik",
+      "site": "Yer",
+      "from": "Başlangıç",
+      "startDate": "Başlangıç tarihi",
+      "to": "Bitiş",
+      "endDate": "Bitiş tarihi"
+    },
+    "gameNotation": {
+      "showMoves": "Hamleleri Göster",
+      "hideMoves": "Hamleleri Gizle",
+      "showComments": "Yorumları Göster",
+      "hideComments": "Yorumları Gizle",
+      "showVariations": "Varyantları Göster",
+      "repertoireView": "Repertuar Görünümü",
+      "mainLine": "Ana Varyant",
+      "showVariationsTooltip": "Varyantları göster"
+    },
+    "pgnInput": {
+      "comments": "Yorumlar",
+      "glyphs": "Semboller",
+      "variations": "Varyantlar",
+      "extraMarkups": "Ek İşaretler",
+      "maxDepth": "Maksimum Derinlik",
+      "totalMoves": "Toplam Hamle"
+    },
+    "puzzle": {
+      "jumpToNext": "Sonraki bulmacaya geç",
+      "jumpToNextOff": "Kapalı",
+      "jumpToNextOnSuccess": "Başarılı olduğunda",
+      "jumpToNextOnSuccessAndFailure": "Başarı ve başarısızlıkta",
+      "playerRating": "Oyuncu Derecesi",
+      "maxRating": "Maksimum Derece",
+      "newMax": "Yeni Maksimum",
+      "rating": "Bulmaca Derecesi",
+      "averageSuccessRating": "Ortalama Başarı Derecesi",
+      "averageFailRating": "Ortalama Başarısızlık Derecesi",
+      "selectDatabase": "Veritabanı seçin",
+      "ratingRange": "Derece Aralığı",
+      "progressive": "Uyarlanabilir",
+      "hideRating": "Dereceyi Gizle",
+      "inOrder": "Sıralı",
+      "newPuzzle": "Yeni Bulmaca",
+      "analyzePosition": "Konumu Analiz Et",
+      "clearSession": "Oturumu Temizle",
+      "showingSolution": "Çözüm Gösteriliyor",
+      "viewSolution": "Çözümü Görüntüle",
+      "loadingRatingRange": "Derece aralığı yükleniyor...",
+      "enterTitle": "Bulmaca Başlığı Girin"
+    },
+    "tablebase": {
+      "title": "Tablebase",
+      "error": "Hata: ",
+      "dtm": "DTM {{count}}",
+      "dtz": "DTZ {{count}}",
+      "fiftyMoveRule": "*50 hamle kuralı nedeniyle"
+    }
+  },
+  "settings": {
+    "board": {
+      "title": "Tahta",
+      "desc": "Analiz tahtasını ve oyun kontrollerini düzenleyin",
+      "pieceDest": "Taş Hamleleri",
+      "pieceDestDesc": "Her taş için mümkün hamleleri göster",
+      "arrows": "Oklar",
+      "arrowsDesc": "En iyi hamle oklarını göster",
+      "snapArrows": "Okları Kısıtla",
+      "snapArrowsDesc": "Okları sadece geçerli hamlelerle kısıtla",
+      "consecutiveArrows": "Ardışık Oklar",
+      "consecutiveArrowsDesc": "Aynı taşı birkaç kez hareket ettirmeyi içeriyorsa en iyi varyant için birden fazla ok göster.",
+      "eraseDrawablesOnClick": "Tıklandığında Çizilenleri Sil",
+      "eraseDrawablesOnClickDesc": "Tahtadaki okları ve yuvarlakları sol tıklandığında sil",
+      "autoPromotion": "Otomatik Terfi",
+      "autoPromotionDesc": "Piyon son yataya eriştiğinde otomatik olarak vezire terfi et",
+      "coordinates": "Kordinatlar",
+      "coordinatesDesc": "Kordinatları tahtada göster",
+      "autoSave": "Otomatik Kaydet",
+      "autoSaveDesc": "Her hamle sonrası otomatik olarak dosyaya kaydet",
+      "previewBoard": "Tahtayı Önizle",
+      "previewBoardDesc": "Motor analizinde bir hareketin üzerine gelindiğinde tahtanın önizlemesini göster",
+      "scrollThroughMoves": "Fare Tekeriyle Hamlelerde Gezin",
+      "scrollThroughMovesDesc": "Satranç tahtasındaki hamleler arasında fare tekeriyle hareketi etkinleştirin veya devre dışı bırakın"
+    },
+    "inputs": {
+      "title": "Girdiler",
+      "desc": "Girdi ayarlarını düzenleyin",
+      "textInput": "Yazıyla Hamle Girdisi",
+      "textInputDesc": "Yazı formatında hamle girdisi al",
+      "spellCheck": "Yazım Kontrol",
+      "spellCheckDesc": "Yazılı hamlelerde yazımı kontrol et"
+    },
+    "openingReport": {
+      "title": "Açılış Raporu",
+      "desc": "Açılış raporu ayarlarını düzenleyin",
+      "percentCoverage": "Yüzdelik Kapsam",
+      "percentCoverageDesc": "Her pozisyonda kapsanan hamlelerin yüzdeliği",
+      "minGames": "En Az Oyun",
+      "minGamesDesc": "Pozisyonun göz önünde bulundurulması için gereken en az oyun"
+    },
+    "anarchy": {
+      "title": "Anarşi",
+      "desc": "Eğlence ayarları",
+      "forcedEnPassant": "Zorunlu Geçerken Alma",
+      "forcedEnPassantDesc": "Geçerli bir hamleyse, geçerken alma yapmaya zorlar."
+    },
+    "appearance": {
+      "title": "Görünüş",
+      "desc": "Uygulamanın görünüşünü düzenleyin",
+      "theme": {
+        "theme": "Tema"
+      },
+      "themeDesc": "Genel renk şeması",
+      "custom": "Özel",
+      "auto": "Otomatik",
+      "titleBar": "Başlık çubuğu",
+      "titleBarDesc": "Yerel veya özel başlık çubuğu arasında seçim yapın",
+      "language": "Dil",
+      "languageDesc": "Uygulamada kullanılan dil",
+      "native": "Yerel",
+      "fontSize": "Font Boyutu",
+      "fontSizeDesc": "Genel font boyutu",
+      "pieceSet": "Taş Seti",
+      "pieceSetDesc": "Tahtada kullanılan taşlar",
+      "boardImage": "Tahta Görseli",
+      "boardImageDesc": "Tahta arkaplanı olarak kullanılan görsel",
+      "accentColor": "Baskın Renk",
+      "accentColorDesc": "Uygulamanın ana rengi",
+      "hideDashboardOnStartup": "Başlangıçta Kontrol Panelini Gizle",
+      "hideDashboardOnStartupDesc": "Uygulama başladığında Kontrol Paneli yerine Tahtaları aç",
+      "dateFormat": "Tarih Formatı",
+      "dateFormatDesc": "Uluslararası (YYYY-AA-GG) veya yerel tarih formatı arasında seçim yapın",
+      "international": "Uluslararası",
+      "locale": "Yerel"
+    },
+    "sound": {
+      "title": "Ses",
+      "desc": "Ses ayarlarını düzenleyin",
+      "volume": "Yükseklik",
+      "volumeDesc": "Genel yükseklik",
+      "collection": "Ses koleksiyonu",
+      "collectionDesc": "Kullanılan seslerin koleksiyonu"
+    },
+    "keybindings": "Tuş Atamaları",
+    "directories": {
+      "title": "Klasörler",
+      "desc": "Uygulama tarafından kullanılan klasörleri düzenleyin",
+      "files": "Dosyalar Klasörü",
+      "filesDesc": "Dosyalar sayfasındaki oyunlarınız burada saklanır"
+    },
+    "telemetry": "Telemetri",
+    "telemetryDesc": "Anonim kullanım verilerini paylaşarak Pawn Appétit’in geliştirilmesine yardımcı olun",
+    "moveNotation": "Hamle gösterimi",
+    "moveNotationDesc": "Taşların gösterim biçimini seçin",
+    "symbols": "Semboller (♔♕♖♗♘)",
+    "letters": "Harfler (K Q R B N)",
+    "translatedLetters": "Çevrilmiş Harfler (K Q R B N)",
+    "waysToMovePieces": "Taşları Hareket Ettirme Yöntemleri",
+    "waysToMovePiecesDesc": "Taşları sürükleyerek, tıklayarak veya her ikisiyle hareket ettirin",
+    "drag": "Sürükle",
+    "click": "Tıkla",
+    "both": "Her ikisi",
+    "searchPlaceholder": "Ayarları ara",
+    "noResultsFound": "İlgili ayar bulunamadı:",
+    "gameplay": "Oynanış",
+    "analysis": "Analiz",
+    "interface": "Arayüz",
+    "system": "Sistem"
+  },
+  "formatters": {
+    "dateFormat": "{{date, dateformat}}",
+    "dateTimeFormat": "{{date, datetimeformat}}",
+    "moveNotation": "{{move, moveNotation}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "score": "{{score, score}}"
+  }
+}

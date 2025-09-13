@@ -117,7 +117,7 @@ function MobileBoardLayout({
     <Stack h="100%" gap="xs" justify="space-between" align="stretch">
       <Paper withBorder p="xs">
         <Group justify="space-between" align="center">
-          <Text fw={700}>{t("Board.Analysis")}</Text>
+          <Text fw={700}>{t("features.board.tabs.analysis")}</Text>
           <ActionIcon variant="subtle" onClick={() => toggleCollapsed()}>
             {isCollapsed ? <IconChevronDown size="1rem" /> : <IconChevronUp size="1rem" />}
           </ActionIcon>

@@ -101,10 +101,10 @@ function OpeningsPanel({ playerName, info }: { playerName: string; info: PlayerG
       )}
       <Group grow pt="xl">
         <Text ta="center" fw="bold">
-          {t("Common.White")}
+          {t("chess.white")}
         </Text>
         <Text ta="center" fw="bold">
-          {t("Common.Black")}
+          {t("chess.black")}
         </Text>
       </Group>
       <Divider mt="md" />

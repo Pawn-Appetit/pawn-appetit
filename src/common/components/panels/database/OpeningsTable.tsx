@@ -59,7 +59,7 @@ function OpeningsTable({ openings, loading }: { openings: Opening[]; loading: bo
                   Game end
                 </Text>
               );
-            return <Text fz="sm">{t("Formatters.MoveNotation", { move })}</Text>;
+            return <Text fz="sm">{t("formatters.moveNotation", { move })}</Text>;
           },
         },
         {
@@ -72,7 +72,7 @@ function OpeningsTable({ openings, loading }: { openings: Opening[]; loading: bo
               <Group>
                 {move !== "Total" && <Text fz="sm">{percentage.toFixed(0)}%</Text>}
                 <Text fz="sm" flex={1} ta="right">
-                  {t("Units.Count", { count: total })}
+                  {t("units.count", { count: total })}
                 </Text>
               </Group>
             );

@@ -1,0 +1,421 @@
+{
+  "common": {
+    "on": "УВІМК",
+    "off": "ВИМК",
+    "name": "Ім'я",
+    "description": "Опис",
+    "version": "Версія",
+    "enabled": "Увімкнено",
+    "remove": "Видалити",
+    "delete": "Видалити",
+    "add": "Додати",
+    "open": "Відкрити",
+    "create": "Створити",
+    "save": "Зберегти",
+    "download": "Завантажити",
+    "local": "Локально",
+    "install": "Встановити",
+    "installed": "Встановлено",
+    "downloading": "Завантаження",
+    "extracting": "Розпакування",
+    "error": "Помилка",
+    "addNew": "Додати новий",
+    "openFolder": "Відкрити папку у файловому провіднику",
+    "unknown": "Невідомо",
+    "cancel": "Скасувати",
+    "cannotUndo": "Цю дію не можна скасувати.",
+    "nameAlreadyUsed": "Ім'я вже використовується",
+    "requireName": "Ім'я обов'язкове",
+    "requirePath": "Шлях обов'язковий",
+    "pgnFile": "Файл PGN",
+    "pgnGame": "Гра PGN",
+    "size": "Розмір",
+    "generalSettings": "Загальні налаштування",
+    "data": "Дані",
+    "games": {
+      "one": "{{count}} гра",
+      "other": "{{count}} гри"
+    },
+    "edit": "Редагувати",
+    "enterFileName": "Введіть ім'я файлу",
+    "next": "Далі",
+    "skip": "Пропустити",
+    "reset": "Скинути",
+    "incorrect": "Неправильно",
+    "run": "Запустити",
+    "stop": "Зупинити",
+    "engine": "Движок"
+  },
+  "chess": {
+    "checkmate": "Шах і мат",
+    "stalemate": "Пат",
+    "white": "БІЛІ",
+    "black": "ЧОРНІ",
+    "goMode": {
+      "time": "Час",
+      "depth": "Глибина",
+      "nodes": "Вузли",
+      "infinite": "Нескінченність"
+    },
+    "annotate": {
+      "brilliant": "Блискуче",
+      "good": "Добре",
+      "interesting": "Цікаво",
+      "dubious": "Сумнівно",
+      "mistake": "Помилка",
+      "blunder": "Груба помилка",
+      "whiteWinning": "Білі перемагають",
+      "whiteAdvantage": "Перевага у білих",
+      "whiteEdge": "Невелика перевага у білих",
+      "equal": "Рівна позиція",
+      "unclear": "Невизначена позиція",
+      "blackEdge": "Невелика перевага у чорних",
+      "blackAdvantage": "Перевага у чорних",
+      "blackWinning": "Чорні перемагають",
+      "novelty": "Новинка",
+      "development": "Розвиток",
+      "initiative": "Ініціатива",
+      "attack": "Атака",
+      "counterplay": "Контргра",
+      "withCompensation": "З компенсацією",
+      "timeTrouble": "Цейтнот",
+      "withIdea": "З ідеєю",
+      "onlyMove": "Єдиний хід",
+      "zugzwang": "Цугцванг"
+    },
+    "timeControl": {
+      "ultraBullet": "Ультра Буллет",
+      "bullet": "Буллет",
+      "blitz": "Бліц",
+      "rapid": "Рапід",
+      "classical": "Класика",
+      "correspondence": "Листування"
+    }
+  },
+  "features": {
+    "richText": {
+      "bold": "Жирний",
+      "italic": "Курсив",
+      "underline": "Підкреслений",
+      "strike": "Закреслений",
+      "clearFormatting": "Очистити форматування",
+      "h1": "Заголовок 1",
+      "h2": "Заголовок 2",
+      "h3": "Заголовок 3",
+      "h4": "Заголовок 4",
+      "quote": "Цитата",
+      "hLine": "Горизонтальна лінія",
+      "bulletList": "Маркований список",
+      "numberedList": "Нумерований список",
+      "link": "Посилання",
+      "removeLink": "Видалити посилання"
+    },
+    "menu": {
+      "file": "Файл",
+      "newTab": "Нова вкладка",
+      "openFile": "Відкрити файл",
+      "exit": "Вихід",
+      "view": "Вигляд",
+      "reload": "Перезавантажити",
+      "help": "Допомога",
+      "documentation": "Документація",
+      "clearSavedData": "Очистити збережені дані",
+      "openLogs": "Відкрити логи",
+      "checkUpdate": "Перевірити оновлення",
+      "about": "Про програму"
+    },
+    "sidebar": {
+      "board": "Дошка",
+      "accounts": "Користувач",
+      "files": "Файли",
+      "databases": "Бази даних",
+      "engines": "Движки",
+      "settings": "Налаштування"
+    },
+    "dashboard": {
+      "cards": {
+        "playChess": {
+          "title": "Грати в шахи",
+          "desc": "Грайте проти движка або друга",
+          "button": "Грати"
+        },
+        "analysisBoard": {
+          "title": "Аналіз дошки",
+          "desc": "Аналізуйте гру або позицію",
+          "button": "Відкрити"
+        },
+        "importGame": {
+          "title": "Імпорт гри",
+          "desc": "Імпортуйте гру з файлу PGN",
+          "button": "Імпортувати"
+        },
+        "puzzle": {
+          "title": "Головоломки",
+          "desc": "Тренуйте шахові навички",
+          "button": "Тренуватися"
+        }
+      }
+    },
+    "tabs": {
+      "newTab": "Нова вкладка"
+    },
+    "board": {
+      "tabs": {
+        "practice": "Практика",
+        "analysis": "Аналіз",
+        "database": "База даних",
+        "annotate": "Анотація",
+        "info": "Інформація"
+      },
+      "practice": {
+        "train": "Тренуватися",
+        "build": "Створити",
+        "noPositionForTrain1": "Немає позицій для тренування. Спочатку додайте ходи в цей файл PGN.",
+        "noPositionForTrain2": "Необхідно перейти в режим аналізу, щоб додати ходи.",
+        "seeAnswer": "Подивитися відповідь",
+        "practiced": "Відпрацьовано",
+        "due": "Підлягає тренуванню",
+        "unseen": "Не переглянуто",
+        "showAll": "Показати всі позиції",
+        "showLogs": "Показати логи",
+        "practicedAll1": "Ви вже відпрацювали всі позиції.",
+        "practicedAll2": "Наступна перевірка через",
+        "correctMoveWas": "Правильний хід був {{move}}"
+      },
+      "analysis": {
+        "engines": "Движки",
+        "report": "Звіт",
+        "logs": "Логи",
+        "summary": "Підсумок",
+        "inactiveEngine": "Движок не активний",
+        "syncGlobally": "Синхронізувати глобально",
+        "killEngine": "Зупинити движок",
+        "generateReport": "Створити звіт",
+        "reportGenerated": "Звіт створено",
+        "generatingReport": "Створення звіту",
+        "notAnalysed": "Не проаналізовано",
+        "engineRequired": "Потрібен движок",
+        "refDBRequired": "Не вибрано базу даних. Спочатку виберіть базу даних на сторінці баз даних.",
+        "time": "Час (мс)",
+        "reversed": "Зворотний аналіз",
+        "reversedDesc": "Аналізувати гру з останньої позиції.",
+        "annotateNovelties": "Анотувати новинки",
+        "annotateNoveltiesDesc": "Додати коментар до першої позиції, якої немає в базі даних.",
+        "analyze": "Аналізувати",
+        "advantage": "Перевага",
+        "accuracy": "Точність"
+      },
+      "database": {
+        "local": "Локально",
+        "lichessAll": "Lichess Все",
+        "lichessMaster": "Lichess Майстри",
+        "matches": "{{matches}} ігор",
+        "stats": "Статистика",
+        "games": "Ігри",
+        "options": "Опції",
+        "noReference1": "Не вибрано базу даних.",
+        "noReference2": "Будь ласка",
+        "selectReference": "додайте базу даних",
+        "noReference3": "спочатку і позначте її як довідкову.",
+        "timeControl": "Контроль часу",
+        "averageRating": "Середній рейтинг"
+      },
+      "annotate": {
+        "writeHere": "Пишіть тут..."
+      }
+    },
+    "engines": {
+      "title": "Движки",
+      "settings": {
+        "noEngine": "Движок не вибрано",
+        "searchSettings": "Налаштування пошуку",
+        "advancedSettings": "Додаткові налаштування",
+        "numOfLines": "Кількість ліній",
+        "numOfCores": "Кількість ядер",
+        "sizeOfHash": "Розмір хеша",
+        "editJSON": "Редагувати JSON",
+        "reset": "Скинути за замовчуванням"
+      },
+      "add": {
+        "title": "Додати движок",
+        "cloud": "Хмара",
+        "errorFetch": "Не вдалося отримати движки з сервера.",
+        "binaryFile": "Виконуваний файл",
+        "binaryFileDesc": "Натисніть для вибору виконуваного файлу",
+        "name": "Ім'я",
+        "autodetect": "Автовизначення",
+        "eloDesc": "Ело движка",
+        "imageFile": "Файл зображення",
+        "imageFileDesc": "Натисніть для вибору файлу зображення (рекомендовано: 60x60)"
+      },
+      "remove": {
+        "title": "Видалити движок",
+        "message": "Ви впевнені, що хочете видалити цей движок із Pawn Appétit?"
+      }
+    },
+    "databases": {
+      "title": "Бази даних",
+      "card": {
+        "games": "Ігри",
+        "players": "Гравці",
+        "storage": "Зберігання"
+      },
+      "add": {
+        "title": "Додати базу даних",
+        "web": "Веб",
+        "errorFetch": "Не вдалося отримати бази даних з сервера.",
+        "clickToSelectPGN": "Натисніть для вибору файлу PGN",
+        "convert": "Конвертувати"
+      },
+      "settings": {
+        "referenceDatabase": "Довідкова база даних",
+        "indexed": "Проіндексовано",
+        "indexedDesc": "Індекси використовуються для прискорення пошуку, але займають додаткове місце.",
+        "events": "Події",
+        "explore": "Досліджувати",
+        "advancedTools": "Розширені інструменти",
+        "mergePlayers": "Об'єднати гравців",
+        "mergePlayersDesc": "Заміняє всі випадки першого гравця на другого в базі даних.",
+        "merge": "Об'єднати",
+        "batchDelete": "Масове видалення",
+        "batchDeleteDesc": "Ці дії безповоротно видалять ігри з бази даних. Використовуйте обережно.",
+        "removeDup": "Видалити дублікати",
+        "removeEmpty": "Видалити порожні ігри",
+        "actions": "Дії",
+        "addGames": "Додати ігри",
+        "exportPGN": "Експортувати в PGN"
+      },
+      "delete": {
+        "title": "Видалити базу даних",
+        "message": "Ви впевнені, що хочете видалити цю базу даних?"
+      }
+    },
+    "files": {
+      "title": "Файли",
+      "fileType": {
+        "fileType": "Тип файлу",
+        "game": "Гра",
+        "repertoire": "Репертуар",
+        "tournament": "Турнір",
+        "puzzle": "Головоломка",
+        "other": "Інше",
+        "folder": "Папка"
+      },
+      "delete": {
+        "title": "Видалити файл",
+        "message": "Ви впевнені, що хочете видалити {{fileName}}?"
+      },
+      "editMetadata": "Редагувати метадані",
+      "edit": {
+        "title": "Редагувати файл"
+      },
+      "create": {
+        "title": "Створити файл"
+      },
+      "search": "Пошук файлів"
+    },
+    "pgnInput": {
+      "comments": "Коментарі",
+      "glyphs": "Символи",
+      "variations": "Варіації",
+      "extraMarkups": "Додаткові позначки",
+      "maxDepth": "Максимальна глибина",
+      "totalMoves": "Загальна кількість ходів"
+    }
+  },
+  "settings": {
+    "board": {
+      "title": "Дошка",
+      "desc": "Налаштувати дошку аналізу та елементи керування грою",
+      "pieceDest": "Місця призначення фігур",
+      "pieceDestDesc": "Показати можливі ходи для кожної фігури",
+      "arrows": "Стрілки",
+      "arrowsDesc": "Показати стрілки для найкращих ходів",
+      "snapArrows": "Закріпити стрілки",
+      "snapArrowsDesc": "Закріпити стрілки на допустимі ходи",
+      "consecutiveArrows": "Послідовні стрілки",
+      "consecutiveArrowsDesc": "Показувати кілька стрілок для найкращої лінії, якщо вона складається з декількох ходів однією і тією ж фігурою",
+      "eraseDrawablesOnClick": "Стерти позначки при кліку",
+      "eraseDrawablesOnClickDesc": "Очистити дошку від намальованих стрілок і кіл при натисканні лівої кнопки миші",
+      "autoPromotion": "Автоматичне підвищення",
+      "autoPromotionDesc": "Автоматично підвищувати до ферзя",
+      "coordinates": "Координати",
+      "coordinatesDesc": "Показати координати на дошці",
+      "autoSave": "Автозбереження",
+      "autoSaveDesc": "Автоматично зберігати після кожного ходу",
+      "previewBoard": "Попередній перегляд дошки",
+      "previewBoardDesc": "Показувати дошку при наведенні курсора на хід в аналізі",
+      "scrollThroughMoves": "Прокрутка ходів",
+      "scrollThroughMovesDesc": "Увімкнути або вимкнути прокрутку ходів на дошці"
+    },
+    "inputs": {
+      "title": "Вводи",
+      "desc": "Налаштувати вводи",
+      "textInput": "Текстовий ввод",
+      "textInputDesc": "Вводити ходи текстом",
+      "spellCheck": "Перевірка орфографії",
+      "spellCheckDesc": "Увімкнути або вимкнути перевірку орфографії при вводі тексту"
+    },
+    "openingReport": {
+      "title": "Звіт по дебютах",
+      "desc": "Налаштувати параметри звіту по дебютах",
+      "percentCoverage": "Процент покриття",
+      "percentCoverageDesc": "Процент охоплених ходів у кожній позиції",
+      "minGames": "Мінімальна кількість ігор",
+      "minGamesDesc": "Мінімальна кількість ігор для кожної позиції, щоб бути врахованою"
+    },
+    "anarchy": {
+      "title": "Анархія",
+      "desc": "Веселі опції"
+    },
+    "appearance": {
+      "title": "Зовнішній вигляд",
+      "desc": "Налаштувати зовнішній вигляд програми",
+      "theme": {
+        "theme": "Тема"
+      },
+      "themeDesc": "Загальна кольорова схема",
+      "titleBar": "Заголовок вікна",
+      "titleBarDesc": "Виберіть між стандартною або настроюваною панеллю заголовка",
+      "language": "Мова",
+      "languageDesc": "Мова програми",
+      "native": "Стандартна",
+      "custom": "Настроювана",
+      "fontSize": "Розмір шрифту",
+      "fontSizeDesc": "Загальний розмір шрифту",
+      "pieceSet": "Набір фігур",
+      "pieceSetDesc": "Фігури, що використовуються на дошці",
+      "boardImage": "Зображення дошки",
+      "boardImageDesc": "Зображення, яке використовується як фон для дошки",
+      "accentColor": "Основний колір",
+      "accentColorDesc": "Основний колір програми"
+    },
+    "sound": {
+      "title": "Звук",
+      "desc": "Налаштувати параметри звуку",
+      "volume": "Гучність",
+      "volumeDesc": "Загальна гучність",
+      "collection": "Колекція звуків",
+      "collectionDesc": "Використовувана колекція звуків"
+    },
+    "keybindings": "Гарячі клавіші",
+    "directories": {
+      "title": "Каталоги",
+      "desc": "Налаштувати каталоги, що використовуються програмою",
+      "files": "Каталог для файлів",
+      "filesDesc": "Тут зберігаються ігрові файли на сторінці файлів"
+    }
+  },
+  "formatters": {
+    "dateFormat": "{{date, dateformat}}",
+    "dateTimeFormat": "{{date, datetimeformat}}",
+    "moveNotation": "{{move, moveNotation}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "score": "{{score, score}}"
+  }
+}

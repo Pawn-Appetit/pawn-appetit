@@ -15,9 +15,9 @@ export function SideInput({ selectingFor, sides, setSides }: SideInputProps) {
 
   const data = useMemo(
     () => [
-      { label: t("Common.White"), color: "white" as const },
-      { label: t("Common.Black"), color: "black" as const },
-      { label: t("Common.Any"), color: "gray" as const },
+      { label: t("chess.white"), color: "white" as const },
+      { label: t("chess.black"), color: "black" as const },
+      { label: t("chess.any"), color: "gray" as const },
     ],
     [t],
   );

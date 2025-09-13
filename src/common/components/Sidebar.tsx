@@ -46,17 +46,17 @@ function NavbarLink({ url, icon: Icon, label }: NavbarLinkProps) {
 }
 
 export const linksdata = [
-  { icon: IconLayoutDashboard, label: "Dashboard", url: "/" },
-  { icon: IconChess, label: "Board", url: "/boards" },
+  { icon: IconLayoutDashboard, label: "dashboard", url: "/" },
+  { icon: IconChess, label: "board", url: "/boards" },
+  { icon: IconCpu, label: "engines", url: "/engines" },
   {
     icon: IconDatabase,
-    label: "Databases",
+    label: "databases",
     url: "/databases",
   },
-  { icon: IconFiles, label: "Files", url: "/files" },
-  { icon: IconUsers, label: "Accounts", url: "/accounts" },
-  { icon: IconSchool, label: "Learn", url: "/learn" },
-  { icon: IconCpu, label: "Engines", url: "/engines" },
+  { icon: IconFiles, label: "files", url: "/files" },
+  { icon: IconUsers, label: "accounts", url: "/accounts" },
+  { icon: IconSchool, label: "learn", url: "/learn" },
 ];
 
 export function SideBar() {
@@ -70,7 +70,7 @@ export function SideBar() {
       if (hideDashboardOnStartup && link.url === "/") return false;
       return link;
     })
-    .map((link) => <NavbarLink {...link} label={t(`SideBar.${link.label}`)} key={link.label} />);
+    .map((link) => <NavbarLink {...link} label={t(`features.sidebar.${link.label}`)} key={link.label} />);
 
   if (layout.sidebar.position === "footer") {
     // Show only first 4 links on mobile
@@ -79,7 +79,7 @@ export function SideBar() {
     // Remaining links go in burger menu
     const burgerMenuLinks = [
       ...mainLinks.slice(4),
-      <NavbarLink key="settings" icon={IconSettings} label={t("SideBar.Settings")} url="/settings" />,
+      <NavbarLink key="settings" icon={IconSettings} label={t("features.sidebar.settings")} url="/settings" />,
     ];
 
     return (
@@ -117,20 +117,18 @@ export function SideBar() {
     );
   }
 
-  // Desktop layout remains the same
-  const Container = Stack;
-  const tooltipPosition = "right";
+  // Desktop layout
 
   return (
     <>
       <AppShellSection grow>
-        <Container justify="center" gap={0}>
+        <Stack justify="center" gap={0}>
           {mainLinks}
-        </Container>
+        </Stack>
       </AppShellSection>
       <AppShellSection visibleFrom="sm">
-        <Container justify="center" gap={0}>
-          <Tooltip label={t("SideBar.KeyboardShortcuts")} position={tooltipPosition}>
+        <Stack justify="center" gap={0}>
+          <Tooltip label={t("features.sidebar.keyboardShortcuts")} position="right">
             <Link
               to="/settings/keyboard-shortcuts"
               className={cx(classes.link, {
@@ -140,7 +138,7 @@ export function SideBar() {
               <IconKeyboard size="1.5rem" stroke={1.5} />
             </Link>
           </Tooltip>
-          <Tooltip label={t("SideBar.Settings")} position={tooltipPosition}>
+          <Tooltip label={t("features.sidebar.settings")} position="right">
             <Link
               to="/settings"
               className={cx(classes.link, {
@@ -150,7 +148,7 @@ export function SideBar() {
               <IconSettings size="1.5rem" stroke={1.5} />
             </Link>
           </Tooltip>
-        </Container>
+        </Stack>
       </AppShellSection>
     </>
   );

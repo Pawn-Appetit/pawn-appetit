@@ -87,19 +87,23 @@ export function LessonCard({
           >
             {getDifficultyIcon(lesson.difficulty)}
           </ThemeIcon>
-          <Badge color={getDifficultyColor(lesson.difficulty)} variant="light" size="sm">
-            {completionPercentage || 0}%
-          </Badge>
+          <Box flex={1}>
+            <Group align="baseline">
+              <Text fw={600} size="lg" flex={1}>
+                {lesson.title}
+              </Text>
+              <Badge color={getDifficultyColor(lesson.difficulty)} variant="light" size="sm">
+                {completionPercentage || 0}%
+              </Badge>
+            </Group>
+
+            <Text size="sm" c="dimmed" lineClamp={3} mb="md">
+              {lesson.description}
+            </Text>
+          </Box>
         </Group>
 
-        <Box style={{ flex: 1 }}>
-          <Text fw={600} size="lg" mb="xs">
-            {lesson.title}
-          </Text>
-          <Text size="sm" c="dimmed" lineClamp={3} mb="md">
-            {lesson.description}
-          </Text>
-
+        <Box flex={1}>
           {lesson.tags && (
             <Group gap="xs" mb="md">
               {lesson.tags.map((tag) => (

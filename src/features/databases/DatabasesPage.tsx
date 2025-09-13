@@ -132,7 +132,7 @@ export default function DatabasesPage() {
         setDatabases={mutate}
       />
       <Group align="center" pl="lg" py="sm">
-        <Title>{t("Databases.Title")}</Title>
+        <Title>{t("features.databases.title")}</Title>
         <OpenFolderButton base="AppDir" folder="db" />
       </Group>
 
@@ -167,7 +167,7 @@ export default function DatabasesPage() {
                     leftSection={<IconPlus size="1rem" />}
                     mr="sm"
                   >
-                    {!isLargeScreenMax && t("Common.AddNew")}
+                    {!isLargeScreenMax && t("common.addNew")}
                   </Button>
                 </Group>
 
@@ -231,11 +231,11 @@ export default function DatabasesPage() {
                                     <Group>
                                       {item.type === "success" && item.indexed && (
                                         <Badge color="teal" variant="light" size="xs">
-                                          {t("Databases.Settings.Indexed")}
+                                          {t("features.databases.settings.indexed")}
                                         </Badge>
                                       )}
                                       {referenceDatabase === item.file && (
-                                        <Tooltip label={t("Databases.Settings.ReferenceDatabase")}>
+                                        <Tooltip label={t("features.databases.settings.referenceDatabase")}>
                                           <Badge
                                             color="yellow"
                                             variant="light"
@@ -258,14 +258,14 @@ export default function DatabasesPage() {
                             <Group justify="space-between">
                               {[
                                 {
-                                  label: t("Databases.Card.Games"),
-                                  value: item.type === "success" ? t("Units.Count", { count: item.game_count }) : "???",
+                                  label: t("features.databases.card.games"),
+                                  value: item.type === "success" ? t("units.count", { count: item.game_count }) : "???",
                                 },
                                 {
-                                  label: t("Databases.Card.Storage"),
+                                  label: t("features.databases.card.storage"),
                                   value:
                                     item.type === "success"
-                                      ? t("Units.Bytes", { bytes: item.storage_size ?? 0 })
+                                      ? t("units.bytes", { bytes: item.storage_size ?? 0 })
                                       : "???",
                                 },
                               ]?.map((stat) => (
@@ -318,18 +318,18 @@ export default function DatabasesPage() {
                                     <Group>
                                       {item.type === "success" && item.indexed && (
                                         <Badge color="teal" variant="light" size="xs">
-                                          {t("Databases.Settings.Indexed")}
+                                          {t("features.databases.settings.indexed")}
                                         </Badge>
                                       )}
                                       {referenceDatabase === item.file && (
-                                        <Tooltip label={t("Databases.Settings.ReferenceDatabase")}>
+                                        <Tooltip label={t("features.databases.settings.referenceDatabase")}>
                                           <Badge
                                             color="yellow"
                                             variant="light"
                                             size="xs"
                                             leftSection={<IconStar size="0.5rem" />}
                                           >
-                                            {t("Databases.Settings.Reference")}
+                                            {t("features.databases.settings.reference")}
                                           </Badge>
                                         </Tooltip>
                                       )}
@@ -345,14 +345,14 @@ export default function DatabasesPage() {
                             <Group justify="space-between">
                               {[
                                 {
-                                  label: t("Databases.Card.Games"),
-                                  value: item.type === "success" ? t("Units.Count", { count: item.game_count }) : "???",
+                                  label: t("features.databases.card.games"),
+                                  value: item.type === "success" ? t("units.count", { count: item.game_count }) : "???",
                                 },
                                 {
-                                  label: t("Databases.Card.Storage"),
+                                  label: t("features.databases.card.storage"),
                                   value:
                                     item.type === "success"
-                                      ? t("Units.Bytes", { bytes: item.storage_size ?? 0 })
+                                      ? t("units.bytes", { bytes: item.storage_size ?? 0 })
                                       : "???",
                                 },
                               ]?.map((stat) => (
@@ -403,14 +403,14 @@ export default function DatabasesPage() {
                     </>
                   ) : (
                     <>
-                      <Divider variant="dashed" label={t("Common.GeneralSettings")} />
+                      <Divider variant="dashed" label={t("common.generalSettings")} />
                       <GeneralSettings
                         key={selectedDatabase.filename}
                         selectedDatabase={selectedDatabase}
                         mutate={mutate}
                       />
                       <Switch
-                        label={t("Databases.Settings.ReferenceDatabase")}
+                        label={t("features.databases.settings.referenceDatabase")}
                         checked={isReference}
                         onChange={() => {
                           changeReferenceDatabase(selectedDatabase.file);
@@ -422,30 +422,30 @@ export default function DatabasesPage() {
                         setDatabases={mutate}
                       />
 
-                      <Divider variant="dashed" label={t("Common.Data")} />
+                      <Divider variant="dashed" label={t("common.data")} />
                       <Group grow>
                         <Stack gap={0} justify="center" ta="center">
                           <Text size="md" tt="uppercase" fw="bold" c="dimmed">
-                            {t("Databases.Card.Games")}
+                            {t("features.databases.card.games")}
                           </Text>
                           <Text fw={700} size="lg">
-                            {t("Units.Count", { count: selectedDatabase.game_count })}
+                            {t("units.count", { count: selectedDatabase.game_count })}
                           </Text>
                         </Stack>
                         <Stack gap={0} justify="center" ta="center">
                           <Text size="md" tt="uppercase" fw="bold" c="dimmed">
-                            {t("Databases.Card.Players")}
+                            {t("features.databases.card.players")}
                           </Text>
                           <Text fw={700} size="lg">
-                            {t("Units.Count", { count: selectedDatabase.player_count })}
+                            {t("units.count", { count: selectedDatabase.player_count })}
                           </Text>
                         </Stack>
                         <Stack gap={0} justify="center" ta="center">
                           <Text size="md" tt="uppercase" fw="bold" c="dimmed">
-                            {t("Databases.Settings.Events")}
+                            {t("features.databases.settings.events")}
                           </Text>
                           <Text fw={700} size="lg">
-                            {t("Units.Count", { count: selectedDatabase.event_count })}
+                            {t("units.count", { count: selectedDatabase.event_count })}
                           </Text>
                         </Stack>
                       </Group>
@@ -463,20 +463,20 @@ export default function DatabasesPage() {
                             size="lg"
                             rightSection={<IconArrowRight size="1rem" />}
                           >
-                            {t("Databases.Settings.Explore")}
+                            {t("features.databases.settings.explore")}
                           </Button>
                         )}
                       </div>
                     </>
                   )}
 
-                  <Divider variant="dashed" label={t("Databases.Settings.AdvancedTools")} />
+                  <Divider variant="dashed" label={t("features.databases.settings.advancedTools")} />
 
                   {selectedDatabase.type === "success" && (
                     <AdvancedSettings selectedDatabase={selectedDatabase} reload={mutate} />
                   )}
 
-                  <Divider variant="dashed" label={t("Databases.Settings.Actions")} />
+                  <Divider variant="dashed" label={t("features.databases.settings.actions")} />
                   <Group justify="space-between">
                     {selectedDatabase.type === "success" && (
                       <Group>
@@ -494,7 +494,7 @@ export default function DatabasesPage() {
                             setConvertLoading(false);
                           }}
                         >
-                          {t("Databases.Settings.AddGames")}
+                          {t("features.databases.settings.addGames")}
                         </Button>
                         <Button
                           rightSection={<IconArrowRight size="1rem" />}
@@ -510,7 +510,7 @@ export default function DatabasesPage() {
                             setExportLoading(false);
                           }}
                         >
-                          {t("Databases.Settings.ExportPGN")}
+                          {t("features.databases.settings.exportPGN")}
                         </Button>
                       </Group>
                     )}
@@ -518,15 +518,15 @@ export default function DatabasesPage() {
                       onClick={() => {
                         const fileToDelete = selectedDatabase?.file;
                         modals.openConfirmModal({
-                          title: t("Databases.Delete.Title"),
+                          title: t("features.databases.delete.title"),
                           withCloseButton: false,
                           children: (
                             <>
-                              <Text>{t("Databases.Delete.Message")}</Text>
-                              <Text>{t("Common.CannotUndo")}</Text>
+                              <Text>{t("features.databases.delete.message")}</Text>
+                              <Text>{t("common.cannotUndo")}</Text>
                             </>
                           ),
-                          labels: { confirm: t("Common.Remove"), cancel: t("Common.Cancel") },
+                          labels: { confirm: t("common.remove"), cancel: t("common.cancel") },
                           confirmProps: { color: "red" },
                           onConfirm: () => {
                             if (!fileToDelete) return;
@@ -539,7 +539,7 @@ export default function DatabasesPage() {
                       }}
                       color="red"
                     >
-                      {t("Common.Delete")}
+                      {t("common.delete")}
                     </Button>
                   </Group>
                 </Stack>
@@ -574,13 +574,13 @@ function GeneralSettings({ selectedDatabase, mutate }: { selectedDatabase: Succe
   return (
     <>
       <TextInput
-        label={t("Common.Name")}
+        label={t("common.name")}
         value={title}
         onChange={(e) => setTitle(e.currentTarget.value)}
-        error={title === "" && t("Common.RequireName")}
+        error={title === "" && t("common.requireName")}
       />
       <Textarea
-        label={t("Common.Description")}
+        label={t("common.description")}
         value={description}
         onChange={(e) => setDescription(e.currentTarget.value)}
       />
@@ -617,13 +617,13 @@ function PlayerMerger({ selectedDatabase }: { selectedDatabase: DatabaseInfo }) 
   return (
     <Stack>
       <Text fz="lg" fw="bold">
-        {t("Databases.Settings.MergePlayers")}
+        {t("features.databases.settings.mergePlayers")}
       </Text>
-      <Text fz="sm">{t("Databases.Settings.MergePlayers.Desc")}</Text>
+      <Text fz="sm">{t("features.databases.settings.mergePlayersDesc")}</Text>
       <Group grow>
         <PlayerSearchInput label="Player 1" file={selectedDatabase.file} setValue={setPlayer1} />
         <Button loading={loading} onClick={mergePlayers} rightSection={<IconArrowRight size="1rem" />}>
-          {t("Databases.Settings.Merge")}
+          {t("features.databases.settings.merge")}
         </Button>
         <PlayerSearchInput label="Player 2" file={selectedDatabase.file} setValue={setPlayer2} />
       </Group>
@@ -638,9 +638,9 @@ function DuplicateRemover({ selectedDatabase, reload }: { selectedDatabase: Data
   return (
     <Stack>
       <Text fz="lg" fw="bold">
-        {t("Databases.Settings.BatchDelete")}
+        {t("features.databases.settings.batchDelete")}
       </Text>
-      <Text fz="sm">{t("Databases.Settings.BatchDelete.Desc")}</Text>
+      <Text fz="sm">{t("features.databases.settings.batchDeleteDesc")}</Text>
       <Group>
         <Button
           loading={loading}
@@ -658,7 +658,7 @@ function DuplicateRemover({ selectedDatabase, reload }: { selectedDatabase: Data
               });
           }}
         >
-          {t("Databases.Settings.RemoveDup")}
+          {t("features.databases.settings.removeDup")}
         </Button>
 
         <Button
@@ -677,7 +677,7 @@ function DuplicateRemover({ selectedDatabase, reload }: { selectedDatabase: Data
               });
           }}
         >
-          {t("Databases.Settings.RemoveEmpty")}
+          {t("features.databases.settings.removeEmpty")}
         </Button>
       </Group>
     </Stack>
@@ -698,11 +698,11 @@ function IndexInput({
   const [loading, setLoading] = useToggle();
   return (
     <Group>
-      <Tooltip label={t("Databases.Settings.Indexed.Desc")}>
+      <Tooltip label={t("features.databases.settings.indexed.Desc")}>
         <Switch
           onLabel="On"
           offLabel="Off"
-          label={t("Databases.Settings.Indexed")}
+          label={t("features.databases.settings.indexed")}
           disabled={loading}
           checked={indexed}
           onChange={(e) => {

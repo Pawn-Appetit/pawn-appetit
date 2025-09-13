@@ -5,7 +5,6 @@ import {
   Group,
   Image,
   Kbd,
-  type MantineColorScheme,
   Menu,
   Text,
   UnstyledButton,
@@ -13,7 +12,7 @@ import {
 } from "@mantine/core";
 import { useColorScheme } from "@mantine/hooks";
 import { Spotlight, type SpotlightActionData, type SpotlightActionGroupData, spotlight } from "@mantine/spotlight";
-import { IconMoon, IconSearch, IconSettings, IconSun, IconSunMoon } from "@tabler/icons-react";
+import { IconSearch, IconSettings } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useAtom } from "jotai";
@@ -21,11 +20,11 @@ import { type JSX, type SVGProps, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { keyMapAtom } from "@/state/keybindings";
 import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
-import { useTheme, useThemeDetection } from "@/themes";
+import { env } from "@/utils/detectEnvironment";
 import { linksdata } from "./Sidebar";
 import * as classes from "./TopBar.css";
 
-const appWindow = getCurrentWebviewWindow();
+const appWindow = env.isDesktop() ? getCurrentWebviewWindow() : null;
 
 type MenuAction = {
   label: string;
@@ -83,35 +82,13 @@ const Icons = {
 
 function getActions(
   navigate: ReturnType<typeof useNavigate>,
-  colorScheme: MantineColorScheme,
-  handleQuickThemeChange: (value: string) => void,
   t: (key: string) => string,
 ): (SpotlightActionGroupData | SpotlightActionData)[] {
-  const themeActions = [];
-
-  if (colorScheme === "light") {
-    themeActions.push({
-      id: "dark",
-      label: t("Settings.Appearance.Theme.Dark"),
-      description: "Switch to dark theme",
-      onClick: () => handleQuickThemeChange("dark"),
-      leftSection: <IconMoon size={24} stroke={1.5} />,
-    });
-  } else {
-    themeActions.push({
-      id: "light",
-      label: t("Settings.Appearance.Theme.Light"),
-      description: "Switch to light theme",
-      onClick: () => handleQuickThemeChange("light"),
-      leftSection: <IconSun size={24} stroke={1.5} />,
-    });
-  }
-
   return [
     {
       group: "Pages",
       actions: linksdata.map((link) => {
-        const label = t(`SideBar.${link.label}`);
+        const label = t(`features.sidebar.${link.label}`);
 
         return {
           id: link.label,
@@ -127,30 +104,17 @@ function getActions(
       actions: [
         {
           id: "keybindings",
-          label: t("SideBar.KeyboardShortcuts"),
-          description: `Open ${t("SideBar.KeyboardShortcuts")} page`,
+          label: t("features.sidebar.keyboardShortcuts"),
+          description: `Open ${t("features.sidebar.keyboardShortcuts")} page`,
           onClick: () => navigate({ to: "/settings/keyboard-shortcuts" }),
           leftSection: <IconSettings size={24} stroke={1.5} />,
         },
         {
           id: "settings",
-          label: t("SideBar.Settings"),
-          description: `Open ${t("SideBar.Settings")} page`,
+          label: t("features.sidebar.settings"),
+          description: `Open ${t("features.sidebar.settings")} page`,
           onClick: () => navigate({ to: "/settings" }),
           leftSection: <IconSettings size={24} stroke={1.5} />,
-        },
-      ],
-    },
-    {
-      group: "Switch theme",
-      actions: [
-        ...themeActions,
-        {
-          id: "auto",
-          label: t("Settings.Appearance.Theme.Auto"),
-          description: "Follow the system's color scheme",
-          onClick: () => handleQuickThemeChange("auto"),
-          leftSection: <IconSunMoon size={24} stroke={1.5} />,
         },
       ],
     },
@@ -162,30 +126,10 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
   const { t } = useTranslation();
   const { colorScheme } = useMantineColorScheme();
   const osColorScheme = useColorScheme();
-  const { availableThemes, autoDetectEnabled, setTheme } = useTheme();
-  const { toggleAutoDetection } = useThemeDetection();
   const { layout } = useResponsiveLayout();
 
   const [maximized, setMaximized] = useState(true);
   const [keyMap] = useAtom(keyMapAtom);
-
-  const handleQuickThemeChange = (value: string) => {
-    if (value === "auto") {
-      if (!autoDetectEnabled) {
-        toggleAutoDetection();
-      }
-    } else {
-      if (autoDetectEnabled) {
-        toggleAutoDetection();
-      }
-
-      const targetTheme = availableThemes.find((theme) => theme.type === value && !theme.isCustom);
-
-      if (targetTheme) {
-        setTheme(targetTheme.name);
-      }
-    }
-  };
 
   return (
     <Group h="100%">
@@ -274,7 +218,7 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
           </Group>
         </UnstyledButton>
         <Spotlight
-          actions={getActions(navigate, colorScheme, handleQuickThemeChange, t)}
+          actions={getActions(navigate, t)}
           shortcut={keyMap.SPOTLIGHT_SEARCH.keys}
           nothingFound="Nothing found..."
           highlightQuery
@@ -288,7 +232,7 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
       {layout.menuBar.displayWindowControls && (
         <Center h="30" mr="xs">
           <Group gap="5px" data-tauri-drag-region>
-            <ActionIcon h={25} w={25} radius="lg" onClick={() => appWindow.minimize()} className={classes.icon}>
+            <ActionIcon h={25} w={25} radius="lg" onClick={() => appWindow?.minimize()} className={classes.icon}>
               <Icons.minimizeWin />
             </ActionIcon>
             <ActionIcon
@@ -296,14 +240,14 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
               w={25}
               radius="lg"
               onClick={() => {
-                appWindow.toggleMaximize();
+                appWindow?.toggleMaximize();
                 setMaximized((prev) => !prev);
               }}
               className={classes.icon}
             >
               {maximized ? <Icons.maximizeRestoreWin /> : <Icons.maximizeWin />}
             </ActionIcon>
-            <ActionIcon h={25} w={25} radius="lg" onClick={() => appWindow.close()} className={classes.icon}>
+            <ActionIcon h={25} w={25} radius="lg" onClick={() => appWindow?.close()} className={classes.icon}>
               <Icons.closeWin />
             </ActionIcon>
           </Group>

@@ -15,7 +15,7 @@ function OpenFolderButton({ base, folder }: { base?: "AppDir" | "Document"; fold
     await openPath(dir);
   }
   return (
-    <Tooltip label={t("Common.OpenFolder")}>
+    <Tooltip label={t("common.openFolder")}>
       <ActionIcon onClick={() => openAppDirData()}>
         <IconFolder size="1.5rem" />
       </ActionIcon>

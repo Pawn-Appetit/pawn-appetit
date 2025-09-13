@@ -143,9 +143,9 @@ function DatabasePanel() {
       <Group justify="space-between" w="100%">
         <SegmentedControl
           data={[
-            { label: t("Board.Database.Local"), value: "local" },
-            { label: t("Board.Database.LichessAll"), value: "lch_all" },
-            { label: t("Board.Database.LichessMaster"), value: "lch_master" },
+            { label: t("features.board.database.local"), value: "local" },
+            { label: t("features.board.database.lichessAll"), value: "lch_all" },
+            { label: t("features.board.database.lichessMaster"), value: "lch_master" },
           ]}
           value={db}
           onChange={(value) => setDb(value as "local" | "lch_all" | "lch_master")}
@@ -153,7 +153,7 @@ function DatabasePanel() {
 
         {tabType !== "options" && (
           <Text>
-            {t("Board.Database.Matches", {
+            {t("features.board.database.matches", {
               matches: Math.max(grandTotal || 0, openingData?.games.length || 0),
             })}
           </Text>
@@ -174,10 +174,10 @@ function DatabasePanel() {
       >
         <Tabs.List>
           <Tabs.Tab value="stats" disabled={dbType.type === "local" && dbType.options.type === "partial"}>
-            {t("Board.Database.Stats")}
+            {t("features.board.database.stats")}
           </Tabs.Tab>
-          <Tabs.Tab value="games">{t("Board.Database.Games")}</Tabs.Tab>
-          <Tabs.Tab value="options">{t("Board.Database.Options")}</Tabs.Tab>
+          <Tabs.Tab value="games">{t("features.board.database.games")}</Tabs.Tab>
+          <Tabs.Tab value="options">{t("features.board.database.options")}</Tabs.Tab>
         </Tabs.List>
 
         <PanelWithError value="stats" error={error} type={db}>

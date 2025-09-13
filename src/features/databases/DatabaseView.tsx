@@ -41,13 +41,13 @@ function DatabaseView() {
             >
               <Tabs.List>
                 <Tabs.Tab leftSection={<IconChess size="1rem" />} value="games">
-                  {t("Databases.Card.Games")}
+                  {t("features.databases.card.games")}
                 </Tabs.Tab>
                 <Tabs.Tab leftSection={<IconUser size="1rem" />} value="players">
-                  {t("Databases.Card.Players")}
+                  {t("features.databases.card.players")}
                 </Tabs.Tab>
                 <Tabs.Tab leftSection={<IconTrophy size="1rem" />} value="tournaments">
-                  {t("Databases.Card.Tournaments")}
+                  {t("features.databases.card.tournaments")}
                 </Tabs.Tab>
               </Tabs.List>
               <Tabs.Panel value="games" flex={1} style={{ overflow: "hidden" }} pt="md">

@@ -25,7 +25,7 @@ export default function EditEngine({ initialEngine }: { initialEngine: LocalEngi
 
   return (
     <EngineForm
-      submitLabel={t("Common.Save")}
+      submitLabel={t("common.save")}
       form={form}
       onSubmit={(values) => {
         setEngines(async (prev) => (await prev).map((e) => (e === initialEngine ? values : e)));

@@ -1,5 +1,5 @@
 import { Paper } from "@mantine/core";
-import { Chessground } from "@/chessground/Chessground";
+import { Chessground } from "@/common/components/Chessground";
 import { TreeStateProvider } from "@/common/components/TreeStateContext";
 import { calculateValidMoves } from "@/utils/chess-engine";
 import { positionFromFen } from "@/utils/chessops";

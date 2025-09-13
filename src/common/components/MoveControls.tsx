@@ -116,17 +116,17 @@ function MoveControls({
               leftSection={viewPawnStructure ? <IconChessFilled size="1.3rem" /> : <IconChess size="1.3rem" />}
               onClick={() => setViewPawnStructure(!viewPawnStructure)}
             >
-              {t("Board.Action.TogglePawnStructureView")}
+              {t("features.board.actions.togglePawnStructureView")}
             </Menu.Item>
           )}
           {takeSnapshot && (
             <Menu.Item leftSection={<IconCamera size="1.3rem" />} onClick={() => takeSnapshot()}>
-              {t("Board.Action.TakeSnapshot")}
+              {t("features.board.actions.takeSnapshot")}
             </Menu.Item>
           )}
           {canTakeBack && deleteMoveProp && (
             <Menu.Item leftSection={<IconArrowBack size="1.3rem" />} onClick={() => deleteMoveProp()}>
-              {t("Board.Action.TakeBack")}
+              {t("features.board.actions.takeBack")}
             </Menu.Item>
           )}
           {changeTabType && (
@@ -136,12 +136,12 @@ function MoveControls({
               }
               onClick={changeTabType}
             >
-              {t(currentTabType === "analysis" ? "Board.Action.PlayFromHere" : "Board.Action.AnalyzeGame")}
+              {t(currentTabType === "analysis" ? "features.board.actions.playFromHere" : "features.board.actions.analyzeGame")}
             </Menu.Item>
           )}
           {!eraseDrawablesOnClick && clearShapes && (
             <Menu.Item leftSection={<IconEraser size="1.3rem" />} onClick={() => clearShapes()}>
-              {t("Board.Action.ClearDrawings")}
+              {t("features.board.actions.clearDrawings")}
             </Menu.Item>
           )}
           {!disableVariations && toggleEditingMode && (
@@ -149,27 +149,27 @@ function MoveControls({
               leftSection={editingMode ? <IconEditOff size="1.3rem" /> : <IconEdit size="1.3rem" />}
               onClick={() => toggleEditingMode()}
             >
-              {t("Board.Action.EditPosition")}
+              {t("features.board.actions.editPosition")}
             </Menu.Item>
           )}
           {saveFile && (
             <Menu.Item leftSection={<IconDeviceFloppy size="1.3rem" />} onClick={() => saveFile()}>
-              {t("Board.Action.SavePGN", { key: keyMap.SAVE_FILE.keys })}
+              {t("features.board.actions.savePGN", { key: keyMap.SAVE_FILE.keys })}
             </Menu.Item>
           )}
           {reload && (
             <Menu.Item leftSection={<IconReload size="1.3rem" />} onClick={() => reload()}>
-              {t("Menu.View.Reload")}
+              {t("features.menu.view.reload")}
             </Menu.Item>
           )}
           {addGame && currentTabSourceType === "file" && (
             <Menu.Item leftSection={<IconPlus size="1.3rem" />} onClick={() => addGame()}>
-              {t("Board.Action.AddGame")}
+              {t("features.board.actions.addGame")}
             </Menu.Item>
           )}
           {toggleOrientation && (
             <Menu.Item leftSection={<IconSwitchVertical size="1.3rem" />} onClick={() => toggleOrientation()}>
-              {t("Board.Action.FlipBoard", { key: keyMap.SWAP_ORIENTATION.keys })}
+              {t("features.board.actions.flipBoard", { key: keyMap.SWAP_ORIENTATION.keys })}
             </Menu.Item>
           )}
         </Menu.Dropdown>

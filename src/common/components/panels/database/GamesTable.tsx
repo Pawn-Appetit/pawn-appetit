@@ -82,7 +82,7 @@ function GamesTable({ games, loading }: { games: NormalizedGame[]; loading: bool
         {
           accessor: "date",
           render: ({ date }) =>
-            t("Formatters.DateFormat", { date: parseDate(date), interpolation: { escapeValue: false } }),
+            t("formatters.dateFormat", { date: parseDate(date), interpolation: { escapeValue: false } }),
         },
         { accessor: "result" },
         { accessor: "ply_count" },

@@ -152,7 +152,8 @@ function RatingsPanel({ playerName, info }: RatingsPanelProps) {
         }}
       />
       <Text pt="md" fw="bold" fz="lg" ta="center">
-        {t("Common.Games", { count: summary.games })}
+        {summary.games === 1 && t("common.games.one", { count: summary.games || 0 })}
+        {summary.games > 1 && t("common.games.other", { count: summary.games || 0 })}
       </Text>
       {dates.length > 1 && summary.games > 0 && (
         <>

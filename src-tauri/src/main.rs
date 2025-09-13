@@ -3,8 +3,9 @@
     windows_subsystem = "windows"
 )]
 
-mod chess;
+mod chess_bridge;
 mod db;
+mod engine;
 mod error;
 mod fide;
 mod fs;
@@ -16,16 +17,20 @@ mod pgn;
 mod puzzle;
 mod telemetry;
 
+// Alias for backward compatibility
+use chess_bridge as chess;
+
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::{fs::create_dir_all};
 
 use fs_extra::dir::{copy, CopyOptions};
 
-use chess::{BestMovesPayload, EngineProcess, ReportProgress};
+use chess::{BestMovesPayload, ReportProgress};
 use dashmap::DashMap;
 use db::{DatabaseProgress, GameQueryJs, NormalizedGame, PositionStats};
 use derivative::Derivative;
+use engine::{EngineManager, EngineProcess};
 use fide::FidePlayer;
 use log::LevelFilter;
 use oauth::AuthState;
@@ -36,6 +41,7 @@ use tauri::{AppHandle, Manager, Window};
 
 use crate::chess::{
     analyze_game, get_engine_config, get_engine_logs, kill_engine, kill_engines, stop_engine,
+    diagnose_multipv, test_engine_capabilities, generate_debug_steps,
 };
 use crate::db::{
     clear_games, convert_pgn, create_indexes, delete_database, delete_db_game, delete_empty_games,
@@ -60,7 +66,7 @@ use crate::{
     fs::{download_file, file_exists, get_file_metadata},
     opening::{get_opening_from_fen, get_opening_from_name, search_opening_name},
 };
-use tokio::sync::{RwLock, Semaphore};
+use tokio::sync::{RwLock, Semaphore, Mutex as TokioMutex};
 
 pub type GameData = (
     i32,
@@ -89,7 +95,25 @@ pub struct AppState {
     pgn_offsets: DashMap<String, Vec<u64>>,
     fide_players: RwLock<Vec<FidePlayer>>,
     engine_processes: DashMap<(String, String), Arc<tokio::sync::Mutex<EngineProcess>>>,
+    #[derivative(Default(value = "Arc::new(TokioMutex::new(EngineManager::new()))"))]
+    engine_manager: Arc<TokioMutex<EngineManager>>,
     auth: AuthState,
+}
+
+impl Clone for AppState {
+    fn clone(&self) -> Self {
+        Self {
+            connection_pool: self.connection_pool.clone(),
+            line_cache: self.line_cache.clone(),
+            db_cache: Mutex::new(Vec::new()), // Can't clone Mutex contents, start with empty
+            new_request: self.new_request.clone(),
+            pgn_offsets: self.pgn_offsets.clone(),
+            fide_players: RwLock::new(Vec::new()), // Can't clone RwLock contents, start with empty
+            engine_processes: self.engine_processes.clone(),
+            engine_manager: self.engine_manager.clone(),
+            auth: self.auth.clone(),
+        }
+    }
 }
 
 const REQUIRED_DIRS: &[(BaseDirectory, &str)] = &[
@@ -332,6 +356,9 @@ async fn main() {
             get_opening_from_name,
             get_players_game_info,
             get_engine_config,
+            diagnose_multipv,
+            test_engine_capabilities,
+            generate_debug_steps,
             file_exists,
             get_file_metadata,
             merge_players,
