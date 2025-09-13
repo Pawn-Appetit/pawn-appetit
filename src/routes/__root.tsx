@@ -20,11 +20,11 @@ import AboutModal from "@/common/components/About";
 import { SideBar } from "@/common/components/Sidebar";
 import TopBar from "@/common/components/TopBar";
 import ImportModal from "@/features/boards/components/ImportModal";
-import { activeTabAtom, nativeBarAtom, tabsAtom } from "@/state/atoms";
+import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
-import { useScreenSize } from "@/styles/theme";
 import { openFile } from "@/utils/files";
 import { createTab } from "@/utils/tabs";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 
 type MenuGroup = {
   label: string;
@@ -79,9 +79,8 @@ export const Route = createRootRouteWithContext<{
 });
 
 function RootLayout() {
-  const isNative = useAtomValue(nativeBarAtom);
   const navigate = useNavigate();
-  const { isMobile, isMobileOrSmallScreen, smallScreenMax } = useScreenSize();
+  const { layout } = useResponsiveLayout();
 
   const [, setTabs] = useAtom(tabsAtom);
   const [, setActiveTab] = useAtom(activeTabAtom);
@@ -283,60 +282,37 @@ function RootLayout() {
 
   useEffect(() => {
     if (!menu) return;
-    if (isMobile) return;
-    if (isNative) {
+    if (layout.menuBar.mode === "disabled") return;
+
+    if (layout.menuBar.mode === "native") {
       menu.setAsAppMenu();
       getCurrentWebviewWindow().setDecorations(true);
     } else {
       Menu.new().then((m) => m.setAsAppMenu());
       getCurrentWebviewWindow().setDecorations(false);
     }
-  }, [menu, isNative, isMobile]);
+  }, [menu, layout.menuBar.mode]);
 
   return (
     <ModalsProvider modals={{ importModal: ImportModal, aboutModal: AboutModal }}>
       <AppShell
-        mt={isMobile ? "3rem" : "0rem"}
-        header={{
-          height: "2.3rem",
-          collapsed: isMobile || isNative,
-          offset: true,
-        }}
-        navbar={{
-          width: "3rem",
-          breakpoint: "sm",
-          collapsed: { desktop: false, mobile: true },
-        }}
-        footer={{
-          height: isMobile ? "5rem" : smallScreenMax ? "3rem" : "0rem",
-          collapsed: !isMobileOrSmallScreen,
-          offset: true,
-        }}
+        {...layout.appShellProps}
         styles={{
           main: {
             height: "100vh",
             userSelect: "none",
+            overflow: "hidden",
           },
         }}
       >
         <AppShell.Header>
           <TopBar menuActions={menuActions} />
         </AppShell.Header>
-        <AppShell.Navbar>
-          <SideBar isMobile={false} />
-        </AppShell.Navbar>
-        <AppShell.Main>
-          <ScrollArea
-            style={{
-              height: `calc(100vh - ${isNative ? "0rem" : "2.3rem"} - ${isMobile ? "5rem" : smallScreenMax ? "3rem" : "0rem"})`,
-            }}
-          >
-            <Outlet />
-          </ScrollArea>
+        <AppShell.Navbar>{layout.sidebar.position === "navbar" && <SideBar />}</AppShell.Navbar>
+        <AppShell.Main style={{ display: "flex", flexDirection: "column" }}>
+          <Outlet />
         </AppShell.Main>
-        <AppShell.Footer>
-          <SideBar isMobile={true} />
-        </AppShell.Footer>
+        <AppShell.Footer>{layout.sidebar.position === "footer" && <SideBar />}</AppShell.Footer>
       </AppShell>
     </ModalsProvider>
   );

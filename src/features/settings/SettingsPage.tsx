@@ -29,7 +29,7 @@ import {
   spellCheckAtom,
   storedDocumentDirAtom,
 } from "@/state/atoms";
-import { useScreenSize } from "@/styles/theme";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { ThemeSettings } from "@/themes";
 import { computedThemeAtom } from "@/themes/state";
 import type { ThemeDefinition } from "@/themes/types";
@@ -58,7 +58,7 @@ export default function Page() {
   const { setDirection } = useDirection();
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("board");
-  const { isMobileOrSmallScreen } = useScreenSize();
+  const { layout } = useResponsiveLayout();
 
   const [isNative, setIsNative] = useAtom(nativeBarAtom);
   const {
@@ -661,6 +661,13 @@ export default function Page() {
         component: <TelemetrySettings className={classes.item} />,
       },
       {
+        id: "updater",
+        title: t("Settings.Updater"),
+        description: t("Settings.Updater.Desc"),
+        tab: "directories",
+        component: <UpdaterSettings className={classes.item} />,
+      },
+      {
         id: "about",
         title: t("Settings.About"),
         description: t("Settings.About.Desc"),
@@ -813,7 +820,7 @@ export default function Page() {
 
   const renderTabContent = (tabId: string, settings: SettingItem[]) => (
     <>
-      <Title order={isMobileOrSmallScreen ? 2 : 1} fw={500} className={classes.title}>
+      <Title order={layout.settings.layoutType === "mobile" ? 2 : 1} fw={500} className={classes.title}>
         {tabInfo[tabId as keyof typeof tabInfo]?.title}
       </Title>
       <Text size="sm" c="dimmed" mt={3} mb="lg">
@@ -868,10 +875,10 @@ export default function Page() {
         <Tabs
           value={activeTab}
           onChange={(value) => setActiveTab(value || "board")}
-          orientation={isMobileOrSmallScreen ? "horizontal" : "vertical"}
+          orientation={layout.settings.layoutType === "mobile" ? "horizontal" : "vertical"}
           h="100%"
         >
-          {isMobileOrSmallScreen ? (
+          {layout.settings.layoutType === "mobile" ? (
             <ScrollArea scrollbarSize={0} scrollbars="x" type="auto" style={{ overflowX: "auto" }}>
               <Tabs.List
                 variant="pills"
@@ -888,7 +895,7 @@ export default function Page() {
           ) : (
             <Tabs.List w={160}>{renderTabs(true)}</Tabs.List>
           )}
-          {isMobileOrSmallScreen ? (
+          {layout.settings.layoutType === "mobile" ? (
             <ScrollArea h="calc(100vh - 210px)">
               <Box p="md" pt="0px">
                 {renderTabPanels()}

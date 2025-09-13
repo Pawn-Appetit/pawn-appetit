@@ -7,11 +7,11 @@ export const link = style({
   display: "flex",
   alignItems: "center",
   "@media": {
-    [`(min-width: ${vars.breakpoints.sm})`]: {
+    [`(width >= ${vars.breakpoints.sm})`]: {
       borderLeft: "3px solid transparent",
       borderRight: "3px solid transparent",
     },
-    [`(max-width: ${vars.breakpoints.sm})`]: {
+    [`(width < ${vars.breakpoints.sm})`]: {
       borderTop: "3px solid transparent",
     },
   },
@@ -42,10 +42,10 @@ export const active = style({
   },
 
   "@media": {
-    [`(min-width: ${vars.breakpoints.sm})`]: {
+    [`(width >= ${vars.breakpoints.sm})`]: {
       borderLeftColor: vars.colors.primary,
     },
-    [`(max-width: ${vars.breakpoints.sm})`]: {
+    [`(width < ${vars.breakpoints.sm})`]: {
       borderTopColor: vars.colors.primary,
     },
   },

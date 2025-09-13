@@ -16,12 +16,11 @@ import { Spotlight, type SpotlightActionData, type SpotlightActionGroupData, spo
 import { IconMoon, IconSearch, IconSettings, IconSun, IconSunMoon } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom } from "jotai";
 import { type JSX, type SVGProps, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { nativeBarAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
-import { useScreenSize } from "@/styles/theme";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { useTheme, useThemeDetection } from "@/themes";
 import { linksdata } from "./Sidebar";
 import * as classes from "./TopBar.css";
@@ -159,14 +158,13 @@ function getActions(
 }
 
 function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
-  const isNative = useAtomValue(nativeBarAtom);
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { colorScheme } = useMantineColorScheme();
   const osColorScheme = useColorScheme();
   const { availableThemes, autoDetectEnabled, setTheme } = useTheme();
   const { toggleAutoDetection } = useThemeDetection();
-  const { isMobile, isMobileOrSmallScreen } = useScreenSize();
+  const { layout } = useResponsiveLayout();
 
   const [maximized, setMaximized] = useState(true);
   const [keyMap] = useAtom(keyMapAtom);
@@ -191,7 +189,7 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
 
   return (
     <Group h="100%">
-      {!isNative && (
+      {layout.menuBar.mode === "custom" && (
         <Box>
           <Group data-tauri-drag-region gap="xs" px="sm">
             <Box h="1.4rem" w="1.4rem">
@@ -247,47 +245,47 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
         </Box>
       )}
       <Group style={{ flexGrow: 1 }} justify="center" data-tauri-drag-region>
-        {isMobile ? (
-          <Box style={{ flex: 1 }} h="1.4rem" data-tauri-drag-region />
-        ) : (
-          <>
-            <UnstyledButton
-              onClick={spotlight.open}
-              size="xs"
-              pl="12px"
-              pr="4px"
-              py="2px"
-              visibleFrom={!isNative ? "sm" : "xs"}
-              style={{
-                border: "1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4))",
-                borderRadius: "4px",
-              }}
-            >
-              <Group w="100%">
-                <IconSearch size={14} stroke={1.5} color="var(--mantine-color-dimmed)" />
-                <Text pr="200px" c="dimmed" size="sm">
-                  {keyMap.SPOTLIGHT_SEARCH.name}
-                </Text>
-                <Kbd size="xs" style={{ borderWidth: "1px" }}>
-                  {keyMap.SPOTLIGHT_SEARCH.keys}
-                </Kbd>
-              </Group>
-            </UnstyledButton>
-            <Spotlight
-              actions={getActions(navigate, colorScheme, handleQuickThemeChange, t)}
-              shortcut={keyMap.SPOTLIGHT_SEARCH.keys}
-              nothingFound="Nothing found..."
-              highlightQuery
-              searchProps={{
-                leftSection: <IconSearch size={20} stroke={1.5} />,
-                placeholder: "Search...",
-              }}
-              scrollable
-            />
-          </>
-        )}
+        <Box
+          style={{ flex: 1 }}
+          h="1.4rem"
+          data-tauri-drag-region
+          hiddenFrom={layout.menuBar.mode === "native" ? "xs" : "sm"}
+        />
+        <UnstyledButton
+          onClick={spotlight.open}
+          size="xs"
+          pl="12px"
+          pr="4px"
+          py="2px"
+          visibleFrom={layout.menuBar.mode === "native" ? "xs" : "sm"}
+          style={{
+            border: "1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4))",
+            borderRadius: "4px",
+          }}
+        >
+          <Group w="100%">
+            <IconSearch size={14} stroke={1.5} color="var(--mantine-color-dimmed)" />
+            <Text pr="200px" c="dimmed" size="sm">
+              {keyMap.SPOTLIGHT_SEARCH.name}
+            </Text>
+            <Kbd size="xs" style={{ borderWidth: "1px" }}>
+              {keyMap.SPOTLIGHT_SEARCH.keys}
+            </Kbd>
+          </Group>
+        </UnstyledButton>
+        <Spotlight
+          actions={getActions(navigate, colorScheme, handleQuickThemeChange, t)}
+          shortcut={keyMap.SPOTLIGHT_SEARCH.keys}
+          nothingFound="Nothing found..."
+          highlightQuery
+          searchProps={{
+            leftSection: <IconSearch size={20} stroke={1.5} />,
+            placeholder: "Search...",
+          }}
+          scrollable
+        />
       </Group>
-      {!isNative && !isMobile && (
+      {layout.menuBar.displayWindowControls && (
         <Center h="30" mr="xs">
           <Group gap="5px" data-tauri-drag-region>
             <ActionIcon h={25} w={25} radius="lg" onClick={() => appWindow.minimize()} className={classes.icon}>

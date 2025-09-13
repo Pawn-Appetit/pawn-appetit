@@ -35,7 +35,7 @@ import ErrorComponent from "@/common/components/ErrorComponent";
 import { commands } from "./bindings";
 import i18n from "./i18n";
 import { routeTree } from "./routeTree.gen";
-import { useScreenSize } from "./styles/theme";
+import { getPlatform } from "./common/hooks/useResponsiveLayout";
 import { ThemeProvider } from "./themes";
 import { openFile } from "./utils/files";
 
@@ -73,14 +73,14 @@ export default function App() {
   const pieceSet = useAtomValue(pieceSetAtom);
   const [, setTabs] = useAtom(tabsAtom);
   const [, setActiveTab] = useAtom(activeTabAtom);
-  const { isMobile } = useScreenSize();
+  const platform = getPlatform();
 
   useEffect(() => {
     (async () => {
       await commands.closeSplashscreen();
       const detach = await attachConsole();
       info("React app started successfully");
-      if (!isMobile) {
+      if (platform !== "mobile") {
         const matches = await getMatches();
         if (matches.args.file.occurrences > 0) {
           info(`Opening file from command line: ${matches.args.file.value}`);
@@ -95,7 +95,7 @@ export default function App() {
         detach();
       };
     })();
-  }, [setTabs, setActiveTab, isMobile]);
+  }, [setTabs, setActiveTab, platform]);
 
   const fontSize = useAtomValue(fontSizeAtom);
   const spellCheck = useAtomValue(spellCheckAtom);
