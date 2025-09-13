@@ -46,15 +46,15 @@ function TablebaseInfo({ fen, turn }: { fen: string; turn: "white" | "black" }) 
         <Accordion.Item value="tablebase">
           <Accordion.Control>
             <Group>
-              <Text fw="bold">{t("Tablebase.Title")}</Text>
+              <Text fw="bold">{t("features.tablebase.title")}</Text>
               {isLoading && (
                 <Group p="xs">
-                  <Badge variant="transparent">{t("Common.Loading")}</Badge>
+                  <Badge variant="transparent">{t("common.loading")}</Badge>
                 </Group>
               )}
               {error && (
                 <Text ta="center">
-                  {t("Tablebase.Error")}
+                  {t("features.tablebase.error")}
                   {error.message}
                 </Text>
               )}
@@ -113,9 +113,9 @@ function OutcomeBadge({
 }) {
   const { t } = useTranslation();
   const normalizedCategory = match(category)
-    .with("win", () => (turn === "white" ? t("Outcome.WhiteWins") : t("Outcome.BlackWins")))
-    .with("loss", () => (turn === "white" ? t("Outcome.BlackWins") : t("Outcome.WhiteWins")))
-    .with(P.union("draw", "blessed-loss", "cursed-win"), () => t("Outcome.Draw"))
+    .with("win", () => (turn === "white" ? t("chess.outcome.whiteWins") : t("chess.outcome.blackWins")))
+    .with("loss", () => (turn === "white" ? t("chess.outcome.blackWins") : t("chess.outcome.whiteWins")))
+    .with(P.union("draw", "blessed-loss", "cursed-win"), () => t("chess.outcome.draw"))
     .with(P.union("unknown", "maybe-win", "maybe-loss"), () => t("Tablebase.Unknown"))
     .exhaustive();
 
@@ -127,9 +127,11 @@ function OutcomeBadge({
   const label = wins
     ? normalizedCategory
     : match(category)
-        .with("draw", () => t("Outcome.Draw"))
+        .with("draw", () => t("chess.outcome.draw"))
         .with("unknown", () => t("Tablebase.Unknown"))
-        .otherwise(() => (dtm ? t("Tablebase.DTM", { count: Math.abs(dtm) }) : t("Tablebase.DTZ", { count: dtz })));
+        .otherwise(() =>
+          dtm ? t("features.tablebase.dtm", { count: Math.abs(dtm) }) : t("features.tablebase.dtz", { count: dtz }),
+        );
 
   return (
     <Group p="xs">
@@ -138,7 +140,7 @@ function OutcomeBadge({
       </Badge>
       {["blessed-loss", "cursed-win", "maybe-win", "maybe-loss"].includes(category) && wins && (
         <Text c="dimmed" fz="xs">
-          {t("Tablebase.FiftyMoveRule")}
+          {t("features.tablebase.fiftyMoveRule")}
         </Text>
       )}
     </Group>

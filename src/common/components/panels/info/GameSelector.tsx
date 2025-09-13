@@ -37,14 +37,23 @@ export default function GameSelector({
   const loadMoreRows = useCallback(
     async (startIndex: number, stopIndex: number) => {
       const data = unwrap(await commands.readGames(path, startIndex, stopIndex));
-      const newGames = new Map(games);
-      data.forEach(async (game, index) => {
-        const { headers } = await parsePGN(game);
-        newGames.set(startIndex + index, getGameName(headers));
+
+      const parsedGames = await Promise.all(
+        data.map(async (game, index) => {
+          const { headers } = await parsePGN(game);
+          return [startIndex + index, getGameName(headers)] as const;
+        }),
+      );
+
+      setGames((prevGames) => {
+        const newGames = new Map(prevGames);
+        parsedGames.forEach(([index, gameName]) => {
+          newGames.set(index, gameName);
+        });
+        return newGames;
       });
-      setGames(newGames);
     },
-    [games, path, setGames],
+    [path, setGames],
   );
 
   const fontSize = useAtomValue(fontSizeAtom);
@@ -57,14 +66,23 @@ export default function GameSelector({
   });
 
   useEffect(() => {
-    if (games.size === 0) {
-      loadMoreRows(0, 10);
+    setGames(new Map());
+  }, [path, setGames]);
+
+  useEffect(() => {
+    if (games.size === 0 && total > 0) {
+      loadMoreRows(0, Math.min(10, total - 1));
     }
+
     const items = rowVirtualizer.getVirtualItems();
-    if (items.some((item) => !isRowLoaded(item.index))) {
-      loadMoreRows(items[0].index, items[items.length - 1].index);
+    const unloadedItems = items.filter((item) => !isRowLoaded(item.index));
+
+    if (unloadedItems.length > 0) {
+      const startIndex = Math.min(...unloadedItems.map((item) => item.index));
+      const stopIndex = Math.max(...unloadedItems.map((item) => item.index));
+      loadMoreRows(startIndex, stopIndex);
     }
-  }, [games.size, loadMoreRows, rowVirtualizer.getVirtualItems()]);
+  }, [games.size, total, loadMoreRows, rowVirtualizer]);
 
   return (
     <ScrollArea viewportRef={parentRef} h="100%">
@@ -117,60 +135,58 @@ function GameRow({
   path: string;
   total: number;
   activePage: number;
-  deleteGame?: (indxe: number) => void;
+  deleteGame?: (index: number) => void;
 }) {
   const { t } = useTranslation();
 
   return (
-    <>
-      <Group
-        style={style}
-        justify="space-between"
-        pr="xl"
-        className={cx(classes.row, {
-          [classes.active]: index === activePage,
-        })}
+    <Group
+      style={style}
+      justify="space-between"
+      pr="xl"
+      className={cx(classes.row, {
+        [classes.active]: index === activePage,
+      })}
+    >
+      <Text
+        fz="sm"
+        truncate
+        maw={600}
+        onClick={() => {
+          setPage(index);
+        }}
+        flex={1}
       >
-        <Text
-          fz="sm"
-          truncate
-          maw={600}
-          onClick={() => {
-            setPage(index);
-          }}
-          flex={1}
-        >
-          {t("Units.Count", { count: index + 1 })}. {game}
-        </Text>
-        {deleteGame && (
-          <Group>
-            <ActionIcon
-              onClick={() => {
-                modals.openConfirmModal({
-                  title: t("Files.Game.Delete.Title"),
-                  withCloseButton: false,
-                  children: (
-                    <>
-                      <Text>{t("Files.Game.Delete.Desc")}</Text>
-                      <Text>{t("Common.CannotUndo")}</Text>
-                    </>
-                  ),
-                  labels: { confirm: t("Common.Remove"), cancel: t("Common.Cancel") },
-                  confirmProps: { color: "red" },
-                  onConfirm: () => {
-                    deleteGame(index);
-                  },
-                });
-              }}
-              variant="outline"
-              color="red"
-              size="1rem"
-            >
-              <IconX />
-            </ActionIcon>
-          </Group>
-        )}
-      </Group>
-    </>
+        {t("units.count", { count: index + 1 })}. {game}
+      </Text>
+      {deleteGame && (
+        <Group>
+          <ActionIcon
+            onClick={() => {
+              modals.openConfirmModal({
+                title: t("features.files.game.delete.title"),
+                withCloseButton: false,
+                children: (
+                  <>
+                    <Text>{t("features.files.game.delete.desc")}</Text>
+                    <Text>{t("common.cannotUndo")}</Text>
+                  </>
+                ),
+                labels: { confirm: t("common.remove"), cancel: t("common.cancel") },
+                confirmProps: { color: "red" },
+                onConfirm: () => {
+                  deleteGame(index);
+                },
+              });
+            }}
+            variant="outline"
+            color="red"
+            size="1rem"
+          >
+            <IconX />
+          </ActionIcon>
+        </Group>
+      )}
+    </Group>
   );
 }

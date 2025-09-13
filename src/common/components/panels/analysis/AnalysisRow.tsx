@@ -1,5 +1,5 @@
-import { ActionIcon, Box, Flex, Portal, Table } from "@mantine/core";
-import { useForceUpdate } from "@mantine/hooks";
+import { ActionIcon, Box, Flex, Popover, Table } from "@mantine/core";
+import { useDisclosure, useForceUpdate } from "@mantine/hooks";
 import { IconChevronDown } from "@tabler/icons-react";
 import type { Key } from "chessground/types";
 import { chessgroundMove } from "chessops/compat";
@@ -9,7 +9,7 @@ import { useAtom, useAtomValue } from "jotai";
 import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useStore } from "zustand";
 import type { Score } from "@/bindings";
-import { Chessground } from "@/chessground/Chessground";
+import { Chessground } from "@/common/components/Chessground";
 import MoveCell from "@/common/components/MoveCell";
 import { TreeStateContext } from "@/common/components/TreeStateContext";
 import { previewBoardOnHoverAtom, scoreTypeFamily } from "@/state/atoms";
@@ -148,54 +148,47 @@ function BoardPopover({
   const makeMoves = useStore(store, (s) => s.makeMoves);
   const preview = useAtomValue(previewBoardOnHoverAtom);
 
-  const [hovering, setHovering] = useState(false);
+  const [opened, { close, open }] = useDisclosure(false);
 
   return (
-    <>
-      <Box onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)}>
-        {(index === 0 || is_white) && `${move_number.toString()}${is_white ? "." : "..."}`}
-        <MoveCell
-          move={san}
-          isCurrentVariation={false}
-          annotations={[]}
-          onContextMenu={() => undefined}
-          isStart={false}
-          onClick={() => {
-            if (!threat) {
-              makeMoves({ payload: moves.slice(0, index + 1) });
-            }
-          }}
-        />
-      </Box>
-      {preview && hovering && (
-        <Portal>
-          <Box
-            w={200}
-            style={{
-              top: position.top,
-              left: position.left,
+    <Popover position="bottom" withArrow shadow="md" opened={opened}>
+      <Popover.Target>
+        <Box onMouseEnter={open} onMouseLeave={close}>
+          {(index === 0 || is_white) && `${move_number.toString()}${is_white ? "." : "..."}`}
+          <MoveCell
+            move={san}
+            isCurrentVariation={false}
+            annotations={[]}
+            onContextMenu={() => undefined}
+            isStart={false}
+            onClick={() => {
+              if (!threat) {
+                makeMoves({ payload: moves.slice(0, index + 1) });
+              }
             }}
-            pos="absolute"
-          >
-            <Chessground
-              fen={fen}
-              coordinates={false}
-              viewOnly
-              orientation={orientation}
-              lastMove={lastMove}
-              turnColor={is_white ? "black" : "white"}
-              check={isCheck}
-              drawable={{
-                enabled: true,
-                visible: true,
-                defaultSnapToValidMove: true,
-                eraseOnClick: true,
-              }}
-            />
-          </Box>
-        </Portal>
+          />
+        </Box>
+      </Popover.Target>
+      {preview && (
+        <Popover.Dropdown w={200} p="0" style={{ pointerEvents: "none", border: "none" }}>
+          <Chessground
+            fen={fen}
+            coordinates={false}
+            viewOnly
+            orientation={orientation}
+            lastMove={lastMove}
+            turnColor={is_white ? "black" : "white"}
+            check={isCheck}
+            drawable={{
+              enabled: true,
+              visible: true,
+              defaultSnapToValidMove: true,
+              eraseOnClick: true,
+            }}
+          />
+        </Popover.Dropdown>
       )}
-    </>
+    </Popover>
   );
 }
 

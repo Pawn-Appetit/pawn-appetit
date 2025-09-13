@@ -95,13 +95,13 @@ export const PuzzleControls = ({
       <Group justify="space-between">
         <Group>
           <Group align="center">
-            <Input.Label htmlFor={jumpToNextId}>{t("Puzzle.JumpToNext")}:</Input.Label>
+            <Input.Label htmlFor={jumpToNextId}>{t("features.puzzle.jumpToNext")}:</Input.Label>
             <Select
               id={jumpToNextId}
               data={[
-                { value: "off", label: t("Puzzle.JumpToNextOff") },
-                { value: "success", label: t("Puzzle.JumpToNextOnSuccess") },
-                { value: "success-and-failure", label: t("Puzzle.JumpToNextOnSuccessAndFailure") },
+                { value: "off", label: t("features.puzzle.jumpToNextOff") },
+                { value: "success", label: t("features.puzzle.jumpToNextOnSuccess") },
+                { value: "success-and-failure", label: t("features.puzzle.jumpToNextOnSuccessAndFailure") },
               ]}
               value={jumpToNext}
               onChange={(value) => onJumpToNextChange(value as "off" | "success" | "success-and-failure")}
@@ -109,19 +109,19 @@ export const PuzzleControls = ({
             />
           </Group>
 
-          <Tooltip label={t("Puzzle.NewPuzzle")}>
+          <Tooltip label={t("features.puzzle.newPuzzle")}>
             <ActionIcon disabled={!selectedDb} onClick={onGeneratePuzzle}>
               <IconPlus />
             </ActionIcon>
           </Tooltip>
 
-          <Tooltip label={t("Puzzle.AnalyzePosition")}>
+          <Tooltip label={t("features.puzzle.analyzePosition")}>
             <ActionIcon disabled={!selectedDb} onClick={handleAnalyzePosition}>
               <IconZoomCheck />
             </ActionIcon>
           </Tooltip>
 
-          <Tooltip label={t("Puzzle.ClearSession")}>
+          <Tooltip label={t("features.puzzle.clearSession")}>
             <ActionIcon onClick={handleClearSession}>
               <IconX />
             </ActionIcon>
@@ -134,9 +134,11 @@ export const PuzzleControls = ({
           onClick={handleViewSolution}
           disabled={puzzles.length === 0 || showingSolution || turnToMove === null}
         >
-          {showingSolution ? t("Puzzle.ShowingSolution") : t("Puzzle.ViewSolution")}
+          {showingSolution ? t("features.puzzle.showingSolution") : t("features.puzzle.viewSolution")}
         </Button>
-        {turnToMove && <Text fz="1.50rem">{turnToMove === "white" ? t("Fen.BlackToMove") : t("Fen.WhiteToMove")}</Text>}
+        {turnToMove && (
+          <Text fz="1.50rem">{turnToMove === "white" ? t("chess.fen.blackToMove") : t("chess.fen.whiteToMove")}</Text>
+        )}
       </Group>
     </>
   );

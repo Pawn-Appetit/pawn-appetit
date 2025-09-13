@@ -108,23 +108,23 @@ function CompleteMoveCell({
               <Menu.Dropdown>
                 {currentTab?.source?.type === "file" && currentTab.source.metadata.type === "repertoire" && (
                   <Menu.Item leftSection={<IconFlag size="0.875rem" />} onClick={() => setStart(movePath)}>
-                    {t("Menu.MarkAsStart")}
+                    {t("features.menu.markAsStart")}
                   </Menu.Item>
                 )}
                 <Menu.Item leftSection={<IconChevronsUp size="0.875rem" />} onClick={() => promoteToMainline(movePath)}>
-                  {t("Menu.PromoteToMainLine")}
+                  {t("features.menu.promoteToMainLine")}
                 </Menu.Item>
 
                 <Menu.Item leftSection={<IconChevronUp size="0.875rem" />} onClick={() => promoteVariation(movePath)}>
-                  {t("Menu.PromoteVariation")}
+                  {t("features.menu.promoteVariation")}
                 </Menu.Item>
 
                 <Menu.Item leftSection={<IconCopy size="0.875rem" />} onClick={() => copyVariationPgn(movePath)}>
-                  {t("Menu.CopyVariationPGN")}
+                  {t("features.menu.copyVariationPGN")}
                 </Menu.Item>
 
                 <Menu.Item color="red" leftSection={<IconX size="0.875rem" />} onClick={() => deleteMove(movePath)}>
-                  {t("Menu.DeleteMove")}
+                  {t("features.menu.deleteMove")}
                 </Menu.Item>
               </Menu.Dropdown>
             </Portal>

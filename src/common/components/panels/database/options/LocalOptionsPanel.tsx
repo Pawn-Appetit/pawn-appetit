@@ -5,8 +5,8 @@ import { EMPTY_BOARD_FEN, makeFen, parseFen } from "chessops/fen";
 import { useAtom } from "jotai";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Chessground } from "@/chessground/Chessground";
 import PiecesGrid from "@/common/components/boards/PiecesGrid";
+import { Chessground } from "@/common/components/Chessground";
 import { PlayerSearchInput } from "@/features/databases/components/PlayerSearchInput";
 import { currentLocalOptionsAtom } from "@/state/atoms";
 import { formatDateToPGN, parseDate } from "@/utils/format";
@@ -42,8 +42,8 @@ function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
           <Text fw="bold">Color:</Text>
           <SegmentedControl
             data={[
-              { value: "white", label: t("Common.White") },
-              { value: "black", label: t("Common.Black") },
+              { value: "white", label: t("chess.white") },
+              { value: "black", label: t("chess.black") },
             ]}
             value={options.color}
             onChange={(v) => setOptions({ ...options, color: v as "white" | "black" })}

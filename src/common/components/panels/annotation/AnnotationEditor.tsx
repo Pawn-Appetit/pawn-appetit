@@ -35,7 +35,7 @@ function AnnotationEditor() {
         Markdown.configure({
           linkify: true,
         }),
-        Placeholder.configure({ placeholder: t("Board.Annotate.WriteHere") }),
+        Placeholder.configure({ placeholder: t("features.board.annotate.writeHere") }),
       ],
       content: currentNode.comment,
       onUpdate: ({ editor }) => {

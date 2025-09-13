@@ -27,7 +27,7 @@ export function AddPuzzle({
   const { data: dbs, error } = useSWRImmutable("default_puzzle_databases", getDefaultPuzzleDatabases);
 
   return (
-    <Modal opened={opened} onClose={() => setOpened(false)} title={t("Databases.Add.Title")}>
+    <Modal opened={opened} onClose={() => setOpened(false)} title={t("features.databases.add.title")}>
       <ScrollArea.Autosize mah={500} offsetScrollbars>
         <Stack>
           {dbs?.map((db, i) => (
@@ -41,8 +41,8 @@ export function AddPuzzle({
             />
           ))}
           {error && (
-            <Alert icon={<IconAlertCircle size="1rem" />} title={t("Common.Error")} color="red">
-              {t("Databases.Add.ErrorFetch")}
+            <Alert icon={<IconAlertCircle size="1rem" />} title={t("common.error")} color="red">
+              {t("features.databases.add.errorFetch")}
             </Alert>
           )}
         </Stack>
@@ -79,7 +79,7 @@ function PuzzleDbCard({
       <Group wrap="nowrap" gap={0} grow>
         <Box p="md" flex={1}>
           <Text tt="uppercase" c="dimmed" fw={700} size="xs">
-            {t("Databases.Add.Title").toUpperCase()}
+            {t("features.databases.add.title").toUpperCase()}
           </Text>
           <Text fw="bold" mb="xs">
             {puzzleDb.title}
@@ -92,15 +92,15 @@ function PuzzleDbCard({
           <Group wrap="nowrap" grow my="md">
             <Stack gap={0} align="center">
               <Text tt="uppercase" c="dimmed" fw={700} size="xs">
-                {t("Common.Size").toUpperCase()}
+                {t("common.size").toUpperCase()}
               </Text>
-              <Text size="xs">{t("Units.Bytes", { bytes: puzzleDb.storageSize })}</Text>
+              <Text size="xs">{t("units.bytes", { bytes: puzzleDb.storageSize })}</Text>
             </Stack>
             <Stack gap={0} align="center">
               <Text tt="uppercase" c="dimmed" fw={700} size="xs">
-                {t("Files.FileType.Puzzle").toUpperCase()}
+                {t("features.files.fileType.fileType.Puzzle").toUpperCase()}
               </Text>
-              <Text size="xs">{t("Units.Count", { count: puzzleDb.puzzleCount })}</Text>
+              <Text size="xs">{t("units.count", { count: puzzleDb.puzzleCount })}</Text>
             </Stack>
           </Group>
           <ProgressButton
@@ -108,10 +108,10 @@ function PuzzleDbCard({
             progressEvent={events.downloadProgress}
             initInstalled={initInstalled}
             labels={{
-              completed: t("Common.Installed"),
-              action: t("Common.Install"),
-              inProgress: t("Common.Downloading"),
-              finalizing: t("Common.Extracting"),
+              completed: t("common.installed"),
+              action: t("common.install"),
+              inProgress: t("common.downloading"),
+              finalizing: t("common.extracting"),
             }}
             onClick={() => downloadDatabase(databaseId, puzzleDb.downloadLink!, puzzleDb.title)}
             inProgress={inProgress}

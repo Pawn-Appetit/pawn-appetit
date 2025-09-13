@@ -54,7 +54,7 @@ function EngineSettingsForm({ engine, settings, setSettings, color, minimal, rem
       {!minimal && multipv && (
         <Group grow>
           <Text size="sm" fw="bold">
-            {t("Engines.Settings.NumOfLines")}
+            {t("features.engines.settings.numOfLines")}
           </Text>
           <LinesSlider
             value={Number(multipv.value || 1)}
@@ -75,7 +75,7 @@ function EngineSettingsForm({ engine, settings, setSettings, color, minimal, rem
         <>
           <Group grow>
             <Text size="sm" fw="bold">
-              {t("Engines.Settings.NumOfCores")}
+              {t("features.engines.settings.numOfCores")}
             </Text>
             <CoresSlider
               value={Number(threads.value || 1)}
@@ -92,7 +92,7 @@ function EngineSettingsForm({ engine, settings, setSettings, color, minimal, rem
           {hash && (
             <Group grow>
               <Text size="sm" fw="bold">
-                {t("Engines.Settings.SizeOfHash")}
+                {t("features.engines.settings.sizeOfHash")}
               </Text>
               <HashSlider
                 value={Number(hash.value || 1)}
@@ -152,7 +152,7 @@ function SyncSettings({
 
   return (
     <Checkbox
-      label={t("Board.Analysis.SyncGlobally")}
+      label={t("features.board.analysis.syncGlobally")}
       checked={settings.synced}
       onChange={(e) => {
         if (e.currentTarget.checked) {
@@ -180,7 +180,7 @@ function AdvancedSettings({ engineName }: { engineName: string }) {
   const engines = useAtomValue(enginesAtom);
 
   return (
-    <Tooltip label={t("Engines.Settings.AdvancedSettings")}>
+    <Tooltip label={t("features.engines.settings.advancedSettings")}>
       <ActionIcon
         variant="default"
         onClick={() =>

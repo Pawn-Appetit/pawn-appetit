@@ -15,7 +15,7 @@ export function FileTypeSelector({
   items = FILE_TYPES,
   value,
   onChange,
-  labelKey = "Files.FileType",
+  labelKey = "features.files.fileType.fileType",
 }: FileTypeSelectorProps) {
   const { t } = useTranslation();
 

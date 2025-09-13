@@ -228,7 +228,7 @@ function Table({
       columns={[
         {
           accessor: "name",
-          title: t("Files.Name"),
+          title: t("features.files.name"),
           sortable: true,
           noWrap: true,
           render: (row) => (
@@ -249,18 +249,18 @@ function Table({
         },
         {
           accessor: "metadata.type",
-          title: t("Files.Type"),
+          title: t("features.files.type"),
           width: 100,
           render: (row) => {
             if (row.type === "file") {
               return t(FILE_TYPE_LABELS[row.metadata.type]);
             }
-            return t("Files.Folder");
+            return t("features.files.folder");
           },
         },
         {
           accessor: "lastModified",
-          title: t("Files.LastModified"),
+          title: t("features.files.lastModified"),
           sortable: true,
           textAlign: "right",
           width: 200,
@@ -268,7 +268,7 @@ function Table({
             if (row.type === "directory") return null;
             return (
               <Box ml={20 * depth}>
-                {t("Formatters.DateTimeFormat", {
+                {t("formatters.dateTimeFormat", {
                   date: new Date(row.lastModified * 1000),
                   interpolation: { escapeValue: false },
                 })}
@@ -278,7 +278,7 @@ function Table({
         },
       ]}
       records={files}
-      noRecordsText={t("Files.NoFiles")}
+      noRecordsText={t("features.files.noFiles")}
       rowExpansion={{
         allowMultiple: true,
         expanded: {
@@ -309,7 +309,7 @@ function Table({
           {
             key: "open-file",
             icon: <IconEye size={16} />,
-            title: t("Common.Open"),
+            title: t("common.open"),
             disabled: record.type === "directory",
             onClick: () => {
               if (record.type === "directory") return;
@@ -319,7 +319,7 @@ function Table({
           {
             key: "delete-file",
             icon: <IconTrash size={16} />,
-            title: t("Files.Delete"),
+            title: t("features.files.delete.delete"),
             color: "red",
             onClick: async () => {
               if (record.type === "directory") {

@@ -10,8 +10,9 @@ import {
 } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
+import type { Piece } from "chessground/types";
 import { useAtom, useAtomValue } from "jotai";
-import { Suspense, useCallback, useContext, useEffect, useRef } from "react";
+import { Suspense, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import GameNotation from "@/common/components/GameNotation";
@@ -43,6 +44,7 @@ function BoardAnalysis() {
   const { t } = useTranslation();
 
   const [editingMode, toggleEditingMode] = useToggle();
+  const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
   const autoSave = useAtomValue(autoSaveAtom);
   const { documentDir } = useLoaderData({ from: "/boards" });
@@ -164,6 +166,8 @@ function BoardAnalysis() {
           saveFile={saveFile}
           reload={reloadBoard}
           addGame={addGame}
+          selectedPiece={selectedPiece}
+          setSelectedPiece={setSelectedPiece}
         />
       </Portal>
       <Portal target="#topRight" style={{ height: "100%" }}>
@@ -190,31 +194,31 @@ function BoardAnalysis() {
             <Tabs.List grow mb="1rem">
               {isRepertoire && (
                 <Tabs.Tab value="practice" leftSection={<IconTargetArrow size="1rem" />}>
-                  {t("Board.Tabs.Practice")}
+                  {t("features.board.tabs.practice")}
                 </Tabs.Tab>
               )}
               {isRepertoire && (
                 <Tabs.Tab value="graph" leftSection={<IconGraphFilled size="1rem" />}>
-                  {t("Board.Tabs.Graph")}
+                  {t("features.board.tabs.graph")}
                 </Tabs.Tab>
               )}
               {!isPuzzle && (
                 <Tabs.Tab value="analysis" leftSection={<IconZoomCheck size="1rem" />}>
-                  {t("Board.Tabs.Analysis")}
+                  {t("features.board.tabs.analysis")}
                 </Tabs.Tab>
               )}
               {!isPuzzle && (
                 <Tabs.Tab value="database" leftSection={<IconDatabase size="1rem" />}>
-                  {t("Board.Tabs.Database")}
+                  {t("features.board.tabs.database")}
                 </Tabs.Tab>
               )}
               {!isPuzzle && (
                 <Tabs.Tab value="annotate" leftSection={<IconNotes size="1rem" />}>
-                  {t("Board.Tabs.Annotate")}
+                  {t("features.board.tabs.annotate")}
                 </Tabs.Tab>
               )}
               <Tabs.Tab value="info" leftSection={<IconInfoCircle size="1rem" />}>
-                {t("Board.Tabs.Info")}
+                {t("features.board.tabs.info")}
               </Tabs.Tab>
             </Tabs.List>
             {isRepertoire && (
@@ -250,7 +254,12 @@ function BoardAnalysis() {
       </Portal>
       <Portal target="#bottomRight" style={{ height: "100%" }}>
         {editingMode ? (
-          <EditingCard boardRef={boardRef} setEditingMode={toggleEditingMode} />
+          <EditingCard
+            boardRef={boardRef}
+            setEditingMode={toggleEditingMode}
+            selectedPiece={selectedPiece}
+            setSelectedPiece={setSelectedPiece}
+          />
         ) : (
           <Stack h="100%" gap="xs">
             <GameNotation topBar />

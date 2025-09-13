@@ -64,25 +64,25 @@ function PgnInput() {
       <Text fw="bold">PGN</Text>
       <Group my="sm">
         <Checkbox
-          label={t("PgnInput.Comments")}
+          label={t("features.pgnInput.comments")}
           size="xs"
           checked={options.comments}
           onChange={() => setOptions({ ...options, comments: !options.comments })}
         />
         <Checkbox
-          label={t("PgnInput.Glyphs")}
+          label={t("features.pgnInput.glyphs")}
           size="xs"
           checked={options.glyphs}
           onChange={() => setOptions({ ...options, glyphs: !options.glyphs })}
         />
         <Checkbox
-          label={t("PgnInput.Variations")}
+          label={t("features.pgnInput.variations")}
           size="xs"
           checked={options.variations}
           onChange={() => setOptions({ ...options, variations: !options.variations })}
         />
         <Checkbox
-          label={t("PgnInput.ExtraMarkups")}
+          label={t("features.pgnInput.extraMarkups")}
           size="xs"
           checked={options.extraMarkups}
           onChange={() => setOptions({ ...options, extraMarkups: !options.extraMarkups })}

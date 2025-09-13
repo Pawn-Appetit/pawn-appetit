@@ -82,6 +82,7 @@ export default function PiecesSelect() {
             setPieceSet(val);
             combobox.closeDropdown();
           }}
+          hideDetached={false}
         >
           <Combobox.Target>
             <InputBase
@@ -104,7 +105,7 @@ export default function PiecesSelect() {
 
           <Combobox.Dropdown>
             <Combobox.Options>
-              <ScrollArea.Autosize mah={200} type="always" scrollbars="y">
+              <ScrollArea.Autosize mah={200} type="always">
                 {options}
               </ScrollArea.Autosize>
             </Combobox.Options>

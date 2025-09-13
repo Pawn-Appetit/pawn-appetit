@@ -6,6 +6,8 @@ import { useAtom } from "jotai";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import FileInput from "@/common/components/FileInput";
+import ColorSchemeSettings from "@/features/themes/components/ColorSchemeSettings";
+import ThemeSelectionSettings from "@/features/themes/components/ThemeSettings";
 import {
   autoPromoteAtom,
   autoSaveAtom,
@@ -27,13 +29,10 @@ import {
   spellCheckAtom,
   storedDocumentDirAtom,
 } from "@/state/atoms";
-import { ThemeSettings } from "@/themes";
-import { computedThemeAtom } from "@/themes/state";
-import type { ThemeDefinition } from "@/themes/types";
 import { hasTranslatedPieceChars } from "@/utils/format";
+import ColorControl from "../themes/components/ColorControl";
+import FontSizeSlider from "../themes/components/FontSizeSlider";
 import BoardSelect from "./components/BoardSelect";
-import ColorControl from "./components/ColorControl";
-import FontSizeSlider from "./components/FontSizeSlider";
 import PiecesSelect from "./components/PiecesSelect";
 import SettingsNumberInput from "./components/SettingsNumberInput";
 import SettingsSwitch from "./components/SettingsSwitch";
@@ -64,7 +63,6 @@ export default function Page() {
 
   const [moveMethod, setMoveMethod] = useAtom(moveMethodAtom);
   const [moveNotationType, setMoveNotationType] = useAtom(moveNotationTypeAtom);
-  const [computedTheme] = useAtom<ThemeDefinition | null>(computedThemeAtom);
   const [dateFormatMode, setDateFormatMode] = useState(localStorage.getItem("dateFormatMode") || "intl");
 
   const handleDateFormatModeChange = useCallback(
@@ -89,20 +87,20 @@ export default function Page() {
 
   const dateFormatModes = useMemo(
     () => [
-      { value: "intl", label: t("Settings.Appearance.DateFormat.International") },
-      { value: "locale", label: t("Settings.Appearance.DateFormat.Locale") },
+      { value: "intl", label: t("settings.appearance.international") },
+      { value: "locale", label: t("settings.appearance.locale") },
     ],
     [t],
   );
 
   const moveNotationData = useMemo(() => {
     const data = [
-      { label: t("Settings.MoveNotation.Symbols"), value: "symbols" },
-      { label: t("Settings.MoveNotation.Letters"), value: "letters" },
+      { label: t("settings.symbols"), value: "symbols" },
+      { label: t("settings.letters"), value: "letters" },
     ];
 
     if (hasTranslatedPieceChars(i18n)) {
-      data.push({ label: t("Settings.MoveNotation.TranslatedLetters"), value: "letters-translated" });
+      data.push({ label: t("settings.translatedLetters"), value: "letters-translated" });
     }
 
     return data;
@@ -119,31 +117,28 @@ export default function Page() {
 
   const waysToMoveData = useMemo(
     () => [
-      { label: t("Settings.WaysToMovePieces.Drag"), value: "drag" },
-      { label: t("Settings.WaysToMovePieces.Click"), value: "select" },
-      { label: t("Settings.WaysToMovePieces.Both"), value: "both" },
+      { label: t("settings.drag"), value: "drag" },
+      { label: t("settings.click"), value: "select" },
+      { label: t("settings.both"), value: "both" },
     ],
     [t],
   );
 
-  const titleBarData = useMemo(
-    () => [t("Settings.Appearance.TitleBar.Native"), t("Settings.Appearance.TitleBar.Custom")],
-    [t],
-  );
+  const titleBarData = useMemo(() => [t("settings.appearance.native"), t("settings.appearance.custom")], [t]);
 
   const allSettings = useMemo(
     (): SettingItem[] => [
       {
         id: "piece-dest",
-        title: t("Settings.PieceDest"),
-        description: t("Settings.PieceDest.Desc"),
+        title: t("settings.board.pieceDest"),
+        description: t("settings.board.pieceDestDesc"),
         tab: "board",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.PieceDest")}</Text>
+              <Text>{t("settings.board.pieceDest")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.PieceDest.Desc")}
+                {t("settings.board.pieceDestDesc")}
               </Text>
             </div>
             <SettingsSwitch atom={showDestsAtom} />
@@ -152,15 +147,15 @@ export default function Page() {
       },
       {
         id: "move-notation",
-        title: t("Settings.MoveNotation"),
-        description: t("Settings.MoveNotation.Desc"),
+        title: t("settings.moveNotation"),
+        description: t("settings.moveNotationDesc"),
         tab: "board",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.MoveNotation")}</Text>
+              <Text>{t("settings.moveNotation")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.MoveNotation.Desc")}
+                {t("settings.moveNotationDesc")}
               </Text>
             </div>
             <Select
@@ -174,15 +169,15 @@ export default function Page() {
       },
       {
         id: "move-pieces",
-        title: t("Settings.WaysToMovePieces"),
-        description: t("Settings.WaysToMovePieces.Desc"),
+        title: t("settings.waysToMovePieces"),
+        description: t("settings.waysToMovePiecesDesc"),
         tab: "board",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.WaysToMovePieces")}</Text>
+              <Text>{t("settings.waysToMovePieces")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.WaysToMovePieces.Desc")}
+                {t("settings.waysToMovePiecesDesc")}
               </Text>
             </div>
             <Select
@@ -196,15 +191,15 @@ export default function Page() {
       },
       {
         id: "snap-arrows",
-        title: t("Settings.SnapArrows"),
-        description: t("Settings.SnapArrows.Desc"),
+        title: t("settings.board.snapArrows"),
+        description: t("settings.board.snapArrowsDesc"),
         tab: "board",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.SnapArrows")}</Text>
+              <Text>{t("settings.board.snapArrows")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.SnapArrows.Desc")}
+                {t("settings.board.snapArrowsDesc")}
               </Text>
             </div>
             <SettingsSwitch atom={snapArrowsAtom} />
@@ -213,15 +208,15 @@ export default function Page() {
       },
       {
         id: "consecutive-arrows",
-        title: t("Settings.ConsecutiveArrows"),
-        description: t("Settings.ConsecutiveArrows.Desc"),
+        title: t("settings.board.consecutiveArrows"),
+        description: t("settings.board.consecutiveArrowsDesc"),
         tab: "board",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.ConsecutiveArrows")}</Text>
+              <Text>{t("settings.board.consecutiveArrows")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.ConsecutiveArrows.Desc")}
+                {t("settings.board.consecutiveArrowsDesc")}
               </Text>
             </div>
             <SettingsSwitch atom={showConsecutiveArrowsAtom} />
@@ -230,15 +225,15 @@ export default function Page() {
       },
       {
         id: "erase-drawables",
-        title: t("Settings.EraseDrawablesOnClick"),
-        description: t("Settings.EraseDrawablesOnClick.Desc"),
+        title: t("settings.board.eraseDrawablesOnClick"),
+        description: t("settings.board.eraseDrawablesOnClickDesc"),
         tab: "board",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.EraseDrawablesOnClick")}</Text>
+              <Text>{t("settings.board.eraseDrawablesOnClick")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.EraseDrawablesOnClick.Desc")}
+                {t("settings.board.eraseDrawablesOnClickDesc")}
               </Text>
             </div>
             <SettingsSwitch atom={eraseDrawablesOnClickAtom} />
@@ -247,15 +242,15 @@ export default function Page() {
       },
       {
         id: "auto-promotion",
-        title: t("Settings.AutoPromition"),
-        description: t("Settings.AutoPromition.Desc"),
+        title: t("settings.board.autoPromotion"),
+        description: t("settings.board.autoPromotionDesc"),
         tab: "board",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.AutoPromition")}</Text>
+              <Text>{t("settings.board.autoPromotion")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.AutoPromition.Desc")}
+                {t("settings.board.autoPromotionDesc")}
               </Text>
             </div>
             <SettingsSwitch atom={autoPromoteAtom} />
@@ -264,15 +259,15 @@ export default function Page() {
       },
       {
         id: "coordinates",
-        title: t("Settings.Coordinates"),
-        description: t("Settings.Coordinates.Desc"),
+        title: t("settings.board.coordinates"),
+        description: t("settings.board.coordinatesDesc"),
         tab: "board",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.Coordinates")}</Text>
+              <Text>{t("settings.board.coordinates")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.Coordinates.Desc")}
+                {t("settings.board.coordinatesDesc")}
               </Text>
             </div>
             <SettingsSwitch atom={showCoordinatesAtom} />
@@ -281,15 +276,15 @@ export default function Page() {
       },
       {
         id: "auto-save",
-        title: t("Settings.AutoSave"),
-        description: t("Settings.AutoSave.Desc"),
+        title: t("settings.board.autoSave"),
+        description: t("settings.board.autoSaveDesc"),
         tab: "board",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.AutoSave")}</Text>
+              <Text>{t("settings.board.autoSave")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.AutoSave.Desc")}
+                {t("settings.board.autoSaveDesc")}
               </Text>
             </div>
             <SettingsSwitch atom={autoSaveAtom} />
@@ -298,15 +293,15 @@ export default function Page() {
       },
       {
         id: "preview-board",
-        title: t("Settings.PreviewBoard"),
-        description: t("Settings.PreviewBoard.Desc"),
+        title: t("settings.board.previewBoard"),
+        description: t("settings.board.previewBoardDesc"),
         tab: "board",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.PreviewBoard")}</Text>
+              <Text>{t("settings.board.previewBoard")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.PreviewBoard.Desc")}
+                {t("settings.board.previewBoardDesc")}
               </Text>
             </div>
             <SettingsSwitch atom={previewBoardOnHoverAtom} />
@@ -315,15 +310,15 @@ export default function Page() {
       },
       {
         id: "board-scroll",
-        title: t("Settings.ScrollThroughMoves"),
-        description: t("Settings.ScrollThroughMoves.Desc"),
+        title: t("settings.board.scrollThroughMoves"),
+        description: t("settings.board.scrollThroughMovesDesc"),
         tab: "board",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.ScrollThroughMoves")}</Text>
+              <Text>{t("settings.board.scrollThroughMoves")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.ScrollThroughMoves.Desc")}
+                {t("settings.board.scrollThroughMovesDesc")}
               </Text>
             </div>
             <SettingsSwitch atom={enableBoardScrollAtom} />
@@ -332,15 +327,15 @@ export default function Page() {
       },
       {
         id: "text-input",
-        title: t("Settings.Inputs.TextInput"),
-        description: t("Settings.Inputs.TextInput.Desc"),
+        title: t("settings.inputs.textInput"),
+        description: t("settings.inputs.textInputDesc"),
         tab: "inputs",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.Inputs.TextInput")}</Text>
+              <Text>{t("settings.inputs.textInput")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.Inputs.TextInput.Desc")}
+                {t("settings.inputs.textInputDesc")}
               </Text>
             </div>
             <SettingsSwitch atom={moveInputAtom} />
@@ -349,15 +344,15 @@ export default function Page() {
       },
       {
         id: "spell-check",
-        title: t("Settings.Inputs.SpellCheck"),
-        description: t("Settings.Inputs.SpellCheck.Desc"),
+        title: t("settings.inputs.spellCheck"),
+        description: t("settings.inputs.spellCheckDesc"),
         tab: "inputs",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.Inputs.SpellCheck")}</Text>
+              <Text>{t("settings.inputs.spellCheck")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.Inputs.SpellCheck.Desc")}
+                {t("settings.inputs.spellCheckDesc")}
               </Text>
             </div>
             <SettingsSwitch atom={spellCheckAtom} />
@@ -366,15 +361,15 @@ export default function Page() {
       },
       {
         id: "forced-en-passant",
-        title: t("Settings.Anarchy.ForcedEnPassant"),
-        description: t("Settings.Anarchy.ForcedEnPassant.Desc"),
+        title: t("settings.anarchy.forcedEnPassant"),
+        description: t("settings.anarchy.forcedEnPassantDesc"),
         tab: "anarchy",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.Anarchy.ForcedEnPassant")}</Text>
+              <Text>{t("settings.anarchy.forcedEnPassant")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.Anarchy.ForcedEnPassant.Desc")}
+                {t("settings.anarchy.forcedEnPassantDesc")}
               </Text>
             </div>
             <SettingsSwitch atom={forcedEnPassantAtom} />
@@ -383,15 +378,15 @@ export default function Page() {
       },
       {
         id: "percent-coverage",
-        title: t("Settings.OpeningReport.PercentCoverage"),
-        description: t("Settings.OpeningReport.PercentCoverage.Desc"),
+        title: t("settings.openingReport.percentCoverage"),
+        description: t("settings.openingReport.percentCoverageDesc"),
         tab: "report",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.OpeningReport.PercentCoverage")}</Text>
+              <Text>{t("settings.openingReport.percentCoverage")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.OpeningReport.PercentCoverage.Desc")}
+                {t("settings.openingReport.percentCoverageDesc")}
               </Text>
             </div>
             <SettingsNumberInput atom={percentageCoverageAtom} min={50} max={100} step={1} />
@@ -400,15 +395,15 @@ export default function Page() {
       },
       {
         id: "min-games",
-        title: t("Settings.OpeningReport.MinGames"),
-        description: t("Settings.OpeningReport.MinGames.Desc"),
+        title: t("settings.openingReport.minGames"),
+        description: t("settings.openingReport.minGamesDesc"),
         tab: "report",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.OpeningReport.MinGames")}</Text>
+              <Text>{t("settings.openingReport.minGames")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.OpeningReport.MinGames.Desc")}
+                {t("settings.openingReport.minGamesDesc")}
               </Text>
             </div>
             <SettingsNumberInput atom={minimumGamesAtom} min={0} step={1} />
@@ -416,44 +411,90 @@ export default function Page() {
         ),
       },
       {
-        id: "theme",
-        title: t("Settings.Appearance.Theme"),
-        description: t("Settings.Appearance.Theme.Desc"),
-        tab: "appearance",
-        component: <ThemeSettings />,
-      },
-      {
-        id: "accent-color",
-        title: t("Settings.Appearance.AccentColor"),
-        description: t("Settings.Appearance.AccentColor.Desc"),
+        id: "color-scheme",
+        title: t("settings.appearance.colorScheme"),
+        description: t("settings.appearance.colorSchemeDesc"),
         tab: "appearance",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.Appearance.AccentColor")}</Text>
+              <Text>{t("settings.appearance.colorScheme")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.Appearance.AccentColor.Desc")}
+                {t("settings.appearance.colorSchemeDesc")}
               </Text>
             </div>
             <div>
-              <ColorControl
-                disabled={computedTheme?.name !== "classic-light" && computedTheme?.name !== "classic-dark"}
-              />
+              <ColorSchemeSettings />
             </div>
           </Group>
         ),
       },
       {
-        id: "language",
-        title: t("Settings.Appearance.Language"),
-        description: t("Settings.Appearance.Language.Desc"),
+        id: "theme",
+        title: t("settings.appearance.theme"),
+        description: t("settings.appearance.themeDesc"),
         tab: "appearance",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.Appearance.Language")}</Text>
+              <Text>{t("settings.appearance.theme.theme")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.Appearance.Language.Desc")}
+                {t("settings.appearance.themeDesc")}
+              </Text>
+            </div>
+            <div>
+              <ThemeSelectionSettings />
+            </div>
+          </Group>
+        ),
+      },
+      {
+        id: "accent-color",
+        title: t("settings.appearance.accentColor"),
+        description: t("settings.appearance.accentColorDesc"),
+        tab: "appearance",
+        component: (
+          <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
+            <div>
+              <Text>{t("settings.appearance.accentColor")}</Text>
+              <Text size="xs" c="dimmed">
+                {t("settings.appearance.accentColorDesc")}
+              </Text>
+            </div>
+            <div>
+              <ColorControl />
+            </div>
+          </Group>
+        ),
+      },
+      {
+        id: "font-size",
+        title: t("settings.appearance.fontSize"),
+        description: t("settings.appearance.fontSizeDesc"),
+        tab: "appearance",
+        component: (
+          <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
+            <div>
+              <Text>{t("settings.appearance.fontSize")}</Text>
+              <Text size="xs" c="dimmed">
+                {t("settings.appearance.fontSizeDesc")}
+              </Text>
+            </div>
+            <FontSizeSlider />
+          </Group>
+        ),
+      },
+      {
+        id: "language",
+        title: t("settings.appearance.language"),
+        description: t("settings.appearance.languageDesc"),
+        tab: "appearance",
+        component: (
+          <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
+            <div>
+              <Text>{t("settings.appearance.language")}</Text>
+              <Text size="xs" c="dimmed">
+                {t("settings.appearance.languageDesc")}
               </Text>
             </div>
             <Select
@@ -471,15 +512,15 @@ export default function Page() {
       },
       {
         id: "date-format",
-        title: t("Settings.Appearance.DateFormat"),
-        description: t("Settings.Appearance.DateFormat.Desc"),
+        title: t("settings.appearance.dateFormat"),
+        description: t("settings.appearance.dateFormatDesc"),
         tab: "appearance",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.Appearance.DateFormat")}</Text>
+              <Text>{t("settings.appearance.dateFormat")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.Appearance.DateFormat.Desc")}
+                {t("settings.appearance.dateFormatDesc")}
               </Text>
             </div>
             <Select
@@ -497,23 +538,23 @@ export default function Page() {
       },
       {
         id: "title-bar",
-        title: t("Settings.Appearance.TitleBar"),
-        description: t("Settings.Appearance.TitleBar.Desc"),
+        title: t("settings.appearance.titleBar"),
+        description: t("settings.appearance.titleBarDesc"),
         tab: "appearance",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.Appearance.TitleBar")}</Text>
+              <Text>{t("settings.appearance.titleBar")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.Appearance.TitleBar.Desc")}
+                {t("settings.appearance.titleBarDesc")}
               </Text>
             </div>
             <Select
               allowDeselect={false}
               data={titleBarData}
-              value={isNative ? t("Settings.Appearance.TitleBar.Native") : t("Settings.Appearance.TitleBar.Custom")}
+              value={isNative ? t("settings.appearance.native") : t("settings.appearance.custom")}
               onChange={(val) => {
-                setIsNative(val === t("Settings.Appearance.TitleBar.Native"));
+                setIsNative(val === t("settings.appearance.native"));
               }}
             />
           </Group>
@@ -521,15 +562,15 @@ export default function Page() {
       },
       {
         id: "hide-dashboard",
-        title: t("Settings.Appearance.hideDashboardOnStartup"),
-        description: t("Settings.Appearance.hideDashboardOnStartup.Desc"),
+        title: t("settings.appearance.hideDashboardOnStartup"),
+        description: t("settings.appearance.hideDashboardOnStartupDesc"),
         tab: "appearance",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.Appearance.hideDashboardOnStartup")}</Text>
+              <Text>{t("settings.appearance.hideDashboardOnStartup")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.Appearance.hideDashboardOnStartup.Desc")}
+                {t("settings.appearance.hideDashboardOnStartupDesc")}
               </Text>
             </div>
             <SettingsSwitch atom={hideDashboardOnStartupAtom} />
@@ -537,33 +578,16 @@ export default function Page() {
         ),
       },
       {
-        id: "font-size",
-        title: t("Settings.Appearance.FontSize"),
-        description: t("Settings.Appearance.FontSize.Desc"),
-        tab: "appearance",
-        component: (
-          <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
-            <div>
-              <Text>{t("Settings.Appearance.FontSize")}</Text>
-              <Text size="xs" c="dimmed">
-                {t("Settings.Appearance.FontSize.Desc")}
-              </Text>
-            </div>
-            <FontSizeSlider />
-          </Group>
-        ),
-      },
-      {
         id: "piece-set",
-        title: t("Settings.Appearance.PieceSet"),
-        description: t("Settings.Appearance.PieceSet.Desc"),
+        title: t("settings.appearance.pieceSet"),
+        description: t("settings.appearance.pieceSetDesc"),
         tab: "appearance",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.Appearance.PieceSet")}</Text>
+              <Text>{t("settings.appearance.pieceSet")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.Appearance.PieceSet.Desc")}
+                {t("settings.appearance.pieceSetDesc")}
               </Text>
             </div>
             <PiecesSelect />
@@ -572,15 +596,15 @@ export default function Page() {
       },
       {
         id: "board-image",
-        title: t("Settings.Appearance.BoardImage"),
-        description: t("Settings.Appearance.BoardImage.Desc"),
+        title: t("settings.appearance.boardImage"),
+        description: t("settings.appearance.boardImageDesc"),
         tab: "appearance",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.Appearance.BoardImage")}</Text>
+              <Text>{t("settings.appearance.boardImage")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.Appearance.BoardImage.Desc")}
+                {t("settings.appearance.boardImageDesc")}
               </Text>
             </div>
             <BoardSelect />
@@ -589,15 +613,15 @@ export default function Page() {
       },
       {
         id: "volume",
-        title: t("Settings.Sound.Volume"),
-        description: t("Settings.Sound.Volume.Desc"),
+        title: t("settings.sound.volume"),
+        description: t("settings.sound.volumeDesc"),
         tab: "sound",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.Sound.Volume")}</Text>
+              <Text>{t("settings.sound.volume")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.Sound.Volume.Desc")}
+                {t("settings.sound.volumeDesc")}
               </Text>
             </div>
             <VolumeSlider />
@@ -606,15 +630,15 @@ export default function Page() {
       },
       {
         id: "sound-collection",
-        title: t("Settings.Sound.Collection"),
-        description: t("Settings.Sound.Collection.Desc"),
+        title: t("settings.sound.collection"),
+        description: t("settings.sound.collectionDesc"),
         tab: "sound",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.Sound.Collection")}</Text>
+              <Text>{t("settings.sound.collection")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.Sound.Collection.Desc")}
+                {t("settings.sound.collectionDesc")}
               </Text>
             </div>
             <SoundSelect />
@@ -623,15 +647,15 @@ export default function Page() {
       },
       {
         id: "files-directory",
-        title: t("Settings.Directories.Files"),
-        description: t("Settings.Directories.Files.Desc"),
+        title: t("settings.directories.files"),
+        description: t("settings.directories.filesDesc"),
         tab: "directories",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("Settings.Directories.Files")}</Text>
+              <Text>{t("settings.directories.files")}</Text>
               <Text size="xs" c="dimmed">
-                {t("Settings.Directories.Files.Desc")}
+                {t("settings.directories.filesDesc")}
               </Text>
             </div>
             <FileInput
@@ -650,8 +674,8 @@ export default function Page() {
       },
       {
         id: "telemetry",
-        title: t("Settings.Telemetry"),
-        description: t("Settings.Telemetry.Desc"),
+        title: t("settings.telemetry"),
+        description: t("settings.telemetryDesc"),
         tab: "directories",
         component: <TelemetrySettings className={classes.item} />,
       },
@@ -668,7 +692,6 @@ export default function Page() {
       setMoveNotationType,
       filesDirectory,
       setFilesDirectory,
-      computedTheme,
       dateFormatMode,
       dateFormatModes,
       handleDateFormatModeChange,
@@ -714,13 +737,13 @@ export default function Page() {
   }, [filteredSettings]);
 
   const tabInfo = {
-    board: { title: t("Settings.Board"), desc: t("Settings.Board.Desc") },
-    inputs: { title: t("Settings.Inputs"), desc: t("Settings.Inputs.Desc") },
-    anarchy: { title: t("Settings.Anarchy"), desc: t("Settings.Anarchy.Desc") },
-    report: { title: t("Settings.OpeningReport"), desc: t("Settings.OpeningReport.Desc") },
-    appearance: { title: t("Settings.Appearance"), desc: t("Settings.Appearance.Desc") },
-    sound: { title: t("Settings.Sound"), desc: t("Settings.Sound.Desc") },
-    directories: { title: t("Settings.Directories"), desc: t("Settings.Directories.Desc") },
+    board: { title: t("settings.board.title"), desc: t("settings.board.desc") },
+    inputs: { title: t("settings.inputs.title"), desc: t("settings.inputs.desc") },
+    anarchy: { title: t("settings.anarchy.title"), desc: t("settings.anarchy.desc") },
+    report: { title: t("settings.openingReport.title"), desc: t("settings.openingReport.desc") },
+    appearance: { title: t("settings.appearance.title"), desc: t("settings.appearance.desc") },
+    sound: { title: t("settings.sound.title"), desc: t("settings.sound.desc") },
+    directories: { title: t("settings.directories.title"), desc: t("settings.directories.desc") },
   };
 
   const renderTabContent = (tabId: string, settings: SettingItem[]) => (
@@ -740,10 +763,10 @@ export default function Page() {
   return (
     <Box h="100%" style={{ overflow: "hidden" }}>
       <Title order={1} fw={500} p="lg" className={classes.title}>
-        {t("SideBar.Settings")}
+        {t("features.sidebar.settings")}
       </Title>
       <TextInput
-        placeholder={t("Settings.SearchPlaceholder")}
+        placeholder={t("settings.searchPlaceholder")}
         size="xs"
         mb="lg"
         px="lg"
@@ -767,7 +790,7 @@ export default function Page() {
               ))}
               {filteredSettings.length === 0 && (
                 <Text c="dimmed" ta="center" py="xl">
-                  {t("Settings.NoResultsFound")} "{search}"
+                  {t("settings.noResultsFound")} "{search}"
                 </Text>
               )}
             </Card>
@@ -777,7 +800,7 @@ export default function Page() {
         <Tabs defaultValue="board" orientation="vertical" h="100%">
           <Tabs.List>
             <Text c="dimmed" size="sm" pl="lg">
-              {t("Settings.Gameplay")}
+              {t("settings.gameplay")}
             </Text>
             <Tabs.Tab
               value="board"
@@ -787,7 +810,7 @@ export default function Page() {
                 tabLabel: classes.tabLabel,
               }}
             >
-              {t("Settings.Board")}
+              {t("settings.board.title")}
             </Tabs.Tab>
             <Tabs.Tab
               value="inputs"
@@ -797,7 +820,7 @@ export default function Page() {
                 tabLabel: classes.tabLabel,
               }}
             >
-              {t("Settings.Inputs")}
+              {t("settings.inputs.title")}
             </Tabs.Tab>
             <Tabs.Tab
               value="anarchy"
@@ -807,10 +830,10 @@ export default function Page() {
                 tabLabel: classes.tabLabel,
               }}
             >
-              {t("Settings.Anarchy")}
+              {t("settings.anarchy.title")}
             </Tabs.Tab>
             <Text c="dimmed" size="sm" mt="md" pl="lg">
-              {t("Settings.Analysis")}
+              {t("settings.analysis")}
             </Text>
             <Tabs.Tab
               value="report"
@@ -820,10 +843,10 @@ export default function Page() {
                 tabLabel: classes.tabLabel,
               }}
             >
-              {t("Settings.OpeningReport")}
+              {t("settings.openingReport.title")}
             </Tabs.Tab>
             <Text c="dimmed" size="sm" mt="md" pl="lg">
-              {t("Settings.Interface")}
+              {t("settings.interface")}
             </Text>
             <Tabs.Tab
               value="appearance"
@@ -833,7 +856,7 @@ export default function Page() {
                 tabLabel: classes.tabLabel,
               }}
             >
-              {t("Settings.Appearance")}
+              {t("settings.appearance.title")}
             </Tabs.Tab>
             <Tabs.Tab
               value="sound"
@@ -843,7 +866,7 @@ export default function Page() {
                 tabLabel: classes.tabLabel,
               }}
             >
-              {t("Settings.Sound")}
+              {t("settings.sound.title")}
             </Tabs.Tab>
             <Text c="dimmed" size="sm" mt="md" pl="lg">
               System
@@ -856,7 +879,7 @@ export default function Page() {
                 tabLabel: classes.tabLabel,
               }}
             >
-              {t("Settings.Directories")}
+              {t("settings.directories.title")}
             </Tabs.Tab>
           </Tabs.List>
           <Stack flex={1}>

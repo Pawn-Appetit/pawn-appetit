@@ -7,8 +7,8 @@ export default function SettingsSwitch({ atom }: { atom: PrimitiveAtom<boolean> 
   const [checked, setChecked] = useAtom(atom);
   return (
     <Switch
-      onLabel={t("Common.On")}
-      offLabel={t("Common.Off")}
+      onLabel={t("common.on")}
+      offLabel={t("common.off")}
       size="lg"
       checked={checked}
       onChange={(event) => setChecked(event.currentTarget.checked)}

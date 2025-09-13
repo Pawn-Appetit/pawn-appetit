@@ -9,16 +9,31 @@ import GenericCard from "@/common/components/GenericCard";
 import { FilenameInput } from "@/features/files/components/FilenameInput";
 import { FileTypeSelector } from "@/features/files/components/FileTypeSelector";
 import type { FileType } from "@/features/files/components/file";
-import { PgnSourceInput, type PgnTarget, resolvePgnTarget } from "@/features/files/components/PgnSourceInput";
+import {
+  PgnSourceInput,
+  type PgnTarget,
+  type ResolvedPgnTarget,
+  resolvePgnTarget,
+} from "@/features/files/components/PgnSourceInput";
 import { activeTabAtom, currentTabAtom, storedDocumentDirAtom, tabsAtom } from "@/state/atoms";
 import { parsePGN } from "@/utils/chess";
 import { getChesscomGame } from "@/utils/chess.com/api";
 import { chessopsError } from "@/utils/chessops";
-import { createFile, openFile } from "@/utils/files";
+import { createFile, createTempImportFile, openFile } from "@/utils/files";
 import { getLichessGame } from "@/utils/lichess/api";
-import { defaultTree, getGameName } from "@/utils/treeReducer";
+import { parseMultiplePgnGames } from "@/utils/pgnUtils";
+import { defaultTree, getGameName, type TreeState } from "@/utils/treeReducer";
+import { ImportSummary } from "./ImportSummary";
 
 type ImportType = "PGN" | "Link" | "FEN";
+
+interface ImportResult {
+  successCount: number;
+  totalGames: number;
+  errors: { file?: string; error: string }[];
+  failedGames?: { gameIndex: number; error: string; fileName?: string }[];
+  importedFiles?: { path: string; name: string; gameCount: number }[];
+}
 
 export default function ImportModal({ context, id }: ContextModalProps<{ modalBody: string }>) {
   const { t } = useTranslation();
@@ -32,32 +47,239 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
   const [, setTabs] = useAtom(tabsAtom);
   const [, setActiveTab] = useAtom(activeTabAtom);
   const [fenError, setFenError] = useState("");
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
 
   const [save, setSave] = useState(false);
   const [filename, setFilename] = useState("");
   const [error, setError] = useState("");
   const documentDir = useAtomValue(storedDocumentDirAtom) || "";
 
-  async function handleSubmit() {
-    setLoading(true);
-    if (importType === "PGN") {
-      const resolvedPgnTarget = await resolvePgnTarget(pgnTarget);
+  async function parseGamesFromTarget(
+    resolvedTarget: ResolvedPgnTarget,
+  ): Promise<{ trees: TreeState[]; errors: { gameIndex: number; error: string; fileName?: string }[] }> {
+    const trees = [];
+    const errors = [];
 
+    if (resolvedTarget.type === "pgn") {
+      const { games, errors: parseErrors } = await parseMultiplePgnGames(resolvedTarget.content);
+
+      trees.push(...games.map((g) => g.tree));
+      errors.push(
+        ...parseErrors.map((e) => ({
+          gameIndex: e.gameIndex,
+          error: e.error,
+          fileName: "Pasted Content",
+        })),
+      );
+    } else {
+      for (let i = 0; i < resolvedTarget.games.length; i++) {
+        try {
+          const gameContent = resolvedTarget.games[i].trim();
+          if (gameContent) {
+            const tree = await parsePGN(gameContent);
+            trees.push(tree);
+          }
+        } catch (error) {
+          errors.push({
+            gameIndex: i,
+            error: error instanceof Error ? error.message : String(error),
+            fileName: resolvedTarget.file.name || "Unknown File",
+          });
+        }
+      }
+    }
+
+    return { trees, errors };
+  }
+
+  async function processMultipleFiles(resolvedTarget: ResolvedPgnTarget): Promise<ImportResult> {
+    if (resolvedTarget.type === "pgn") {
+      const { trees, errors } = await parseGamesFromTarget(resolvedTarget);
+
+      const importedFiles: { path: string; name: string; gameCount: number }[] = [];
+
+      if (trees.length > 0) {
+        if (save) {
+          const newFile = await createFile({
+            filename,
+            filetype,
+            pgn: resolvedTarget.content,
+            dir: documentDir,
+          });
+
+          if (newFile.isOk) {
+            importedFiles.push({
+              path: newFile.value.path,
+              name: filename,
+              gameCount: trees.length,
+            });
+            await openFile(newFile.value.path, setTabs, setActiveTab);
+          } else {
+            return {
+              successCount: 0,
+              totalGames: resolvedTarget.count,
+              errors: [{ error: newFile.error.message }],
+              failedGames: errors,
+              importedFiles: [],
+            };
+          }
+        } else {
+          const tempFile = await createTempImportFile(resolvedTarget.content);
+          importedFiles.push({
+            path: tempFile.path,
+            name: "Pasted Content",
+            gameCount: trees.length,
+          });
+          await openFile(tempFile.path, setTabs, setActiveTab);
+        }
+      }
+
+      return {
+        successCount: trees.length,
+        totalGames: resolvedTarget.count,
+        errors: resolvedTarget.errors || [],
+        failedGames: errors,
+        importedFiles,
+      };
+    }
+
+    if (resolvedTarget.type === "files" && Array.isArray(resolvedTarget.target)) {
+      const importedFiles: { path: string; name: string; gameCount: number }[] = [];
+      const allErrors: { file?: string; error: string }[] = [...(resolvedTarget.errors || [])];
+      const failedGames: { gameIndex: number; error: string; fileName?: string }[] = [];
+      let totalSuccessfulGames = 0;
+      let totalGames = 0;
+
+      for (const filePath of resolvedTarget.target) {
+        try {
+          const fileName = filePath.split("/").pop() || filePath;
+
+          const singleFileTarget = await resolvePgnTarget({ type: "file", target: filePath });
+          const { trees, errors } = await parseGamesFromTarget(singleFileTarget);
+
+          totalGames += singleFileTarget.count;
+          totalSuccessfulGames += trees.length;
+
+          errors.forEach((error) => {
+            failedGames.push({
+              ...error,
+              fileName,
+            });
+          });
+
+          if (trees.length > 0) {
+            if (save) {
+              const baseFileName = fileName.replace(/\.pgn$/i, "");
+              const finalFileName = `${filename}_${baseFileName}`;
+              const newFile = await createFile({
+                filename: finalFileName,
+                filetype,
+                pgn: singleFileTarget.content,
+                dir: documentDir,
+              });
+
+              if (newFile.isOk) {
+                importedFiles.push({
+                  path: newFile.value.path,
+                  name: finalFileName,
+                  gameCount: trees.length,
+                });
+                await openFile(newFile.value.path, setTabs, setActiveTab);
+              } else {
+                allErrors.push({
+                  file: fileName,
+                  error: `Failed to save: ${newFile.error.message}`,
+                });
+              }
+            } else {
+              importedFiles.push({
+                path: singleFileTarget.file.path,
+                name: fileName,
+                gameCount: trees.length,
+              });
+              await openFile(singleFileTarget.file.path, setTabs, setActiveTab);
+            }
+          }
+
+          if (singleFileTarget.errors) {
+            allErrors.push(...singleFileTarget.errors);
+          }
+        } catch (error) {
+          const fileName = filePath.split("/").pop() || filePath;
+          allErrors.push({
+            file: fileName,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
+
+      return {
+        successCount: totalSuccessfulGames,
+        totalGames,
+        errors: allErrors,
+        failedGames,
+        importedFiles,
+      };
+    }
+
+    const { trees, errors } = await parseGamesFromTarget(resolvedTarget);
+    const importedFiles: { path: string; name: string; gameCount: number }[] = [];
+
+    if (trees.length > 0) {
       if (save) {
         const newFile = await createFile({
           filename,
           filetype,
-          pgn: resolvedPgnTarget.content,
+          pgn: resolvedTarget.content,
           dir: documentDir,
         });
-        if (newFile.isErr) {
-          setError(newFile.error.message);
-          setLoading(false);
-          return;
+
+        if (newFile.isOk) {
+          importedFiles.push({
+            path: newFile.value.path,
+            name: filename,
+            gameCount: trees.length,
+          });
+          await openFile(newFile.value.path, setTabs, setActiveTab);
+        } else {
+          return {
+            successCount: 0,
+            totalGames: resolvedTarget.count,
+            errors: [{ error: newFile.error.message }],
+            failedGames: errors,
+            importedFiles: [],
+          };
         }
-        await openFile(newFile.value.path, setTabs, setActiveTab);
       } else {
-        await openFile(resolvedPgnTarget.file.path, setTabs, setActiveTab);
+        importedFiles.push({
+          path: resolvedTarget.file.path,
+          name: resolvedTarget.file.name || "Imported Game",
+          gameCount: trees.length,
+        });
+        await openFile(resolvedTarget.file.path, setTabs, setActiveTab);
+      }
+    }
+
+    return {
+      successCount: trees.length,
+      totalGames: resolvedTarget.count,
+      errors: resolvedTarget.errors || [],
+      failedGames: errors,
+      importedFiles,
+    };
+  }
+
+  async function handleSubmit() {
+    setLoading(true);
+    setImportResult(null);
+
+    if (importType === "PGN") {
+      try {
+        const resolvedPgnTarget = await resolvePgnTarget(pgnTarget);
+        const result = await processMultipleFiles(resolvedPgnTarget);
+        setImportResult(result);
+      } catch (error) {
+        setError(error instanceof Error ? error.message : String(error));
       }
     } else if (importType === "Link") {
       if (!link) {
@@ -100,22 +322,30 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
         sessionStorage.setItem(prev.value, JSON.stringify({ version: 0, state: tree }));
         return {
           ...prev,
-          name: t("Tab.AnalysisBoard.Title"),
+          name: t("features.tabs.analysisBoard.title"),
           type: "analysis",
         };
       });
     }
     setLoading(false);
-    context.closeModal(id);
+
+    if (importType !== "PGN") {
+      context.closeModal(id);
+    }
   }
 
   const Input = match(importType)
     .with("PGN", () => (
       <Stack>
-        <PgnSourceInput setFilename={setFilename} setPgnTarget={setPgnTarget} pgnTarget={pgnTarget} />
+        <PgnSourceInput
+          setFilename={setFilename}
+          setPgnTarget={setPgnTarget}
+          pgnTarget={pgnTarget}
+          allowMultiple={true}
+        />
 
         <Checkbox
-          label={t("Tab.ImportGame.SaveToCollection")}
+          label={t("features.tabs.importGame.saveToCollection")}
           checked={save}
           onChange={(e) => setSave(e.currentTarget.checked)}
         />
@@ -132,7 +362,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
       <TextInput
         value={link}
         onChange={(event) => setLink(event.currentTarget.value)}
-        label={t("Tab.ImportGame.URL")}
+        label={t("features.tabs.importGame.url")}
         data-autofocus
         onKeyDown={(e) => {
           if (e.key === "Enter") handleSubmit();
@@ -154,10 +384,30 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
     .exhaustive();
 
   const disabled = match(importType)
-    .with("PGN", () => !pgnTarget.target || (save && !filename.trim()))
+    .with(
+      "PGN",
+      () =>
+        !pgnTarget.target ||
+        (Array.isArray(pgnTarget.target) ? pgnTarget.target.length === 0 : !pgnTarget.target) ||
+        (save && !filename.trim()),
+    )
     .with("Link", () => !link)
     .with("FEN", () => !fen)
     .exhaustive();
+
+  if (importResult) {
+    return (
+      <Stack>
+        <ImportSummary result={importResult} />
+        <Group>
+          <Button variant="default" onClick={() => setImportResult(null)}>
+            {t("common.importMore")}
+          </Button>
+          <Button onClick={() => context.closeModal(id)}>{t("common.close")}</Button>
+        </Group>
+      </Stack>
+    );
+  }
 
   return (
     <>
@@ -173,7 +423,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
           id={"Link"}
           isSelected={importType === "Link"}
           setSelected={setImportType}
-          content={<Text ta="center">{t("Tab.ImportGame.Online")}</Text>}
+          content={<Text ta="center">{t("features.tabs.importGame.online")}</Text>}
         />
 
         <GenericCard
@@ -187,7 +437,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
       {Input}
 
       <Button fullWidth mt="md" radius="md" loading={loading} disabled={disabled} onClick={handleSubmit}>
-        {loading ? t("Tab.ImportGame.Importing") : t("Tab.ImportGame.Import")}
+        {loading ? t("features.tabs.importGame.importing") : t("features.tabs.importGame.import")}
       </Button>
     </>
   );

@@ -98,16 +98,16 @@ function PracticePanel() {
         }}
       >
         <Tabs.List>
-          <Tabs.Tab value="train">{t("Board.Practice.Train")}</Tabs.Tab>
-          <Tabs.Tab value="build">{t("Board.Practice.Build")}</Tabs.Tab>
+          <Tabs.Tab value="train">{t("features.board.practice.train")}</Tabs.Tab>
+          <Tabs.Tab value="build">{t("features.board.practice.build")}</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="train" style={{ overflow: "hidden" }}>
           <Stack>
             {stats.total === 0 && (
               <Text>
-                {t("Board.Practice.NoPositionForTrain1")} <br />
-                {t("Board.Practice.NoPositionForTrain2")}
+                {t("features.board.practice.noPositionForTrain1")} <br />
+                {t("features.board.practice.noPositionForTrain2")}
               </Text>
             )}
             {stats.total > 0 && (
@@ -141,15 +141,15 @@ function PracticePanel() {
                 <Group wrap="nowrap">
                   <Group wrap="nowrap">
                     <div>
-                      <Badge color="blue">{t("Board.Practice.Practiced")}</Badge>
+                      <Badge color="blue">{t("features.board.practice.practiced")}</Badge>
                       <Text ta="center">{stats.practiced}</Text>
                     </div>
                     <div>
-                      <Badge color="yellow">{t("Board.Practice.Due")}</Badge>
+                      <Badge color="yellow">{t("features.board.practice.due")}</Badge>
                       <Text ta="center">{stats.due}</Text>
                     </div>
                     <div>
-                      <Badge color="gray">{t("Board.Practice.Unseen")}</Badge>
+                      <Badge color="gray">{t("features.board.practice.unseen")}</Badge>
                       <Text ta="center">{stats.unseen}</Text>
                     </div>
                   </Group>
@@ -157,17 +157,17 @@ function PracticePanel() {
                   <Group>
                     {stats.due === 0 && stats.unseen === 0 && (
                       <Text>
-                        {t("Board.Practice.PracticedAll1")}
+                        {t("features.board.practice.practicedAll1")}
                         <br />
-                        {t("Board.Practice.PracticedAll2")}{" "}
-                        {t("Formatters.DateTimeFormat", {
+                        {t("features.board.practice.practicedAll2")}{" "}
+                        {t("formatters.dateTimeFormat", {
                           date: stats.nextDue ? new Date(stats.nextDue) : undefined,
                           interpolation: { escapeValue: false },
                         })}
                       </Text>
                     )}
-                    <Button onClick={() => setPositionsOpen(true)}>{t("Board.Practice.ShowAll")}</Button>
-                    <Button onClick={() => setLogsOpen(true)}>{t("Board.Practice.ShowLogs")}</Button>
+                    <Button onClick={() => setPositionsOpen(true)}>{t("features.board.practice.showAll")}</Button>
+                    <Button onClick={() => setLogsOpen(true)}>{t("features.board.practice.showLogs")}</Button>
                   </Group>
                 </Group>
               </Group>
@@ -191,7 +191,7 @@ function PracticePanel() {
                 }}
                 disabled={stats.due === 0 && stats.unseen === 0}
               >
-                {t("Common.Skip")}
+                {t("common.skip")}
               </Button>
               <Button
                 variant="default"
@@ -200,25 +200,25 @@ function PracticePanel() {
                   goToNext();
                 }}
               >
-                {t("Board.Practice.SeeAnswer")}
+                {t("features.board.practice.seeAnswer")}
               </Button>
               <Button
                 variant="default"
                 onClick={() => {
                   modals.openConfirmModal({
-                    title: t("Board.Practice.ResetOpeningData.Title"),
+                    title: t("features.board.practice.resetOpeningData.title"),
                     withCloseButton: false,
                     children: (
                       <>
                         <Text>
-                          {t("Board.Practice.ResetOpeningData.Desc", {
+                          {t("features.board.practice.resetOpeningData.desc", {
                             fileName,
                           })}
                         </Text>
-                        <Text>{t("Common.CannotUndo")}</Text>
+                        <Text>{t("common.cannotUndo")}</Text>
                       </>
                     ),
-                    labels: { confirm: "Reset", cancel: t("Common.Cancel") },
+                    labels: { confirm: "Reset", cancel: t("common.cancel") },
                     confirmProps: { color: "red" },
                     onConfirm: () => {
                       const cards = buildFromTree(root, headers.orientation || "white", headers.start || []);
@@ -227,7 +227,7 @@ function PracticePanel() {
                   });
                 }}
               >
-                {t("Common.Reset")}
+                {t("common.reset")}
               </Button>
             </Group>
           </Stack>
@@ -280,10 +280,10 @@ function PositionsModal({
                   </Text>
                   <Badge color={c.card.reps === 0 ? "gray" : c.card.due < new Date() ? "yellow" : "blue"}>
                     {c.card.reps === 0
-                      ? t("Board.Practice.Unseen")
+                      ? t("features.board.practice.unseen")
                       : c.card.due < new Date()
-                        ? t("Board.Practice.Due")
-                        : t("Board.Practice.Practiced")}
+                        ? t("features.board.practice.due")
+                        : t("features.board.practice.practiced")}
                   </Badge>
                 </Stack>
                 <Stack>

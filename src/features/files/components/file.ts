@@ -9,11 +9,11 @@ const fileTypeSchema = z.enum(["repertoire", "game", "tournament", "puzzle", "ot
 export type FileType = z.infer<typeof fileTypeSchema>;
 
 export const FILE_TYPE_LABELS: Record<FileType, string> = {
-  game: "Files.FileType.Game",
-  repertoire: "Files.FileType.Repertoire",
-  tournament: "Files.FileType.Tournament",
-  puzzle: "Files.FileType.Puzzle",
-  other: "Files.FileType.Other",
+  game: "features.files.fileType.game",
+  repertoire: "features.files.fileType.repertoire",
+  tournament: "features.files.fileType.tournament",
+  puzzle: "features.files.fileType.puzzle",
+  other: "features.files.fileType.other",
 } as const;
 
 export type FileTypeItem = { labelKey: string; value: FileType };

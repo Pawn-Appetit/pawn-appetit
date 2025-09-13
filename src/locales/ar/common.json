@@ -1,0 +1,251 @@
+{
+  "common": {
+    "or": "أو",
+    "clickToSelectPGN": "انقر لاختيار ملف PGN",
+    "unsavedChanges": {
+      "title": "تغييرات غير محفوظة",
+      "desc": "لديك تغييرات غير محفوظة. هل تريد حفظها قبل الإغلاق؟",
+      "saveAndClose": "احفظ وأغلق",
+      "closeWithoutSaving": "إغلاق دون حفظ"
+    },
+    "loading": "جارٍ التحميل...",
+    "continue": "متابعة",
+    "review": "مراجعة"
+  },
+  "chess": {
+    "any": "أي",
+    "player": "اللاعب",
+    "opponent": "المنافس",
+    "annotate": {
+      "none": "لا شيء"
+    },
+    "opening": {
+      "emptyBoard": "لوحة فارغة",
+      "startingPosition": "الوضعية الابتدائية"
+    },
+    "fen": {
+      "start": "بداية",
+      "empty": "فارغ",
+      "whiteToMove": "الأبيض يلعب",
+      "blackToMove": "الأسود يلعب"
+    },
+    "errors": {
+      "emptyBoard": "لوحة فارغة",
+      "invalidKings": "عدد غير صحيح من الملوك",
+      "oppositeCheck": "خطأ في التهديد المتبادل",
+      "pawnsOnBackrank": "بيادق على الصف الأخير",
+      "invalidBoard": "لوحة غير صالحة",
+      "invalidCastlingRights": "حقوق التبييت غير صالحة",
+      "invalidEpSquare": "مربع الأخذ بالتجاوز غير صالح",
+      "invalidFen": "FEN غير صالح",
+      "invalidFullmoves": "عدد النقلات الكاملة غير صالح",
+      "invalidHaldmoves": "عدد النقلات النصفية غير صالح",
+      "invalidPockets": "قطع غير صالحة",
+      "invalidRemainingChecks": "عدد التهديدات المتبقية غير صالح",
+      "invalidTurn": "دور غير صالح",
+      "unknown": "خطأ غير معروف"
+    }
+  },
+  "features": {
+    "menu": {
+      "markAsStart": "علّم كبداية",
+      "promoteToMainLine": "ترقية إلى الخط الرئيسي",
+      "promoteVariation": "ترقية التفرع",
+      "copyVariationPGN": "انسخ PGN للتفرع",
+      "deleteMove": "احذف النقلة"
+    },
+    "sidebar": {
+      "dashboard": "لوحة التحكم",
+      "learn": "تعلّم",
+      "keyboardShortcuts": "اختصارات لوحة المفاتيح"
+    },
+    "dashboard": {
+      "welcome": {
+        "firstOpen": "مرحبًا بك في Pawn Appétit!",
+        "back": "مرحبًا بعودتك",
+        "desc": "هل أنت مستعد للقيام بأفضل نقلة تالية؟"
+      },
+      "cards": {
+        "learn": {
+          "title": "تعلم الشطرنج",
+          "desc": "دروس تفاعلية لتعلم الشطرنج من الأساسيات إلى الاستراتيجيات المتقدمة",
+          "button": "ابدأ التعلم"
+        },
+        "analyze": {
+          "title": "تحليل اللوحة",
+          "desc": "حلّل الوضعيات والمباريات والمتغيرات باستخدام محركات شطرنج قوية.",
+          "button": "تحليل"
+        },
+        "database": {
+          "title": "الوصول إلى قاعدة البيانات",
+          "desc": "استكشف قواعد بيانات الشطرنج الضخمة وادرس مباريات الأساتذة لتعميق فهمك.",
+          "button": "تصفح"
+        },
+        "engine": {
+          "title": "تكامل المحرك",
+          "desc": "أضف وأدر عدة محركات شطرنج لتخصيص إعدادات التحليل وزيادة المرونة.",
+          "button": "إدارة"
+        },
+        "account": {
+          "title": "الحسابات",
+          "desc": "قم باستيراد مبارياتك وإحصاءاتك بربط حسابك على Chess.com أو Lichess لتحليل مخصص.",
+          "button": "ربط"
+        },
+        "import": {
+          "title": "استيراد",
+          "desc": "قم برفع وتحرير ملفات PGN لتحليل مبارياتك أو دراسة أوضاع محددة مع تحكم كامل.",
+          "button": "استيراد"
+        }
+      }
+    },
+    "tabs": {
+      "playChess": {
+        "title": "العب مباراة",
+        "desc": "تحدَّ المحرك أو صديق",
+        "button": "العب الآن"
+      },
+      "analysisBoard": {
+        "title": "لوحة التحليل",
+        "desc": "حلّل مباراة أو وضعية",
+        "button": "تحليل"
+      },
+      "importGame": {
+        "title": "استيراد مباراة",
+        "desc": "استيراد مباراة من PGN",
+        "button": "استيراد",
+        "url": "رابط المباراة (lichess أو chess.com)",
+        "saveToCollection": "احفظ في المجموعة",
+        "online": "على الإنترنت",
+        "importing": "جارٍ الاستيراد...",
+        "import": "استيراد"
+      },
+      "puzzle": {
+        "title": "ألغاز",
+        "desc": "درّب مهاراتك في الشطرنج",
+        "button": "حل الآن"
+      }
+    },
+    "board": {
+      "actions": {
+        "togglePawnStructureView": "تبديل عرض هيكل البيادق",
+        "takeSnapshot": "التقط صورة",
+        "analyzeGame": "تحليل المباراة",
+        "playFromHere": "العب من هنا",
+        "clearDrawings": "مسح الرسومات",
+        "editPosition": "تحرير الوضعية",
+        "savePGN": "احفظ PGN ({{key}})",
+        "addGame": "أضف مباراة",
+        "flipBoard": "اقلب اللوحة ({{key}})"
+      },
+      "tabs": {
+        "graph": "رسم بياني",
+        "centerGraph": "التمركز على النقلة الحالية"
+      },
+      "practice": {
+        "resetOpeningData": {
+          "title": "إعادة تعيين بيانات الافتتاحية",
+          "desc": "هل أنت متأكد أنك تريد إعادة تعيين بيانات الافتتاحية لـ \"{{fileName}}\"؟ سيتم فقدان جميع التقدم في التعلم."
+        }
+      },
+      "analysis": {
+        "enableWDL": "يجب تمكين UCI_ShowWDL في إعدادات المحرك لاستخدام هذه الميزة."
+      }
+    },
+    "lessons": {
+      "title": "دروس الشطرنج",
+      "selectToBegin": "اختر درسًا لبدء تعلم الشطرنج",
+      "difficulty": {
+        "beginner": "مبتدئ",
+        "intermediate": "متوسط",
+        "advanced": "متقدم"
+      },
+      "startLesson": "ابدأ الدرس",
+      "backToLessons": "العودة إلى الدروس",
+      "backToLesson": "العودة إلى الدرس",
+      "startExercise": "ابدأ التمرين",
+      "exercises": "تمارين",
+      "correct": "صحيح! أحسنت.",
+      "incorrect": "خطأ. حاول مرة أخرى.",
+      "progress": "التقدم",
+      "overallProgress": "التقدم الكلي",
+      "showHint": "إظهار تلميح",
+      "hint": "تلميح",
+      "tryMoves": "جرّب إحدى هذه النقلات",
+      "completed": "مكتمل",
+      "exercisesCompleted": "تمارين مكتملة",
+      "lessonCompleted": "مبروك! لقد أنهيت {{lesson}}!",
+      "completionMessage": "لقد أنجزت جميع التمارين في هذا الدرس بنجاح. استمر على هذا الأداء الرائع!"
+    },
+    "practice": {
+      "title": "تدريب الشطرنج",
+      "description": "طوّر مهاراتك في الشطرنج من خلال تمارين تدريبية موجهة",
+      "selectExercise": "اختر تمرينًا لتبدأ التدريب",
+      "progress": "التقدم",
+      "exercises": "تمارين",
+      "completed": "مكتمل",
+      "start": "ابدأ التدريب",
+      "showHint": "إظهار تلميح",
+      "hintText": "ابحث عن الفرص التكتيكية أو المربعات الرئيسية التي تتحكم في الوضع.",
+      "congratulations": "مبروك!",
+      "completedCategory": "لقد أكملت جميع التمارين في {{category}}!"
+    },
+    "databases": {
+      "card": {
+        "tournaments": "البطولات"
+      },
+      "settings": {
+        "referenceDatabaseShort": "مرجع"
+      }
+    },
+    "files": {
+      "create": {
+        "pgnPlaceholder": "الصق PGN هنا..."
+      },
+      "noFiles": "لم يتم العثور على ملفات",
+      "noFileSelected": "لم يتم اختيار ملف",
+      "name": "الاسم",
+      "lastModified": "آخر تعديل",
+      "type": "النوع",
+      "folder": "المجلد",
+      "delete": {
+        "delete": "حذف"
+      },
+      "game": {
+        "delete": {
+          "title": "إزالة المباراة",
+          "desc": "هل أنت متأكد أنك تريد إزالة هذه المباراة؟"
+        }
+      }
+    },
+    "gameTable": {
+      "date": "التاريخ",
+      "plies": "عدد النقلات",
+      "event": "الحدث",
+      "site": "المكان",
+      "from": "من",
+      "startDate": "تاريخ البداية",
+      "to": "إلى",
+      "endDate": "تاريخ النهاية"
+    }
+  },
+  "settings": {
+    "appearance": {
+      "custom": "مخصص",
+      "auto": "تلقائي",
+      "hideDashboardOnStartup": "إخفاء لوحة التحكم عند بدء التشغيل",
+      "hideDashboardOnStartupDesc": "افتح اللوحات بدلًا من لوحة التحكم عند بدء التطبيق"
+    }
+  },
+  "formatters": {
+    "dateFormat": "{{date, dateformat}}",
+    "dateTimeFormat": "{{date, datetimeformat}}",
+    "moveNotation": "{{move, moveNotation}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "score": "{{score, score}}"
+  }
+}

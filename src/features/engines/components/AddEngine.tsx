@@ -50,22 +50,22 @@ function AddEngine({ opened, setOpened }: { opened: boolean; setOpened: (opened:
 
     validate: {
       name: (value) => {
-        if (!value) return t("Common.RequireName");
-        if (engines.find((e) => e.name === value)) return t("Common.NameAlreadyUsed");
+        if (!value) return t("common.requireName");
+        if (engines.find((e) => e.name === value)) return t("common.nameAlreadyUsed");
       },
       path: (value) => {
-        if (!value) return t("Common.RequirePath");
+        if (!value) return t("common.requirePath");
       },
     },
   });
 
   return (
-    <Modal opened={opened} onClose={() => setOpened(false)} title={t("Engines.Add.Title")}>
+    <Modal opened={opened} onClose={() => setOpened(false)} title={t("features.engines.add.title")}>
       <Tabs defaultValue="download">
         <Tabs.List>
-          <Tabs.Tab value="download">{t("Common.Download")}</Tabs.Tab>
-          <Tabs.Tab value="cloud">{t("Engines.Add.Cloud")}</Tabs.Tab>
-          <Tabs.Tab value="local">{t("Common.Local")}</Tabs.Tab>
+          <Tabs.Tab value="download">{t("common.download")}</Tabs.Tab>
+          <Tabs.Tab value="cloud">{t("features.engines.add.cloud")}</Tabs.Tab>
+          <Tabs.Tab value="local">{t("common.local")}</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="download" pt="xs">
           {isLoading && (
@@ -84,8 +84,8 @@ function AddEngine({ opened, setOpened }: { opened: boolean; setOpened: (opened:
                 />
               ))}
               {error && (
-                <Alert icon={<IconAlertCircle size="1rem" />} title={t("Common.Error")} color="red">
-                  {t("Engines.Add.ErrorFetch")}
+                <Alert icon={<IconAlertCircle size="1rem" />} title={t("common.error")} color="red">
+                  {t("features.engines.add.errorFetch")}
                 </Alert>
               )}
             </Stack>
@@ -111,7 +111,7 @@ function AddEngine({ opened, setOpened }: { opened: boolean; setOpened: (opened:
         </Tabs.Panel>
         <Tabs.Panel value="local" pt="xs">
           <EngineForm
-            submitLabel={t("Common.Add")}
+            submitLabel={t("common.add")}
             form={form}
             onSubmit={(values: LocalEngine) => {
               setEngines(async (prev) => [...(await prev), values]);
@@ -135,7 +135,7 @@ function CloudCard({ engine }: { engine: RemoteEngine }) {
       <Group wrap="nowrap" gap={0} grow>
         <Box p="md" flex={1}>
           <Text tt="uppercase" c="dimmed" fw={700} size="xs">
-            {t("Common.Engine")}
+            {t("common.engine")}
           </Text>
           <Text fw="bold">{engine.name}</Text>
           <Text size="xs" c="dimmed" mb="xs">
@@ -161,7 +161,7 @@ function CloudCard({ engine }: { engine: RemoteEngine }) {
               ]);
             }}
           >
-            {t("Common.Add")}
+            {t("common.add")}
           </Button>
         </Box>
       </Group>
@@ -262,7 +262,7 @@ function EngineCard({ engine, engineId }: { engine: LocalEngine; engineId: numbe
       } catch (error) {
         console.error("Engine installation failed:", error);
         notifications.show({
-          title: t("Common.Error"),
+          title: t("common.error"),
           message: error instanceof Error ? error.message : String(error),
           color: "red",
           icon: <IconX />,
@@ -281,18 +281,18 @@ function EngineCard({ engine, engineId }: { engine: LocalEngine; engineId: numbe
       case "package":
         return engine.packageCommand || "Install via package manager";
       default:
-        return t("Units.Bytes", { bytes: engine.downloadSize ?? 0 });
+        return t("units.bytes", { bytes: engine.downloadSize ?? 0 });
     }
   };
 
   const getInstallActionLabel = () => {
     switch (engine.installMethod) {
       case "brew":
-        return `${t("Common.Install")} (Brew)`;
+        return `${t("common.install")} (Brew)`;
       case "package":
-        return `${t("Common.Install")} (Package)`;
+        return `${t("common.install")} (Package)`;
       default:
-        return t("Common.Install");
+        return t("common.install");
     }
   };
 
@@ -302,7 +302,7 @@ function EngineCard({ engine, engineId }: { engine: LocalEngine; engineId: numbe
       case "package":
         return "Installing...";
       default:
-        return t("Common.Downloading");
+        return t("common.downloading");
     }
   };
 
@@ -316,7 +316,7 @@ function EngineCard({ engine, engineId }: { engine: LocalEngine; engineId: numbe
         )}
         <Box p="md" flex={1}>
           <Text tt="uppercase" c="dimmed" fw={700} size="xs">
-            {t("Common.Engine")}
+            {t("common.engine")}
           </Text>
           <Text fw="bold" mb="xs">
             {engine.name} {engine.version}
@@ -334,10 +334,10 @@ function EngineCard({ engine, engineId }: { engine: LocalEngine; engineId: numbe
             progressEvent={events.downloadProgress}
             initInstalled={isInstalled}
             labels={{
-              completed: t("Common.Installed"),
+              completed: t("common.installed"),
               action: getInstallActionLabel(),
               inProgress: getProgressLabel(),
-              finalizing: t("Common.Extracting"),
+              finalizing: t("common.extracting"),
             }}
             onClick={() => installEngine(engineId)}
             inProgress={inProgress}

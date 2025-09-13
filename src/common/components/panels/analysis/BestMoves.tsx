@@ -251,7 +251,7 @@ function BestMovesComponent({ id, engine, fen, moves, halfMoves, dragHandleProps
                 <Table.Tr>
                   <Table.Td>
                     <Text ta="center" my="lg">
-                      {t("Board.Analysis.InactiveEngine")}
+                      {t("features.board.analysis.inactiveEngine")}
                     </Text>
                   </Table.Td>
                 </Table.Tr>
@@ -309,7 +309,7 @@ function EngineTop({
         {enabled && !isGameOver && !error && !engineVariations && <Code fz="xs">Loading...</Code>}
         {progress < 100 && enabled && !isGameOver && engineVariations && engineVariations.length > 0 && (
           <Tooltip label={"How fast the engine is running"}>
-            <Code fz="xs">{t("Units.Nodes", { nodes: isComputed ? engineVariations[0].nps : 0 })}</Code>
+            <Code fz="xs">{t("units.nodes", { nodes: isComputed ? engineVariations[0].nps : 0 })}</Code>
           </Tooltip>
         )}
       </Group>
@@ -321,7 +321,7 @@ function EngineTop({
                 Eval
               </Text>
               <Text fw="bold" fz="md">
-                {t("Units.Score", { score: engineVariations[0].score.value, precision: 1 }) ?? 0}
+                {t("units.score", { score: engineVariations[0].score.value, precision: 1 }) ?? 0}
               </Text>
             </Stack>
             <Stack align="center" gap={0}>

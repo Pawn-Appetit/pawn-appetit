@@ -17,7 +17,7 @@
                 "src/translations/**"
             ],
             "formatter": {
-                "lineWidth": 185
+                "lineWidth": 200
             },
             "javascript": {
                 "formatter": {

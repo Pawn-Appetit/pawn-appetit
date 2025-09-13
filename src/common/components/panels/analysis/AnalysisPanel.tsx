@@ -111,10 +111,10 @@ function AnalysisPanel() {
         keepMounted={false}
       >
         <Tabs.List>
-          <Tabs.Tab value="engines">{t("Board.Analysis.Engines")}</Tabs.Tab>
-          <Tabs.Tab value="report">{t("Board.Analysis.Report")}</Tabs.Tab>
+          <Tabs.Tab value="engines">{t("features.board.analysis.engines")}</Tabs.Tab>
+          <Tabs.Tab value="report">{t("features.board.analysis.report")}</Tabs.Tab>
           <Tabs.Tab value="logs" disabled={loadedEngines.length === 0}>
-            {t("Board.Analysis.Logs")}
+            {t("features.board.analysis.logs")}
           </Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel
@@ -140,7 +140,7 @@ function AnalysisPanel() {
                 <Group w="100%">
                   <Stack w="6rem" gap="xs">
                     <Text ta="center" fw="bold">
-                      {t("Board.Analysis.Summary")}
+                      {t("features.board.analysis.summary")}
                     </Text>
                     <Button
                       rightSection={
@@ -149,7 +149,7 @@ function AnalysisPanel() {
                       variant={allEnabled ? "filled" : "default"}
                       onClick={() => enable(!allEnabled)}
                     >
-                      {allEnabled ? t("Common.Stop") : t("Common.Run")}
+                      {allEnabled ? t("common.stop") : t("common.run")}
                     </Button>
                   </Stack>
                   <Group grow flex={1}>

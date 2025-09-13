@@ -58,13 +58,13 @@ function InfoPanel() {
 
           <Group>
             <Text>
-              {t("PgnInput.Variations")}: {stats.leafs}
+              {t("features.pgnInput.variations")}: {stats.leafs}
             </Text>
             <Text>
-              {t("PgnInput.MaxDepth")}: {stats.depth}
+              {t("features.pgnInput.maxDepth")}: {stats.depth}
             </Text>
             <Text>
-              {t("PgnInput.TotalMoves")}: {stats.total}
+              {t("features.pgnInput.totalMoves")}: {stats.total}
             </Text>
           </Group>
         </Stack>
@@ -97,10 +97,10 @@ function GameSelectorAccordion({
       if (!forced && dirty) {
         setTempPage(page);
         modals.openConfirmModal({
-          title: t("Common.UnsavedChanges.Title"),
+          title: t("common.unsavedChanges.title"),
           withCloseButton: false,
-          children: <Text>{t("Common.UnsavedChanges.Desc")}</Text>,
-          labels: { confirm: t("Common.SaveAndClose"), cancel: t("Common.CloseWithoutSaving") },
+          children: <Text>{t("common.unsavedChanges.desc")}</Text>,
+          labels: { confirm: t("common.saveAndClose"), cancel: t("common.unsavedChanges.closeWithoutSaving") },
           onConfirm: async () => {
             saveToFile({
               dir: documentDir,
@@ -168,7 +168,7 @@ function GameSelectorAccordion({
       <Accordion>
         <Accordion.Item value="game">
           <Accordion.Control>
-            {t("Units.Count", { count: gameNumber + 1 })}. {currentName}
+            {t("units.count", { count: gameNumber + 1 })}. {currentName}
           </Accordion.Control>
           <Accordion.Panel>
             <Box h="10rem">

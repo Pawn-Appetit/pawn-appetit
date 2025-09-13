@@ -8,7 +8,7 @@ import { useAtomValue } from "jotai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { EngineOptions, GoMode } from "@/bindings";
 import { commands, events } from "@/bindings";
-import { Chessground } from "@/chessground/Chessground";
+import { Chessground } from "@/common/components/Chessground";
 import { TreeStateProvider } from "@/common/components/TreeStateContext";
 import { enginesAtom } from "@/state/atoms";
 import { positionFromFen } from "@/utils/chessops";

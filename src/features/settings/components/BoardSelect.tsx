@@ -77,6 +77,7 @@ export default function BoardSelect() {
         setBoard(val);
         combobox.closeDropdown();
       }}
+      hideDetached={false}
     >
       <Combobox.Target>
         <InputBase

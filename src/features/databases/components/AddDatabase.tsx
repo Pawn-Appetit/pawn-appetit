@@ -63,21 +63,21 @@ function AddDatabase({
 
     validate: {
       title: (value) => {
-        if (!value) return t("Common.RequireName");
-        if (databases.find((e) => e.type === "success" && e.title === value)) return t("Common.NameAlreadyUsed");
+        if (!value) return t("common.requireName");
+        if (databases.find((e) => e.type === "success" && e.title === value)) return t("common.nameAlreadyUsed");
       },
       file: (value) => {
-        if (!value) return t("Common.RequirePath");
+        if (!value) return t("common.requirePath");
       },
     },
   });
 
   return (
-    <Modal opened={opened} onClose={() => setOpened(false)} title={t("Databases.Add.Title")}>
+    <Modal opened={opened} onClose={() => setOpened(false)} title={t("features.databases.add.title")}>
       <Tabs defaultValue="web">
         <Tabs.List>
-          <Tabs.Tab value="web">{t("Databases.Add.Web")}</Tabs.Tab>
-          <Tabs.Tab value="local">{t("Common.Local")}</Tabs.Tab>
+          <Tabs.Tab value="web">{t("features.databases.add.web")}</Tabs.Tab>
+          <Tabs.Tab value="local">{t("common.local")}</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="web" pt="xs">
           {isLoading && (
@@ -113,13 +113,13 @@ function AddDatabase({
               setOpened(false);
             })}
           >
-            <TextInput label={t("Common.Name")} withAsterisk {...form.getInputProps("title")} />
+            <TextInput label={t("common.name")} withAsterisk {...form.getInputProps("title")} />
 
-            <TextInput label={t("Common.Description")} {...form.getInputProps("description")} />
+            <TextInput label={t("common.description")} {...form.getInputProps("description")} />
 
             <FileInput
-              label={t("Common.PGNFile")}
-              description={t("Databases.Add.ClickToSelectPGN")}
+              label={t("common.pgnFile")}
+              description={t("features.databases.add.clickToSelectPGN")}
               onClick={async () => {
                 const selected = await open({
                   multiple: false,
@@ -194,21 +194,21 @@ function DatabaseCard({
           <Group wrap="nowrap" grow my="md">
             <Stack gap={0} align="center">
               <Text tt="uppercase" c="dimmed" fw={700} size="xs">
-                {t("Common.Size")}
+                {t("common.size")}
               </Text>
-              <Text size="xs">{t("Units.Bytes", { bytes: database.storage_size ?? 0 })}</Text>
+              <Text size="xs">{t("units.bytes", { bytes: database.storage_size ?? 0 })}</Text>
             </Stack>
             <Stack gap={0} align="center">
               <Text tt="uppercase" c="dimmed" fw={700} size="xs">
-                {t("Databases.Card.Games")}
+                {t("features.databases.card.games")}
               </Text>
-              <Text size="xs">{t("Units.Count", { count: database.game_count })}</Text>
+              <Text size="xs">{t("units.count", { count: database.game_count })}</Text>
             </Stack>
             <Stack gap={0} align="center">
               <Text tt="uppercase" c="dimmed" fw={700} size="xs">
-                {t("Databases.Card.Players")}
+                {t("features.databases.card.players")}
               </Text>
-              <Text size="xs">{t("Units.Count", { count: database.player_count })}</Text>
+              <Text size="xs">{t("units.count", { count: database.player_count })}</Text>
             </Stack>
           </Group>
           <ProgressButton
@@ -216,10 +216,10 @@ function DatabaseCard({
             progressEvent={events.downloadProgress}
             initInstalled={initInstalled}
             labels={{
-              completed: t("Common.Installed"),
-              action: t("Common.Install"),
-              inProgress: t("Common.Downloading"),
-              finalizing: t("Common.Extracting"),
+              completed: t("common.installed"),
+              action: t("common.install"),
+              inProgress: t("common.downloading"),
+              finalizing: t("common.extracting"),
             }}
             onClick={() => downloadDatabase(databaseId, database.downloadLink!, database.title!)}
             inProgress={inProgress}

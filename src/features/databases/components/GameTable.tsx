@@ -105,7 +105,7 @@ function GameTable() {
                     selectingFor="player"
                   />
                 }
-                label={t("Common.Player")}
+                label={t("chess.player")}
                 file={file}
               />
               <PlayerSearchInput
@@ -118,7 +118,7 @@ function GameTable() {
                     selectingFor="opponent"
                   />
                 }
-                label={t("Common.Opponent")}
+                label={t("chess.opponent")}
                 file={file}
               />
             </Group>
@@ -156,7 +156,7 @@ function GameTable() {
                   </InputWrapper>
                 </Group>
                 <Select
-                  label={t("Outcome.Outcome")}
+                  label={t("chess.outcome.outcome")}
                   value={query.outcome}
                   onChange={(value) =>
                     setQuery({
@@ -165,17 +165,17 @@ function GameTable() {
                     })
                   }
                   clearable
-                  placeholder={t("Outcome.SelectOutcome")}
+                  placeholder={t("chess.outcome.selectOutcome")}
                   data={[
-                    { label: t("Outcome.WhiteWins"), value: "1-0" },
-                    { label: t("Outcome.BlackWins"), value: "0-1" },
-                    { label: t("Outcome.Draw"), value: "1/2-1/2" },
+                    { label: t("chess.outcome.whiteWins"), value: "1-0" },
+                    { label: t("chess.outcome.blackWins"), value: "0-1" },
+                    { label: t("chess.outcome.draw"), value: "1/2-1/2" },
                   ]}
                 />
                 <Group>
                   <DateInput
-                    label={t("GameTable.From")}
-                    placeholder={t("GameTable.StartDate")}
+                    label={t("features.gameTable.from")}
+                    placeholder={t("features.gameTable.startDate")}
                     clearable
                     valueFormat="YYYY-MM-DD"
                     value={parseDate(query.start_date)}
@@ -187,8 +187,8 @@ function GameTable() {
                     }
                   />
                   <DateInput
-                    label={t("GameTable.To")}
-                    placeholder={t("GameTable.EndDate")}
+                    label={t("features.gameTable.to")}
+                    placeholder={t("features.gameTable.endDate")}
                     clearable
                     valueFormat="YYYY-MM-DD"
                     value={parseDate(query.end_date)}
@@ -235,7 +235,7 @@ function GameTable() {
           columns={[
             {
               accessor: "white",
-              title: t("Common.White"),
+              title: t("chess.white"),
               render: ({ white, white_elo }) => (
                 <div>
                   <Text size="sm" fw={500}>
@@ -249,7 +249,7 @@ function GameTable() {
             },
             {
               accessor: "black",
-              title: t("Common.Black"),
+              title: t("chess.black"),
               render: ({ black, black_elo }) => (
                 <div>
                   <Text size="sm" fw={500}>
@@ -264,23 +264,23 @@ function GameTable() {
             {
               accessor: "date",
               sortable: true,
-              title: t("GameTable.Date"),
+              title: t("features.gameTable.date"),
               render: ({ date }) =>
-                t("Formatters.DateFormat", {
+                t("formatters.dateFormat", {
                   date: parseDate(date),
                   interpolation: { escapeValue: false },
                 }),
             },
             {
               accessor: "result",
-              title: t("Outcome.Outcome"),
+              title: t("chess.outcome.outcome"),
               render: ({ result }) => result?.replaceAll("1/2", "½"),
             },
-            { accessor: "ply_count", title: t("GameTable.Plies"), sortable: true },
-            { accessor: "event", title: t("GameTable.Event") },
+            { accessor: "ply_count", title: t("features.gameTable.plies"), sortable: true },
+            { accessor: "event", title: t("features.gameTable.event") },
             {
               accessor: "site",
-              title: t("GameTable.Site"),
+              title: t("features.gameTable.site"),
               render: ({ site }) => (
                 <ActionIcon onClick={() => invoke("open_external_link", { url: site })}>
                   <IconExternalLink size="1rem" />
@@ -333,7 +333,7 @@ function GameTable() {
           <GameCard game={games[selectedGame]} file={file} mutate={mutate} />
         ) : (
           <Center h="100%">
-            <Text>{t("Common.NoGameSelected")}</Text>
+            <Text>{t("common.noGameSelected")}</Text>
           </Center>
         )
       }

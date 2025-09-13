@@ -1,101 +1,158 @@
+// @ts-nocheck
 import fs, { readFileSync } from "fs";
-import path, { basename } from "path";
-import * as ts from "typescript";
+import { join } from "path";
 
 interface TranslationData {
-  language: {"DisplayName": string},
-  translation: Record<string, any>;
+  language: { DisplayName: string };
+  translation: Record<string, unknown>;
 }
 
-const BASE_PATH = "./src/translation/en_US.ts";
-const TRANSLATION_DIR = "./src/translation";
-const MISSING_DIR = path.join(TRANSLATION_DIR, "missing");
+const BASE_PATH = "./src/locales/en";
+const LOCALES_DIR = "./src/locales";
 
 /**
- * Extracts exported translation data from a TypeScript file
- * @param filePath - Path to the TypeScript file
+ * Loads translation data from a locale directory
+ * @param localePath - Path to the locale directory
  * @returns Parsed translation data
- * @throws Error if file cannot be read or parsed
+ * @throws Error if directory cannot be read or parsed
  */
-export function extractExportByFilename(filePath: string): TranslationData | undefined {
+export function loadLocaleData(localePath: string): TranslationData | undefined {
   try {
-    const content = readFileSync(filePath, "utf-8");
-    const fileNameWithoutExt = basename(filePath, ".ts");
+    const indexPath = join(localePath, "index.ts");
+    const commonJsonPath = join(localePath, "common.json");
+    
+    if (!fs.existsSync(indexPath) || !fs.existsSync(commonJsonPath)) {
+      console.warn(`Missing files in ${localePath}`);
+      return undefined;
+    }
 
-    const sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true);
+    // Read the display name from index.ts
+    const indexContent = readFileSync(indexPath, "utf-8");
+    const displayNameMatch = indexContent.match(/DisplayName:\s*"([^"]+)"/);
+    const displayName = displayNameMatch ? displayNameMatch[1] : "Unknown";
 
-    let result;
+    // Read the translation data from common.json
+    const commonContent = readFileSync(commonJsonPath, "utf-8");
+    const translation = JSON.parse(commonContent);
 
-    sourceFile.forEachChild((node) => {
-      if (ts.isVariableStatement(node) && node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)) {
-        node.declarationList.declarations.forEach((decl) => {
-          if (
-            ts.isIdentifier(decl.name) &&
-            decl.name.text === fileNameWithoutExt &&
-            decl.initializer &&
-            ts.isObjectLiteralExpression(decl.initializer)
-          ) {
-            // Using Function constructor instead of eval for better security
-            result = new Function(`return ${decl.initializer.getText()}`)();
-          }
-        });
-      }
-    });
-
-    return result;
+    return {
+      language: { DisplayName: displayName },
+      translation
+    };
   } catch (error) {
-    console.error(`Error extracting data from ${filePath}:`, error);
+    console.error(`Error loading locale data from ${localePath}:`, error);
     throw error;
   }
 }
 
+/**
+ * Updates translation files by inserting missing keys with "MISSING_KEY" placeholder
+ */
 function updateTranslations() {
   const lang = process.argv.find((arg) => arg.startsWith("--lang="))?.split("=")[1];
 
-  const files = fs.readdirSync(TRANSLATION_DIR);
-
-  files.filter((file) => {
-    if (lang) return file.includes(lang);
-    return true;
-  }).forEach((file) => {
-    const filePath = path.join(TRANSLATION_DIR, file);
-    const missingFilePath = path.join(MISSING_DIR, file.replace(".ts", ".json"));
-
-    if (!fs.existsSync(missingFilePath)) return;
-
-    const baseData = extractExportByFilename(BASE_PATH);
-    const translatedData = extractExportByFilename(filePath);
-
-    if (!baseData?.translation || !translatedData?.translation) {
-      throw new Error("Invalid translation data structure");
-    }
-
-    const base = baseData.translation;
-    let translation = translatedData.translation;
-    const missing = JSON.parse(fs.readFileSync(missingFilePath, "utf8"));
-
-    function insertKeyAt(obj, key, value, index) {
-      const entries = Object.entries(obj);
-      entries.splice(index, 0, [key, value]);
-      return Object.fromEntries(entries);
-    }
-
-    Object.keys(base).forEach((key) => {
-      if (key in missing) {
-        translation = insertKeyAt(translation, key, "MISSING_KEY", Object.keys(base).indexOf(key));
-        console.log(`[${file}] Added missing key: ${key}`);
-      }
+  // Get all locale directories
+  const localeDirs = fs.readdirSync(LOCALES_DIR)
+    .filter((dir) => {
+      const dirPath = join(LOCALES_DIR, dir);
+      return fs.statSync(dirPath).isDirectory() && dir !== "en";
+    })
+    .filter((dir) => {
+      if (lang) return dir.includes(lang);
+      return true;
     });
 
-    const fileNameWithoutExt = path.basename(filePath, ".ts");
-    const translationContent = {
-      language: { "DisplayName": translatedData.language?.DisplayName || `MISSING_${fileNameWithoutExt}` },
-      translation
+  localeDirs.forEach((langCode) => {
+    const localePath = join(LOCALES_DIR, langCode);
+    const missingFilePath = join(localePath, "missing.json");
+
+    if (!fs.existsSync(missingFilePath)) {
+      console.log(`[${langCode}] No missing translations file found, skipping.`);
+      return;
     }
-    const fileContent = `export const ${fileNameWithoutExt} = ${JSON.stringify(translationContent, null, 2)};\n`;
-    fs.writeFileSync(filePath, fileContent, "utf8");
-    console.log(`[${file}] Updated.`);
+
+    const baseData = loadLocaleData(BASE_PATH);
+    const translatedData = loadLocaleData(localePath);
+
+    if (!baseData?.translation || !translatedData?.translation) {
+      console.error(`[${langCode}] Invalid translation data structure, skipping.`);
+      return;
+    }
+
+    let translation = { ...translatedData.translation };
+    const missing = JSON.parse(fs.readFileSync(missingFilePath, "utf8"));
+
+    let updatedCount = 0;
+
+    // Function to insert missing keys at correct nested positions
+    function insertMissingKeys(obj: Record<string, unknown>, missingObj: Record<string, unknown>, path = ""): Record<string, unknown> {
+      const result = { ...obj };
+      
+      for (const [key, value] of Object.entries(missingObj)) {
+        const fullKey = path ? `${path}.${key}` : key;
+        
+        if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+          // Handle nested objects
+          if (!result[key] || typeof result[key] !== "object") {
+            result[key] = {};
+          }
+          result[key] = insertMissingKeys(
+            result[key] as Record<string, unknown>, 
+            value as Record<string, unknown>, 
+            fullKey
+          );
+        } else {
+          // Handle leaf values
+          if (!(key in result)) {
+            result[key] = "MISSING_KEY";
+            console.log(`[${langCode}] Added missing key: ${fullKey}`);
+            updatedCount++;
+          }
+        }
+      }
+      
+      return result;
+    }
+
+    // Convert flat missing keys back to nested structure
+    const nestedMissing = unflattenObject(missing);
+    translation = insertMissingKeys(translation, nestedMissing);
+
+    if (updatedCount > 0) {
+      // Write updated common.json
+      const commonJsonPath = join(localePath, "common.json");
+      fs.writeFileSync(commonJsonPath, JSON.stringify(translation, null, 2), "utf8");
+      console.log(`[${langCode}] Updated ${updatedCount} missing keys.`);
+    } else {
+      console.log(`[${langCode}] No missing keys to add.`);
+    }
   });
+}
+
+/**
+ * Converts a flat object with dot notation keys back to nested structure
+ * @param flatObj - Flat object with dot notation keys
+ * @returns Nested object
+ */
+function unflattenObject(flatObj: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  
+  for (const [key, value] of Object.entries(flatObj)) {
+    const keys = key.split('.');
+    let current = result;
+    
+    for (let i = 0; i < keys.length - 1; i++) {
+      const k = keys[i];
+      if (!(k in current) || typeof current[k] !== 'object' || current[k] === null) {
+        current[k] = {};
+      }
+      current = current[k] as Record<string, unknown>;
+    }
+    
+    current[keys[keys.length - 1]] = value;
+  }
+  
+  return result;
 }
 
 updateTranslations();

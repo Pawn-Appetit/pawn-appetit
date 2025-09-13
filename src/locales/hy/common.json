@@ -1,0 +1,745 @@
+{
+  "common": {
+    "on": "Միացնել",
+    "off": "Անջատել",
+    "name": "Անուն",
+    "description": "Նկարագրություն",
+    "version": "Տարբերակ",
+    "enabled": "Միացված է",
+    "remove": "Հեռացնել",
+    "delete": "Ջնջել",
+    "add": "Ավելացնել",
+    "open": "Բացել",
+    "create": "Ստեղծել",
+    "save": "Պահպանել",
+    "download": "Ներբեռնել",
+    "local": "Տեղական",
+    "install": "Տեղադրել",
+    "installed": "Տեղադրված է",
+    "downloading": "Ներբեռնվում է",
+    "extracting": "Արխիվացվում է",
+    "error": "Սխալ",
+    "addNew": "Ավելացնել նորը",
+    "openFolder": "Բացել թղթապանակը ֆայլերի որոնիչում",
+    "unknown": "Անհայտ",
+    "cancel": "Չեղարկել",
+    "cannotUndo": "Այս գործողությունը հնարավոր չէ չեղարկել։",
+    "nameAlreadyUsed": "Անունն արդեն օգտագործվում է",
+    "requireName": "Անունը պարտադիր է",
+    "requirePath": "Ճանապարհը պարտադիր է",
+    "pgnFile": "PGN ֆայլ",
+    "pgnGame": "PGN Խաղ",
+    "or": "Կամ",
+    "clickToSelectPGN": "Սեղմեք՝ ընտրելու համար PGN ֆայլը",
+    "size": "Չափ",
+    "generalSettings": "Ընդհանուր կարգավորումներ",
+    "data": "Տվյալներ",
+    "games": {
+      "one": "{{count}} Խաղ",
+      "other": "{{count}} Խաղեր"
+    },
+    "edit": "Խմբագրել",
+    "enterFileName": "Մուտքագրեք ֆայլի անունը",
+    "next": "Հաջորդը",
+    "skip": "Բաց թողնել",
+    "reset": "Վերականգնել",
+    "incorrect": "Սխալ է",
+    "run": "Սկսել",
+    "stop": "Կանգնեցնել",
+    "engine": "Շարժիչ",
+    "unsavedChanges": {
+      "title": "Չպահված փոփոխություններ",
+      "desc": "Դուք ունեք չպահված փոփոխություններ։ Ցանկանու՞մ եք պահպանել դրանք փակելուց առաջ։",
+      "saveAndClose": "Պահպանել և փակել",
+      "closeWithoutSaving": "Փակել առանց պահպանելու"
+    },
+    "loading": "Բեռնվում է...",
+    "continue": "Շարունակել",
+    "review": "Վերանայել",
+    "noGameSelected": "Ոչ մի խաղ չի ընտրվել"
+  },
+  "chess": {
+    "checkmate": "Մատ",
+    "stalemate": "Պատ",
+    "white": "Սպիտակ",
+    "black": "Սև",
+    "random": "Պատահական",
+    "any": "Ցանկացած",
+    "player": "Խաղացող",
+    "opponent": "Հակառակորդ",
+    "goMode": {
+      "time": "Ժամանակ",
+      "depth": "Խորություն",
+      "nodes": "Հանգույցներ",
+      "infinite": "Անսահման"
+    },
+    "annotate": {
+      "none": "Ոչ մեկը",
+      "brilliant": "Փայլուն",
+      "good": "Լավ",
+      "interesting": "Հետաքրքիր",
+      "dubious": "Կասկածելի",
+      "mistake": "Սխալ",
+      "blunder": "Կոպիտ սխալ",
+      "whiteWinning": "Սպիտակները հաղթում են",
+      "whiteAdvantage": "Սպիտակները հստակ առավելություն ունեն",
+      "whiteEdge": "Սպիտակները փոքր առավելություն ունեն",
+      "equal": "Հավասար դիրք",
+      "unclear": "Անորոշ դիրք",
+      "blackEdge": "Սևերը փոքր առավելություն ունեն",
+      "blackAdvantage": "Սևերը հստակ առավելություն ունեն",
+      "blackWinning": "Սևերը հաղթում են",
+      "novelty": "Նորույթ",
+      "development": "Զարգացում",
+      "initiative": "Նախաձեռնություն",
+      "attack": "Հարձակում",
+      "counterplay": "Հակախաղ",
+      "withCompensation": "Փոխհատուցմամբ",
+      "timeTrouble": "Ժամանակի խնդիր",
+      "withIdea": "Գաղափարով",
+      "onlyMove": "Միակ քայլը",
+      "zugzwang": "Ցուգցվանգ"
+    },
+    "timeControl": {
+      "ultraBullet": "ՈւլտրաԲուլետ",
+      "bullet": "Բուլետ",
+      "blitz": "Բլից",
+      "rapid": "Արագ",
+      "classical": "Դասական",
+      "correspondence": "Նամակագրություն"
+    },
+    "outcome": {
+      "outcome": "Արդյունք",
+      "selectOutcome": "Ընտրեք արդյունքը",
+      "draw": "Ոչ-ոքի",
+      "whiteWins": "Սպիտակները հաղթեցին",
+      "blackWins": "Սևերը հաղթեցին",
+      "unknown": "Անհայտ"
+    },
+    "opening": {
+      "emptyBoard": "Դատարկ տախտակ",
+      "startingPosition": "Սկզբնական դիրք"
+    },
+    "fen": {
+      "start": "Սկիզբ",
+      "empty": "Դատարկ",
+      "whiteToMove": "Սպիտակների քայլը",
+      "blackToMove": "Սևերի քայլը"
+    },
+    "pieceChars": {
+      "k": "K",
+      "q": "Q",
+      "r": "R",
+      "b": "B",
+      "n": "N"
+    },
+    "errors": {
+      "emptyBoard": "Դատարկ տախտակ",
+      "invalidKings": "Արքաների անթույլատրելի քանակ",
+      "oppositeCheck": "Հակառակ շախ",
+      "pawnsOnBackrank": "Զինվորներ հետին շարքում",
+      "invalidBoard": "Անթույլատրելի տախտակ",
+      "invalidCastlingRights": "Անթույլատրելի արքայական իրավունքներ",
+      "invalidEpSquare": "Անթույլատրելի անցողիկ հարվածի դաշտ",
+      "invalidFen": "Անթույլատրելի FEN",
+      "invalidFullmoves": "Անթույլատրելի ամբողջական քայլերի թիվ",
+      "invalidHaldmoves": "Անթույլատրելի կես քայլերի թիվ",
+      "invalidPockets": "Անթույլատրելի գրպաններ",
+      "invalidRemainingChecks": "Անթույլատրելի մնացած շախեր",
+      "invalidTurn": "Անթույլատրելի հերթ",
+      "unknown": "Անհայտ սխալ"
+    }
+  },
+  "units": {
+    "count": "{{count, number}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "bytesLabels": {
+      "bytes": "Բայթ",
+      "bytesLong": "Բայթ",
+      "kilobytes": "ԿԲ",
+      "megabytes": "ՄԲ",
+      "gigabytes": "ԳԲ",
+      "terabytes": "ՏԲ",
+      "kilobytesLong": "Կիլոբայթ",
+      "megabytesLong": "Մեգաբայթ",
+      "gigabytesLong": "Գիգաբայթ",
+      "terabytesLong": "Տերաբայթ"
+    },
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "nodesLabels": {
+      "thousand": "հ",
+      "million": "Մ",
+      "billion": "Մլրդ",
+      "trillion": "Տր",
+      "quadrillion": "Կվ",
+      "quintillion": "Կվտ",
+      "nodes": "հանգույցներ",
+      "nodesPerSecond": "հանգույց/վ"
+    },
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "durationLabels": {
+      "seconds": "վ",
+      "minutes": "ր",
+      "hours": "ժ",
+      "days": "օր",
+      "secondsLong": "վայրկյան",
+      "minutesLong": "րոպե",
+      "hoursLong": "ժամ",
+      "daysLong": "օր"
+    },
+    "score": "{{score, score}}",
+    "scoreLabels": {
+      "mate": "Մատ",
+      "dtz": "DTZ",
+      "centipawns": "ցպ",
+      "centipawnsLong": "ցենտիպոուն"
+    }
+  },
+  "features": {
+    "richText": {
+      "bold": "Թավ",
+      "italic": "Շեղ",
+      "underline": "Ընդգծված",
+      "strike": "Գիծ քաշված",
+      "clearFormatting": "Մաքրել ձևաչափը",
+      "h1": "Վերնագիր 1",
+      "h2": "Վերնագիր 2",
+      "h3": "Վերնագիր 3",
+      "h4": "Վերնագիր 4",
+      "quote": "Մեջբերում",
+      "hLine": "Հորիզոնական գիծ",
+      "bulletList": "Ցուցակ",
+      "numberedList": "Համարակալված ցուցակ",
+      "link": "Հղում",
+      "removeLink": "Հեռացնել հղումը"
+    },
+    "menu": {
+      "file": "Ֆայլ",
+      "newTab": "Նոր ներդիր",
+      "openFile": "Բացել ֆայլը",
+      "exit": "Ելք",
+      "view": "Տեսք",
+      "reload": "Վերբեռնել",
+      "help": "Օգնություն",
+      "documentation": "Փաստաթղթավորում",
+      "clearSavedData": "Մաքրել պահպանված տվյալները",
+      "openLogs": "Բացել մատյանները",
+      "checkUpdate": "Ստուգել թարմացումները",
+      "about": "Մեր մասին",
+      "markAsStart": "Նշել որպես սկիզբ",
+      "promoteToMainLine": "Բարձրացնել գլխավոր գծին",
+      "promoteVariation": "Բարձրացնել տարբերակը",
+      "copyVariationPGN": "Պատճենել տարբերակի PGN-ը",
+      "deleteMove": "Ջնջել քայլը"
+    },
+    "sidebar": {
+      "dashboard": "Վահանակ",
+      "board": "Տախտակ",
+      "accounts": "Օգտատեր",
+      "files": "Ֆայլեր",
+      "databases": "Տվյալների բազաներ",
+      "engines": "Շարժիչներ",
+      "learn": "Սովորել",
+      "settings": "Կարգավորումներ",
+      "keyboardShortcuts": "Ստեղնաշարի կարճ ճանապարհներ"
+    },
+    "dashboard": {
+      "welcome": {
+        "firstOpen": "Բարի գալուստ Pawn Appétit։",
+        "back": "Բարի վերադարձ",
+        "desc": "Պատրա՞ստ եք կատարել ձեր հաջորդ լավագույն քայլը։"
+      },
+      "cards": {
+        "learn": {
+          "title": "Սովորել շախմատ",
+          "desc": "Ինտերակտիվ դասեր՝ շախմատ սովորելու համար՝ հիմքերից մինչև առաջադեմ ռազմավարություններ",
+          "button": "Սկսել սովորելը"
+        },
+        "playChess": {
+          "title": "Խաղալ շախմատ",
+          "desc": "Խաղալ շարժիչի կամ ընկերոջ դեմ",
+          "button": "Խաղալ"
+        },
+        "analysisBoard": {
+          "title": "Վերլուծության տախտակ",
+          "desc": "Վերլուծել խաղը կամ դիրքը",
+          "button": "Բացել"
+        },
+        "importGame": {
+          "title": "Ներմուծել խաղ",
+          "desc": "Ներմուծել խաղ PGN-ից",
+          "button": "Ներմուծել"
+        },
+        "analyze": {
+          "title": "Տախտակի վերլուծություն",
+          "desc": "Վերլուծեք դիրքեր, խաղեր և տարբերակներ հզոր շախմատային շարժիչներով։",
+          "button": "Վերլուծել"
+        },
+        "database": {
+          "title": "Տվյալների բազա",
+          "desc": "Ուսումնասիրեք մեծ շախմատային բազաներ և վարպետների խաղեր՝ խորացնելու ձեր ըմբռնումը։",
+          "button": "Դիտարկել"
+        },
+        "engine": {
+          "title": "Շարժիչների ինտեգրում",
+          "desc": "Ավելացրեք և կառավարեք բազմաթիվ շարժիչներ՝ հարմարեցնելու վերլուծությունը։",
+          "button": "Կառավարել"
+        },
+        "puzzle": {
+          "title": "Խնդիրներ",
+          "desc": "Մարզել ձեր շախմատային հմտությունները",
+          "button": "Մարզել"
+        },
+        "account": {
+          "title": "Հաշիվներ",
+          "desc": "Ներմուծեք ձեր խաղերն ու վիճակագրությունը՝ միացնելով ձեր Chess.com կամ Lichess հաշիվը։",
+          "button": "Միացնել"
+        },
+        "import": {
+          "title": "Ներմուծել",
+          "desc": "Վերբեռնեք և խմբագրեք PGN ֆայլեր՝ վերլուծելու ձեր խաղերը կամ դիրքերը։",
+          "button": "Ներմուծել"
+        }
+      }
+    },
+    "tabs": {
+      "newTab": "Նոր ներդիր",
+      "playChess": {
+        "title": "Խաղալ շախմատ",
+        "desc": "Մրցվեք ծրագրի կամ ընկերոջ դեմ",
+        "button": "Խաղալ հիմա"
+      },
+      "analysisBoard": {
+        "title": "Վերլուծության տախտակ",
+        "desc": "Վերլուծեք խաղ կամ դիրք",
+        "button": "Վերլուծել"
+      },
+      "importGame": {
+        "title": "Ներմուծել խաղ",
+        "desc": "Ներմուծեք խաղ PGN ֆայլից",
+        "button": "Ներմուծել խաղ",
+        "url": "Խաղի հղում (lichess կամ chess.com)",
+        "saveToCollection": "Պահպանել հավաքածուում",
+        "online": "Առցանց",
+        "importing": "Ներմուծվում է...",
+        "import": "Ներմուծել"
+      },
+      "puzzle": {
+        "title": "Գլուխկոտրուկներ",
+        "desc": "Վարժեցրեք ձեր շախմատային հմտությունները",
+        "button": "Լուծել հիմա"
+      }
+    },
+    "board": {
+      "actions": {
+        "togglePawnStructureView": "Անցնել զինվորների կառուցվածքի դիտմանը",
+        "takeSnapshot": "Կատարել լուսանկար",
+        "analyzeGame": "Վերլուծել խաղը",
+        "playFromHere": "Խաղալ այստեղից",
+        "clearDrawings": "Մաքրել գծագրերը",
+        "editPosition": "Խմբագրել դիրքը",
+        "savePGN": "Պահպանել PGN ({{key}})",
+        "addGame": "Ավելացնել խաղ",
+        "flipBoard": "Շրջել տախտակը ({{key}})"
+      },
+      "tabs": {
+        "practice": "Մարզվել",
+        "graph": "Գրաֆիկ",
+        "centerGraph": "Կենտրոնացնել ընթացիկ քայլի վրա",
+        "analysis": "Վերլուծություն",
+        "database": "Տվյալների բազա",
+        "annotate": "Ծանոթագրել",
+        "info": "Տեղեկություն"
+      },
+      "practice": {
+        "train": "Մարզվել",
+        "build": "Կառուցել",
+        "noPositionForTrain1": "Մարզվելու դիրքեր չկան։ Սկսեք՝ ավելացնելով քայլեր այս PGN ֆայլին։",
+        "noPositionForTrain2": "Ձեզ հարկավոր է անցնել Վերլուծության ռեժիմ՝ քայլեր ավելացնելու համար։",
+        "seeAnswer": "Տեսնել պատասխանը",
+        "practiced": "Մարզված է",
+        "due": "Պատշաճ",
+        "unseen": "Չտեսնված",
+        "showAll": "Ցույց տալ բոլոր դիրքերը",
+        "showLogs": "Ցույց տալ մատյանները",
+        "practicedAll1": "Դուք մարզել եք բոլոր դիրքերը։",
+        "practicedAll2": "Հաջորդ վերանայումը կլինի",
+        "correctMoveWas": "Ճիշտ քայլը {{move}} էր",
+        "resetOpeningData": {
+          "title": "Վերականգնել բացման տվյալները",
+          "desc": "Վստա՞հ եք, որ ցանկանում եք վերականգնել «{{fileName}}» բացման տվյալները։ Բոլոր սովորած արդյունքները կկորչեն։"
+        }
+      },
+      "analysis": {
+        "engines": "Շարժիչներ",
+        "report": "Զեկույց",
+        "logs": "Մատյաններ",
+        "summary": "Ամփոփում",
+        "inactiveEngine": "Շարժիչը միացված չէ",
+        "syncGlobally": "Համաժամեցնել գլոբալ",
+        "killEngine": "Անջատել շարժիչը",
+        "generateReport": "Ստեղծել զեկույց",
+        "reportGenerated": "Զեկույցը ստեղծված է",
+        "generatingReport": "Զեկույց է ստեղծվում",
+        "notAnalysed": "Չի վերլուծվել",
+        "engineRequired": "Շարժիչը պարտադիր է",
+        "refDBRequired": "Ընտրված չէ հղումային տվյալների բազա։ Նախ ընտրեք մեկը տվյալների բազաների էջում։",
+        "time": "Ժամանակ (մվ)",
+        "reversed": "Հակադարձ վերլուծություն",
+        "reversedDesc": "Վերլուծել խաղը սկսած վերջին քայլից։",
+        "annotateNovelties": "Ծանոթագրել նորույթները",
+        "annotateNoveltiesDesc": "Ավելացնել մեկնաբանություն առաջին դիրքին, որը չկա հղումային տվյալների բազայում։",
+        "analyze": "Վերլուծել",
+        "advantage": "Առավելություն",
+        "accuracy": "Ճշգրտություն",
+        "enableWDL": "Դուք պետք է միացնեք UCI_ShowWDL-ը շարժիչի կարգավորումներում՝ այս գործառույթն օգտագործելու համար։"
+      },
+      "database": {
+        "local": "Տեղական",
+        "lichessAll": "Lichess Բոլորը",
+        "lichessMaster": "Lichess Մայստերներ",
+        "matches": "{{matches}} համընկնում",
+        "stats": "Վիճակագրություն",
+        "games": "Խաղեր",
+        "options": "Ընտրանքներ",
+        "noReference1": "Ընտրված չէ հղումային տվյալների բազա։",
+        "noReference2": "Խնդրում ենք",
+        "selectReference": "ավելացնել տվյալների բազա",
+        "noReference3": "նախ և նշել այն որպես հղում։",
+        "timeControl": "Ժամանակի վերահսկում",
+        "averageRating": "Միջին վարկանիշ"
+      },
+      "annotate": {
+        "writeHere": "Գրեք այստեղ..."
+      }
+    },
+    "lessons": {
+      "title": "Շախմատի դասեր",
+      "selectToBegin": "Ընտրեք դաս՝ սկսելու համար",
+      "difficulty": {
+        "beginner": "Սկսնակ",
+        "intermediate": "Միջին",
+        "advanced": "Առաջադեմ"
+      },
+      "startLesson": "Սկսել դասը",
+      "backToLessons": "Վերադառնալ դասերին",
+      "backToLesson": "Վերադառնալ դասին",
+      "startExercise": "Սկսել վարժությունը",
+      "exercises": "Վարժություններ",
+      "correct": "Ճիշտ է։ Շնորհավոր։",
+      "incorrect": "Սխալ է։ Կրկին փորձեք։",
+      "progress": "Առաջընթաց",
+      "overallProgress": "Ընդհանուր առաջընթաց",
+      "showHint": "Ցույց տալ հուշում",
+      "hint": "Հուշում",
+      "tryMoves": "Փորձեք այս քայլերից մեկը",
+      "completed": "Ավարտված",
+      "exercisesCompleted": "ավարտված վարժություններ",
+      "lessonCompleted": "Շնորհավորում ենք։ Դուք ավարտեցիք {{lesson}} դասը։",
+      "completionMessage": "Դուք հաջողությամբ ավարտեցիք այս դասի բոլոր վարժությունները։ Շարունակեք նույն կերպ։"
+    },
+    "practice": {
+      "title": "Շախմատի փորձ",
+      "description": "Բարելավեք ձեր շախմատային հմտությունները թիրախային վարժություններով",
+      "selectExercise": "Ընտրեք վարժություն՝ սկսելու համար",
+      "progress": "Առաջընթաց",
+      "exercises": "Վարժություններ",
+      "completed": "Ավարտված",
+      "start": "Սկսել փորձը",
+      "showHint": "Ցույց տալ հուշում",
+      "hintText": "Փնտրեք տակտիկական հնարավորություններ կամ առանցքային դաշտեր, որոնք վերահսկում են դիրքը։",
+      "congratulations": "Շնորհավորում ենք։",
+      "completedCategory": "Դուք ավարտեցիք բոլոր վարժությունները {{category}} բաժնում։"
+    },
+    "engines": {
+      "title": "Ձեր շարժիչները",
+      "settings": {
+        "noEngine": "Շարժիչ ընտրված չէ",
+        "searchSettings": "Որոնման կարգավորումներ",
+        "advancedSettings": "Ընդլայնված կարգավորումներ",
+        "numOfLines": "Տողերի քանակը",
+        "numOfCores": "Միջուկների քանակը",
+        "sizeOfHash": "Հեշի չափը",
+        "editJSON": "Խմբագրել JSON",
+        "reset": "Վերականգնել լռելյայն արժեքները"
+      },
+      "add": {
+        "title": "Ավելացնել շարժիչ",
+        "cloud": "Ամպ",
+        "errorFetch": "Սխալ տվյալներ սերվերից շարժիչի մասին։",
+        "binaryFile": "Երկուական ֆայլ",
+        "binaryFileDesc": "Սեղմեք երկուական ֆայլն ընտրելու համար",
+        "name": "Անուն",
+        "autodetect": "Ավտոմատ հայտնաբերում",
+        "eloDesc": "Շարժիչի Էլո",
+        "imageFile": "Պատկերային ֆայլ",
+        "imageFileDesc": "Սեղմեք պատկերային ֆայլն ընտրելու համար (առաջարկվող չափս՝ 60x60)"
+      },
+      "remove": {
+        "title": "Հեռացնել շարժիչը",
+        "message": "Համոզվա՞ծ եք, որ ցանկանում եք հեռացնել այս շարժիչը Pawn Appétit-ից։"
+      }
+    },
+    "databases": {
+      "title": "Ձեր տվյալների բազաները",
+      "card": {
+        "games": "Խաղեր",
+        "players": "Խաղացողներ",
+        "tournaments": "Մրցաշարեր",
+        "storage": "Պահեստ"
+      },
+      "add": {
+        "title": "Ավելացնել տվյալների բազա",
+        "web": "Վեբ",
+        "errorFetch": "Սխալ տվյալներ սերվերից տվյալների բազայի մասին։",
+        "clickToSelectPGN": "Սեղմեք PGN ֆայլն ընտրելու համար",
+        "convert": "Փոխարկել"
+      },
+      "settings": {
+        "referenceDatabase": "Հղումային տվյալների բազա",
+        "referenceDatabaseShort": "Հղում",
+        "indexed": "Ինդեքսավորված",
+        "indexedDesc": "Ինդեքսները օգտագործվում են որոնման գործընթացն արագացնելու համար, բայց դրանք լրացուցիչ տեղ են զբաղեցնում։",
+        "events": "Իրադարձություններ",
+        "explore": "Ուսումնասիրել",
+        "advancedTools": "Ընդլայնված գործիքներ",
+        "mergePlayers": "Միացնել խաղացողներին",
+        "mergePlayersDesc": "Փոխարինել առաջին խաղացողի բոլոր հիշատակումները երկրորդ խաղացողով տվյալների բազայում։",
+        "merge": "Միացնել",
+        "batchDelete": "Խմբաքանակային ջնջում",
+        "batchDeleteDesc": "Այս գործողություններն անդառնալիորեն կհեռացնեն խաղերը տվյալների բազայից։ Օգտագործեք զգուշությամբ։",
+        "removeDup": "Հեռացնել կրկնօրինակները",
+        "removeEmpty": "Հեռացնել դատարկ խաղերը",
+        "actions": "Գործողություններ",
+        "addGames": "Ավելացնել խաղեր",
+        "exportPGN": "Արտահանել PGN"
+      },
+      "delete": {
+        "title": "Ջնջել տվյալների բազան",
+        "message": "Համոզվա՞ծ եք, որ ցանկանում եք ջնջել այս տվյալների բազան։"
+      }
+    },
+    "files": {
+      "title": "Ֆայլեր",
+      "fileType": {
+        "fileType": "Ֆայլի տեսակը",
+        "game": "Խաղ",
+        "repertoire": "Ռեպերտուար",
+        "tournament": "Մրցաշար",
+        "puzzle": "Խնդիր",
+        "other": "Այլ",
+        "folder": "Թղթապանակ"
+      },
+      "delete": {
+        "title": "Ջնջել ֆայլը",
+        "message": "Համոզվա՞ծ եք, որ ցանկանում եք ջնջել {{fileName}} ֆայլը։",
+        "delete": "Ջնջել"
+      },
+      "editMetadata": "Խմբագրել մետատվյալները",
+      "edit": {
+        "title": "Խմբագրել ֆայլը"
+      },
+      "create": {
+        "title": "Ստեղծել ֆայլ",
+        "pgnPlaceholder": "Տեղադրեք ձեր PGN-ը այստեղ..."
+      },
+      "search": "Որոնել ֆայլեր",
+      "noFiles": "Ֆայլեր չեն գտնվել",
+      "noFileSelected": "Ֆայլ չի ընտրվել",
+      "name": "Անուն",
+      "lastModified": "Վերջին փոփոխություն",
+      "type": "Տեսակ",
+      "folder": "Թղթապանակ",
+      "game": {
+        "delete": {
+          "title": "Հեռացնել խաղը",
+          "desc": "Վստա՞հ եք, որ ցանկանում եք հեռացնել այս խաղը։"
+        }
+      }
+    },
+    "gameTable": {
+      "date": "Ամսաթիվ",
+      "plies": "Քայլեր",
+      "event": "Միջոցառում",
+      "site": "Վայր",
+      "from": "Սկսած",
+      "startDate": "Սկսման ամսաթիվ",
+      "to": "Մինչև",
+      "endDate": "Ավարտի ամսաթիվ"
+    },
+    "gameNotation": {
+      "showMoves": "Ցույց տալ քայլերը",
+      "hideMoves": "Թաքցնել քայլերը",
+      "showComments": "Ցույց տալ մեկնաբանությունները",
+      "hideComments": "Թաքցնել մեկնաբանությունները",
+      "showVariations": "Ցույց տալ տարբերակները",
+      "repertoireView": "Բացման հավաքածուի դիտում",
+      "mainLine": "Հիմնական տարբերակ",
+      "showVariationsTooltip": "Ցույց տալ տարբերակները"
+    },
+    "pgnInput": {
+      "comments": "Մեկնաբանություններ",
+      "glyphs": "Գլիֆներ",
+      "variations": "Տարբերակներ",
+      "extraMarkups": "Լրացուցիչ նշումներ",
+      "maxDepth": "Առավելագույն խորություն",
+      "totalMoves": "Ընդհանուր քայլեր"
+    },
+    "puzzle": {
+      "jumpToNext": "Անցնել հաջորդ գլխկոտրուկին",
+      "jumpToNextOff": "Անջատված",
+      "jumpToNextOnSuccess": "Հաջողության դեպքում",
+      "jumpToNextOnSuccessAndFailure": "Հաջողության և ձախողման դեպքում",
+      "playerRating": "Խաղացողի վարկանիշ",
+      "maxRating": "Առավելագույն վարկանիշ",
+      "newMax": "Նոր առավելագույն",
+      "rating": "Գլուխկոտրուկի վարկանիշ",
+      "averageSuccessRating": "Միջին հաջողության վարկանիշ",
+      "averageFailRating": "Միջին ձախողման վարկանիշ",
+      "selectDatabase": "Ընտրել տվյալների բազա",
+      "ratingRange": "Վարկանիշի միջակայք",
+      "progressive": "Հարմարվող",
+      "hideRating": "Թաքցնել վարկանիշը",
+      "inOrder": "Հերթականությամբ",
+      "newPuzzle": "Նոր գլուխկոտրուկ",
+      "analyzePosition": "Վերլուծել դիրքը",
+      "clearSession": "Մաքրել սեսիան",
+      "showingSolution": "Ցուցադրվում է լուծումը",
+      "viewSolution": "Դիտել լուծումը",
+      "loadingRatingRange": "Վարկանիշի միջակայքը բեռնվում է...",
+      "enterTitle": "Մուտքագրեք գլխկոտրուկի վերնագիրը"
+    },
+    "tablebase": {
+      "title": "Ավարտախաղի բազա",
+      "error": "Սխալ: ",
+      "dtm": "DTM {{count}}",
+      "dtz": "DTZ {{count}}",
+      "fiftyMoveRule": "*ըստ 50 քայլի կանոնի"
+    }
+  },
+  "settings": {
+    "board": {
+      "title": "Տախտակ",
+      "desc": "Կարգավորել վերլուծության տախտակը և խաղի կառավարումները",
+      "pieceDest": "Ֆիգուրների նպատակակետերը",
+      "pieceDestDesc": "Ցույց տալ յուրաքանչյուր ֆիգուրի հնարավոր քայլերը",
+      "arrows": "Սլաքներ",
+      "arrowsDesc": "Ցույց տալ լավագույն քայլի սլաքները",
+      "snapArrows": "Կցել սլաքները",
+      "snapArrowsDesc": "Կցել սլաքները թույլատրելի քայլերին",
+      "consecutiveArrows": "Հաջորդական սլաքներ",
+      "consecutiveArrowsDesc": "Ցույց տալ բազմաթիվ սլաքներ լավագույն գծի համար, եթե այն ենթադրում է նույն ֆիգուրը մի քանի անգամ տեղաշարժել",
+      "eraseDrawablesOnClick": "Ջնջել գծագրերը սեղմելիս",
+      "eraseDrawablesOnClickDesc": "Մաքրել տախտակը նկարված սլաքներից և շրջանակներից մկնիկի ձախ սեղմումով",
+      "autoPromotion": "Ավտոմատ բարձրացում",
+      "autoPromotionDesc": "Ավտոմատ կերպով թագուհի դարձնել զինվորը, երբ այն հասնում է վերջին հորիզոնականին",
+      "coordinates": "Կոորդինատներ",
+      "coordinatesDesc": "Ցույց տալ կոորդինատները տախտակի վրա",
+      "autoSave": "Ավտոմատ պահպանում",
+      "autoSaveDesc": "Ավտոմատ պահպանել ֆայլում յուրաքանչյուր քայլից հետո",
+      "previewBoard": "Նախադիտել տախտակը",
+      "previewBoardDesc": "Ցույց տալ տախտակի նախադիտում շարժիչի վերլուծության ժամանակ քայլի վրա սավառնելիս",
+      "scrollThroughMoves": "Թերթել քայլերը",
+      "scrollThroughMovesDesc": "Միացնել կամ անջատել քայլերի թերթումը շախմատի տախտակի վրա"
+    },
+    "inputs": {
+      "title": "Մուտքեր",
+      "desc": "Կարգավորել մուտքագրման կարգավորումները",
+      "textInput": "Տեքստային քայլի մուտքագրում",
+      "textInputDesc": "Մուտքագրել քայլերը տեքստային ձևաչափով",
+      "spellCheck": "Ուղղագրության ստուգում",
+      "spellCheckDesc": "Միացնել կամ անջատել ուղղագրության ստուգումը տեքստային մուտքերի վրա"
+    },
+    "openingReport": {
+      "title": "Բացման զեկույց",
+      "desc": "Կարգավորել բացման զեկույցի կարգավորումները",
+      "percentCoverage": "Ծածկույթի տոկոսը",
+      "percentCoverageDesc": "Յուրաքանչյուր դիրքում ծածկված քայլերի տոկոսը",
+      "minGames": "Նվազագույն խաղեր",
+      "minGamesDesc": "Յուրաքանչյուր դիրքում խաղերի նվազագույն քանակը, որպեսզի այն համարվի"
+    },
+    "anarchy": {
+      "title": "Անարխիա",
+      "desc": "Զվարճալի տարբերակներ",
+      "forcedEnPassant": "Պարտադրված En Passant",
+      "forcedEnPassantDesc": "Ձեզ ստիպում է խաղալ En Passant, եթե դա օրինական քայլ է։"
+    },
+    "appearance": {
+      "title": "Տեսք",
+      "desc": "Կարգավորել հավելվածի տեսքը",
+      "theme": {
+        "theme": "Թեմա"
+      },
+      "themeDesc": "Ընդհանուր գունային սխեմա",
+      "custom": "Անհատական",
+      "auto": "Ավտո",
+      "titleBar": "Վերնագիր",
+      "titleBarDesc": "Ընտրեք բնօրինակ կամ անհատական վերնագիր",
+      "language": "Լեզու",
+      "languageDesc": "Հավելվածում օգտագործվող լեզուն",
+      "native": "Բնօրինակ",
+      "fontSize": "Տառատեսակի չափսը",
+      "fontSizeDesc": "Ընդհանուր տառատեսակի չափսը",
+      "pieceSet": "Ֆիգուրների հավաքածու",
+      "pieceSetDesc": "Տախտակների վրա օգտագործվող ֆիգուրները",
+      "boardImage": "Տախտակի պատկեր",
+      "boardImageDesc": "Տախտակի ֆոնի համար օգտագործվող պատկեր",
+      "accentColor": "Շեշտադրման գույն",
+      "accentColorDesc": "Հավելվածի հիմնական գույնը",
+      "hideDashboardOnStartup": "Թաքցնել վահանակը մեկնարկի ժամանակ",
+      "hideDashboardOnStartupDesc": "Ծրագրի մեկնարկին բացել տախտակները, այլ ոչ թե վահանակը",
+      "dateFormat": "Ամսաթվի ձևաչափ",
+      "dateFormatDesc": "Ընտրեք միջազգային (YYYY-MM-DD) կամ տեղային ձևաչափ",
+      "international": "Միջազգային",
+      "locale": "Տեղային"
+    },
+    "sound": {
+      "title": "Ձայն",
+      "desc": "Կարգավորել ձայնի կարգավորումները",
+      "volume": "Ձայնի մակարդակ",
+      "volumeDesc": "Ընդհանուր ձայնի մակարդակ",
+      "collection": "Ձայնի հավաքածու",
+      "collectionDesc": "Օգտագործվող ձայների հավաքածու"
+    },
+    "keybindings": "Ստեղների կապումներ",
+    "directories": {
+      "title": "Գրացուցակներ",
+      "desc": "Կարգավորել հավելվածի կողմից օգտագործվող գրացուցակները",
+      "files": "Ֆայլերի գրացուցակ",
+      "filesDesc": "Այստեղ են պահվում ձեր խաղերը Ֆայլեր էջում"
+    },
+    "telemetry": "Հեռաչափություն",
+    "telemetryDesc": "Օգնեք բարելավել Pawn Appétit-ը՝ կիսվելով անանուն օգտագործման տվյալներով",
+    "moveNotation": "Քայլերի գրանշում",
+    "moveNotationDesc": "Ընտրեք, թե ինչպես ցուցադրել ֆիգուրները գրանշման մեջ",
+    "symbols": "Նշաններ (♔♕♖♗♘)",
+    "letters": "Տառեր (K Q R B N)",
+    "translatedLetters": "Թարգմանված տառեր (K Q R B N)",
+    "waysToMovePieces": "Ֆիգուրները տեղափոխելու եղանակներ",
+    "waysToMovePiecesDesc": "Տեղափոխեք ֆիգուրները քաշելով, սեղմելով կամ երկուսով էլ",
+    "drag": "Քաշել",
+    "click": "Սեղմել",
+    "both": "Երկուսն էլ",
+    "searchPlaceholder": "Փնտրել կարգավորումներում",
+    "noResultsFound": "Չկան համապատասխան կարգավորումներ",
+    "gameplay": "Խաղի ընթացք",
+    "analysis": "Վերլուծություն",
+    "interface": "Ինտերֆեյս",
+    "system": "Համակարգ"
+  },
+  "formatters": {
+    "dateFormat": "{{date, dateformat}}",
+    "dateTimeFormat": "{{date, datetimeformat}}",
+    "moveNotation": "{{move, moveNotation}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "score": "{{score, score}}"
+  }
+}

@@ -15,7 +15,10 @@ function FileInfo({ setGames }: { setGames: React.Dispatch<React.SetStateAction<
     return (
       <>
         <Group justify="space-between" py="sm" px="md">
-          <Text>{t("Common.Games", { count: tab.source.numGames || 0 })}</Text>
+          <Text>
+            {tab.source.numGames === 1 && t("common.games.one", { count: tab.source.numGames || 0 })}
+            {tab.source.numGames > 1 && t("common.games.other", { count: tab.source.numGames || 0 })}
+          </Text>
           <Group>
             <Tooltip label={tab.source.path}>
               <Code>{tab.source.path.split(/[\\/]/).pop()}</Code>

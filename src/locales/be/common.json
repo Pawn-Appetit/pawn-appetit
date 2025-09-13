@@ -1,0 +1,421 @@
+{
+  "common": {
+    "on": "УКЛ",
+    "off": "ВЫКЛ",
+    "name": "Імя",
+    "description": "Апісанне",
+    "version": "Версія",
+    "enabled": "Уключана",
+    "remove": "Выдаліць",
+    "delete": "Выдаліць",
+    "add": "Дадаць",
+    "open": "Адкрыць",
+    "create": "Стварыць",
+    "save": "Захаваць",
+    "download": "Запампаваць",
+    "local": "Лакальна",
+    "install": "Усталяваць",
+    "installed": "Усталявана",
+    "downloading": "Запампоўка",
+    "extracting": "Распакоўка",
+    "error": "Памылка",
+    "addNew": "Дадаць новае",
+    "openFolder": "Адкрыць тэчку ў правадыру файлаў",
+    "unknown": "Невядома",
+    "cancel": "Адмяніць",
+    "cannotUndo": "Гэта дзеянне нельга адмяніць.",
+    "nameAlreadyUsed": "Імя ўжо выкарыстоўваецца",
+    "requireName": "Імя абавязковае",
+    "requirePath": "Шлях абавязковы",
+    "pgnFile": "Файл PGN",
+    "pgnGame": "Гульня PGN",
+    "size": "Памер",
+    "generalSettings": "Агульныя налады",
+    "data": "Дадзеныя",
+    "games": {
+      "one": "{{count}} гульня",
+      "other": "{{count}} гульні"
+    },
+    "edit": "Рэдагаваць",
+    "enterFileName": "Увядзіце імя файла",
+    "next": "Далей",
+    "skip": "Прапусціць",
+    "reset": "Скінуць",
+    "incorrect": "Няправільна",
+    "run": "Запусціць",
+    "stop": "Спыніць",
+    "engine": "Рухавік"
+  },
+  "chess": {
+    "checkmate": "Шах і мат",
+    "stalemate": "Пат",
+    "white": "БЕЛЫЯ",
+    "black": "ЧОРНЫЯ",
+    "goMode": {
+      "time": "Час",
+      "depth": "Глыбіня",
+      "nodes": "Вузлы",
+      "infinite": "Бясконцасць"
+    },
+    "annotate": {
+      "brilliant": "Бліскуча",
+      "good": "Добра",
+      "interesting": "Цікава",
+      "dubious": "Сумнеўна",
+      "mistake": "Памылка",
+      "blunder": "Грубая памылка",
+      "whiteWinning": "Белыя перамагаюць",
+      "whiteAdvantage": "Перавага ў белых",
+      "whiteEdge": "Невялікая перавага ў белых",
+      "equal": "Роўная пазіцыя",
+      "unclear": "Нявызначаная пазіцыя",
+      "blackEdge": "Невялікая перавага ў чорных",
+      "blackAdvantage": "Перавага ў чорных",
+      "blackWinning": "Чорныя перамагаюць",
+      "novelty": "Навінка",
+      "development": "Развіццё",
+      "initiative": "Ініцыятыва",
+      "attack": "Атака",
+      "counterplay": "Контргульня",
+      "withCompensation": "З кампенсацыяй",
+      "timeTrouble": "Цэйтнот",
+      "withIdea": "З ідэяй",
+      "onlyMove": "Адзіны ход",
+      "zugzwang": "Цугцванг"
+    },
+    "timeControl": {
+      "ultraBullet": "Ультра Булет",
+      "bullet": "Булет",
+      "blitz": "Бліц",
+      "rapid": "Рапід",
+      "classical": "Класіка",
+      "correspondence": "Ліставанне"
+    }
+  },
+  "features": {
+    "richText": {
+      "bold": "Тлусты",
+      "italic": "Курсіў",
+      "underline": "Падкрэслены",
+      "strike": "Закрэслены",
+      "clearFormatting": "Ачысціць фарматаванне",
+      "h1": "Загаловак 1",
+      "h2": "Загаловак 2",
+      "h3": "Загаловак 3",
+      "h4": "Загаловак 4",
+      "quote": "Цытата",
+      "hLine": "Гарызантальная лінія",
+      "bulletList": "Маркiраваны спіс",
+      "numberedList": "Нумараваны спіс",
+      "link": "Спасылка",
+      "removeLink": "Выдаліць спасылку"
+    },
+    "menu": {
+      "file": "Файл",
+      "newTab": "Новая ўкладка",
+      "openFile": "Адкрыць файл",
+      "exit": "Выхад",
+      "view": "Выгляд",
+      "reload": "Перазагрузіць",
+      "help": "Дапамога",
+      "documentation": "Дакументацыя",
+      "clearSavedData": "Ачысціць захаваныя дадзеныя",
+      "openLogs": "Адкрыць логі",
+      "checkUpdate": "Праверыць абнаўленні",
+      "about": "Аб праграме"
+    },
+    "sidebar": {
+      "board": "Шахматная дошка",
+      "accounts": "Карыстальнік",
+      "files": "Файлы",
+      "databases": "Базы дадзеных",
+      "engines": "Рухавікі",
+      "settings": "Налады"
+    },
+    "dashboard": {
+      "cards": {
+        "playChess": {
+          "title": "Гуляць у шахматы",
+          "desc": "Гуляйце супраць рухавіка або сябра",
+          "button": "Гуляць"
+        },
+        "analysisBoard": {
+          "title": "Аналіз дошкі",
+          "desc": "Аналізуйце гульню або пазіцыю",
+          "button": "Адкрыць"
+        },
+        "importGame": {
+          "title": "Імпартаваць гульню",
+          "desc": "Імпартуеце гульню з файла PGN",
+          "button": "Імпартаваць"
+        },
+        "puzzle": {
+          "title": "Галаваломкі",
+          "desc": "Трэніруйце шахматныя навыкі",
+          "button": "Трэніравацца"
+        }
+      }
+    },
+    "tabs": {
+      "newTab": "Новая ўкладка"
+    },
+    "board": {
+      "tabs": {
+        "practice": "Практыка",
+        "analysis": "Аналіз",
+        "database": "База дадзеных",
+        "annotate": "Анатацыя",
+        "info": "Інфармацыя"
+      },
+      "practice": {
+        "train": "Трэніравацца",
+        "build": "Стварыць",
+        "noPositionForTrain1": "Няма пазіцый для трэніроўкі. Спачатку дадайце хады ў гэты файл PGN.",
+        "noPositionForTrain2": "Неабходна пераключыцца ў рэжым аналізу, каб дадаваць хады.",
+        "seeAnswer": "Паглядзець адказ",
+        "practiced": "Адпрацавана",
+        "due": "Падлягае трэніроўцы",
+        "unseen": "Не прагледжана",
+        "showAll": "Паказаць усе пазіцыі",
+        "showLogs": "Паказаць логі",
+        "practicedAll1": "Вы ўжо адпрацавалі ўсе пазіцыі.",
+        "practicedAll2": "Наступная праверка праз",
+        "correctMoveWas": "Правільны ход быў {{move}}"
+      },
+      "analysis": {
+        "engines": "Рухавікі",
+        "report": "Справаздача",
+        "logs": "Логі",
+        "summary": "Зводка",
+        "inactiveEngine": "Рухавік неактыўны",
+        "syncGlobally": "Сінхранізаваць глабальна",
+        "killEngine": "Спыніць рухавік",
+        "generateReport": "Стварыць справаздачу",
+        "reportGenerated": "Справаздача створана",
+        "generatingReport": "Стварэнне справаздачы",
+        "notAnalysed": "Не прааналізавана",
+        "engineRequired": "Патрэбны рухавік",
+        "refDBRequired": "Не абрана база дадзеных. Спачатку выберыце базу дадзеных на старонцы баз дадзеных.",
+        "time": "Час (мс)",
+        "reversed": "Зваротны аналіз",
+        "reversedDesc": "Аналізаваць гульню з апошняй пазіцыі.",
+        "annotateNovelties": "Анатаваць навінкі",
+        "annotateNoveltiesDesc": "Дадаць каментарый да першай пазіцыі, якой няма ў базе дадзеных.",
+        "analyze": "Аналізаваць",
+        "advantage": "Перавага",
+        "accuracy": "Дакладнасць"
+      },
+      "database": {
+        "local": "Лакальна",
+        "lichessAll": "Lichess Усе",
+        "lichessMaster": "Lichess Майстры",
+        "matches": "{{matches}} гульняў",
+        "stats": "Статыстыка",
+        "games": "Гульні",
+        "options": "Опцыі",
+        "noReference1": "Не абрана база дадзеных.",
+        "noReference2": "Калі ласка",
+        "selectReference": "дадайце базу дадзеных",
+        "noReference3": "спачатку і адзначце яе як даведачную.",
+        "timeControl": "Кантроль часу",
+        "averageRating": "Сярэдні рэйтынг"
+      },
+      "annotate": {
+        "writeHere": "Пішыце тут..."
+      }
+    },
+    "engines": {
+      "title": "Рухавікі",
+      "settings": {
+        "noEngine": "Рухавік не абраны",
+        "searchSettings": "Налады пошуку",
+        "advancedSettings": "Пашыраныя налады",
+        "numOfLines": "Колькасць ліній",
+        "numOfCores": "Колькасць ядраў",
+        "sizeOfHash": "Памер хэша",
+        "editJSON": "Рэдагаваць JSON",
+        "reset": "Скінуць па змаўчанні"
+      },
+      "add": {
+        "title": "Дадаць рухавік",
+        "cloud": "Хмара",
+        "errorFetch": "Не ўдалося атрымаць рухавікі з сервера.",
+        "binaryFile": "Выконваемы файл",
+        "binaryFileDesc": "Націсніце для выбару выконваемага файла",
+        "name": "Імя",
+        "autodetect": "Аўтавызначэнне",
+        "eloDesc": "Эла рухавіка",
+        "imageFile": "Файл выявы",
+        "imageFileDesc": "Націсніце для выбару файла выявы (рэкамендуецца: 60x60)"
+      },
+      "remove": {
+        "title": "Выдаліць рухавік",
+        "message": "Вы ўпэўнены, што хочаце выдаліць гэты рухавік з Pawn Appétit?"
+      }
+    },
+    "databases": {
+      "title": "Базы дадзеных",
+      "card": {
+        "games": "Гульні",
+        "players": "Гульцы",
+        "storage": "Сховішча"
+      },
+      "add": {
+        "title": "Дадаць базу дадзеных",
+        "web": "Вэб",
+        "errorFetch": "Не ўдалося атрымаць базы дадзеных з сервера.",
+        "clickToSelectPGN": "Націсніце для выбару файла PGN",
+        "convert": "Канвертаваць"
+      },
+      "settings": {
+        "referenceDatabase": "Даведачная база дадзеных",
+        "indexed": "Праіндэксавана",
+        "indexedDesc": "Індэксы выкарыстоўваюцца для паскарэння пошуку, але патрабуюць дадатковай прасторы.",
+        "events": "Падзеі",
+        "explore": "Даследаваць",
+        "advancedTools": "Пашыраныя інструменты",
+        "mergePlayers": "Аб'яднаць гульцоў",
+        "mergePlayersDesc": "Замяняе ўсе выпадкі першага гульца на другога ў базе дадзеных.",
+        "merge": "Аб'яднаць",
+        "batchDelete": "Масавае выдаленне",
+        "batchDeleteDesc": "Гэтыя дзеянні беззваротна выдаляць гульні з базы дадзеных. Выкарыстоўвайце з асцярожнасцю.",
+        "removeDup": "Выдаліць дублікаты",
+        "removeEmpty": "Выдаліць пустыя гульні",
+        "actions": "Дзеянні",
+        "addGames": "Дадаць гульні",
+        "exportPGN": "Экспартаваць у PGN"
+      },
+      "delete": {
+        "title": "Выдаліць базу дадзеных",
+        "message": "Вы ўпэўнены, што хочаце выдаліць гэтую базу дадзеных?"
+      }
+    },
+    "files": {
+      "title": "Файлы",
+      "fileType": {
+        "fileType": "Тып файла",
+        "game": "Гульня",
+        "repertoire": "Рэпертуар",
+        "tournament": "Турнір",
+        "puzzle": "Галаваломка",
+        "other": "Іншае",
+        "folder": "Тэчка"
+      },
+      "delete": {
+        "title": "Выдаліць файл",
+        "message": "Вы ўпэўнены, што хочаце выдаліць {{fileName}}?"
+      },
+      "editMetadata": "Рэдагаваць метаданыя",
+      "edit": {
+        "title": "Рэдагаваць файл"
+      },
+      "create": {
+        "title": "Стварыць файл"
+      },
+      "search": "Пошук файлаў"
+    },
+    "pgnInput": {
+      "comments": "Каментарыі",
+      "glyphs": "Сімвалы",
+      "variations": "Варыяцыі",
+      "extraMarkups": "Дадатковыя пазнакі",
+      "maxDepth": "Максімальная глыбіня",
+      "totalMoves": "Агульная колькасць хадоў"
+    }
+  },
+  "settings": {
+    "board": {
+      "title": "Дошка",
+      "desc": "Наладзіць дошку аналізу і элементы кіравання гульнёй",
+      "pieceDest": "Месцы прызначэння фігур",
+      "pieceDestDesc": "Паказаць магчымыя хады для кожнай фігуры",
+      "arrows": "Стрэлкі",
+      "arrowsDesc": "Паказаць стрэлкі для лепшых хадоў",
+      "snapArrows": "Замкнуць стрэлкі",
+      "snapArrowsDesc": "Замкнуць стрэлкі на дапушчальныя хады",
+      "consecutiveArrows": "Паслядоўныя стрэлкі",
+      "consecutiveArrowsDesc": "Паказваць некалькі стрэлак для лепшай лініі, калі яна складаецца з некалькіх хадоў адной і той жа фігурай",
+      "eraseDrawablesOnClick": "Сцерці пазнакі пры кліку",
+      "eraseDrawablesOnClickDesc": "Ачысціць дошку ад намаляваных стрэлак і кругоў пры націску левай кнопкі мышы",
+      "autoPromotion": "Аўтаматычнае павышэнне",
+      "autoPromotionDesc": "Аўтаматычна павышаць да каралевы",
+      "coordinates": "Каардынаты",
+      "coordinatesDesc": "Паказаць каардынаты на дошцы",
+      "autoSave": "Аўтазахаванне",
+      "autoSaveDesc": "Аўтаматычна захоўваць пасля кожнага ходу",
+      "previewBoard": "Папярэдні прагляд дошкі",
+      "previewBoardDesc": "Паказваць дошку пры навядзенні курсора на ход у аналізе",
+      "scrollThroughMoves": "Пракрутка хадоў",
+      "scrollThroughMovesDesc": "Уключыць або выключыць пракрутку хадоў на дошцы"
+    },
+    "inputs": {
+      "title": "Уводы",
+      "desc": "Наладзіць уводы",
+      "textInput": "Тэкставы ўвод",
+      "textInputDesc": "Уводзіць хады тэкстам",
+      "spellCheck": "Праверка арфаграфіі",
+      "spellCheckDesc": "Уключыць або выключыць праверку арфаграфіі пры ўводзе тэксту"
+    },
+    "openingReport": {
+      "title": "Справаздача па дэбютах",
+      "desc": "Наладзіць параметры справаздачы па дэбютах",
+      "percentCoverage": "Працэнт ахопу",
+      "percentCoverageDesc": "Працэнт ахопленых хадоў у кожнай пазіцыі",
+      "minGames": "Мінімальная колькасць гульняў",
+      "minGamesDesc": "Мінімальная колькасць гульняў для кожнай пазіцыі, каб быць улічанай"
+    },
+    "anarchy": {
+      "title": "Анархія",
+      "desc": "Вясёлыя опцыі"
+    },
+    "appearance": {
+      "title": "Знешні выгляд",
+      "desc": "Наладзіць знешні выгляд праграмы",
+      "theme": {
+        "theme": "Тэма"
+      },
+      "themeDesc": "Агульная каляровая схема",
+      "titleBar": "Загаловак акна",
+      "titleBarDesc": "Выберыце паміж стандартнай або наладжвальнай панэллю загалоўка",
+      "language": "Мова",
+      "languageDesc": "Мова праграмы",
+      "native": "Стандартная",
+      "custom": "Наладжвальная",
+      "fontSize": "Памер шрыфта",
+      "fontSizeDesc": "Агульны памер шрыфта",
+      "pieceSet": "Набор фігур",
+      "pieceSetDesc": "Фігуры, што выкарыстоўваюцца на дошцы",
+      "boardImage": "Выява дошкі",
+      "boardImageDesc": "Выява, што выкарыстоўваецца як фон для дошкі",
+      "accentColor": "Асноўны колер",
+      "accentColorDesc": "Асноўны колер праграмы"
+    },
+    "sound": {
+      "title": "Гук",
+      "desc": "Наладзіць параметры гуку",
+      "volume": "Гучнасць",
+      "volumeDesc": "Агульная гучнасць",
+      "collection": "Калекцыя гукаў",
+      "collectionDesc": "Выкарыстоўваная калекцыя гукаў"
+    },
+    "keybindings": "Гарачыя клавішы",
+    "directories": {
+      "title": "Каталогі",
+      "desc": "Наладзіць каталогі, якія выкарыстоўваюцца праграмай",
+      "files": "Каталог для файлаў",
+      "filesDesc": "Тут захоўваюцца гульнявыя файлы на старонцы файлаў"
+    }
+  },
+  "formatters": {
+    "dateFormat": "{{date, dateformat}}",
+    "dateTimeFormat": "{{date, datetimeformat}}",
+    "moveNotation": "{{move, moveNotation}}",
+    "bytes": "{{bytes, bytes}}",
+    "bytesLong": "{{bytes, bytesLong}}",
+    "nodes": "{{nodes, nodes}}",
+    "nodesLong": "{{nodes, nodesLong}}",
+    "duration": "{{duration, duration}}",
+    "durationLong": "{{duration, durationLong}}",
+    "score": "{{score, score}}"
+  }
+}

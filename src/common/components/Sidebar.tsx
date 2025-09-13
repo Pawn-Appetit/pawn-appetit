@@ -42,17 +42,17 @@ function NavbarLink({ url, icon: Icon, label }: NavbarLinkProps) {
 }
 
 export const linksdata = [
-  { icon: IconLayoutDashboard, label: "Dashboard", url: "/" },
-  { icon: IconChess, label: "Board", url: "/boards" },
-  { icon: IconCpu, label: "Engines", url: "/engines" },
+  { icon: IconLayoutDashboard, label: "dashboard", url: "/" },
+  { icon: IconChess, label: "board", url: "/boards" },
+  { icon: IconCpu, label: "engines", url: "/engines" },
   {
     icon: IconDatabase,
-    label: "Databases",
+    label: "databases",
     url: "/databases",
   },
-  { icon: IconFiles, label: "Files", url: "/files" },
-  { icon: IconUsers, label: "Accounts", url: "/accounts" },
-  { icon: IconSchool, label: "Learn", url: "/learn" },
+  { icon: IconFiles, label: "files", url: "/files" },
+  { icon: IconUsers, label: "accounts", url: "/accounts" },
+  { icon: IconSchool, label: "learn", url: "/learn" },
 ];
 
 export function SideBar() {
@@ -65,7 +65,7 @@ export function SideBar() {
       if (hideDashboardOnStartup && link.url === "/") return false;
       return link;
     })
-    .map((link) => <NavbarLink {...link} label={t(`SideBar.${link.label}`)} key={link.label} />);
+    .map((link) => <NavbarLink {...link} label={t(`features.sidebar.${link.label}`)} key={link.label} />);
 
   return (
     <>
@@ -76,7 +76,7 @@ export function SideBar() {
       </AppShellSection>
       <AppShellSection>
         <Stack justify="center" gap={0}>
-          <Tooltip label={t("SideBar.KeyboardShortcuts")} position="right">
+          <Tooltip label={t("features.sidebar.keyboardShortcuts")} position="right">
             <Link
               to="/settings/keyboard-shortcuts"
               className={cx(classes.link, {
@@ -86,7 +86,7 @@ export function SideBar() {
               <IconKeyboard size="1.5rem" stroke={1.5} />
             </Link>
           </Tooltip>
-          <Tooltip label={t("SideBar.Settings")} position="right">
+          <Tooltip label={t("features.sidebar.settings")} position="right">
             <Link
               to="/settings"
               className={cx(classes.link, {
