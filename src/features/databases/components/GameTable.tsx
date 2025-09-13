@@ -24,6 +24,7 @@ import useSWR from "swr";
 import { useStore } from "zustand";
 import type { GameSort, NormalizedGame, Outcome } from "@/bindings";
 import { useLanguageChangeListener } from "@/common/hooks/useLanguageChangeListener";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import { query_games } from "@/utils/db";
 import { formatDateToPGN, parseDate } from "@/utils/format";
@@ -36,27 +37,134 @@ import { SideInput } from "./SideInput";
 import * as classes from "./styles.css";
 
 function GameTable() {
-  const store = useContext(DatabaseViewStateContext)!;
-  const file = useStore(store, (s) => s.database?.file)!;
-  const query = useStore(store, (s) => s.games.query);
-  const setQuery = useStore(store, (s) => s.setGamesQuery);
-  const openedSettings = useStore(store, (s) => s.games.isFilterExpanded);
-  const toggleOpenedSettings = useStore(store, (s) => s.toggleGamesOpenedSettings);
+  const store = useContext(DatabaseViewStateContext);
   const { t } = useTranslation();
-
+  const { layout } = useResponsiveLayout();
   const [selectedGame, setSelectedGame] = useState<number | null>(null);
-
   const navigate = useNavigate();
-
   const [, setTabs] = useAtom(tabsAtom);
   const setActiveTab = useSetAtom(activeTabAtom);
   const forceUpdate = useForceUpdate();
   useLanguageChangeListener(forceUpdate);
 
-  const { data, isLoading, mutate } = useSWR(["games", query], () => query_games(file, query));
+  if (!store) return null;
+
+  const file = useStore(store, (s) => s.database?.file);
+  const query = useStore(store, (s) => s.games.query);
+  const setQuery = useStore(store, (s) => s.setGamesQuery);
+  const openedSettings = useStore(store, (s) => s.games.isFilterExpanded);
+  const toggleOpenedSettings = useStore(store, (s) => s.toggleGamesOpenedSettings);
+
+  const { data, isLoading, mutate } = useSWR(["games", query], () => (file ? query_games(file, query) : null));
 
   const games = data?.data ?? [];
   const count = data?.count;
+
+  // Define all possible columns
+  const allColumns = [
+    {
+      accessor: "white",
+      title: t("Common.White"),
+      render: ({ white, white_elo }: NormalizedGame) => (
+        <div>
+          <Text size="sm" fw={500}>
+            {white}
+          </Text>
+          <Text size="xs" c="dimmed">
+            {white_elo}
+          </Text>
+        </div>
+      ),
+    },
+    {
+      accessor: "black",
+      title: t("Common.Black"),
+      render: ({ black, black_elo }: NormalizedGame) => (
+        <div>
+          <Text size="sm" fw={500}>
+            {black}
+          </Text>
+          <Text size="xs" c="dimmed">
+            {black_elo}
+          </Text>
+        </div>
+      ),
+    },
+    {
+      accessor: "date",
+      sortable: true,
+      title: t("GameTable.Date"),
+      render: ({ date }: NormalizedGame) =>
+        t("Formatters.DateFormat", {
+          date: parseDate(date),
+          interpolation: { escapeValue: false },
+        }),
+    },
+    {
+      accessor: "result",
+      title: t("Outcome.Outcome"),
+      render: ({ result }: NormalizedGame) => result?.replaceAll("1/2", "½"),
+    },
+    { accessor: "ply_count", title: t("GameTable.Plies"), sortable: true },
+    { accessor: "event", title: t("GameTable.Event") },
+    {
+      accessor: "site",
+      title: t("GameTable.Site"),
+      render: ({ site }: NormalizedGame) => (
+        <ActionIcon onClick={() => invoke("open_external_link", { url: site })}>
+          <IconExternalLink size="1rem" />
+        </ActionIcon>
+      ),
+    },
+  ];
+
+  // Filter columns based on responsive configuration
+  const getVisibleColumns = () => {
+    switch (layout.databases.density) {
+      case "compact":
+        return ["white", "black", "result", "date"]; // Essential columns for compact
+      case "normal":
+        return ["white", "black", "date", "result", "ply_count", "event", "site"]; // All columns for normal
+      case "comfortable":
+        return ["white", "black", "date", "result", "ply_count", "event", "site"]; // All columns for comfortable
+      default:
+        return ["white", "black", "date", "result", "ply_count", "event", "site"];
+    }
+  };
+
+  const responsiveColumns = allColumns.filter((column) => getVisibleColumns().includes(column.accessor));
+
+  // Get pagination configuration based on density
+  const getPaginationConfig = () => {
+    switch (layout.databases.density) {
+      case "compact":
+        return { pageSize: 10, showSizeChanger: false, showQuickJumper: false };
+      case "normal":
+        return { pageSize: 25, showSizeChanger: true, showQuickJumper: true };
+      case "comfortable":
+        return { pageSize: 25, showSizeChanger: true, showQuickJumper: true };
+      default:
+        return { pageSize: 25, showSizeChanger: true, showQuickJumper: true };
+    }
+  };
+
+  // Create pagination props conditionally
+  const paginationProps = getPaginationConfig().showSizeChanger
+    ? {
+        recordsPerPageOptions: [10, 25, 50],
+        onRecordsPerPageChange: (value: number) =>
+          setQuery({
+            ...query,
+            options: {
+              ...query.options,
+              pageSize: value,
+              skipCount: query.options?.skipCount ?? false,
+              sort: query.options?.sort ?? "date",
+              direction: query.options?.direction ?? "desc",
+            },
+          }),
+      }
+    : {};
 
   useHotkeys([
     [
@@ -100,26 +208,26 @@ function GameTable() {
                 setValue={(value) => setQuery({ ...query, player1: value })}
                 rightSection={
                   <SideInput
-                    sides={query.sides!}
+                    sides={query.sides ?? "WhiteBlack"}
                     setSides={(value) => setQuery({ ...query, sides: value })}
                     selectingFor="player"
                   />
                 }
                 label={t("Common.Player")}
-                file={file}
+                file={file || ""}
               />
               <PlayerSearchInput
                 value={query?.player2 ?? undefined}
                 setValue={(value) => setQuery({ ...query, player2: value })}
                 rightSection={
                   <SideInput
-                    sides={query.sides!}
+                    sides={query.sides ?? "WhiteBlack"}
                     setSides={(value) => setQuery({ ...query, sides: value })}
                     selectingFor="opponent"
                   />
                 }
                 label={t("Common.Opponent")}
-                file={file}
+                file={file || ""}
               />
             </Group>
             <Collapse in={openedSettings} mx={10}>
@@ -226,86 +334,28 @@ function GameTable() {
               headers: record,
               srcInfo: {
                 type: "db",
-                db: file,
+                db: file || "",
                 id: record.id,
               },
             });
             navigate({ to: "/boards" });
           }}
-          columns={[
-            {
-              accessor: "white",
-              title: t("Common.White"),
-              render: ({ white, white_elo }) => (
-                <div>
-                  <Text size="sm" fw={500}>
-                    {white}
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    {white_elo}
-                  </Text>
-                </div>
-              ),
-            },
-            {
-              accessor: "black",
-              title: t("Common.Black"),
-              render: ({ black, black_elo }) => (
-                <div>
-                  <Text size="sm" fw={500}>
-                    {black}
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    {black_elo}
-                  </Text>
-                </div>
-              ),
-            },
-            {
-              accessor: "date",
-              sortable: true,
-              title: t("GameTable.Date"),
-              render: ({ date }) =>
-                t("Formatters.DateFormat", {
-                  date: parseDate(date),
-                  interpolation: { escapeValue: false },
-                }),
-            },
-            {
-              accessor: "result",
-              title: t("Outcome.Outcome"),
-              render: ({ result }) => result?.replaceAll("1/2", "½"),
-            },
-            { accessor: "ply_count", title: t("GameTable.Plies"), sortable: true },
-            { accessor: "event", title: t("GameTable.Event") },
-            {
-              accessor: "site",
-              title: t("GameTable.Site"),
-              render: ({ site }) => (
-                <ActionIcon onClick={() => invoke("open_external_link", { url: site })}>
-                  <IconExternalLink size="1rem" />
-                </ActionIcon>
-              ),
-            },
-          ]}
+          columns={responsiveColumns}
           rowClassName={(_, i) => (i === selectedGame ? classes.selected : "")}
           noRecordsText={t("Common.NoGamesFound")}
-          totalRecords={count!}
-          recordsPerPage={query.options?.pageSize ?? 25}
+          totalRecords={count ?? 0}
+          recordsPerPage={query.options?.pageSize ?? getPaginationConfig().pageSize}
           page={query.options?.page ?? 1}
           onPageChange={(page) =>
             setQuery({
               ...query,
               options: {
-                ...query.options!,
+                ...query.options,
                 page,
+                skipCount: query.options?.skipCount ?? false,
+                sort: query.options?.sort ?? "date",
+                direction: query.options?.direction ?? "desc",
               },
-            })
-          }
-          onRecordsPerPageChange={(value) =>
-            setQuery({
-              ...query,
-              options: { ...query.options!, pageSize: value },
             })
           }
           sortStatus={{
@@ -316,13 +366,16 @@ function GameTable() {
             setQuery({
               ...query,
               options: {
-                ...query.options!,
+                ...query.options,
                 sort: value.columnAccessor as GameSort,
                 direction: value.direction,
+                skipCount: query.options?.skipCount ?? false,
+                page: query.options?.page ?? 1,
+                pageSize: query.options?.pageSize ?? 25,
               },
             })
           }
-          recordsPerPageOptions={[10, 25, 50]}
+          {...paginationProps}
           onRowClick={({ index }) => {
             setSelectedGame(index);
           }}
@@ -330,13 +383,21 @@ function GameTable() {
       }
       preview={
         selectedGame !== null && games[selectedGame] ? (
-          <GameCard game={games[selectedGame]} file={file} mutate={mutate} />
+          <GameCard game={games[selectedGame]} file={file || ""} mutate={mutate} />
         ) : (
           <Center h="100%">
             <Text>{t("Common.NoGameSelected")}</Text>
           </Center>
         )
       }
+      isDrawerOpen={selectedGame !== null && games[selectedGame] !== undefined}
+      onDrawerClose={() => setSelectedGame(null)}
+      drawerTitle={
+        selectedGame !== null && games[selectedGame]
+          ? `${games[selectedGame].white} vs ${games[selectedGame].black}`
+          : "Game Details"
+      }
+      layoutType={layout.databases.layoutType}
     />
   );
 }

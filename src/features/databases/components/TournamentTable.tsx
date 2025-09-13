@@ -7,6 +7,7 @@ import useSWR from "swr";
 import { useStore } from "zustand";
 import { commands, type Event, type TournamentSort } from "@/bindings";
 import { useLanguageChangeListener } from "@/common/hooks/useLanguageChangeListener";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { unwrap } from "@/utils/unwrap";
 import { DatabaseViewStateContext } from "./DatabaseViewStateContext";
 import GridLayout from "./GridLayout";
@@ -15,6 +16,7 @@ import TournamentCard from "./TournamentCard";
 
 function TournamentTable() {
   const store = useContext(DatabaseViewStateContext)!;
+  const { layout } = useResponsiveLayout();
   const file = useStore(store, (s) => s.database?.file)!;
   const query = useStore(store, (s) => s.tournaments.query);
   const selected = useStore(store, (s) => s.tournaments.selectedTournamet);
@@ -132,6 +134,10 @@ function TournamentTable() {
           </Center>
         )
       }
+      isDrawerOpen={tournament !== null && tournament !== undefined}
+      onDrawerClose={() => setSelected(undefined)}
+      drawerTitle={tournament?.name || "Tournament Details"}
+      layoutType={layout.databases.layoutType}
     />
   );
 }

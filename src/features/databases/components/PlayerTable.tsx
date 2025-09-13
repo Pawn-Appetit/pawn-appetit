@@ -7,6 +7,7 @@ import useSWR from "swr";
 import { useStore } from "zustand";
 import type { Player, PlayerSort } from "@/bindings";
 import { useLanguageChangeListener } from "@/common/hooks/useLanguageChangeListener";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { query_players } from "@/utils/db";
 import { DatabaseViewStateContext } from "./DatabaseViewStateContext";
 import GridLayout from "./GridLayout";
@@ -15,6 +16,7 @@ import * as classes from "./styles.css";
 
 function PlayerTable() {
   const store = useContext(DatabaseViewStateContext)!;
+  const { layout } = useResponsiveLayout();
   const file = useStore(store, (s) => s.database?.file)!;
   const query = useStore(store, (s) => s.players.query);
   const setQuery = useStore(store, (s) => s.setPlayersQuery);
@@ -176,6 +178,10 @@ function PlayerTable() {
           </Center>
         )
       }
+      isDrawerOpen={player !== null && player !== undefined}
+      onDrawerClose={() => setSelectedPlayer(undefined)}
+      drawerTitle={player?.name || "Player Details"}
+      layoutType={layout.databases.layoutType}
     />
   );
 }

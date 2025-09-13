@@ -30,6 +30,7 @@ import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { info } from "@tauri-apps/plugin-log";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import type { DatabaseInfo } from "@/bindings";
 import { commands, events } from "@/bindings";
 import { downloadChessCom } from "@/utils/chess.com/api";
@@ -80,6 +81,8 @@ export function AccountCard({
   setMain,
 }: AccountCardProps) {
   const { t } = useTranslation();
+  const { layout } = useResponsiveLayout();
+  const isMobile = layout.accounts.layoutType === "mobile";
   const items = stats.map((stat) => {
     let color = "gray.5";
     let DiffIcon: React.FC<IconProps> = IconArrowRight;
@@ -326,7 +329,7 @@ export function AccountCard({
       </Group>
 
       <Accordion.Panel px="0" py="md">
-        <SimpleGrid cols={2}>{items}</SimpleGrid>
+        <SimpleGrid cols={isMobile ? 1 : 2}>{items}</SimpleGrid>
         <Text mt="xs" size="xs" c="dimmed" ta="right">
           {`Last update: ${t("Formatters.DateFormat", {
             date: parseDate(updatedAt),

@@ -18,7 +18,7 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
-import { useDebouncedValue, useToggle } from "@mantine/hooks";
+import { useDebouncedValue, useToggle, useMediaQuery } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import { IconArrowRight, IconArrowsSort, IconDatabase, IconPlus, IconSearch, IconStar } from "@tabler/icons-react";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -37,6 +37,9 @@ import { referenceDbAtom } from "@/state/atoms";
 import { useActiveDatabaseViewStore } from "@/state/store/database";
 import { getDatabases, type SuccessDatabaseInfo } from "@/utils/db";
 import { unwrap } from "@/utils/unwrap";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
+import { SidePanelDrawerLayout } from "@/common/components/SidePanelDrawerLayout";
+import { vars } from "@/styles/theme";
 import AddDatabase from "./components/AddDatabase";
 import { PlayerSearchInput } from "./components/PlayerSearchInput";
 
@@ -47,6 +50,15 @@ type Progress = {
 
 export default function DatabasesPage() {
   const { t } = useTranslation();
+  const { layout } = useResponsiveLayout();
+
+  // Calculate responsive values based on layout flags
+  const isMobile = layout.databases.layoutType === "mobile";
+  const gridCols = isMobile ? 1 : { base: 1, md: 2 };
+  const panelHeight = "100%";
+
+  // Check if screen is below xl breakpoint for button label visibility
+  const isLargeScreenMax = useMediaQuery(`(width < ${vars.breakpoints.lg})`);
 
   const { data: databases, isLoading, mutate } = useSWR("databases", () => getDatabases());
 
@@ -124,314 +136,422 @@ export default function DatabasesPage() {
         <OpenFolderButton base="AppDir" folder="db" />
       </Group>
 
-      <Group grow flex={1} style={{ overflow: "hidden" }} align="start" px="md" pb="md">
-        <Stack>
-          <Stack>
-            <Group wrap="wrap" gap="xs" justify="space-between">
-              <Group>
-                <TextInput
-                  aria-label="Search databases"
-                  placeholder="Search databases..."
-                  leftSection={<IconSearch size="1rem" />}
-                  value={query}
-                  onChange={(e) => setQuery(e.currentTarget.value)}
-                  w={{ base: "100%", sm: 260 }}
-                />
-                <Button
-                  variant="default"
-                  leftSection={<IconArrowsSort size="1rem" />}
-                  onClick={() => setSortBy((s) => (s === "name" ? "games" : "name"))}
-                  aria-label={`Sort by ${sortBy === "name" ? "games" : "name"}`}
-                >
-                  Sort: {sortBy === "name" ? "Name" : "Games"}
-                </Button>
-              </Group>
-              <Button
-                onClick={() => setOpen(true)}
-                loading={convertLoading}
-                size="xs"
-                leftSection={<IconPlus size="1rem" />}
-                mr="sm"
-              >
-                {t("Common.AddNew")}
-              </Button>
-            </Group>
-
-            {progress && convertLoading && (
-              <Group align="center" justify="space-between" maw={200}>
-                <Text fz="xs">{progress.total} games</Text>
-                <Text fz="xs">{(progress.total / progress.elapsed).toFixed(1)} games/s</Text>
-              </Group>
-            )}
-          </Stack>
-          <ScrollArea h="calc(100vh - 190px)" offsetScrollbars aria-busy={isLoading} aria-live="polite">
-            {isLoading ? (
-              <SimpleGrid cols={{ base: 1, md: 2 }} spacing={{ base: "md", md: "sm" }}>
-                <Skeleton h="8rem" />
-                <Skeleton h="8rem" />
-                <Skeleton h="8rem" />
-              </SimpleGrid>
-            ) : filtered.length === 0 ? (
-              <Alert title="No databases found" color="gray" variant="light">
-                Try adjusting your search or create a new database.
-              </Alert>
-            ) : (
-              <SimpleGrid cols={{ base: 1, md: 2 }} spacing={{ base: "md", md: "sm" }}>
-                {filtered.map((item) => (
-                  <GenericCard
-                    id={item.file}
-                    key={item.filename}
-                    isSelected={selectedDatabase?.filename === item.filename}
-                    setSelected={setSelected}
-                    error={item.type === "error" ? item.error : ""}
-                    onDoubleClick={() => {
-                      if (item.type === "error") return;
-                      navigate({
-                        to: "/databases/$databaseId",
-                        params: {
-                          databaseId: item.title,
-                        },
-                      });
-                      setActiveDatabase(item);
-                    }}
-                    content={
-                      <>
-                        <Group wrap="nowrap" justify="space-between" align="flex-start">
-                          <Group wrap="nowrap" miw={0} gap="sm" align="start">
-                            <Box mt="sm">
-                              <IconDatabase size="1.5rem" />
-                            </Box>
-                            <Box miw={0}>
-                              <Stack gap="xs">
-                                <Text fw={600} size="sm">
-                                  {item.type === "success" ? item.title : item.error}
-                                </Text>
-                                <Group>
-                                  {item.type === "success" && item.indexed && (
-                                    <Badge color="teal" variant="light" size="xs">
-                                      {t("Databases.Settings.Indexed")}
-                                    </Badge>
-                                  )}
-                                  {referenceDatabase === item.file && (
-                                    <Tooltip label={t("Databases.Settings.ReferenceDatabase")}>
-                                      <Badge
-                                        color="yellow"
-                                        variant="light"
-                                        size="xs"
-                                        leftSection={<IconStar size={12} />}
-                                      >
-                                        {t("Databases.Settings.ReferenceDatabase_short")}
-                                      </Badge>
-                                    </Tooltip>
-                                  )}
-                                </Group>
-                                <Text size="xs" c="dimmed" style={{ wordWrap: "break-word" }}>
-                                  {item.type === "error" ? item.file : item.description}
-                                </Text>
-                              </Stack>
-                            </Box>
-                          </Group>
-                        </Group>
-
-                        <Group justify="space-between">
-                          {[
-                            {
-                              label: t("Databases.Card.Games"),
-                              value: item.type === "success" ? t("Units.Count", { count: item.game_count }) : "???",
-                            },
-                            {
-                              label: t("Databases.Card.Storage"),
-                              value:
-                                item.type === "success" ? t("Units.Bytes", { bytes: item.storage_size ?? 0 }) : "???",
-                            },
-                          ]?.map((stat) => (
-                            <div key={stat.label}>
-                              <Text size="xs" c="dimmed" fw="bold" className={classes.label} mt="1rem">
-                                {stat.label}
-                              </Text>
-                              <Text fw={700} size="lg" style={{ lineHeight: 1 }}>
-                                {stat.value}
-                              </Text>
-                            </div>
-                          ))}
-                        </Group>
-                      </>
-                    }
-                  />
-                ))}
-              </SimpleGrid>
-            )}
-          </ScrollArea>
-        </Stack>
-
-        <Paper withBorder p="md" h="100%">
-          {selectedDatabase === null ? (
-            <Stack align="center" justify="center" h="100%">
-              <Text ta="center">Select a database to see details</Text>
-              <Text c="dimmed" size="sm" ta="center">
-                Tip: Double-click a database to open it.
-              </Text>
-            </Stack>
-          ) : (
-            <ScrollArea h="100%" offsetScrollbars>
+      <Box style={{ flex: 1, minHeight: 0 }}>
+        <SidePanelDrawerLayout
+          mainContent={
+            <Stack>
               <Stack>
-                {selectedDatabase.type === "error" ? (
-                  <>
-                    <Text fz="lg" fw="bold">
-                      There was an error loading this database
-                    </Text>
-
-                    <Text>
-                      <Text td="underline" span>
-                        Reason:
-                      </Text>
-                      {` ${selectedDatabase.error}`}
-                    </Text>
-
-                    <Text>Check if the file exists and that it is not corrupted.</Text>
-                  </>
-                ) : (
-                  <>
-                    <Divider variant="dashed" label={t("Common.GeneralSettings")} />
-                    <GeneralSettings
-                      key={selectedDatabase.filename}
-                      selectedDatabase={selectedDatabase}
-                      mutate={mutate}
+                <Group wrap="wrap" gap="xs" justify="space-between">
+                  <Group>
+                    <TextInput
+                      aria-label="Search databases"
+                      placeholder="Search databases..."
+                      leftSection={<IconSearch size="1rem" />}
+                      value={query}
+                      onChange={(e) => setQuery(e.currentTarget.value)}
+                      w={{ base: "100%", sm: 260 }}
                     />
-                    <Switch
-                      label={t("Databases.Settings.ReferenceDatabase")}
-                      checked={isReference}
-                      onChange={() => {
-                        changeReferenceDatabase(selectedDatabase.file);
-                      }}
-                    />
-                    <IndexInput indexed={selectedDatabase.indexed} file={selectedDatabase.file} setDatabases={mutate} />
-
-                    <Divider variant="dashed" label={t("Common.Data")} />
-                    <Group grow>
-                      <Stack gap={0} justify="center" ta="center">
-                        <Text size="md" tt="uppercase" fw="bold" c="dimmed">
-                          {t("Databases.Card.Games")}
-                        </Text>
-                        <Text fw={700} size="lg">
-                          {t("Units.Count", { count: selectedDatabase.game_count })}
-                        </Text>
-                      </Stack>
-                      <Stack gap={0} justify="center" ta="center">
-                        <Text size="md" tt="uppercase" fw="bold" c="dimmed">
-                          {t("Databases.Card.Players")}
-                        </Text>
-                        <Text fw={700} size="lg">
-                          {t("Units.Count", { count: selectedDatabase.player_count })}
-                        </Text>
-                      </Stack>
-                      <Stack gap={0} justify="center" ta="center">
-                        <Text size="md" tt="uppercase" fw="bold" c="dimmed">
-                          {t("Databases.Settings.Events")}
-                        </Text>
-                        <Text fw={700} size="lg">
-                          {t("Units.Count", { count: selectedDatabase.event_count })}
-                        </Text>
-                      </Stack>
-                    </Group>
-
-                    <div>
-                      {selectedDatabase.type === "success" && (
-                        <Button
-                          component={Link}
-                          to="/databases/$databaseId"
-                          // @ts-expect-error
-                          params={{ databaseId: selectedDatabase.title }}
-                          onClick={() => setActiveDatabase(selectedDatabase)}
-                          fullWidth
-                          variant="filled"
-                          size="lg"
-                          rightSection={<IconArrowRight size="1rem" />}
-                        >
-                          {t("Databases.Settings.Explore")}
-                        </Button>
-                      )}
-                    </div>
-                  </>
-                )}
-
-                <Divider variant="dashed" label={t("Databases.Settings.AdvancedTools")} />
-
-                {selectedDatabase.type === "success" && (
-                  <AdvancedSettings selectedDatabase={selectedDatabase} reload={mutate} />
-                )}
-
-                <Divider variant="dashed" label={t("Databases.Settings.Actions")} />
-                <Group justify="space-between">
-                  {selectedDatabase.type === "success" && (
-                    <Group>
-                      <Button
-                        variant="filled"
-                        rightSection={<IconPlus size="1rem" />}
-                        onClick={async () => {
-                          const file = await openDialog({
-                            filters: [{ name: "PGN", extensions: ["pgn"] }],
-                          });
-                          if (!file || typeof file !== "string") return;
-                          setConvertLoading(true);
-                          await commands.convertPgn(file, selectedDatabase.file, null, "", null);
-                          mutate();
-                          setConvertLoading(false);
-                        }}
-                      >
-                        {t("Databases.Settings.AddGames")}
-                      </Button>
-                      <Button
-                        rightSection={<IconArrowRight size="1rem" />}
-                        variant="outline"
-                        loading={exportLoading}
-                        onClick={async () => {
-                          const destFile = await save({
-                            filters: [{ name: "PGN", extensions: ["pgn"] }],
-                          });
-                          if (!destFile) return;
-                          setExportLoading(true);
-                          await commands.exportToPgn(selectedDatabase.file, destFile);
-                          setExportLoading(false);
-                        }}
-                      >
-                        {t("Databases.Settings.ExportPGN")}
-                      </Button>
-                    </Group>
-                  )}
+                    <Button
+                      variant="default"
+                      leftSection={<IconArrowsSort size="1rem" />}
+                      onClick={() => setSortBy((s) => (s === "name" ? "games" : "name"))}
+                      aria-label={`Sort by ${sortBy === "name" ? "games" : "name"}`}
+                    >
+                      {!isLargeScreenMax && `Sort: ${sortBy === "name" ? "Name" : "Games"}`}
+                    </Button>
+                  </Group>
                   <Button
-                    onClick={() => {
-                      const fileToDelete = selectedDatabase?.file;
-                      modals.openConfirmModal({
-                        title: t("Databases.Delete.Title"),
-                        withCloseButton: false,
-                        children: (
-                          <>
-                            <Text>{t("Databases.Delete.Message")}</Text>
-                            <Text>{t("Common.CannotUndo")}</Text>
-                          </>
-                        ),
-                        labels: { confirm: t("Common.Remove"), cancel: t("Common.Cancel") },
-                        confirmProps: { color: "red" },
-                        onConfirm: () => {
-                          if (!fileToDelete) return;
-                          commands.deleteDatabase(fileToDelete).then(() => {
-                            mutate();
-                            setSelected(null);
-                          });
-                        },
-                      });
-                    }}
-                    color="red"
+                    onClick={() => setOpen(true)}
+                    loading={convertLoading}
+                    size="xs"
+                    leftSection={<IconPlus size="1rem" />}
+                    mr="sm"
                   >
-                    {t("Common.Delete")}
+                    {!isLargeScreenMax && t("Common.AddNew")}
                   </Button>
                 </Group>
+
+                {progress && convertLoading && (
+                  <Group align="center" justify="space-between" maw={200}>
+                    <Text fz="xs">{progress.total} games</Text>
+                    <Text fz="xs">{(progress.total / progress.elapsed).toFixed(1)} games/s</Text>
+                  </Group>
+                )}
               </Stack>
-            </ScrollArea>
-          )}
-        </Paper>
-      </Group>
+              <ScrollArea h="100%" aria-busy={isLoading} aria-live="polite">
+                {isLoading ? (
+                  isMobile ? (
+                    <Stack gap="md">
+                      <Skeleton h="8rem" />
+                      <Skeleton h="8rem" />
+                      <Skeleton h="8rem" />
+                    </Stack>
+                  ) : (
+                    <SimpleGrid cols={gridCols} spacing={{ base: "md", md: "sm" }}>
+                      <Skeleton h="8rem" />
+                      <Skeleton h="8rem" />
+                      <Skeleton h="8rem" />
+                    </SimpleGrid>
+                  )
+                ) : filtered.length === 0 ? (
+                  <Alert title="No databases found" color="gray" variant="light">
+                    Try adjusting your search or create a new database.
+                  </Alert>
+                ) : isMobile ? (
+                  <Stack gap="md">
+                    {filtered.map((item) => (
+                      <GenericCard
+                        id={item.file}
+                        key={item.filename}
+                        isSelected={selectedDatabase?.filename === item.filename}
+                        setSelected={setSelected}
+                        error={item.type === "error" ? item.error : ""}
+                        onDoubleClick={() => {
+                          if (item.type === "error") return;
+                          navigate({
+                            to: "/databases/$databaseId",
+                            params: {
+                              databaseId: item.title,
+                            },
+                          });
+                          setActiveDatabase(item);
+                        }}
+                        content={
+                          <>
+                            <Group wrap="nowrap" justify="space-between" align="flex-start">
+                              <Group wrap="nowrap" miw={0} gap="sm" align="start">
+                                <Box mt="sm">
+                                  <IconDatabase size="1.5rem" />
+                                </Box>
+                                <Box miw={0}>
+                                  <Stack gap="xs">
+                                    <Text fw={600} size="sm">
+                                      {item.type === "success" ? item.title : item.error}
+                                    </Text>
+                                    <Group>
+                                      {item.type === "success" && item.indexed && (
+                                        <Badge color="teal" variant="light" size="xs">
+                                          {t("Databases.Settings.Indexed")}
+                                        </Badge>
+                                      )}
+                                      {referenceDatabase === item.file && (
+                                        <Tooltip label={t("Databases.Settings.ReferenceDatabase")}>
+                                          <Badge
+                                            color="yellow"
+                                            variant="light"
+                                            size="xs"
+                                            leftSection={<IconStar size={12} />}
+                                          >
+                                            {t("Databases.Settings.ReferenceDatabase_short")}
+                                          </Badge>
+                                        </Tooltip>
+                                      )}
+                                    </Group>
+                                    <Text size="xs" c="dimmed" style={{ wordWrap: "break-word" }}>
+                                      {item.type === "error" ? item.file : item.description}
+                                    </Text>
+                                  </Stack>
+                                </Box>
+                              </Group>
+                            </Group>
+
+                            <Group justify="space-between">
+                              {[
+                                {
+                                  label: t("Databases.Card.Games"),
+                                  value: item.type === "success" ? t("Units.Count", { count: item.game_count }) : "???",
+                                },
+                                {
+                                  label: t("Databases.Card.Storage"),
+                                  value:
+                                    item.type === "success"
+                                      ? t("Units.Bytes", { bytes: item.storage_size ?? 0 })
+                                      : "???",
+                                },
+                              ]?.map((stat) => (
+                                <Stack key={stat.label} gap="xs">
+                                  <Text size="xs" c="dimmed" fw="bold" className={classes.label}>
+                                    {stat.label}
+                                  </Text>
+                                  <Text fw={700} size="lg" style={{ lineHeight: 1 }}>
+                                    {stat.value}
+                                  </Text>
+                                </Stack>
+                              ))}
+                            </Group>
+                          </>
+                        }
+                      />
+                    ))}
+                  </Stack>
+                ) : (
+                  <SimpleGrid cols={gridCols} spacing={{ base: "md", md: "sm" }}>
+                    {filtered.map((item) => (
+                      <GenericCard
+                        id={item.file}
+                        key={item.filename}
+                        isSelected={selectedDatabase?.filename === item.filename}
+                        setSelected={setSelected}
+                        error={item.type === "error" ? item.error : ""}
+                        onDoubleClick={() => {
+                          if (item.type === "error") return;
+                          navigate({
+                            to: "/databases/$databaseId",
+                            params: {
+                              databaseId: item.title,
+                            },
+                          });
+                          setActiveDatabase(item);
+                        }}
+                        content={
+                          <>
+                            <Group wrap="nowrap" justify="space-between" align="flex-start">
+                              <Group wrap="nowrap" miw={0} gap="sm" align="start">
+                                <Box mt="sm">
+                                  <IconDatabase size="1.5rem" />
+                                </Box>
+                                <Box miw={0}>
+                                  <Stack gap="xs">
+                                    <Text fw={600} size="sm">
+                                      {item.type === "success" ? item.title : item.error}
+                                    </Text>
+                                    <Group>
+                                      {item.type === "success" && item.indexed && (
+                                        <Badge color="teal" variant="light" size="xs">
+                                          {t("Databases.Settings.Indexed")}
+                                        </Badge>
+                                      )}
+                                      {referenceDatabase === item.file && (
+                                        <Tooltip label={t("Databases.Settings.ReferenceDatabase")}>
+                                          <Badge
+                                            color="yellow"
+                                            variant="light"
+                                            size="xs"
+                                            leftSection={<IconStar size="0.5rem" />}
+                                          >
+                                            {t("Databases.Settings.Reference")}
+                                          </Badge>
+                                        </Tooltip>
+                                      )}
+                                    </Group>
+                                    <Text size="xs" c="dimmed" style={{ wordWrap: "break-word" }}>
+                                      {item.type === "error" ? item.file : item.description}
+                                    </Text>
+                                  </Stack>
+                                </Box>
+                              </Group>
+                            </Group>
+
+                            <Group justify="space-between">
+                              {[
+                                {
+                                  label: t("Databases.Card.Games"),
+                                  value: item.type === "success" ? t("Units.Count", { count: item.game_count }) : "???",
+                                },
+                                {
+                                  label: t("Databases.Card.Storage"),
+                                  value:
+                                    item.type === "success"
+                                      ? t("Units.Bytes", { bytes: item.storage_size ?? 0 })
+                                      : "???",
+                                },
+                              ]?.map((stat) => (
+                                <Stack key={stat.label} gap="xs">
+                                  <Text size="xs" c="dimmed" fw="bold" className={classes.label}>
+                                    {stat.label}
+                                  </Text>
+                                  <Text fw={700} size="lg" style={{ lineHeight: 1 }}>
+                                    {stat.value}
+                                  </Text>
+                                </Stack>
+                              ))}
+                            </Group>
+                          </>
+                        }
+                      />
+                    ))}
+                  </SimpleGrid>
+                )}
+              </ScrollArea>
+            </Stack>
+          }
+          detailContent={
+            selectedDatabase === null ? (
+              <Stack align="center" justify="center" h="100%">
+                <Text ta="center">Select a database to see details</Text>
+                <Text c="dimmed" size="sm" ta="center">
+                  Tip: Double-click a database to open it.
+                </Text>
+              </Stack>
+            ) : (
+              <ScrollArea h={panelHeight} offsetScrollbars>
+                <Stack>
+                  {selectedDatabase.type === "error" ? (
+                    <>
+                      <Text fz="lg" fw="bold">
+                        There was an error loading this database
+                      </Text>
+
+                      <Text>
+                        <Text td="underline" span>
+                          Reason:
+                        </Text>
+                        {` ${selectedDatabase.error}`}
+                      </Text>
+
+                      <Text>Check if the file exists and that it is not corrupted.</Text>
+                    </>
+                  ) : (
+                    <>
+                      <Divider variant="dashed" label={t("Common.GeneralSettings")} />
+                      <GeneralSettings
+                        key={selectedDatabase.filename}
+                        selectedDatabase={selectedDatabase}
+                        mutate={mutate}
+                      />
+                      <Switch
+                        label={t("Databases.Settings.ReferenceDatabase")}
+                        checked={isReference}
+                        onChange={() => {
+                          changeReferenceDatabase(selectedDatabase.file);
+                        }}
+                      />
+                      <IndexInput
+                        indexed={selectedDatabase.indexed}
+                        file={selectedDatabase.file}
+                        setDatabases={mutate}
+                      />
+
+                      <Divider variant="dashed" label={t("Common.Data")} />
+                      <Group grow>
+                        <Stack gap={0} justify="center" ta="center">
+                          <Text size="md" tt="uppercase" fw="bold" c="dimmed">
+                            {t("Databases.Card.Games")}
+                          </Text>
+                          <Text fw={700} size="lg">
+                            {t("Units.Count", { count: selectedDatabase.game_count })}
+                          </Text>
+                        </Stack>
+                        <Stack gap={0} justify="center" ta="center">
+                          <Text size="md" tt="uppercase" fw="bold" c="dimmed">
+                            {t("Databases.Card.Players")}
+                          </Text>
+                          <Text fw={700} size="lg">
+                            {t("Units.Count", { count: selectedDatabase.player_count })}
+                          </Text>
+                        </Stack>
+                        <Stack gap={0} justify="center" ta="center">
+                          <Text size="md" tt="uppercase" fw="bold" c="dimmed">
+                            {t("Databases.Settings.Events")}
+                          </Text>
+                          <Text fw={700} size="lg">
+                            {t("Units.Count", { count: selectedDatabase.event_count })}
+                          </Text>
+                        </Stack>
+                      </Group>
+
+                      <div>
+                        {selectedDatabase.type === "success" && (
+                          <Button
+                            component={Link}
+                            to="/databases/$databaseId"
+                            // @ts-expect-error
+                            params={{ databaseId: selectedDatabase.title }}
+                            onClick={() => setActiveDatabase(selectedDatabase)}
+                            fullWidth
+                            variant="filled"
+                            size="lg"
+                            rightSection={<IconArrowRight size="1rem" />}
+                          >
+                            {t("Databases.Settings.Explore")}
+                          </Button>
+                        )}
+                      </div>
+                    </>
+                  )}
+
+                  <Divider variant="dashed" label={t("Databases.Settings.AdvancedTools")} />
+
+                  {selectedDatabase.type === "success" && (
+                    <AdvancedSettings selectedDatabase={selectedDatabase} reload={mutate} />
+                  )}
+
+                  <Divider variant="dashed" label={t("Databases.Settings.Actions")} />
+                  <Group justify="space-between">
+                    {selectedDatabase.type === "success" && (
+                      <Group>
+                        <Button
+                          variant="filled"
+                          rightSection={<IconPlus size="1rem" />}
+                          onClick={async () => {
+                            const file = await openDialog({
+                              filters: [{ name: "PGN", extensions: ["pgn"] }],
+                            });
+                            if (!file || typeof file !== "string") return;
+                            setConvertLoading(true);
+                            await commands.convertPgn(file, selectedDatabase.file, null, "", null);
+                            mutate();
+                            setConvertLoading(false);
+                          }}
+                        >
+                          {t("Databases.Settings.AddGames")}
+                        </Button>
+                        <Button
+                          rightSection={<IconArrowRight size="1rem" />}
+                          variant="outline"
+                          loading={exportLoading}
+                          onClick={async () => {
+                            const destFile = await save({
+                              filters: [{ name: "PGN", extensions: ["pgn"] }],
+                            });
+                            if (!destFile) return;
+                            setExportLoading(true);
+                            await commands.exportToPgn(selectedDatabase.file, destFile);
+                            setExportLoading(false);
+                          }}
+                        >
+                          {t("Databases.Settings.ExportPGN")}
+                        </Button>
+                      </Group>
+                    )}
+                    <Button
+                      onClick={() => {
+                        const fileToDelete = selectedDatabase?.file;
+                        modals.openConfirmModal({
+                          title: t("Databases.Delete.Title"),
+                          withCloseButton: false,
+                          children: (
+                            <>
+                              <Text>{t("Databases.Delete.Message")}</Text>
+                              <Text>{t("Common.CannotUndo")}</Text>
+                            </>
+                          ),
+                          labels: { confirm: t("Common.Remove"), cancel: t("Common.Cancel") },
+                          confirmProps: { color: "red" },
+                          onConfirm: () => {
+                            if (!fileToDelete) return;
+                            commands.deleteDatabase(fileToDelete).then(() => {
+                              mutate();
+                              setSelected(null);
+                            });
+                          },
+                        });
+                      }}
+                      color="red"
+                    >
+                      {t("Common.Delete")}
+                    </Button>
+                  </Group>
+                </Stack>
+              </ScrollArea>
+            )
+          }
+          isDetailOpen={selectedDatabase !== null}
+          onDetailClose={() => setSelected(null)}
+          detailTitle={selectedDatabase?.type === "success" ? selectedDatabase.title : "Database Details"}
+          layoutType={layout.databases.layoutType}
+        />
+      </Box>
     </Stack>
   );
 }

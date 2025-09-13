@@ -1,0 +1,299 @@
+import { ActionIcon, Box, Group, Input, Select, SimpleGrid, Slider, Text } from "@mantine/core";
+import { DateInput } from "@mantine/dates";
+import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import cx from "clsx";
+import { memo, useContext, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useStore } from "zustand";
+import type { Outcome } from "@/bindings";
+import { ContentEditable } from "@/features/boards/components/ContentEditable";
+import FideInfo from "@/features/databases/components/FideInfo";
+import { formatDateToPGN, parseDate } from "@/utils/format";
+import type { GameHeaders } from "@/utils/treeReducer";
+import * as classes from "./GameInfo.css";
+import { TreeStateContext } from "./TreeStateContext";
+
+function CollapsibleGameInfo({
+  headers,
+  simplified,
+  changeTitle,
+  defaultCollapsed = false,
+}: {
+  headers: GameHeaders;
+  simplified?: "repertoire" | "puzzle";
+  changeTitle?: (title: string) => void;
+  defaultCollapsed?: boolean;
+}) {
+  const { t } = useTranslation();
+  const store = useContext(TreeStateContext);
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+
+  if (!store) {
+    throw new Error("CollapsibleGameInfo must be used within a TreeStateProvider");
+  }
+
+  const disabled = false;
+  const setHeaders = useStore(store as NonNullable<typeof store>, (s) => s.setHeaders);
+
+  const date = parseDate(headers.date);
+  const [whiteOpened, setWhiteOpened] = useState(false);
+  const [blackOpened, setBlackOpened] = useState(false);
+
+  const event = headers.event === "?" ? "" : headers.event;
+  const site = headers.site === "?" ? "" : headers.site;
+
+  // Minimal info to show when collapsed
+  const renderCollapsedView = () => (
+    <Box px="md" pt="md">
+      <Group wrap="nowrap" gap="xs" justify="space-between">
+        <Group>
+          <Text size="sm" fw={500} truncate style={{ maxWidth: "120px" }}>
+            {headers.white}
+          </Text>
+          <Text size="xs" c="dimmed">
+            {headers.white_elo || "?"}
+          </Text>
+          <Text size="xs" c="dimmed">
+            vs
+          </Text>
+          <Text size="sm" fw={500} truncate style={{ maxWidth: "120px" }}>
+            {headers.black}
+          </Text>
+          <Text size="xs" c="dimmed">
+            {headers.black_elo || "?"}
+          </Text>
+          <Text size="xs" c="dimmed" visibleFrom="md">
+            {headers.result}
+          </Text>
+        </Group>
+        <ActionIcon variant="subtle" size="sm" onClick={() => setIsCollapsed(!isCollapsed)}>
+          {isCollapsed ? <IconChevronDown size="1rem" /> : <IconChevronUp size="1rem" />}
+        </ActionIcon>
+      </Group>
+    </Box>
+  );
+
+  // Full info to show when expanded
+  const renderExpandedView = () => (
+    <Box px="md" pt="md">
+      <FideInfo opened={whiteOpened} setOpened={setWhiteOpened} name={headers.white} />
+      <FideInfo opened={blackOpened} setOpened={setBlackOpened} name={headers.black} />
+
+      <Group w="100%" wrap="nowrap" justify="space-between" align="center">
+        <Group wrap="nowrap" justify={simplified ? "start" : "center"} w="100%">
+          <ContentEditable
+            disabled={disabled}
+            html={event}
+            data-placeholder={
+              simplified === "repertoire"
+                ? t("Repertoire.EnterOpeningTitle")
+                : simplified === "puzzle"
+                  ? t("Puzzle.EnterTitle")
+                  : "Unknown Event"
+            }
+            className={cx(classes.contentEditable, !event && classes.contentEditablePlaceholder)}
+            onChange={(e) => {
+              setHeaders({
+                ...headers,
+                event: e.target.value,
+              });
+              if (changeTitle) {
+                changeTitle(e.target.value);
+              }
+            }}
+          />
+          {headers.round && headers.round !== "?" && (
+            <>
+              {"-"}
+              <Group gap={0} className={classes.textInput} wrap="nowrap">
+                <Text c="dimmed" size="sm" mr="xs">
+                  Round
+                </Text>
+                <input
+                  className={classes.roundInput}
+                  placeholder="?"
+                  value={headers.round}
+                  onChange={(e) =>
+                    setHeaders({
+                      ...headers,
+                      round: e.currentTarget.value,
+                    })
+                  }
+                  disabled={disabled}
+                />
+              </Group>
+            </>
+          )}
+        </Group>
+        <ActionIcon variant="subtle" size="sm" onClick={() => setIsCollapsed(!isCollapsed)}>
+          {isCollapsed ? <IconChevronDown size="1rem" /> : <IconChevronUp size="1rem" />}
+        </ActionIcon>
+      </Group>
+
+      {simplified === "puzzle" && (
+        <Group gap={4}>
+          <Input.Wrapper label={t("Puzzle.Rating")} flex={1}>
+            <Slider
+              min={600}
+              max={2800}
+              defaultValue={1500}
+              step={100}
+              label={(value) => value.toFixed(0)}
+              onChange={(value) => setHeaders({ ...headers, white_elo: value })}
+              value={headers.white_elo || 1500}
+              disabled={disabled}
+            />
+          </Input.Wrapper>
+        </Group>
+      )}
+
+      {simplified === "repertoire" && (
+        <Group gap={4}>
+          <Text size="sm">opening for</Text>
+          <Select
+            allowDeselect={false}
+            value={headers.orientation || "white"}
+            variant="unstyled"
+            rightSection={null}
+            rightSectionWidth={0}
+            fw="bold"
+            styles={{
+              input: {
+                textDecoration: "underline",
+              },
+            }}
+            onChange={(value) =>
+              setHeaders({
+                ...headers,
+                orientation: value === "white" ? "white" : "black",
+              })
+            }
+            data={[
+              {
+                value: "white",
+                label: t("Common.White"),
+              },
+              {
+                value: "black",
+                label: t("Common.Black"),
+              },
+            ]}
+          />
+        </Group>
+      )}
+
+      {!simplified && (
+        <SimpleGrid cols={3} spacing={0}>
+          <input
+            className={classes.textInput}
+            placeholder="?"
+            value={headers.white}
+            onChange={(e) =>
+              setHeaders({
+                ...headers,
+                white: e.currentTarget.value,
+              })
+            }
+            disabled={disabled}
+          />
+          <Group justify="center">
+            {headers.site.startsWith("https://lichess.org") || headers.site.startsWith("https://www.chess.com") ? (
+              <a href={headers.site} target="_blank" rel="noreferrer">
+                <Text p="sm" w={90}>
+                  {headers.site.startsWith("https://lichess.org") ? "Lichess" : "Chess.com"}
+                </Text>
+              </a>
+            ) : (
+              <ContentEditable
+                className={cx(classes.contentEditable, !site && classes.contentEditablePlaceholder)}
+                data-placeholder="Unknown Site"
+                html={site}
+                onChange={(e) =>
+                  setHeaders({
+                    ...headers,
+                    site: e.target.value,
+                  })
+                }
+                disabled={disabled}
+              />
+            )}
+            <DateInput
+              w="4.6rem"
+              variant="unstyled"
+              valueFormat="YYYY.MM.DD"
+              placeholder="????.??.??"
+              value={date}
+              allowDeselect
+              onChange={(date) => {
+                setHeaders({
+                  ...headers,
+                  date: formatDateToPGN(date),
+                });
+              }}
+              readOnly={disabled}
+              className={classes.dateInput}
+            />
+          </Group>
+          <input
+            className={cx(classes.textInput, classes.right)}
+            placeholder="?"
+            value={headers.black}
+            onChange={(e) =>
+              setHeaders({
+                ...headers,
+                black: e.currentTarget.value,
+              })
+            }
+            disabled={disabled}
+          />
+          <input
+            className={classes.textInput}
+            placeholder="Unknown ELO"
+            value={headers.white_elo || ""}
+            onChange={(n) =>
+              setHeaders({
+                ...headers,
+                white_elo: Number.parseInt(n.currentTarget.value, 10),
+              })
+            }
+            disabled={disabled}
+          />
+          <Select
+            readOnly={disabled}
+            allowDeselect={false}
+            data={["1-0", "0-1", "1/2-1/2", "*"]}
+            value={headers.result}
+            variant="unstyled"
+            rightSection={null}
+            rightSectionWidth={0}
+            styles={{
+              input: { textAlign: "center" },
+            }}
+            onChange={(result) =>
+              setHeaders({
+                ...headers,
+                result: result as Outcome,
+              })
+            }
+          />
+          <input
+            className={cx(classes.textInput, classes.right)}
+            placeholder="Unknown ELO"
+            value={headers.black_elo || ""}
+            onChange={(n) =>
+              setHeaders({
+                ...headers,
+                black_elo: Number.parseInt(n.currentTarget.value, 10),
+              })
+            }
+            disabled={disabled}
+          />
+        </SimpleGrid>
+      )}
+    </Box>
+  );
+
+  return <>{isCollapsed ? renderCollapsedView() : renderExpandedView()}</>;
+}
+
+export default memo(CollapsibleGameInfo);
