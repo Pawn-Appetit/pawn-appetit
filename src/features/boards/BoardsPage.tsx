@@ -16,6 +16,7 @@ import BoardGame from "@/common/components/boards/BoardGame";
 import ReportProgressSubscriber from "@/common/components/panels/analysis/ReportProgressSubscriber";
 import Puzzles from "@/common/components/puzzles/Puzzles";
 import { TreeStateContext, TreeStateProvider } from "@/common/components/TreeStateContext";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { activeTabAtom, currentTabAtom, tabsAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
 import { createTab, genID, saveToFile, type Tab } from "@/utils/tabs";
@@ -279,28 +280,34 @@ const windowsStateAtom = atomWithStorage<WindowsState>("windowsState", {
 
 function TabSwitch({ tab }: { tab: Tab }) {
   const [windowsState, setWindowsState] = useAtom(windowsStateAtom);
+  const { layout } = useResponsiveLayout();
+  const isMobileLayout = layout.chessBoard.layoutType === "mobile";
 
   return match(tab.type)
     .with("new", () => <NewTabHome id={tab.value} />)
     .with("play", () => (
       <TreeStateProvider id={tab.value}>
-        <Mosaic<ViewId>
-          renderTile={(id) => fullLayout[id]}
-          value={windowsState.currentNode}
-          onChange={(currentNode) => setWindowsState({ currentNode })}
-          resize={{ minimumPaneSizePercentage: 0 }}
-        />
+        {!isMobileLayout && (
+          <Mosaic<ViewId>
+            renderTile={(id) => fullLayout[id]}
+            value={windowsState.currentNode}
+            onChange={(currentNode) => setWindowsState({ currentNode })}
+            resize={{ minimumPaneSizePercentage: 0 }}
+          />
+        )}
         <BoardGame />
       </TreeStateProvider>
     ))
     .with("analysis", () => (
       <TreeStateProvider id={tab.value}>
-        <Mosaic<ViewId>
-          renderTile={(id) => fullLayout[id]}
-          value={windowsState.currentNode}
-          onChange={(currentNode) => setWindowsState({ currentNode })}
-          resize={{ minimumPaneSizePercentage: 0 }}
-        />
+        {!isMobileLayout && (
+          <Mosaic<ViewId>
+            renderTile={(id) => fullLayout[id]}
+            value={windowsState.currentNode}
+            onChange={(currentNode) => setWindowsState({ currentNode })}
+            resize={{ minimumPaneSizePercentage: 0 }}
+          />
+        )}
         <ReportProgressSubscriber id={`report_${tab.value}`} />
         <BoardAnalysis />
       </TreeStateProvider>

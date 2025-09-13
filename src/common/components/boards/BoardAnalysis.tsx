@@ -1,22 +1,13 @@
-import { Paper, Portal, Stack, Tabs } from "@mantine/core";
+import { Box, Portal } from "@mantine/core";
 import { useHotkeys, useToggle } from "@mantine/hooks";
-import {
-  IconDatabase,
-  IconGraphFilled,
-  IconInfoCircle,
-  IconNotes,
-  IconTargetArrow,
-  IconZoomCheck,
-} from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { useAtom, useAtomValue } from "jotai";
-import { Suspense, useCallback, useContext, useEffect, useRef } from "react";
+import { useCallback, useContext, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
-import GameNotation from "@/common/components/GameNotation";
-import MoveControls from "@/common/components/MoveControls";
 import { TreeStateContext } from "@/common/components/TreeStateContext";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import {
   allEnabledAtom,
   autoSaveAtom,
@@ -29,13 +20,9 @@ import { keyMapAtom } from "@/state/keybindings";
 import { defaultPGN } from "@/utils/chess";
 import { isTempImportFile } from "@/utils/files";
 import { reloadTab, saveTab, saveToFile } from "@/utils/tabs";
-import AnalysisPanel from "../panels/analysis/AnalysisPanel";
-import AnnotationPanel from "../panels/annotation/AnnotationPanel";
-import DatabasePanel from "../panels/database/DatabasePanel";
-import InfoPanel from "../panels/info/InfoPanel";
-import GraphPanel from "../panels/practice/GraphPanel";
-import PracticePanel from "../panels/practice/PracticePanel";
-import Board from "./Board";
+import ResponsiveBoard from "./ResponsiveBoard";
+import ResponsiveGameAnalysis from "./ResponsiveGameAnalysis";
+import ResponsiveAnalysisPanels from "./ResponsiveAnalysisPanels";
 import EditingCard from "./EditingCard";
 import EvalListener from "./EvalListener";
 
@@ -151,113 +138,78 @@ function BoardAnalysis() {
   const isPuzzle = currentTab?.source?.type === "file" && currentTab.source.metadata.type === "puzzle";
   const practicing = currentTabSelected === "practice" && practiceTabSelected === "train";
 
+  const { layout } = useResponsiveLayout();
+  const isMobileLayout = layout.chessBoard.layoutType === "mobile";
+
   return (
     <>
       <EvalListener />
-      <Portal target="#left" style={{ height: "100%" }}>
-        <Board
-          practicing={practicing}
-          dirty={dirty}
-          editingMode={editingMode}
-          toggleEditingMode={toggleEditingMode}
-          boardRef={boardRef}
-          saveFile={saveFile}
-          reload={reloadBoard}
-          addGame={addGame}
-        />
-      </Portal>
-      <Portal target="#topRight" style={{ height: "100%" }}>
-        <Paper
-          withBorder
-          p="xs"
-          style={{
-            height: "100%",
-          }}
-          pos="relative"
-        >
-          <Tabs
-            w="100%"
-            h="100%"
-            value={currentTabSelected}
-            onChange={(v) => setCurrentTabSelected(v || "info")}
-            keepMounted={false}
-            activateTabWithKeyboard={false}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <Tabs.List grow mb="1rem">
-              {isRepertoire && (
-                <Tabs.Tab value="practice" leftSection={<IconTargetArrow size="1rem" />}>
-                  {t("Board.Tabs.Practice")}
-                </Tabs.Tab>
-              )}
-              {isRepertoire && (
-                <Tabs.Tab value="graph" leftSection={<IconGraphFilled size="1rem" />}>
-                  {t("Board.Tabs.Graph")}
-                </Tabs.Tab>
-              )}
-              {!isPuzzle && (
-                <Tabs.Tab value="analysis" leftSection={<IconZoomCheck size="1rem" />}>
-                  {t("Board.Tabs.Analysis")}
-                </Tabs.Tab>
-              )}
-              {!isPuzzle && (
-                <Tabs.Tab value="database" leftSection={<IconDatabase size="1rem" />}>
-                  {t("Board.Tabs.Database")}
-                </Tabs.Tab>
-              )}
-              {!isPuzzle && (
-                <Tabs.Tab value="annotate" leftSection={<IconNotes size="1rem" />}>
-                  {t("Board.Tabs.Annotate")}
-                </Tabs.Tab>
-              )}
-              <Tabs.Tab value="info" leftSection={<IconInfoCircle size="1rem" />}>
-                {t("Board.Tabs.Info")}
-              </Tabs.Tab>
-            </Tabs.List>
-            {isRepertoire && (
-              <Tabs.Panel value="practice" flex={1} style={{ overflowY: "hidden" }}>
-                <Suspense>
-                  <PracticePanel />
-                </Suspense>
-              </Tabs.Panel>
-            )}
-            {isRepertoire && (
-              <Tabs.Panel value="graph" flex={1} style={{ overflowY: "hidden" }}>
-                <Suspense>
-                  <GraphPanel />
-                </Suspense>
-              </Tabs.Panel>
-            )}
-            <Tabs.Panel value="info" flex={1} style={{ overflowY: "hidden" }}>
-              <InfoPanel />
-            </Tabs.Panel>
-            <Tabs.Panel value="database" flex={1} style={{ overflowY: "hidden" }}>
-              <DatabasePanel />
-            </Tabs.Panel>
-            <Tabs.Panel value="annotate" flex={1} style={{ overflowY: "hidden" }}>
-              <AnnotationPanel />
-            </Tabs.Panel>
-            <Tabs.Panel value="analysis" flex={1} style={{ overflowY: "hidden" }}>
-              <Suspense>
-                <AnalysisPanel />
-              </Suspense>
-            </Tabs.Panel>
-          </Tabs>
-        </Paper>
-      </Portal>
-      <Portal target="#bottomRight" style={{ height: "100%" }}>
-        {editingMode ? (
-          <EditingCard boardRef={boardRef} setEditingMode={toggleEditingMode} />
-        ) : (
-          <Stack h="100%" gap="xs">
-            <GameNotation topBar />
-            <MoveControls />
-          </Stack>
-        )}
-      </Portal>
+      {isMobileLayout ? (
+        // Mobile layout: ResponsiveBoard handles everything, no Portal needed
+        <Box style={{ width: "100%", flex: 1, overflow: "hidden" }}>
+          <ResponsiveBoard
+            practicing={practicing}
+            dirty={dirty}
+            editingMode={editingMode}
+            toggleEditingMode={toggleEditingMode}
+            boardRef={boardRef}
+            saveFile={saveFile}
+            reload={reloadBoard}
+            addGame={addGame}
+            topBar={false}
+            editingCard={
+              editingMode ? <EditingCard boardRef={boardRef} setEditingMode={toggleEditingMode} /> : undefined
+            }
+            // Board controls props
+            canTakeBack={false} // Analysis mode doesn't support take back
+            changeTabType={() => setCurrentTab((prev) => ({ ...prev, type: "play" }))}
+            currentTabType="analysis"
+            clearShapes={clearShapes}
+            disableVariations={false}
+            currentTabSourceType={currentTab?.source?.type}
+          />
+        </Box>
+      ) : (
+        // Desktop layout: Use Portal system with Mosaic layout
+        <>
+          <Portal target="#left" style={{ height: "100%" }}>
+            <ResponsiveBoard
+              practicing={practicing}
+              dirty={dirty}
+              editingMode={editingMode}
+              toggleEditingMode={toggleEditingMode}
+              boardRef={boardRef}
+              saveFile={saveFile}
+              reload={reloadBoard}
+              addGame={addGame}
+              topBar={false}
+              editingCard={
+                editingMode ? <EditingCard boardRef={boardRef} setEditingMode={toggleEditingMode} /> : undefined
+              }
+              // Board controls props
+              canTakeBack={false} // Analysis mode doesn't support take back
+              changeTabType={() => setCurrentTab((prev) => ({ ...prev, type: "play" }))}
+              currentTabType="analysis"
+              clearShapes={clearShapes}
+              disableVariations={false}
+              currentTabSourceType={currentTab?.source?.type}
+            />
+          </Portal>
+          <Portal target="#topRight" style={{ height: "100%" }}>
+            <ResponsiveAnalysisPanels
+              currentTab={currentTabSelected}
+              onTabChange={(v) => setCurrentTabSelected(v || "info")}
+              isRepertoire={isRepertoire}
+              isPuzzle={isPuzzle}
+            />
+          </Portal>
+        </>
+      )}
+      <ResponsiveGameAnalysis
+        topBar
+        editingMode={editingMode}
+        editingCard={<EditingCard boardRef={boardRef} setEditingMode={toggleEditingMode} />}
+      />
     </>
   );
 }
