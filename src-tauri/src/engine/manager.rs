@@ -382,7 +382,7 @@ impl EngineManager {
                                 }
                                 
                                 // Emit final result
-                                if let Err(e) = Self::emit_final_result(&analysis_handler, &id, &tab, &app).await {
+                                if let Err(e) = Self::emit_final_result(&process, &analysis_handler, &id, &tab, &app).await {
                                     warn!("Failed to emit final result: {}", e);
                                 }
                                 
@@ -500,6 +500,7 @@ impl EngineManager {
 
     /// Emit final analysis result
     async fn emit_final_result(
+        process: &Arc<Mutex<EngineProcess>>,
         analysis_handler: &Arc<Mutex<AnalysisHandler>>,
         id: &str,
         tab: &str,
@@ -507,6 +508,16 @@ impl EngineManager {
     ) -> EngineResult<()> {
         let handler = analysis_handler.lock().await;
         let best_moves = handler.last_best_moves().to_vec();
+        drop(handler); // Release lock early
+        
+        // Get the actual FEN and moves from the process
+        let (fen, moves) = {
+            let proc = process.lock().await;
+            (
+                proc.options().fen.clone(),
+                proc.options().moves.clone(),
+            )
+        };
         
         // Debug analysis of final results
         let analysis = super::debug::UciDebugger::analyze_multipv_responses(&best_moves);
@@ -517,13 +528,7 @@ impl EngineManager {
             return Ok(());
         }
         
-        // Get the current options for the final payload
-        let (fen, moves) = if let Some(first_move) = best_moves.first() {
-            // Use a placeholder - in real implementation this should come from process
-            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".to_string(), Vec::new())
-        } else {
-            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".to_string(), Vec::new())
-        };
+        debug!("Final result context: FEN={}, moves={:?}", fen, moves);
         
         let payload = create_best_moves_payload(
             best_moves,
@@ -536,6 +541,18 @@ impl EngineManager {
 
         info!("Emitting final bestmove payload for engine {} on tab {} with {} variations", 
               id, tab, analysis.total_lines);
+
+        // Try to serialize the payload to check for issues
+        match serde_json::to_string(&payload) {
+            Ok(json_str) => {
+                println!("🔍 Payload JSON (first 200 chars): {}", 
+                         if json_str.len() > 200 { &json_str[..200] } else { &json_str });
+            }
+            Err(e) => {
+                error!("🚨 SERIALIZATION FAILED: {:?}", e);
+                return Err(EngineError::EventEmissionFailed);
+            }
+        }
 
         match payload.emit(app) {
             Ok(_) => {

@@ -24,11 +24,13 @@ import "@/styles/global.css";
 
 import { documentDir, homeDir, resolve } from "@tauri-apps/api/path";
 import ErrorComponent from "@/common/components/ErrorComponent";
+import { EventMonitor } from "@/components/debug/EventMonitor";
 import ThemeProvider from "@/features/themes/components/ThemeProvider";
 import { commands } from "./bindings";
 import i18n from "./i18n";
 import { routeTree } from "./routeTree.gen";
 import { openFile } from "./utils/files";
+import { IS_DEV } from "./config";
 
 export type Dirs = {
   documentDir: string;
@@ -279,6 +281,7 @@ export default function App() {
 
       <ThemeProvider>
         <ContextMenuProvider>
+          {IS_DEV && <EventMonitor />}
           <Notifications />
           <RouterProvider router={router} />
         </ContextMenuProvider>

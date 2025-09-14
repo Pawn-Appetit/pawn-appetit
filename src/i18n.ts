@@ -1,19 +1,6 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import {
-  createBytesFormatter,
-  createBytesLongFormatter,
-  createDateFormatter,
-  createDatetimeFormatter,
-  createDurationFormatter,
-  createDurationLongFormatter,
-  createMoveNotationFormatter,
-  createNodesFormatter,
-  createNodesLongFormatter,
-  createScoreFormatter,
-} from "./utils/format";
-
-const isDev = import.meta.env.DEV;
+import { IS_DEV } from "./config";
 
 import ar from "./locales/ar";
 import be from "./locales/be";
@@ -31,6 +18,18 @@ import ru from "./locales/ru";
 import tr from "./locales/tr";
 import uk from "./locales/uk";
 import zh from "./locales/zh";
+import {
+  createBytesFormatter,
+  createBytesLongFormatter,
+  createDateFormatter,
+  createDatetimeFormatter,
+  createDurationFormatter,
+  createDurationLongFormatter,
+  createMoveNotationFormatter,
+  createNodesFormatter,
+  createNodesLongFormatter,
+  createScoreFormatter,
+} from "./utils/format";
 
 let lang = localStorage.getItem("lang");
 if (lang) {
@@ -64,7 +63,7 @@ i18n.use(initReactI18next).init({
   ns: ["language", "translation"],
   defaultNS: "translation",
   fallbackNS: "translation",
-  debug: isDev,
+  debug: IS_DEV,
   load: "currentOnly",
 });
 
