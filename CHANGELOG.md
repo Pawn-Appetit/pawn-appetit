@@ -1,5 +1,23 @@
 # Pawn Appétit
 
+## v0.6.1
+
+### ✨ Features
+
+* **Application Initialization**
+  * Implemented **splash screen** for startup
+  * Added **loading state** during application initialization
+
+### 🐛 Fixes
+
+* **Databases**
+  * Corrected **translation key** for reference database badge
+
+### 🧹 Chores
+
+* Updated **project dependencies**
+
+
 ## v0.6.0
 
 ### ✨ Features
