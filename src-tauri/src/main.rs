@@ -292,16 +292,45 @@ fn ensure_required_files(app: &AppHandle) -> Result<(), String> {
 #[tauri::command]
 #[specta::specta]
 async fn close_splashscreen(window: Window) -> Result<(), String> {
-    // Get the main window, returning an error if not found
+    log::info!("close_splashscreen command called");
+    
     let main_window = window
         .get_webview_window("main")
-        .ok_or_else(|| String::from("No window labeled 'main' found"))?;
+        .ok_or_else(|| {
+            let error_msg = "No window labeled 'main' found";
+            log::error!("{}", error_msg);
+            String::from(error_msg)
+        })?;
 
-    // Show the main window, propagating any errors
+    let splash_window = window.get_webview_window("splash");
+
+    log::info!("Showing main window");
+
     main_window
         .show()
-        .map_err(|e| format!("Failed to show main window: {}", e))?;
+        .map_err(|e| {
+            let error_msg = format!("Failed to show main window: {}", e);
+            log::error!("{}", error_msg);
+            error_msg
+        })?;
 
+    tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+
+    log::info!("Bringing main window to front");
+    if let Err(e) = main_window.set_focus() {
+        log::warn!("Failed to focus main window: {}", e);
+    }
+
+    if let Some(splash) = splash_window {
+        log::info!("Closing splash screen");
+        if let Err(e) = splash.close() {
+            log::warn!("Failed to close splash window: {}", e);
+        }
+    } else {
+        log::warn!("Splash window not found - may have already been closed");
+    }
+
+    log::info!("Window transition completed successfully");
     Ok(())
 }
 
@@ -444,6 +473,9 @@ async fn main() {
         .plugin(tauri_plugin_os::init())
         .setup(move |app| {
             log::info!("Setting up application");
+
+            let main_window = &app.get_webview_window("main").unwrap();
+            main_window.hide().unwrap();
 
             // Migrate data from legacy app identifiers (first run only)
             migrate_from_legacy_apps(&app.handle())?;

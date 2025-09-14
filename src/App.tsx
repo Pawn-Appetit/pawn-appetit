@@ -4,7 +4,7 @@ import { getMatches } from "@tauri-apps/plugin-cli";
 import { attachConsole, error, info } from "@tauri-apps/plugin-log";
 import { getDefaultStore, useAtom, useAtomValue } from "jotai";
 import { ContextMenuProvider } from "mantine-contextmenu";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet";
 import { activeTabAtom, fontSizeAtom, pieceSetAtom, storedDocumentDirAtom, tabsAtom } from "./state/atoms";
 
@@ -37,20 +37,30 @@ export type Dirs = {
 const DEFAULT_FONT_SIZE = 18;
 const APP_FOLDER_NAME = "Pawn Appetit";
 
-const loadDirectories = async (): Promise<Dirs> => {
-  const store = getDefaultStore();
-  let doc = store.get(storedDocumentDirAtom);
+let directoriesCache: Promise<Dirs> | null = null;
 
-  if (!doc) {
-    try {
-      doc = await resolve(await documentDir(), APP_FOLDER_NAME);
-    } catch (e) {
-      error(`Failed to access documents directory: ${e}`);
-      doc = await resolve(await homeDir(), APP_FOLDER_NAME);
-    }
+const loadDirectories = async (): Promise<Dirs> => {
+  if (directoriesCache) {
+    return directoriesCache;
   }
 
-  return { documentDir: doc };
+  directoriesCache = (async () => {
+    const store = getDefaultStore();
+    let doc = store.get(storedDocumentDirAtom);
+
+    if (!doc) {
+      try {
+        doc = await resolve(await documentDir(), APP_FOLDER_NAME);
+      } catch (e) {
+        error(`Failed to access documents directory: ${e}`);
+        doc = await resolve(await homeDir(), APP_FOLDER_NAME);
+      }
+    }
+
+    return { documentDir: doc };
+  })();
+
+  return directoriesCache;
 };
 
 const router = createRouter({
@@ -67,11 +77,57 @@ declare module "@tanstack/react-router" {
   }
 }
 
+function AppLoading() {
+  return (
+    <div
+      style={{
+        backgroundColor: "#1a1b1e",
+        color: "#ffffff",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+      }}
+    >
+      <div
+        style={{
+          width: "24px",
+          height: "24px",
+          border: "2px solid #374151",
+          borderTop: "2px solid #667eea",
+          borderRadius: "50%",
+          animation: "spin 1s linear infinite",
+        }}
+      />
+    </div>
+  );
+}
+
+function preloadPieceSetCSS(pieceSet: string) {
+  const link = document.createElement("link");
+  link.rel = "preload";
+  link.as = "style";
+  link.href = `/pieces/${pieceSet}.css`;
+  link.onload = () => {
+    link.rel = "stylesheet";
+  };
+  link.onerror = () => {
+    error(`Failed to load piece set CSS: ${pieceSet}`);
+  };
+  document.head.appendChild(link);
+}
+
 export default function App() {
   const pieceSet = useAtomValue(pieceSetAtom);
   const fontSize = useAtomValue(fontSizeAtom);
   const [, setTabs] = useAtom(tabsAtom);
   const [, setActiveTab] = useAtom(activeTabAtom);
+
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [initError, setInitError] = useState<string | null>(null);
+
+  const fontSizeValue = useMemo(() => fontSize || DEFAULT_FONT_SIZE, [fontSize]);
 
   const handleCommandLineFile = useCallback(async () => {
     try {
@@ -87,22 +143,50 @@ export default function App() {
 
   useEffect(() => {
     let detachConsole: (() => void) | null = null;
+    let isCancelled = false;
 
     const initializeApp = async () => {
       try {
-        await commands.closeSplashscreen();
-        detachConsole = await attachConsole();
-        info("React app started successfully");
+        info("Starting React app initialization");
 
-        await handleCommandLineFile();
+        await Promise.allSettled([
+          loadDirectories(),
+          attachConsole().then((detach) => {
+            detachConsole = detach;
+            info("Console logging attached successfully");
+            return detach;
+          }),
+          handleCommandLineFile(),
+        ]);
+
+        if (isCancelled) return;
+
+        info("Closing splash screen");
+        await commands.closeSplashscreen();
+
+        setIsInitialized(true);
+        info("React app initialization completed successfully");
       } catch (e) {
-        error(`Failed to initialize app: ${e}`);
+        if (isCancelled) return;
+
+        const errorMsg = `Failed to initialize app: ${e}`;
+        error(errorMsg);
+        setInitError(errorMsg);
+
+        try {
+          await commands.closeSplashscreen();
+        } catch (splashError) {
+          error(`Failed to close splash screen after error: ${splashError}`);
+        }
+
+        setIsInitialized(true);
       }
     };
 
     initializeApp();
 
     return () => {
+      isCancelled = true;
       if (detachConsole) {
         detachConsole();
       }
@@ -110,24 +194,74 @@ export default function App() {
   }, [handleCommandLineFile]);
 
   useEffect(() => {
-    const rootElement = document.documentElement;
-    const fontSizeValue = fontSize || DEFAULT_FONT_SIZE;
-
-    rootElement.style.fontSize = `${fontSizeValue}%`;
-  }, [fontSize]);
+    document.documentElement.style.fontSize = `${fontSizeValue}%`;
+  }, [fontSizeValue]);
 
   useEffect(() => {
     const rootElement = document.documentElement;
     const direction = i18n.dir();
 
     rootElement.setAttribute("dir", direction);
-
-    if (direction === "rtl") {
-      rootElement.classList.add("rtl");
-    } else {
-      rootElement.classList.remove("rtl");
-    }
+    rootElement.classList.toggle("rtl", direction === "rtl");
   }, []);
+
+  useEffect(() => {
+    const loadingElement = document.getElementById("app-loading");
+    if (loadingElement) {
+      loadingElement.style.display = "none";
+    }
+
+    if (pieceSet) {
+      preloadPieceSetCSS(pieceSet);
+    }
+  }, [pieceSet]);
+
+  if (!isInitialized) {
+    return <AppLoading />;
+  }
+
+  if (initError) {
+    return (
+      <div
+        style={{
+          backgroundColor: "#1a1b1e",
+          color: "#ffffff",
+          padding: "20px",
+          minHeight: "100vh",
+        }}
+      >
+        <h2 style={{ color: "#ef4444", marginBottom: "16px" }}>Initialization Error</h2>
+        <p style={{ color: "#9ca3af", marginBottom: "16px" }}>The application encountered an error during startup:</p>
+        <pre
+          style={{
+            backgroundColor: "#374151",
+            padding: "12px",
+            borderRadius: "6px",
+            color: "#ffffff",
+            fontSize: "12px",
+            overflow: "auto",
+          }}
+        >
+          {initError}
+        </pre>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          style={{
+            marginTop: "16px",
+            padding: "8px 16px",
+            backgroundColor: "#667eea",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+          }}
+        >
+          Reload Application
+        </button>
+      </div>
+    );
+  }
 
   return (
     <>

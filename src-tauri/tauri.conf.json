@@ -69,12 +69,31 @@
     "withGlobalTauri": true,
     "windows": [
       {
+        "label": "splash",
+        "title": "Pawn Appétit",
+        "url": "splash.html",
+        "width": 400,
+        "height": 300,
+        "center": true,
+        "resizable": false,
+        "maximizable": false,
+        "minimizable": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "decorations": false,
+        "transparent": true,
+        "visible": true,
+        "backgroundColor": "#1a1b1e"
+      },
+      {
+        "label": "main",
         "title": "Pawn Appétit",
         "maximized": true,
         "visible": false,
         "decorations": false,
         "minWidth": 800,
-        "minimizable": true
+        "minimizable": true,
+        "backgroundColor": "#1a1b1e"
       }
     ],
     "security": {
