@@ -220,7 +220,7 @@ export default function DatabasesPage() {
                                         size="xs"
                                         leftSection={<IconStar size={12} />}
                                       >
-                                        {t("features.databases.settings.referenceDatabase_short")}
+                                        {t("features.databases.settings.referenceDatabaseShort")}
                                       </Badge>
                                     </Tooltip>
                                   )}
