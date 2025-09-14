@@ -1,5 +1,17 @@
 # Pawn Appétit
 
+## v0.6.2
+
+### ✨ Features
+
+* **Logging**
+  * Added **EventMonitor component** for global event tracking
+
+### 🐛 Fixes
+
+* **Engine**
+  * Ensured **bestmove responses** correctly reach the client
+
 ## v0.6.1
 
 ### ✨ Features
@@ -16,7 +28,6 @@
 ### 🧹 Chores
 
 * Updated **project dependencies**
-
 
 ## v0.6.0
 
