@@ -1,70 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" style="background-color: #1a1b1e; margin: 0; padding: 0;">
+<html>
   <head>
     <title>Pawn Appétit</title>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Ultimate Chess Toolkit - Pawn Appétit" />
-    
-    <style>
-      .app-loading {
-        background-color: #1a1b1e;
-        color: #ffffff;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      }
-      
-      .app-loading-spinner {
-        width: 32px;
-        height: 32px;
-        border: 2px solid #374151;
-        border-top: 2px solid #667eea;
-        border-radius: 50%;
-        animation: loading-spin 1s linear infinite;
-        margin-bottom: 16px;
-      }
-      
-      .app-loading-text {
-        color: #9ca3af;
-        font-size: 14px;
-        font-weight: 500;
-      }
-      
-      @keyframes loading-spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-    </style>
   </head>
   <body>
-    <div id="app">
-      <div class="app-loading" id="app-loading">
-        <div class="app-loading-spinner"></div>
-        <div class="app-loading-text">Loading Pawn Appétit...</div>
-      </div>
-    </div>
-    
-    <script>
-      window.addEventListener('DOMContentLoaded', function() {
-        setTimeout(function checkReactMount() {
-          const appElement = document.getElementById('app');
-          const loadingElement = document.getElementById('app-loading');
-          
-          if (appElement && appElement.children.length > 1) {
-            if (loadingElement) {
-              loadingElement.style.display = 'none';
-            }
-          } else {
-            setTimeout(checkReactMount, 100);
-          }
-        }, 100);
-      });
-    </script>
-    
+    <div id="app"></div>
     <script type="module" src="./src/index.tsx"></script>
   </body>
 </html>

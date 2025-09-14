@@ -26,13 +26,13 @@ interface NavbarLinkProps {
 }
 
 function NavbarLink({ url, icon: Icon, label }: NavbarLinkProps) {
-  const matcesRoute = useMatchRoute();
+  const matchesRoute = useMatchRoute();
   return (
     <Tooltip label={label} position="right">
       <Link
         to={url}
         className={cx(classes.link, {
-          [classes.active]: matcesRoute({ to: url, fuzzy: true }),
+          [classes.active]: matchesRoute({ to: url, fuzzy: true }),
         })}
       >
         <Icon size="1.5rem" stroke={1.5} />
@@ -56,7 +56,7 @@ export const linksdata = [
 ];
 
 export function SideBar() {
-  const matcesRoute = useMatchRoute();
+  const matchesRoute = useMatchRoute();
   const { t } = useTranslation();
   const [hideDashboardOnStartup] = useAtom(hideDashboardOnStartupAtom);
 
@@ -80,7 +80,7 @@ export function SideBar() {
             <Link
               to="/settings/keyboard-shortcuts"
               className={cx(classes.link, {
-                [classes.active]: matcesRoute({ to: "/settings/keyboard-shortcuts", fuzzy: true }),
+                [classes.active]: matchesRoute({ to: "/settings/keyboard-shortcuts", fuzzy: true }),
               })}
             >
               <IconKeyboard size="1.5rem" stroke={1.5} />
@@ -90,7 +90,7 @@ export function SideBar() {
             <Link
               to="/settings"
               className={cx(classes.link, {
-                [classes.active]: matcesRoute({ to: "/settings" }),
+                [classes.active]: matchesRoute({ to: "/settings" }),
               })}
             >
               <IconSettings size="1.5rem" stroke={1.5} />
