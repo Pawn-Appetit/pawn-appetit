@@ -31,7 +31,7 @@
         <img src="https://img.shields.io/github/stars/ChessKitchen/pawn-appetit?style=social" alt="GitHub stars">
     </a>
     <a href="https://discord.gg/8hk49G8ZbX">
-        <img src="https://img.shields.io/discord/1234567890?logo=discord&logoColor=white&label=Discord" alt="Discord">
+        <img src="https://img.shields.io/discord/1395671124267896954?logo=discord&logoColor=white&label=Discord" alt="Discord">
     </a>
 </p>
 </div>
