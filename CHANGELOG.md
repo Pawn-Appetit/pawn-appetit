@@ -1,5 +1,12 @@
 # Pawn Appétit
 
+## v0.6.3
+
+### 🐛 Fixes
+
+  * correct typo in matchesRoute variable name
+  * remove styles from html
+
 ## v0.6.2
 
 ### ✨ Features
