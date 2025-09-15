@@ -27,7 +27,7 @@ import { makeSquare, type NormalMove, parseSquare, parseUci, type SquareName } f
 import { chessgroundDests, chessgroundMove } from "chessops/compat";
 import { makeSan } from "chessops/san";
 import domtoimage from "dom-to-image";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { memo, useCallback, useContext, useMemo, useState } from "react";
 import { Helmet } from "react-helmet";
 import { useTranslation } from "react-i18next";
@@ -42,6 +42,7 @@ import {
   autoPromoteAtom,
   autoSaveAtom,
   bestMovesFamily,
+  blindfoldAtom,
   currentEvalOpenAtom,
   currentTabAtom,
   deckAtomFamily,
@@ -56,7 +57,7 @@ import {
   snapArrowsAtom,
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
-import { chessboard } from "@/styles/Chessboard.css";
+import { chessboard, blindfold } from "@/styles/Chessboard.css";
 import { ANNOTATION_INFO, isBasicAnnotation } from "@/utils/annotation";
 import { getMaterialDiff, getVariationLine } from "@/utils/chess";
 import { chessopsError, forceEnPassant, positionFromFen } from "@/utils/chessops";
@@ -149,6 +150,8 @@ function Board({
   const forcedEP = useAtomValue(forcedEnPassantAtom);
   const showCoordinates = useAtomValue(showCoordinatesAtom);
   const autoSave = useAtomValue(autoSaveAtom);
+  const isBlindfold = useAtomValue(blindfoldAtom);
+  const setBlindfold = useSetAtom(blindfoldAtom);
 
   let dests: Map<SquareName, SquareName[]> = pos ? chessgroundDests(pos) : new Map();
   if (forcedEP && pos) {
@@ -465,7 +468,10 @@ function Board({
     [editingMode, currentNode, setFen],
   );
 
-  useHotkeys([[keyMap.TOGGLE_EVAL_BAR.keys, () => setEvalOpen((e) => !e)]]);
+  useHotkeys([
+    [keyMap.TOGGLE_EVAL_BAR.keys, () => setEvalOpen((e) => !e)],
+    [keyMap.BLINDFOLD.keys, () => setBlindfold((v) => !v)],
+  ]);
 
   const square = match(currentNode)
     .with({ san: "O-O" }, ({ halfMoves }) => parseSquare(halfMoves % 2 === 1 ? "g1" : "g8"))
@@ -556,7 +562,7 @@ function Board({
                     }
                   : undefined
               }
-              className={chessboard}
+              className={`${chessboard} ${isBlindfold ? blindfold : ""}`}
               ref={boardRef}
               onClick={() => {
                 eraseDrawablesOnClick && clearShapes();
