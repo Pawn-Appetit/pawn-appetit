@@ -685,6 +685,8 @@
       "fontSizeDesc": "Dimensione generale del carattere",
       "pieceSet": "Set di Pezzi",
       "pieceSetDesc": "Pezzi utilizzati sulle scacchiere",
+      "blindfold": "Alla cieca",
+      "blindfoldDesc": "La scacchiera è visibile ma i pezzi sono nascosti",
       "boardImage": "Immagine della Scacchiera",
       "boardImageDesc": "Immagine utilizzata come sfondo della scacchiera",
       "accentColor": "Colore Evidenziazione",

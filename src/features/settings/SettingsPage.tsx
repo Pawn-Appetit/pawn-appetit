@@ -9,6 +9,7 @@ import FileInput from "@/common/components/FileInput";
 import ColorSchemeSettings from "@/features/themes/components/ColorSchemeSettings";
 import ThemeSelectionSettings from "@/features/themes/components/ThemeSettings";
 import {
+  blindfoldAtom,
   autoPromoteAtom,
   autoSaveAtom,
   enableBoardScrollAtom,
@@ -591,6 +592,23 @@ export default function Page() {
               </Text>
             </div>
             <PiecesSelect />
+          </Group>
+        ),
+      },
+      {
+        id: "blindfold-mode",
+        title: t("settings.appearance.blindfold"),
+        description: t("settings.appearance.blindfoldDesc"),
+        tab: "appearance",
+        component: (
+          <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
+            <div>
+              <Text>{t("settings.appearance.blindfold")}</Text>
+              <Text size="xs" c="dimmed">
+                {t("settings.appearance.blindfoldDesc")}
+              </Text>
+            </div>
+            <SettingsSwitch atom={blindfoldAtom} />
           </Group>
         ),
       },

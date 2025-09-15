@@ -785,6 +785,8 @@
       "fontSizeDesc": "Overall font size",
       "pieceSet": "Piece Set",
       "pieceSetDesc": "Pieces used on the boards",
+      "blindfold": "Blindfold",
+      "blindfoldDesc": "The board is visible but pieces are hidden",
       "boardImage": "Board Image",
       "boardImageDesc": "Image used as the background of the board",
       "accentColor": "Accent Color",

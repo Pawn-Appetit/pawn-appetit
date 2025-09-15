@@ -17,3 +17,12 @@ globalStyle(`${chessboard} > .cg-wrap > cg-container > cg-board > square.last-mo
     backgroundColor: "color-mix(in srgb, var(--dark-color, var(--mantine-primary-color-3)) 40%, transparent)",
   },
 });
+
+export const blindfold = style({});
+globalStyle(`${blindfold} piece`, {
+  opacity: 0,
+});
+
+globalStyle(`${blindfold} square.check`, {
+  backgroundImage: "none",
+});

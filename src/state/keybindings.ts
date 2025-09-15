@@ -68,6 +68,7 @@ const keys = {
 
   SWAP_ORIENTATION: { name: "Swap orientation", keys: "f" },
   CLEAR_SHAPES: { name: "Clear shapes", keys: "mod+l" },
+  BLINDFOLD: { name: "Blindfold", keys: "mod+b" },
 
   // === Game Browsing ===
   PREVIOUS_GAME: { name: "Previous game", keys: "pageup" },
