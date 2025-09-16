@@ -1,78 +1,67 @@
-<p align="center">
-  <!-- Logo -->
-  <a href="https://github.com/ChessKitchen/pawn-appetit">
-    <img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/src-tauri/icons/icon.png" alt="Pawn Appétit Logo" width="120" />
-  </a>
-</p>
+<div align="center">
+<!-- Logo -->
+<a href="https://github.com/ChessKitchen/pawn-appetit">
+<img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/src-tauri/icons/icon.png" alt="Pawn Appétit Logo" width="120" />
+</a>
 
 <!-- Title & Tagline -->
-<h1 align="center" style="margin-bottom: 5px; border-bottom: none;">Pawn Appétit</h1>
-<h2 align="center" style="margin-top: 0; border-bottom: none;">The Ultimate Chess Toolkit</h2>
+<h1 align="center">Pawn Appétit</h1>
 
-<p align="center">
+<div>
 🌐 <a href="https://pawnappetit.com/"><strong>Website</strong></a> •
 💬 <a href="https://discord.gg/8hk49G8ZbX"><strong>Discord</strong></a> •
 📦 <a href="https://github.com/ChessKitchen/pawn-appetit/releases"><strong>Download</strong></a> •
 📚 <a href="https://pawnappetit.com/docs"><strong>Docs</strong></a>
-</p>
+</div>
 
-<!-- Project Status & Quality -->
-<p align="center">
-    <a href="https://github.com/ChessKitchen/pawn-appetit/releases">
-        <img src="https://img.shields.io/github/v/release/ChessKitchen/pawn-appetit?style=for-the-badge&logo=github&logoColor=white&label=Latest&color=success&labelColor=2d3748" alt="Latest Release">
-    </a>
-    <a href="https://github.com/ChessKitchen/pawn-appetit/actions/workflows/test.yml">
-        <img src="https://img.shields.io/github/actions/workflow/status/ChessKitchen/pawn-appetit/test.yml?style=for-the-badge&logo=github&label=Build&logoColor=white&color=success&labelColor=2d3748" alt="Build Status">
-    </a>
-    <a href="https://github.com/ChessKitchen/pawn-appetit/blob/main/LICENSE">
-        <img src="https://img.shields.io/github/license/ChessKitchen/pawn-appetit?style=for-the-badge&logo=opensourceinitiative&logoColor=white&color=blue&labelColor=2d3748" alt="License">
-    </a>
-</p>
+<br />
 
-<!-- Community & Engagement -->
-<p align="center">
-    <a href="https://github.com/ChessKitchen/pawn-appetit/stargazers">
-        <img src="https://img.shields.io/github/stars/ChessKitchen/pawn-appetit?style=for-the-badge&logo=github&logoColor=white&label=Stars&color=yellow&labelColor=2d3748" alt="GitHub Stars">
-    </a>
-    <a href="https://github.com/ChessKitchen/pawn-appetit/network/members">
-        <img src="https://img.shields.io/github/forks/ChessKitchen/pawn-appetit?style=for-the-badge&logo=github&logoColor=white&label=Forks&color=orange&labelColor=2d3748" alt="GitHub Forks">
-    </a>
-    <a href="https://discord.gg/8hk49G8ZbX">
-        <img src="https://img.shields.io/discord/1395671124267896954?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=7289da&labelColor=2d3748" alt="Discord Community">
-    </a>
-    <a href="https://github.com/ChessKitchen/pawn-appetit/graphs/contributors">
-        <img src="https://img.shields.io/github/contributors/ChessKitchen/pawn-appetit?style=for-the-badge&logo=github&logoColor=white&label=Contributors&color=brightgreen&labelColor=2d3748" alt="Contributors">
-    </a>
-</p>
-
+<!-- Project Info -->
+<a href="https://github.com/ChessKitchen/pawn-appetit/releases">
+<img src="https://img.shields.io/github/v/release/ChessKitchen/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Release&color=success&labelColor=2d3748" alt="Latest Release">
+</a>
+<a href="https://github.com/ChessKitchen/pawn-appetit/stargazers">
+<img src="https://img.shields.io/github/stars/ChessKitchen/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Stars&color=yellow&labelColor=2d3748" alt="GitHub Stars">
+</a>
+<a href="https://github.com/ChessKitchen/pawn-appetit/network/members">
+<img src="https://img.shields.io/github/forks/ChessKitchen/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Forks&color=orange&labelColor=2d3748" alt="GitHub Forks">
+</a>
+<a href="https://github.com/ChessKitchen/pawn-appetit/graphs/contributors">
+<img src="https://img.shields.io/github/contributors/ChessKitchen/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Contributors&color=brightgreen&labelColor=2d3748" alt="Contributors">
+</a>
+<a href="https://github.com/ChessKitchen/pawn-appetit/issues">
+<img src="https://img.shields.io/github/issues/ChessKitchen/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Issues&color=red&labelColor=2d3748" alt="Issues">
+</a>
+<!-- Build & Quality -->
+<a href="https://github.com/ChessKitchen/pawn-appetit/actions/workflows/test.yml">
+<img src="https://img.shields.io/github/actions/workflow/status/ChessKitchen/pawn-appetit/test.yml?style=flat-square&logo=github&label=Build&logoColor=white&color=success&labelColor=2d3748" alt="Build Status">
+</a>
+<a href="https://github.com/ChessKitchen/pawn-appetit/discussions">
+<img src="https://img.shields.io/github/discussions/ChessKitchen/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Discussions&color=blue&labelColor=2d3748" alt="Discussions">
+</a>
 <!-- Platform Support -->
-<p align="center">
-    <img src="https://img.shields.io/badge/Platform-Windows-0078d4?style=for-the-badge&logo=windows&logoColor=white&labelColor=2d3748" alt="Windows Support" />
-    <img src="https://img.shields.io/badge/Platform-macOS-000000?style=for-the-badge&logo=apple&logoColor=white&labelColor=2d3748" alt="macOS Support" />
-    <img src="https://img.shields.io/badge/Platform-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black&labelColor=2d3748" alt="Linux Support" />
-</p>
+<a href="https://github.com/ChessKitchen/pawn-appetit#supported-platforms">
+<img src="https://img.shields.io/badge/Platforms-Windows%20|%20macOS%20|%20Linux-blue?style=flat-square&logo=windows&logoColor=white&labelColor=2d3748" alt="Supported Platforms" />
+</a>
+<!-- Miscellaneous -->
+<a href="https://github.com/ChessKitchen/pawn-appetit/blob/main/LICENSE">
+<img src="https://img.shields.io/github/license/ChessKitchen/pawn-appetit?style=flat-square&logo=opensourceinitiative&logoColor=white&color=blue&labelColor=2d3748" alt="License">
+</a>
+<a href="https://github.com/ChessKitchen/pawn-appetit/releases">
+<img src="https://img.shields.io/github/downloads/ChessKitchen/pawn-appetit/total?style=flat-square&logo=download&logoColor=white&label=Downloads&color=brightgreen&labelColor=2d3748" alt="Total Downloads" />
+</a>
+<img src="https://img.shields.io/github/last-commit/ChessKitchen/pawn-appetit?style=flat-square&logo=git&logoColor=white&label=Updated&color=blue&labelColor=2d3748" alt="Last Commit">
+<img src="https://img.shields.io/github/commit-activity/m/ChessKitchen/pawn-appetit?style=flat-square&logo=pulse&logoColor=white&label=Activity&color=green&labelColor=2d3748" alt="Monthly Activity">
 
-<!-- Download & Activity Stats -->
-<p align="center">
-    <a href="https://github.com/ChessKitchen/pawn-appetit/releases">
-        <img src="https://img.shields.io/github/downloads/ChessKitchen/pawn-appetit/total?style=flat-square&logo=download&logoColor=white&label=Downloads&color=brightgreen&labelColor=2d3748" alt="Total Downloads" />
-    </a>
-    <img src="https://img.shields.io/github/last-commit/ChessKitchen/pawn-appetit?style=flat-square&logo=git&logoColor=white&label=Updated&color=blue&labelColor=2d3748" alt="Last Commit">
-    <img src="https://img.shields.io/github/commit-activity/m/ChessKitchen/pawn-appetit?style=flat-square&logo=pulse&logoColor=white&label=Activity&color=green&labelColor=2d3748" alt="Monthly Activity">
-    <a href="https://github.com/ChessKitchen/pawn-appetit/issues">
-        <img src="https://img.shields.io/github/issues/ChessKitchen/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Issues&color=red&labelColor=2d3748" alt="Open Issues">
-    </a>
-</p>
+<br />
 
-<p align="center" style="margin-top: 20px;">
-  <a href="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/banner.png" target="_blank">
-    <img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/banner.png" alt="Pawn Appétit GUI screenshot showcasing the main interface" width="85%" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);" />
-  </a>
+<a href="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/banner.png" target="_blank">
+<img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/banner.png" alt="Pawn Appétit GUI screenshot showcasing the main interface" width="85%" />
+</a>
+<p>
+<em>Experience professional chess analysis with an intuitive, modern interface</em>
 </p>
-
-<p align="center">
-  <em>Experience professional chess analysis with an intuitive, modern interface</em>
-</p>
+</div>
 
 ## 🎯 About Pawn Appétit
 
@@ -173,9 +162,9 @@ Explore Pawn Appétit’s clean and modern interface:
 
 | Platform | Download |
 |----------|----------|
-| **Windows** | [![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/ChessKitchen/pawn-appetit/releases/latest) |
-| **macOS** | [![macOS](https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/ChessKitchen/pawn-appetit/releases/latest) |
-| **Linux** | [![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/ChessKitchen/pawn-appetit/releases/latest) |
+| **Windows** | [![Windows](https://img.shields.io/badge/Windows-0078D6?style=flat-square&logo=windows&logoColor=white)](https://github.com/ChessKitchen/pawn-appetit/releases/latest) |
+| **macOS** | [![macOS](https://img.shields.io/badge/macOS-000000?style=flat-square&logo=apple&logoColor=white)](https://github.com/ChessKitchen/pawn-appetit/releases/latest) |
+| **Linux** | [![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat-square&logo=linux&logoColor=black)](https://github.com/ChessKitchen/pawn-appetit/releases/latest) |
 
 </div>
 
@@ -380,10 +369,10 @@ Pawn Appétit is for chess players **all around the world**! We’re committed t
 
 ### 📊 Translation Stats
 
-![Translation Progress](https://img.shields.io/badge/Languages-16-blue?style=for-the-badge&logo=google-translate&logoColor=white)
-![Complete Translations](https://img.shields.io/badge/Complete-1-success?style=for-the-badge&logo=checkmark&logoColor=white)
-![In Progress](https://img.shields.io/badge/In_Progress-8-orange?style=for-the-badge&logo=progress&logoColor=white)
-![Need Help](https://img.shields.io/badge/Need_Help-7-red?style=for-the-badge&logo=help&logoColor=white)
+![Translation Progress](https://img.shields.io/badge/Languages-16-blue?style=flat-square&logo=google-translate&logoColor=white)
+![Complete Translations](https://img.shields.io/badge/Complete-1-success?style=flat-square&logo=checkmark&logoColor=white)
+![In Progress](https://img.shields.io/badge/In_Progress-8-orange?style=flat-square&logo=progress&logoColor=white)
+![Need Help](https://img.shields.io/badge/Need_Help-7-red?style=flat-square&logo=help&logoColor=white)
 
 📢 Want to help translate? See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
