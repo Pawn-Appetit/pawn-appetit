@@ -1,0 +1,185 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior in Pawn Appétit
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the form below to help us understand and fix the issue.
+        
+        **Before submitting:**
+        - 🔍 [Search existing issues](https://github.com/ChessKitchen/pawn-appetit/issues) to avoid duplicates
+        - 💬 Join our [Discord community](https://discord.gg/8hk49G8ZbX) for quick help and discussions
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm the following before submitting your bug report
+      options:
+        - label: I have searched for existing issues that describe this bug
+          required: true
+        - label: I have read the [Contributing Guidelines](https://github.com/ChessKitchen/pawn-appetit/blob/main/CONTRIBUTING.md)
+          required: true
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: 🐛 Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Describe what happened and what you expected to happen instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 🔄 Steps to Reproduce
+      description: Detailed steps to reproduce the behavior
+      placeholder: |
+        1. Open Pawn Appétit
+        2. Navigate to [specific section]
+        3. Click on [specific button/element]
+        4. See error/unexpected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: ✅ Expected Behavior
+      description: A clear description of what you expected to happen
+      placeholder: Describe the expected outcome
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: ❌ Actual Behavior
+      description: A clear description of what actually happened
+      placeholder: Describe what actually occurred instead
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 🚨 Severity Level
+      description: How severe is this bug?
+      options:
+        - "Critical - App crashes or completely unusable"
+        - "High - Major feature broken, significant impact"
+        - "Medium - Feature partially broken, workaround exists"
+        - "Low - Minor issue, cosmetic problem"
+        - "Enhancement - Suggestion for improvement"
+    validations:
+      required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: 📱 App Version
+      description: Which version of Pawn Appétit are you using?
+      placeholder: "e.g., v0.6.2 (check in Settings > About)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: 💻 Operating System
+      description: Which operating system are you using?
+      options:
+        - "Windows 11"
+        - "Windows 10"
+        - "macOS Sonoma (14.x)"
+        - "macOS Ventura (13.x)"
+        - "macOS Monterey (12.x)"
+        - "Ubuntu 22.04 LTS"
+        - "Ubuntu 20.04 LTS"
+        - "Other Linux (please specify in additional info)"
+        - "Other (please specify in additional info)"
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: 🟢 Node.js Version (for development issues)
+      description: If this is a development/build issue, what Node.js version are you using?
+      placeholder: "e.g., v20.10.0 (run 'node --version')"
+
+  - type: textarea
+    id: chess-context
+    attributes:
+      label: ♟️ Chess-Specific Context
+      description: Additional context related to chess functionality
+      placeholder: |
+        - Chess engine being used (if applicable):
+        - PGN file details (size, source, special notation):
+        - Opening database in use:
+        - Specific position/game where bug occurs:
+        - Time control settings:
+        - Analysis depth settings:
+
+  - type: textarea
+    id: console-logs
+    attributes:
+      label: 📋 Console Logs/Error Messages
+      description: |
+        Any error messages from the developer console or log files.
+        
+        **To access logs:**
+        - **Desktop App**: Check `~/.pawn-appetit/logs/` directory
+        - **Development**: Open DevTools (F12) and check Console tab
+      placeholder: Paste any relevant error messages or logs here
+      render: shell
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 📸 Screenshots/Screen Recordings
+      description: |
+        If applicable, add screenshots or screen recordings to help explain the problem.
+        You can drag and drop images directly into this text area.
+      placeholder: Drag and drop images here or use the attach button above
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📝 Additional Context
+      description: Any other context about the problem here
+      placeholder: |
+        - Does this happen consistently or intermittently?
+        - Are there any workarounds you've found?
+        - Did this work in a previous version?
+        - Any other relevant information
+
+  - type: dropdown
+    id: willing-to-contribute
+    attributes:
+      label: 🤝 Contribution
+      description: Would you be willing to help fix this bug?
+      options:
+        - "Yes, I'd like to work on a fix"
+        - "Yes, but I might need guidance"
+        - "Maybe, depending on complexity"
+        - "No, just reporting"
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        **What happens next?**
+        1. 🏷️ Your issue will be automatically labeled and assigned for triage
+        2. 🔍 A maintainer will review and potentially ask for more information
+        3. 🚀 If confirmed, the bug will be prioritized based on severity and impact
+        4. 💬 Join our [Discord](https://discord.gg/8hk49G8ZbX) for real-time updates and discussions
+        
+        Thank you for helping improve Pawn Appétit!

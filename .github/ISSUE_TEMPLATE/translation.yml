@@ -1,0 +1,204 @@
+name: 🌍 Translation Issue
+description: Report translation issues or request language support
+title: "[Translation]: "
+labels: ["translation", "i18n", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us make Pawn Appétit accessible to chess players worldwide! 🌍
+        
+        **Before submitting:**
+        - 🔍 [Search existing translation issues](https://github.com/ChessKitchen/pawn-appetit/issues?q=is%3Aissue+label%3Atranslation)
+        - 💬 Join our [Discord community](https://discord.gg/8hk49G8ZbX) to coordinate with other translators
+        - 📖 Check our [Translation Contributing Guide](https://github.com/ChessKitchen/pawn-appetit/blob/main/CONTRIBUTING_TRANSLATIONS.md)
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm the following before submitting
+      options:
+        - label: I have searched for existing translation issues for this language
+          required: true
+        - label: I have read the translation contributing guidelines
+          required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: 🎯 Issue Type
+      description: What type of translation issue is this?
+      options:
+        - "New language request - Language not yet supported"
+        - "Missing translations - Untranslated text in existing language"
+        - "Incorrect translation - Wrong or poor quality translation"
+        - "Chess terminology - Chess-specific terms need correction"
+        - "Cultural adaptation - Text needs cultural context adjustments"
+        - "RTL language support - Right-to-left language display issues"
+        - "Pluralization issues - Incorrect plural forms"
+        - "Context issues - Translation doesn't fit the UI context"
+        - "Other (please specify below)"
+    validations:
+      required: true
+
+  - type: input
+    id: language
+    attributes:
+      label: 🗣️ Language
+      description: Which language is this issue about?
+      placeholder: "e.g., Spanish (es), German (de), Arabic (ar), Chinese Simplified (zh-CN)"
+    validations:
+      required: true
+
+  - type: input
+    id: native-speaker
+    attributes:
+      label: 👤 Native Speaker Status
+      description: Are you a native speaker of this language?
+      placeholder: "Yes/No - This helps us prioritize feedback"
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-text
+    attributes:
+      label: 📝 Current Text (if applicable)
+      description: What is the current translation that needs to be changed?
+      placeholder: |
+        Copy the exact text currently shown in the app.
+        Include the location where you found it (e.g., "Settings > General > Language")
+
+  - type: textarea
+    id: proposed-text
+    attributes:
+      label: ✨ Proposed Translation
+      description: What should the text be translated to?
+      placeholder: |
+        Provide your suggested translation.
+        If multiple options are possible, list them with explanations.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context-location
+    attributes:
+      label: 📍 Context & Location
+      description: Where in the app does this text appear?
+      placeholder: |
+        - Specific page/section: (e.g., "Game Analysis", "Settings", "Main Menu")
+        - UI element: (e.g., "Button", "Menu item", "Error message", "Tooltip")
+        - Translation key (if known): (e.g., "analysis.engine.depth")
+        - Screenshots can be helpful (drag and drop below)
+
+  - type: textarea
+    id: chess-terminology
+    attributes:
+      label: ♟️ Chess Terminology Context
+      description: For chess-specific terms, provide additional context
+      placeholder: |
+        - Standard chess terminology in this language:
+        - Regional variations or preferences:
+        - Official chess federation terminology (if applicable):
+        - Common usage in chess books/websites in this language:
+        - FIDE official translations (if available):
+
+  - type: textarea
+    id: cultural-context
+    attributes:
+      label: 🌏 Cultural & Linguistic Context
+      description: Any cultural or linguistic considerations?
+      placeholder: |
+        - Formal vs informal tone preferences
+        - Cultural considerations for chess terms
+        - Gender-specific language requirements
+        - Regional dialect considerations
+        - Common practices in chess software for this language
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: ⚡ Urgency Level
+      description: How critical is this translation issue?
+      options:
+        - "Critical - Prevents app usage or causes confusion"
+        - "High - Important for user experience"
+        - "Medium - Improves clarity and professionalism"
+        - "Low - Minor improvement"
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected-areas
+    attributes:
+      label: 📂 Affected Files/Sections
+      description: Which parts of the app are affected? (if you know)
+      placeholder: |
+        - Specific locale files: (e.g., "src/locales/es/common.json")
+        - UI sections: (e.g., "All menu items", "Error messages", "Tutorial text")
+        - Feature areas: (e.g., "Game analysis", "Opening database", "Settings")
+
+  - type: dropdown
+    id: verification-needed
+    attributes:
+      label: ✅ Native Speaker Verification
+      description: Does this need verification by another native speaker?
+      options:
+        - "Yes - Complex chess terminology"
+        - "Yes - Cultural/regional considerations"
+        - "Yes - Technical accuracy"
+        - "No - Simple correction"
+        - "Not sure"
+    validations:
+      required: false
+
+  - type: textarea
+    id: references
+    attributes:
+      label: 📚 References & Sources
+      description: Any reference materials that support your translation?
+      placeholder: |
+        - Chess federation official terms
+        - Chess literature in this language
+        - Other chess software translations
+        - Dictionary or linguistic resources
+        - Regional chess community feedback
+
+  - type: dropdown
+    id: willing-to-contribute
+    attributes:
+      label: 🤝 Contribution
+      description: Would you be interested in helping with translations?
+      options:
+        - "Yes, I'd like to be a regular translator for this language"
+        - "Yes, I can help review translations occasionally"
+        - "Yes, I can help with chess terminology specifically"
+        - "Yes, but only for this specific issue"
+        - "No, just reporting this issue"
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: 📋 Additional Information
+      description: Any other relevant information
+      placeholder: |
+        - Related translation issues
+        - Coordination with other translators
+        - Timeline considerations
+        - Any other context
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        **What happens next?**
+        1. 🏷️ Your translation issue will be labeled and reviewed
+        2. 👥 We may connect you with other translators for this language
+        3. ✍️ If you're interested in contributing, we'll help you get started
+        4. 🌍 Join our [Discord](https://discord.gg/8hk49G8ZbX) to coordinate with the translation community
+        
+        Thank you for helping make chess accessible to everyone!

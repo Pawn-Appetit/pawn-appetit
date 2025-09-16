@@ -1,0 +1,195 @@
+name: 🚀 Feature Request
+description: Suggest a new feature or improvement for Pawn Appétit
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to make Pawn Appétit even better? We'd love to hear it! 
+        
+        **Before submitting:**
+        - 🔍 [Search existing issues](https://github.com/ChessKitchen/pawn-appetit/issues) to see if someone already suggested this
+        - 💬 Join our [Discord community](https://discord.gg/8hk49G8ZbX) to discuss your idea with other users
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm the following before submitting your feature request
+      options:
+        - label: I have searched for existing feature requests similar to this one
+          required: true
+        - label: I have read the [Contributing Guidelines](https://github.com/ChessKitchen/pawn-appetit/blob/main/CONTRIBUTING.md)
+          required: true
+
+  - type: textarea
+    id: problem-description
+    attributes:
+      label: 🎯 Problem Description
+      description: What problem does this feature solve? What pain point are you experiencing?
+      placeholder: |
+        Describe the current limitation or problem that motivated this feature request.
+        For example: "Currently, when analyzing games, I have to manually..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: 💡 Proposed Solution
+      description: Describe your ideal solution to the problem
+      placeholder: |
+        Explain how you envision this feature working. Be as specific as possible.
+        Include UI/UX details if applicable.
+    validations:
+      required: true
+
+  - type: textarea
+    id: examples-mockups
+    attributes:
+      label: 🎨 Examples & Mockups
+      description: |
+        Provide examples, mockups, or references to help illustrate your idea.
+        You can drag and drop images directly into this text area.
+      placeholder: |
+        - Screenshots from other chess apps showing similar functionality
+        - Hand-drawn mockups or wireframes
+        - Links to relevant examples
+        - Drag and drop images here
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternative Solutions
+      description: What alternative solutions have you considered?
+      placeholder: |
+        Describe any alternative approaches you've thought of or workarounds you currently use.
+        This helps us understand the full scope of the problem.
+
+  - type: dropdown
+    id: chess-domain
+    attributes:
+      label: ♟️ Chess Domain Area
+      description: Which chess-related area does this feature primarily affect?
+      options:
+        - "Game Analysis & Engine Integration"
+        - "PGN Import/Export & File Management"
+        - "Opening Database & Theory"
+        - "Position Setup & Board Editor"
+        - "Game Database & Search"
+        - "Study Plans & Training"
+        - "UI/UX & User Interface"
+        - "Performance & Speed"
+        - "Import/Export & Data Exchange"
+        - "Settings & Customization"
+        - "Other (please specify below)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: user-type
+    attributes:
+      label: 👤 Target User Type
+      description: Which type of users would benefit most from this feature?
+      options:
+        - "Beginner chess players"
+        - "Intermediate players"
+        - "Advanced/Expert players"
+        - "Chess coaches & teachers"
+        - "Tournament players"
+        - "Chess streamers & content creators"
+        - "All users regardless of skill level"
+        - "Developers & power users"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: implementation-complexity
+    attributes:
+      label: 🛠️ Estimated Implementation Complexity
+      description: How complex do you think this feature would be to implement?
+      options:
+        - "Simple - Minor UI changes or settings additions"
+        - "Moderate - New UI components or data processing"
+        - "Complex - Significant backend/frontend changes"
+        - "Major - Requires new architecture or external integrations"
+        - "I'm not sure"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 📋 Priority Level
+      description: How important is this feature to you and your workflow?
+      options:
+        - "Critical - I can't use the app effectively without this"
+        - "High - This would significantly improve my experience"
+        - "Medium - Nice to have, would be helpful"
+        - "Low - Minor improvement, not essential"
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-considerations
+    attributes:
+      label: 🔧 Technical Considerations
+      description: Any technical aspects, constraints, or requirements you're aware of?
+      placeholder: |
+        - Performance requirements
+        - Cross-platform compatibility needs
+        - Integration with existing chess engines
+        - File format considerations
+        - Memory or storage requirements
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: 📖 Use Cases & User Stories
+      description: Provide specific examples of how this feature would be used
+      placeholder: |
+        Example scenarios:
+        "As a chess coach, I want to... so that I can..."
+        "When analyzing my tournament games, I need to... because..."
+        "During online lessons, this feature would help me..."
+
+  - type: dropdown
+    id: willing-to-contribute
+    attributes:
+      label: 🤝 Contribution
+      description: Would you be interested in helping implement this feature?
+      options:
+        - "Yes, I'd like to implement this myself"
+        - "Yes, but I would need guidance"
+        - "I could help with testing/feedback"
+        - "I could help with design/mockups"
+        - "I could provide chess expertise/domain knowledge"
+        - "No, just suggesting the idea"
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📝 Additional Context
+      description: Any other context, links, or information relevant to this feature
+      placeholder: |
+        - Links to similar features in other applications
+        - Related chess concepts or terminology
+        - Community feedback or discussions
+        - Any other relevant information
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        **What happens next?**
+        1. 🏷️ Your feature request will be labeled and reviewed by maintainers
+        2. 💬 Community discussion may be opened on [Discord](https://discord.gg/8hk49G8ZbX)
+        3. 📊 The feature will be evaluated based on user impact, complexity, and project goals
+        4. 🎯 If approved, it will be added to our development roadmap
+        
+        Thank you for helping shape the future of Pawn Appétit!

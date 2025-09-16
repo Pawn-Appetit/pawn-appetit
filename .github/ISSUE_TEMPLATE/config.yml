@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discord Community
+    url: https://discord.gg/8hk49G8ZbX
+    about: Join our Discord server for real-time help, discussions, and community support
+  - name: 📖 Contributing Guidelines
+    url: https://github.com/ChessKitchen/pawn-appetit/blob/main/CONTRIBUTING.md
+    about: Read our comprehensive guide for contributing to Pawn Appétit
+  - name: 🌍 Translation Guidelines
+    url: https://github.com/ChessKitchen/pawn-appetit/blob/main/CONTRIBUTING_TRANSLATIONS.md
+    about: Learn how to contribute translations and help make chess accessible worldwide
+  - name: 📚 Project README
+    url: https://github.com/ChessKitchen/pawn-appetit#readme
+    about: Main project documentation with setup instructions and feature overview

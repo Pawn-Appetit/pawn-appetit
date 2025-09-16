@@ -1,0 +1,226 @@
+name: 📚 Documentation & Help
+description: Request documentation improvements or ask for help
+title: "[Docs]: "
+labels: ["documentation", "help-wanted", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us improve Pawn Appétit's documentation and user experience! 📚
+        
+        **Before submitting:**
+        - 🔍 [Search existing documentation issues](https://github.com/ChessKitchen/pawn-appetit/issues?q=is%3Aissue+label%3Adocumentation)
+        - 📖 Check our current [README](https://github.com/ChessKitchen/pawn-appetit/blob/main/README.md) and [Contributing Guide](https://github.com/ChessKitchen/pawn-appetit/blob/master/CONTRIBUTING.md)
+        - 💬 Join our [Discord community](https://discord.gg/8hk49G8ZbX) for real-time help and discussions
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm the following before submitting
+      options:
+        - label: I have searched for existing documentation issues
+          required: true
+        - label: I have checked the current documentation
+          required: true
+
+  - type: dropdown
+    id: documentation-type
+    attributes:
+      label: 📋 Documentation Type
+      description: What type of documentation is this about?
+      options:
+        - "User Guide - How to use the app features"
+        - "Installation Guide - Setup and installation instructions"
+        - "Developer Documentation - API, architecture, contributing"
+        - "Troubleshooting - Common issues and solutions"
+        - "Chess Features Guide - Chess-specific functionality"
+        - "Translation Guide - How to contribute translations"
+        - "FAQ - Frequently asked questions"
+        - "Changelog - Release notes and version history"
+        - "README - Main project documentation"
+        - "Code Comments - Inline code documentation"
+        - "Other (please specify below)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue-category
+    attributes:
+      label: 🎯 Issue Category
+      description: What kind of documentation issue is this?
+      options:
+        - "Missing documentation - Topic not covered"
+        - "Unclear instructions - Confusing or ambiguous"
+        - "Outdated information - Needs updating"
+        - "Incorrect information - Contains errors"
+        - "Help request - Need assistance with something"
+        - "Improvement suggestion - Make existing docs better"
+        - "New section needed - Add documentation for new area"
+        - "Organization issue - Better structure needed"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target-audience
+    attributes:
+      label: 👥 Target Audience
+      description: Who is the primary audience for this documentation?
+      options:
+        - "End users - People using the chess app"
+        - "New contributors - First-time contributors"
+        - "Developers - Technical contributors"
+        - "Translators - People helping with i18n"
+        - "Chess coaches - Teaching/training use cases"
+        - "System administrators - Deployment/maintenance"
+        - "All audiences"
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-situation
+    attributes:
+      label: 📍 Current Situation
+      description: What's currently missing, unclear, or problematic?
+      placeholder: |
+        Describe the current state of documentation for this topic.
+        - What exists now?
+        - What's confusing or missing?
+        - Where did you look for information?
+        - What specifically caused difficulty?
+    validations:
+      required: true
+
+  - type: textarea
+    id: desired-outcome
+    attributes:
+      label: ✨ Desired Outcome
+      description: What would ideal documentation look like for this topic?
+      placeholder: |
+        Describe what you'd like to see:
+        - What information should be included?
+        - How should it be organized?
+        - What examples would be helpful?
+        - What format would work best?
+    validations:
+      required: true
+
+  - type: textarea
+    id: specific-questions
+    attributes:
+      label: ❓ Specific Questions (if asking for help)
+      description: If this is a help request, what specific questions do you have?
+      placeholder: |
+        List your specific questions:
+        - How do I configure [specific feature]?
+        - What are the requirements for [specific task]?
+        - Where can I find information about [specific topic]?
+
+  - type: textarea
+    id: context-details
+    attributes:
+      label: 🔧 Context & Technical Details
+      description: Provide relevant context for your documentation request
+      placeholder: |
+        - Operating System: (Windows/macOS/Linux)
+        - App version: (if relevant)
+        - Development environment: (if contributing)
+        - Experience level: (beginner/intermediate/advanced)
+        - Specific use case or scenario:
+
+  - type: dropdown
+    id: chess-specific
+    attributes:
+      label: ♟️ Chess-Specific Documentation
+      description: Does this involve chess-specific features or concepts?
+      options:
+        - "Yes - Chess engine integration"
+        - "Yes - PGN file handling"
+        - "Yes - Opening database usage"
+        - "Yes - Game analysis features"
+        - "Yes - Position setup and editing"
+        - "Yes - Chess notation and formats"
+        - "Yes - Tournament and time controls"
+        - "No - General app functionality"
+    validations:
+      required: false
+
+  - type: textarea
+    id: existing-resources
+    attributes:
+      label: 📚 Existing Resources Found
+      description: What documentation or resources have you already consulted?
+      placeholder: |
+        List what you've already checked:
+        - README sections
+        - Wiki pages
+        - Code comments
+        - Online tutorials
+        - Community discussions
+        - Other chess software documentation
+
+  - type: textarea
+    id: suggested-content
+    attributes:
+      label: 📝 Suggested Content/Improvements
+      description: Do you have specific suggestions for the documentation?
+      placeholder: |
+        If you have ideas for content:
+        - Outline of sections to include
+        - Specific examples that would help
+        - Links to good examples from other projects
+        - Draft content you'd like to contribute
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: ⚡ Priority Level
+      description: How important is this documentation improvement?
+      options:
+        - "Critical - Blocking users or contributors"
+        - "High - Significantly improves experience"
+        - "Medium - Helpful improvement"
+        - "Low - Nice to have"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: willing-to-contribute
+    attributes:
+      label: 🤝 Contribution
+      description: Would you be interested in helping improve the documentation?
+      options:
+        - "Yes, I'd like to write the documentation myself"
+        - "Yes, I can help review and edit"
+        - "Yes, I can provide technical expertise"
+        - "Yes, I can help with examples and use cases"
+        - "I can provide feedback on drafts"
+        - "No, just requesting the improvement"
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📋 Additional Context
+      description: Any other relevant information
+      placeholder: |
+        - Related issues or discussions
+        - Screenshots of confusing areas
+        - Links to relevant external resources
+        - Timeline considerations
+        - Any other context
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        **What happens next?**
+        1. 🏷️ Your documentation request will be labeled and reviewed
+        2. 📝 If this is a help request, community members or maintainers will respond
+        3. 📚 For improvement suggestions, we'll evaluate and potentially assign to contributors
+        4. 💬 Join our [Discord](https://discord.gg/8hk49G8ZbX) for real-time help and collaboration
+        
+        Thank you for helping make Pawn Appétit more accessible and easier to use!
