@@ -13,16 +13,15 @@ interface TranslationProgress {
   [key: string]: number;
 }
 
-interface LanguageEmoji {
-  [key: string]: string;
+interface LanguageInfo {
+  emoji: string;
+  nativeName: string;
+  englishName: string;
 }
 
-/**
- * Loads translation data from a locale directory
- * @param localePath - Path to the locale directory
- * @returns Parsed translation data
- * @throws Error if directory cannot be read or parsed
- */
+interface LanguageMapping {
+  [key: string]: LanguageInfo;
+}
 export function loadLocaleData(localePath: string): TranslationData | undefined {
   try {
     const indexPath = join(localePath, "index.ts");
@@ -33,12 +32,10 @@ export function loadLocaleData(localePath: string): TranslationData | undefined 
       return undefined;
     }
 
-    // Read the display name from index.ts
     const indexContent = readFileSync(indexPath, "utf-8");
     const displayNameMatch = indexContent.match(/DisplayName:\s*"([^"]+)"/);
     const displayName = displayNameMatch ? displayNameMatch[1] : "Unknown";
 
-    // Read the translation data from common.json
     const commonContent = readFileSync(commonJsonPath, "utf-8");
     const translation = JSON.parse(commonContent);
 
@@ -52,12 +49,6 @@ export function loadLocaleData(localePath: string): TranslationData | undefined 
   }
 }
 
-/**
- * Calculates translation progress percentage
- * @param basePath - Path to base locale directory
- * @param translatedPath - Path to translated locale directory
- * @returns Progress percentage
- */
 function calculateTranslationProgress(basePath: string, translatedPath: string): number {
   try {
     const baseData = loadLocaleData(basePath);
@@ -91,7 +82,6 @@ function calculateTranslationProgress(basePath: string, translatedPath: string):
       return count + (hasTranslation ? 1 : 0);
     }, 0);
 
-        // Write missing keys file if there are missing translations
     if (Object.keys(missingKeys).length > 0) {
       try {
         const outPath = join(translatedPath, "missing.json");
@@ -109,12 +99,6 @@ function calculateTranslationProgress(basePath: string, translatedPath: string):
   }
 }
 
-/**
- * Gets nested value from object using dot notation
- * @param obj - Object to search in
- * @param path - Dot notation path
- * @returns Value at path or undefined
- */
 function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
   return path.split('.').reduce((current: unknown, key: string) => {
     return current && typeof current === 'object' && current !== null 
@@ -123,13 +107,6 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
   }, obj);
 }
 
-/**
- * Flattens nested object structure
- * @param obj - Object to flatten
- * @param path - Current path (used in recursion)
- * @param res - Result accumulator (used in recursion)
- * @returns Flattened object
- */
 function flatten(obj: Record<string, unknown>, path = "", res: Record<string, unknown> = {}): Record<string, unknown> {
   for (const key of Object.keys(obj)) {
     const newPath = path ? `${path}.${key}` : key;
@@ -142,23 +119,23 @@ function flatten(obj: Record<string, unknown>, path = "", res: Record<string, un
   return res;
 }
 
-const LANGUAGE_EMOJIS: LanguageEmoji = {
-  hy: "🇦🇲", // Armenian
-  be: "🇧🇾", // Belarusian
-  zh: "🇨🇳", // Chinese
-  de: "🇩🇪", // German
-  en: "🇺🇸", // English
-  fr: "🇫🇷", // French
-  pl: "🇵🇱", // Polish
-  nb: "🇳🇴", // Norwegian Bokmål
-  pt: "🇵🇹", // Portuguese
-  ru: "🇷🇺", // Russian
-  es: "🇪🇸", // Spanish
-  it: "🇮🇹", // Italian
-  uk: "🇺🇦", // Ukrainian
-  tr: "🇹🇷", // Turkish
-  ja: "🇯🇵", // Japanese
-  ar: "🇸🇦", // Arabic
+const LANGUAGE_INFO: LanguageMapping = {
+  hy: { emoji: "🇦🇲", nativeName: "Հայերեն", englishName: "Armenian" },
+  be: { emoji: "🇧🇾", nativeName: "Беларуская", englishName: "Belarusian" },
+  zh: { emoji: "🇨🇳", nativeName: "中文", englishName: "Chinese" },
+  de: { emoji: "🇩🇪", nativeName: "Deutsch", englishName: "German" },
+  en: { emoji: "🇺🇸", nativeName: "English", englishName: "English" },
+  fr: { emoji: "🇫🇷", nativeName: "Français", englishName: "French" },
+  pl: { emoji: "🇵🇱", nativeName: "Polski", englishName: "Polish" },
+  nb: { emoji: "🇳🇴", nativeName: "Norsk", englishName: "Norwegian Bokmål" },
+  pt: { emoji: "🇵🇹", nativeName: "Português", englishName: "Portuguese" },
+  ru: { emoji: "🇷🇺", nativeName: "Русский", englishName: "Russian" },
+  es: { emoji: "🇪🇸", nativeName: "Español", englishName: "Spanish" },
+  it: { emoji: "🇮🇹", nativeName: "Italiano", englishName: "Italian" },
+  uk: { emoji: "🇺🇦", nativeName: "Українська", englishName: "Ukrainian" },
+  tr: { emoji: "🇹🇷", nativeName: "Türkçe", englishName: "Turkish" },
+  ja: { emoji: "🇯🇵", nativeName: "日本語", englishName: "Japanese" },
+  ar: { emoji: "🇸🇦", nativeName: "العربية", englishName: "Arabic" },
 };
 
 /**
@@ -167,26 +144,64 @@ const LANGUAGE_EMOJIS: LanguageEmoji = {
  * @returns Markdown table string
  */
 function generateMarkdown(translations: TranslationProgress): string {
-  const rows = Object.entries(translations)
+  const sortedLanguages = Object.entries(translations)
     .sort((a, b) => b[1] - a[1])
-    .map(([langCode, percent]) => {
-      const emoji = LANGUAGE_EMOJIS[langCode] || "🌐";
-      const status = getStatusEmoji(percent);
-      return `| ${emoji} ${langCode.toUpperCase()} | ${status} ${percent}% | [${langCode.toUpperCase()}](./src/locales/${langCode}) |`;
+    .map(([langCode, percent]) => ({ langCode, percent }));
+
+  const chunks = [];
+  for (let i = 0; i < sortedLanguages.length; i += 4) {
+    chunks.push(sortedLanguages.slice(i, i + 4));
+  }
+
+  const rows = chunks.map(chunk => {
+    const cells = chunk.map(({ langCode, percent }) => {
+      const info = LANGUAGE_INFO[langCode];
+      if (!info) {
+        console.warn(`Missing language info for ${langCode}`);
+        return generateLanguageCell(langCode, "🌐", langCode.toUpperCase(), percent);
+      }
+      return generateLanguageCell(langCode, info.emoji, info.nativeName, percent);
     });
 
+    while (cells.length < 4) {
+      cells.push('<td></td>');
+    }
+
+    return `    <tr>\n        ${cells.join('\n        ')}\n    </tr>`;
+  });
+
   return [
-    "| Language  | Status   | File                        |",
-    "|-----------|----------|-----------------------------|",
+    '<table>',
     ...rows,
-  ].join("\n");
+    '</table>'
+  ].join('\n');
 }
 
-/**
- * Returns status emoji based on completion percentage
- * @param percent - Completion percentage
- * @returns Status emoji
- */
+function generateLanguageCell(langCode: string, emoji: string, displayName: string, percent: number): string {
+  const colorClass = getColorClass(percent);
+  const statusEmoji = getStatusEmoji(percent);
+  
+  return `<td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/${getEmojiCode(emoji)}.svg" width="24" height="18" alt="${emoji}" /><br />
+            <strong>${displayName}</strong><br />
+            <span style="color: ${colorClass};">${statusEmoji} ${percent}%</span><br />
+            <a href="./src/locales/${langCode}">View</a>
+        </td>`;
+}
+
+function getEmojiCode(emoji: string): string {
+    return [...emoji].map(char => {
+        const codePoint = char.codePointAt(0);
+        return codePoint ? codePoint.toString(16).toLowerCase() : '';
+    }).join('-');
+}
+
+function getColorClass(percent: number): string {
+  if (percent === 100) return "#10B981";
+  if (percent >= 50) return "#F59E0B";
+  return "#EF4444";
+}
+
 function getStatusEmoji(percent: number): string {
   if (percent === 100) return "✅";
   if (percent >= 50) return "🟡";
@@ -195,11 +210,50 @@ function getStatusEmoji(percent: number): string {
 }
 
 /**
- * Updates README.md with translation progress
+ * Calculate translation statistics from translation progress data
+ * @param translations - Translation progress data
+ * @returns Object containing translation statistics
  */
+function calculateTranslationStats(translations: TranslationProgress): {
+  totalLanguages: number;
+  complete: number;
+  inProgress: number;
+  needHelp: number;
+} {
+  const percentages = Object.values(translations);
+  const totalLanguages = percentages.length;
+  const complete = percentages.filter(p => p === 100).length;
+  const inProgress = percentages.filter(p => p >= 50 && p < 100).length;
+  const needHelp = percentages.filter(p => p < 50).length;
+
+  return { totalLanguages, complete, inProgress, needHelp };
+}
+
+/**
+ * Generate Translation Stats badges markdown
+ * @param stats - Translation statistics
+ * @returns Markdown string for badges
+ */
+function generateTranslationStatsBadges(stats: {
+  totalLanguages: number;
+  complete: number;
+  inProgress: number;
+  needHelp: number;
+}): string {
+  return `![Translation Progress](https://img.shields.io/badge/Languages-${stats.totalLanguages}-blue?style=for-the-badge&logo=google-translate&logoColor=white)
+![Complete Translations](https://img.shields.io/badge/Complete-${stats.complete}-success?style=for-the-badge&logo=checkmark&logoColor=white)
+![In Progress](https://img.shields.io/badge/In_Progress-${stats.inProgress}-orange?style=for-the-badge&logo=progress&logoColor=white)
+![Need Help](https://img.shields.io/badge/Need_Help-${stats.needHelp}-red?style=for-the-badge&logo=help&logoColor=white)`;
+}
+
 function updateReadme(): void {
   try {
     const localesDir = "./src/locales";
+    
+    if (!fs.existsSync(localesDir)) {
+      throw new Error(`Locales directory not found: ${localesDir}`);
+    }
+
     const langDirs = fs
       .readdirSync(localesDir)
       .filter((dir) => {
@@ -207,8 +261,12 @@ function updateReadme(): void {
         return fs.statSync(dirPath).isDirectory() && dir !== "en";
       });
 
+    if (langDirs.length === 0) {
+      console.warn("No translation directories found besides English");
+    }
+
     const translations: TranslationProgress = {
-      en: 100, // English is always 100% complete
+      en: 100,
     };
 
     for (const langCode of langDirs) {
@@ -216,15 +274,44 @@ function updateReadme(): void {
       translations[langCode] = percent;
     }
 
-    const readme = fs.readFileSync("./README.md", "utf-8");
-    const table = generateMarkdown(translations);
+    const readmePath = "./README.md";
+    if (!fs.existsSync(readmePath)) {
+      throw new Error(`README.md not found at ${readmePath}`);
+    }
 
-    const updated = readme.replace(
+    const readme = fs.readFileSync(readmePath, "utf-8");
+    const table = generateMarkdown(translations);
+    
+    // Calculate translation statistics for badges
+    const stats = calculateTranslationStats(translations);
+    const statsBadges = generateTranslationStatsBadges(stats);
+
+    const translationStartMarker = "<!-- TRANSLATIONS_START -->";
+    const translationEndMarker = "<!-- TRANSLATIONS_END -->";
+    
+    if (!readme.includes(translationStartMarker) || !readme.includes(translationEndMarker)) {
+      throw new Error("Translation markers not found in README.md");
+    }
+
+    // Update translation table
+    let updated = readme.replace(
       /<!-- TRANSLATIONS_START -->[\s\S]*?<!-- TRANSLATIONS_END -->/,
-      `<!-- TRANSLATIONS_START -->\n${table}\n<!-- TRANSLATIONS_END -->`,
+      `${translationStartMarker}\n${table}\n${translationEndMarker}`,
     );
 
-    fs.writeFileSync("./README.md", updated);
+    // Update Translation Stats badges
+    const badgePattern = /### 📊 Translation Stats\n\n[\s\S]*?(?=\n📢 Want to help translate\?)/;
+    if (badgePattern.test(updated)) {
+      updated = updated.replace(
+        badgePattern,
+        `### 📊 Translation Stats\n\n${statsBadges}\n`,
+      );
+      console.log("✅ Translation Stats badges updated.");
+    } else {
+      console.warn("⚠️  Translation Stats section pattern not found - badges not updated");
+    }
+
+    fs.writeFileSync(readmePath, updated);
     console.log("✅ Translations section updated.");
   } catch (error) {
     console.error("Error updating README:", error);

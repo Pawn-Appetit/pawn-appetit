@@ -1,107 +1,168 @@
-<br />
-<div align="center">
-<a href="https://github.com/ChessKitchen/pawn-appetit">
-    <img width="115" height="115" src="https://github.com/ChessKitchen/pawn-appetit/raw/main/src-tauri/icons/icon.png" alt="Logo">
-</a>
-
-<h3 align="center">Pawn Appétit</h3>
-
 <p align="center">
-    The Ultimate Chess Toolkit
-    <br />
-    <br />
-    <a href="https://pawnappetit.com/">Website</a>
-    ·
-    <a href="https://discord.gg/8hk49G8ZbX">Discord Server</a>
-    ·
-    <a href="https://github.com/ChessKitchen/pawn-appetit/releases">Releases</a>
+  <!-- Logo -->
+  <a href="https://github.com/ChessKitchen/pawn-appetit">
+    <img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/src-tauri/icons/icon.png" alt="Pawn Appétit Logo" width="120" />
+  </a>
 </p>
 
+<!-- Title & Tagline -->
+<h1 align="center" style="margin-bottom: 5px; border-bottom: none;">Pawn Appétit</h1>
+<h2 align="center" style="margin-top: 0; border-bottom: none;">The Ultimate Chess Toolkit</h2>
+
 <p align="center">
-    <a href="https://github.com/ChessKitchen/pawn-appetit/actions/workflows/test.yml">
-        <img src="https://github.com/ChessKitchen/pawn-appetit/workflows/Test/badge.svg" alt="Test Status">
-    </a>
+🌐 <a href="https://pawnappetit.com/"><strong>Website</strong></a> •
+💬 <a href="https://discord.gg/8hk49G8ZbX"><strong>Discord</strong></a> •
+📦 <a href="https://github.com/ChessKitchen/pawn-appetit/releases"><strong>Download</strong></a> •
+📚 <a href="https://pawnappetit.com/docs"><strong>Docs</strong></a>
+</p>
+
+<!-- Project Status & Quality -->
+<p align="center">
     <a href="https://github.com/ChessKitchen/pawn-appetit/releases">
-        <img src="https://img.shields.io/github/v/release/ChessKitchen/pawn-appetit?include_prereleases" alt="Release">
+        <img src="https://img.shields.io/github/v/release/ChessKitchen/pawn-appetit?style=for-the-badge&logo=github&logoColor=white&label=Latest&color=success&labelColor=2d3748" alt="Latest Release">
+    </a>
+    <a href="https://github.com/ChessKitchen/pawn-appetit/actions/workflows/test.yml">
+        <img src="https://img.shields.io/github/actions/workflow/status/ChessKitchen/pawn-appetit/test.yml?style=for-the-badge&logo=github&label=Build&logoColor=white&color=success&labelColor=2d3748" alt="Build Status">
     </a>
     <a href="https://github.com/ChessKitchen/pawn-appetit/blob/main/LICENSE">
-        <img src="https://img.shields.io/github/license/ChessKitchen/pawn-appetit" alt="License">
-    </a>
-    <a href="https://github.com/ChessKitchen/pawn-appetit/stargazers">
-        <img src="https://img.shields.io/github/stars/ChessKitchen/pawn-appetit?style=social" alt="GitHub stars">
-    </a>
-    <a href="https://discord.gg/8hk49G8ZbX">
-        <img src="https://img.shields.io/discord/1395671124267896954?logo=discord&logoColor=white&label=Discord" alt="Discord">
+        <img src="https://img.shields.io/github/license/ChessKitchen/pawn-appetit?style=for-the-badge&logo=opensourceinitiative&logoColor=white&color=blue&labelColor=2d3748" alt="License">
     </a>
 </p>
-</div>
 
-🏆 **The Ultimate Chess Toolkit** - A modern, cross-platform chess GUI that combines powerful analysis, repertoire training, and engine management in one beautiful application.
+<!-- Community & Engagement -->
+<p align="center">
+    <a href="https://github.com/ChessKitchen/pawn-appetit/stargazers">
+        <img src="https://img.shields.io/github/stars/ChessKitchen/pawn-appetit?style=for-the-badge&logo=github&logoColor=white&label=Stars&color=yellow&labelColor=2d3748" alt="GitHub Stars">
+    </a>
+    <a href="https://github.com/ChessKitchen/pawn-appetit/network/members">
+        <img src="https://img.shields.io/github/forks/ChessKitchen/pawn-appetit?style=for-the-badge&logo=github&logoColor=white&label=Forks&color=orange&labelColor=2d3748" alt="GitHub Forks">
+    </a>
+    <a href="https://discord.gg/8hk49G8ZbX">
+        <img src="https://img.shields.io/discord/1395671124267896954?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=7289da&labelColor=2d3748" alt="Discord Community">
+    </a>
+    <a href="https://github.com/ChessKitchen/pawn-appetit/graphs/contributors">
+        <img src="https://img.shields.io/github/contributors/ChessKitchen/pawn-appetit?style=for-the-badge&logo=github&logoColor=white&label=Contributors&color=brightgreen&labelColor=2d3748" alt="Contributors">
+    </a>
+</p>
 
-**Perfect for:** Chess coaches, competitive players, and enthusiasts who want professional-grade tools without the complexity.
+<!-- Platform Support -->
+<p align="center">
+    <img src="https://img.shields.io/badge/Platform-Windows-0078d4?style=for-the-badge&logo=windows&logoColor=white&labelColor=2d3748" alt="Windows Support" />
+    <img src="https://img.shields.io/badge/Platform-macOS-000000?style=for-the-badge&logo=apple&logoColor=white&labelColor=2d3748" alt="macOS Support" />
+    <img src="https://img.shields.io/badge/Platform-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black&labelColor=2d3748" alt="Linux Support" />
+</p>
 
-**Why Pawn Appétit?**
-- 🚀 **Lightning Fast** - Built with Tauri/Rust for native performance
-- 🎯 **User-Focused** - Intuitive design that gets out of your way
-- 🔧 **Highly Customizable** - Themes, layouts, and workflows tailored to you
-- 🌍 **Cross-Platform** - Windows, macOS, and Linux support
-- 🔒 **Privacy First** - Your data stays on your device (optional telemetry)
+<!-- Download & Activity Stats -->
+<p align="center">
+    <a href="https://github.com/ChessKitchen/pawn-appetit/releases">
+        <img src="https://img.shields.io/github/downloads/ChessKitchen/pawn-appetit/total?style=flat-square&logo=download&logoColor=white&label=Downloads&color=brightgreen&labelColor=2d3748" alt="Total Downloads" />
+    </a>
+    <img src="https://img.shields.io/github/last-commit/ChessKitchen/pawn-appetit?style=flat-square&logo=git&logoColor=white&label=Updated&color=blue&labelColor=2d3748" alt="Last Commit">
+    <img src="https://img.shields.io/github/commit-activity/m/ChessKitchen/pawn-appetit?style=flat-square&logo=pulse&logoColor=white&label=Activity&color=green&labelColor=2d3748" alt="Monthly Activity">
+    <a href="https://github.com/ChessKitchen/pawn-appetit/issues">
+        <img src="https://img.shields.io/github/issues/ChessKitchen/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Issues&color=red&labelColor=2d3748" alt="Open Issues">
+    </a>
+</p>
+
+<p align="center" style="margin-top: 20px;">
+  <a href="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/banner.png" target="_blank">
+    <img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/banner.png" alt="Pawn Appétit GUI screenshot showcasing the main interface" width="85%" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);" />
+  </a>
+</p>
+
+<p align="center">
+  <em>Experience professional chess analysis with an intuitive, modern interface</em>
+</p>
+
+## 🎯 About Pawn Appétit
+
+**Pawn Appétit** is a next-generation chess application that brings professional-grade analysis tools to every chess player. Built with modern technology for blazing-fast performance, it combines the power of advanced chess engines with an intuitive interface that gets out of your way.
+
+Whether you're a competitive player analyzing your games, or an enthusiast looking to improve your understanding of the game, Pawn Appétit provides everything you need in one elegant package.
+
+### 🚀 **Why Choose Pawn Appétit?**
+
+<table>
+<tr>
+<td width="50%">
+
+**🔥 Performance First**
+- Built with Rust and Tauri for native speed
+- Launches in under 2 seconds
+- Smooth 60fps animations
+- Efficient memory usage
+
+**🎨 Beautiful & Intuitive**
+- Modern, clean interface design
+- Customizable themes and layouts
+- Accessible and user-friendly
+- Distraction-free analysis mode
+
+</td>
+<td width="50%">
+
+**🔒 Privacy & Control**
+- Your data stays on your device
+- No mandatory accounts or subscriptions
+- Optional, anonymous telemetry
+- Open source and transparent
+
+**🌍 Cross-Platform**
+- Windows, macOS, and Linux support
+- Consistent experience across platforms
+- Native performance on all systems
+- Regular updates and improvements
+
+</td>
+</tr>
+</table>
+
+### 🆚 **The Open Source Advantage**
+
+Unlike expensive proprietary chess software, Pawn Appétit is completely free and open source. This means:
+
+- **No License Fees** - Save hundreds of dollars compared to commercial alternatives
+- **Community Driven** - Features and improvements are guided by actual users
+- **Transparent Development** - See exactly how your chess data is handled
+- **Future Proof** - Never worry about subscription changes or discontinued support
+- **Extensible** - Contribute features or customize the software for your specific needs
 
 ## ✨ Features That Matter
 
 ### 🎯 **Core Features**
-| Feature | Description | Status |
-|---------|-------------|--------|
-| 🔍 **Smart Analysis** | Import from lichess/chess.com, analyze with any UCI engine | ✅ |
-| 🧠 **Repertoire Training** | Spaced repetition system for opening mastery | ✅ |
-| 📊 **Position Search** | Find patterns across your entire game database | ✅ |
-| ⚡ **Engine/Database Management** | Easy engine/database installation and configuration | ✅ |
-| 🎨 **Customizable UI** | Light/dark themes with custom theme creation | ✅ |
-
-### 🚀 **What Makes Us Different**
-- **No Subscription Required** - Open source and completely free
-- **Privacy First** - Your data stays on your device (optional telemetry)
-- **Modern UI** - Built with latest web technologies for smooth experience
-- **Active Development** - Regular updates and new features
-- **Community Driven** - Your feedback shapes the roadmap
-
-## 📈 Performance & Stats
-
-<div>
-
-| Metric | Value |
-|--------|-------|
-| **App Size** | ~50MB (lightweight) |
-| **Startup Time** | <2 seconds |
-| **Supported Formats** | PGN, FEN, UCI engines |
-| **Languages** | 9+ |
-| **Platforms** | Windows, macOS, Linux |
-
-</div>
+| Feature | Description |
+|---------|-------------|
+| 🔍 **Smart Analysis** | Import from lichess/chess.com, analyze with any UCI engine |
+| 🧠 **Repertoire Training** | Spaced repetition system for opening mastery |
+| 📊 **Position Search** | Find patterns across your entire game database |
+| ⚡ **Engine/Database Management** | Easy engine/database installation and configuration |
+| 🎨 **Customizable UI** | Light/dark themes with custom theme creation |
 
 ## 📸 Screenshots
 
-Here are some screenshots of Pawn Appétit in action:
+Explore Pawn Appétit’s clean and modern interface:
 
 <div align="center">
-  <img src="./screenshots/dashboard-page.png" alt="Dashboard Page" width="600" />
-  <br />
-  <em>Dashboard Page</em>
-  <br /><br />
-  <img src="./screenshots/game-page.png" alt="Game Page" width="300" />
-  <img src="./screenshots/analyze-page.png" alt="Analyze Page" width="300" />
-  <br />
-  <em>Game & Analyze Pages</em>
-  <br /><br />
-  <img src="./screenshots/learn-page.png" alt="Learn Page" width="300" />
-  <img src="./screenshots/practice-page.png" alt="Practice Page" width="300" />
-  <br />
-  <em>Learn & Practice Pages</em>
-  <br /><br />
-  <img src="./screenshots/keybindings-page.png" alt="Keybindings Page" width="300" />
-  <img src="./screenshots/settings-page.png" alt="Settings Page" width="300" />
-  <br />
-  <em>Keybindings & Settings Pages</em>
+
+### 🎮 Play & Analyze
+[<img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/play-game.png" alt="Play Game" width="320" />](./screenshots/play-game.png)
+[<img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/analyze-game.png" alt="Analyze Game" width="320" />](./screenshots/analyze-game.png)  
+<em>Play chess games and analyze them with powerful engine tools</em>
+
+---
+
+### 🧩 Learn & Practice
+[<img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/solve-puzzle.png" alt="Solve Puzzle" width="320" />](./screenshots/solve-puzzle.png)
+[<img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/learn.png" alt="Learn" width="320" />](./screenshots/learn.png)  
+<em>Solve puzzles and improve with guided learning</em>
+
+---
+
+### ⚙️ Customize Your Experience
+[<img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/keybindings.png" alt="Keybindings" width="320" />](./screenshots/keybindings.png)
+[<img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/settings-appearance.png" alt="Settings Appearance" width="320" />](./screenshots/settings-appearance.png)  
+<em>Flexible keybindings and appearance settings</em>
+
 </div>
 
 ## 🚀 Quick Start
@@ -204,28 +265,127 @@ The binary will be available in your current directory.
 
 ## 🌍 Translations
 
+Pawn Appétit is for chess players **all around the world**! We’re committed to making professional-grade chess analysis accessible in your language. Join our growing international community and help us reach **every chess player**, no matter where they are.
+
+### 🎯 Translation Progress
+
 <!-- TRANSLATIONS_START -->
-| Language  | Status   | File                        |
-|-----------|----------|-----------------------------|
-| 🇺🇸 EN | ✅ 100% | [EN](./src/locales/en) |
-| 🇩🇪 DE | 🟡 86% | [DE](./src/locales/de) |
-| 🇪🇸 ES | 🟡 86% | [ES](./src/locales/es) |
-| 🇫🇷 FR | 🟡 86% | [FR](./src/locales/fr) |
-| 🇦🇲 HY | 🟡 86% | [HY](./src/locales/hy) |
-| 🇮🇹 IT | 🟡 86% | [IT](./src/locales/it) |
-| 🇷🇺 RU | 🟡 86% | [RU](./src/locales/ru) |
-| 🇹🇷 TR | 🟡 86% | [TR](./src/locales/tr) |
-| 🇨🇳 ZH | 🟡 86% | [ZH](./src/locales/zh) |
-| 🇧🇾 BE | 🔴 48% | [BE](./src/locales/be) |
-| 🇳🇴 NB | 🔴 48% | [NB](./src/locales/nb) |
-| 🇵🇱 PL | 🔴 48% | [PL](./src/locales/pl) |
-| 🇵🇹 PT | 🔴 48% | [PT](./src/locales/pt) |
-| 🇺🇦 UK | 🔴 48% | [UK](./src/locales/uk) |
-| 🇸🇦 AR | 🔴 23% | [AR](./src/locales/ar) |
-| 🇯🇵 JA | 🔴 9% | [JA](./src/locales/ja) |
+<table>
+    <tr>
+        <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1fa-1f1f8.svg" width="24" height="18" alt="🇺🇸" /><br />
+            <strong>English</strong><br />
+            <span style="color: #10B981;">✅ 100%</span><br />
+            <a href="./src/locales/en">View</a>
+        </td>
+        <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1e9-1f1ea.svg" width="24" height="18" alt="🇩🇪" /><br />
+            <strong>Deutsch</strong><br />
+            <span style="color: #F59E0B;">🟡 86%</span><br />
+            <a href="./src/locales/de">View</a>
+        </td>
+        <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1ea-1f1f8.svg" width="24" height="18" alt="🇪🇸" /><br />
+            <strong>Español</strong><br />
+            <span style="color: #F59E0B;">🟡 86%</span><br />
+            <a href="./src/locales/es">View</a>
+        </td>
+        <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1eb-1f1f7.svg" width="24" height="18" alt="🇫🇷" /><br />
+            <strong>Français</strong><br />
+            <span style="color: #F59E0B;">🟡 86%</span><br />
+            <a href="./src/locales/fr">View</a>
+        </td>
+    </tr>
+    <tr>
+        <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1e6-1f1f2.svg" width="24" height="18" alt="🇦🇲" /><br />
+            <strong>Հայերեն</strong><br />
+            <span style="color: #F59E0B;">🟡 86%</span><br />
+            <a href="./src/locales/hy">View</a>
+        </td>
+        <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1ee-1f1f9.svg" width="24" height="18" alt="🇮🇹" /><br />
+            <strong>Italiano</strong><br />
+            <span style="color: #F59E0B;">🟡 86%</span><br />
+            <a href="./src/locales/it">View</a>
+        </td>
+        <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1f7-1f1fa.svg" width="24" height="18" alt="🇷🇺" /><br />
+            <strong>Русский</strong><br />
+            <span style="color: #F59E0B;">🟡 86%</span><br />
+            <a href="./src/locales/ru">View</a>
+        </td>
+        <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1f9-1f1f7.svg" width="24" height="18" alt="🇹🇷" /><br />
+            <strong>Türkçe</strong><br />
+            <span style="color: #F59E0B;">🟡 86%</span><br />
+            <a href="./src/locales/tr">View</a>
+        </td>
+    </tr>
+    <tr>
+        <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1e8-1f1f3.svg" width="24" height="18" alt="🇨🇳" /><br />
+            <strong>中文</strong><br />
+            <span style="color: #F59E0B;">🟡 86%</span><br />
+            <a href="./src/locales/zh">View</a>
+        </td>
+        <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1e7-1f1fe.svg" width="24" height="18" alt="🇧🇾" /><br />
+            <strong>Беларуская</strong><br />
+            <span style="color: #EF4444;">🔴 48%</span><br />
+            <a href="./src/locales/be">View</a>
+        </td>
+        <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1f3-1f1f4.svg" width="24" height="18" alt="🇳🇴" /><br />
+            <strong>Norsk</strong><br />
+            <span style="color: #EF4444;">🔴 48%</span><br />
+            <a href="./src/locales/nb">View</a>
+        </td>
+        <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1f5-1f1f1.svg" width="24" height="18" alt="🇵🇱" /><br />
+            <strong>Polski</strong><br />
+            <span style="color: #EF4444;">🔴 48%</span><br />
+            <a href="./src/locales/pl">View</a>
+        </td>
+    </tr>
+    <tr>
+        <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1f5-1f1f9.svg" width="24" height="18" alt="🇵🇹" /><br />
+            <strong>Português</strong><br />
+            <span style="color: #EF4444;">🔴 48%</span><br />
+            <a href="./src/locales/pt">View</a>
+        </td>
+        <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1fa-1f1e6.svg" width="24" height="18" alt="🇺🇦" /><br />
+            <strong>Українська</strong><br />
+            <span style="color: #EF4444;">🔴 48%</span><br />
+            <a href="./src/locales/uk">View</a>
+        </td>
+        <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1f8-1f1e6.svg" width="24" height="18" alt="🇸🇦" /><br />
+            <strong>العربية</strong><br />
+            <span style="color: #EF4444;">🔴 23%</span><br />
+            <a href="./src/locales/ar">View</a>
+        </td>
+        <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1ef-1f1f5.svg" width="24" height="18" alt="🇯🇵" /><br />
+            <strong>日本語</strong><br />
+            <span style="color: #EF4444;">🔴 9%</span><br />
+            <a href="./src/locales/ja">View</a>
+        </td>
+    </tr>
+</table>
 <!-- TRANSLATIONS_END -->
 
-📢 Want to help translate? See [CONTRIBUTING_TRANSLATIONS.md](./CONTRIBUTING_TRANSLATIONS.md) and [CONTRIBUTING.md](./CONTRIBUTING.md).
+### 📊 Translation Stats
+
+![Translation Progress](https://img.shields.io/badge/Languages-16-blue?style=for-the-badge&logo=google-translate&logoColor=white)
+![Complete Translations](https://img.shields.io/badge/Complete-1-success?style=for-the-badge&logo=checkmark&logoColor=white)
+![In Progress](https://img.shields.io/badge/In_Progress-8-orange?style=for-the-badge&logo=progress&logoColor=white)
+![Need Help](https://img.shields.io/badge/Need_Help-7-red?style=for-the-badge&logo=help&logoColor=white)
+
+📢 Want to help translate? See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## 🗺️ Roadmap
 
@@ -267,13 +427,6 @@ We're building something amazing together! Here's how you can be part of it:
 - 🔧 [Development Guide](./CONTRIBUTING.md) - Code contributions welcome
 - 🌍 [Translation Help](./CONTRIBUTING_TRANSLATIONS.md) - Help localize the app
 - ⭐ **Star this repo** - It really helps us grow!
-
-### 📊 **Project Stats**
-![GitHub contributors](https://img.shields.io/github/contributors/ChessKitchen/pawn-appetit)
-![GitHub last commit](https://img.shields.io/github/last-commit/ChessKitchen/pawn-appetit)
-![GitHub issues](https://img.shields.io/github/issues/ChessKitchen/pawn-appetit)
-
-We welcome contributions! Please refer to the [Contributing Guide](./CONTRIBUTING.md) for details on how to get started.
 
 ## 💬 Community
 

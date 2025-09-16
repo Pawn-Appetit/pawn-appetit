@@ -578,6 +578,8 @@
   "settings.appearance.fontSizeDesc": "Overall font size",
   "settings.appearance.pieceSet": "Piece Set",
   "settings.appearance.pieceSetDesc": "Pieces used on the boards",
+  "settings.appearance.blindfold": "Blindfold",
+  "settings.appearance.blindfoldDesc": "The board is visible but pieces are hidden",
   "settings.appearance.boardImage": "Board Image",
   "settings.appearance.boardImageDesc": "Image used as the background of the board",
   "settings.appearance.accentColor": "Accent Color",

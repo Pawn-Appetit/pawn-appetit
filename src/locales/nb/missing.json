@@ -329,6 +329,8 @@
   "settings.appearance.theme.addColor": "Add Color",
   "settings.appearance.theme.newColorName": "Enter color name",
   "settings.appearance.theme.autoDesc": "Automatically matches system preference",
+  "settings.appearance.blindfold": "Blindfold",
+  "settings.appearance.blindfoldDesc": "The board is visible but pieces are hidden",
   "settings.appearance.hideDashboardOnStartup": "Hide Dashboard on Startup",
   "settings.appearance.hideDashboardOnStartupDesc": "Open Boards instead of Dashboard when the app starts",
   "settings.appearance.dateFormat": "Date Format",

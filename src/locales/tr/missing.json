@@ -94,5 +94,7 @@
   "settings.appearance.theme.colorPalettes": "Color Palettes",
   "settings.appearance.theme.addColor": "Add Color",
   "settings.appearance.theme.newColorName": "Enter color name",
-  "settings.appearance.theme.autoDesc": "Automatically matches system preference"
+  "settings.appearance.theme.autoDesc": "Automatically matches system preference",
+  "settings.appearance.blindfold": "Blindfold",
+  "settings.appearance.blindfoldDesc": "The board is visible but pieces are hidden"
 }
