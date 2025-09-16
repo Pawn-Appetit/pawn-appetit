@@ -54,6 +54,7 @@
 <img src="https://img.shields.io/github/commit-activity/m/ChessKitchen/pawn-appetit?style=flat-square&logo=pulse&logoColor=white&label=Activity&color=green&labelColor=2d3748" alt="Monthly Activity">
 
 <br />
+<br />
 
 <a href="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/banner.png" target="_blank">
 <img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/banner.png" alt="Pawn Appétit GUI screenshot showcasing the main interface" width="85%" />
