@@ -98,7 +98,7 @@ function PuzzleDbCard({
             </Stack>
             <Stack gap={0} align="center">
               <Text tt="uppercase" c="dimmed" fw={700} size="xs">
-                {t("features.files.fileType.fileType.Puzzle").toUpperCase()}
+                {t("features.files.fileType.puzzle").toUpperCase()}
               </Text>
               <Text size="xs">{t("units.count", { count: puzzleDb.puzzleCount })}</Text>
             </Stack>
