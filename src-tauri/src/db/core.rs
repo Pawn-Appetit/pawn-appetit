@@ -9,17 +9,24 @@ use std::string::ToString;
 use pgn_reader::BufferedReader;
 
 const DATABASE_VERSION: &str = "1.0.0";
-const CREATE_TABLES_SQL: &str = include_str!("create.sql");
+const CREATE_TABLES_SQL: &str = include_str!("../../../database/schema/core_tables.sql");
+const INITIAL_DATA_SQL: &str = include_str!("../../../database/seeds/initial_data.sql");
+const INFO_INSERT_METADATA: &str = include_str!("../../../database/queries/info/insert_metadata.sql");
+const GAMES_CHECK_INDEXES: &str = include_str!("../../../database/queries/games/check_indexes.sql");
 
 pub fn init_db(conn: &mut SqliteConnection, title: &str, description: &str) -> Result<()> {
+    // Create tables
     conn.batch_execute(CREATE_TABLES_SQL)?;
+    
+    // Insert initial seed data
+    conn.batch_execute(INITIAL_DATA_SQL)?;
+    
+    // Insert database metadata
     conn.batch_execute(
-        format!(
-            "INSERT INTO Info (Name, Value) VALUES (\"Version\", \"{DATABASE_VERSION}\");
-                INSERT INTO Info (Name, Value) VALUES (\"Title\", \"{title}\");
-                INSERT INTO Info (Name, Value) VALUES (\"Description\", \"{description}\");"
-        )
-        .as_str(),
+        &INFO_INSERT_METADATA
+            .replace("{0}", DATABASE_VERSION)
+            .replace("{1}", title)
+            .replace("{2}", description)
     )?;
 
     Ok(())
@@ -156,7 +163,7 @@ mod tests {
     fn test_add_game() {
         let mut db = test_db();
 
-        let query = sql_query("SELECT name FROM pragma_index_list('Games');");
+        let query = sql_query(GAMES_CHECK_INDEXES);
         let indexes: Vec<IndexInfo> = query.load(&mut db).unwrap();
         assert!(indexes.is_empty());
     }

@@ -54,9 +54,18 @@ pub use self::search::{
     is_position_in_db, search_position, PositionQuery, PositionQueryJs, PositionStats,
 };
 
-const INDEXES_SQL: &str = include_str!("indexes.sql");
+const INDEXES_SQL: &str = include_str!("../../../database/queries/indexes/create_indexes.sql");
+const DELETE_INDEXES_SQL: &str = include_str!("../../../database/queries/indexes/delete_indexes.sql");
 
-const DELETE_INDEXES_SQL: &str = include_str!("delete_indexes.sql");
+// PRAGMA queries
+const PRAGMA_JOURNAL_MODE_DELETE: &str = include_str!("../../../database/pragmas/journal_mode_delete.sql");
+const PRAGMA_JOURNAL_MODE_OFF: &str = include_str!("../../../database/pragmas/journal_mode_off.sql");
+const PRAGMA_FOREIGN_KEYS_ON: &str = include_str!("../../../database/pragmas/foreign_keys_on.sql");
+const PRAGMA_BUSY_TIMEOUT: &str = include_str!("../../../database/pragmas/busy_timeout.sql");
+
+// Games queries
+const GAMES_CHECK_INDEXES: &str = include_str!("../../../database/queries/games/check_indexes.sql");
+const GAMES_DELETE_DUPLICATES: &str = include_str!("../../../database/queries/games/delete_duplicates.sql");
 
 const WHITE_PAWN: Piece = Piece {
     color: shakmaty::Color::White,
@@ -107,14 +116,14 @@ impl diesel::r2d2::CustomizeConnection<SqliteConnection, diesel::r2d2::Error>
     fn on_acquire(&self, conn: &mut SqliteConnection) -> std::result::Result<(), diesel::r2d2::Error> {
         (|| {
             match self.journal_mode {
-                JournalMode::Delete => conn.batch_execute("PRAGMA journal_mode = DELETE;")?,
-                JournalMode::Off => conn.batch_execute("PRAGMA journal_mode = OFF;")?,
+                JournalMode::Delete => conn.batch_execute(PRAGMA_JOURNAL_MODE_DELETE)?,
+                JournalMode::Off => conn.batch_execute(PRAGMA_JOURNAL_MODE_OFF)?,
             }
             if self.enable_foreign_keys {
-                conn.batch_execute("PRAGMA foreign_keys = ON;")?;
+                conn.batch_execute(PRAGMA_FOREIGN_KEYS_ON)?;
             }
             if let Some(d) = self.busy_timeout {
-                conn.batch_execute(&format!("PRAGMA busy_timeout = {};", d.as_millis()))?;
+                conn.batch_execute(&PRAGMA_BUSY_TIMEOUT.replace("{0}", &d.as_millis().to_string()))?;
             }
             Ok(())
         })()
@@ -320,7 +329,7 @@ struct IndexInfo {
 }
 
 fn check_index_exists(conn: &mut SqliteConnection) -> Result<bool> {
-    let query = sql_query("SELECT name FROM pragma_index_list('Games');");
+    let query = sql_query(GAMES_CHECK_INDEXES);
     let indexes: Vec<IndexInfo> = query.load(conn)?;
     Ok(!indexes.is_empty())
 }
@@ -1136,20 +1145,7 @@ pub async fn delete_duplicated_games(
 ) -> Result<()> {
     let db = &mut get_db_or_create(&state, file.to_str().unwrap(), ConnectionOptions::default())?;
 
-    db.batch_execute(
-        "
-        DELETE FROM Games
-        WHERE ID IN (
-            SELECT ID
-            FROM (
-                SELECT ID,
-                    ROW_NUMBER() OVER (PARTITION BY EventID, SiteID, Round, WhiteID, BlackID, Moves, Date, UTCTime ORDER BY ID) AS RowNum
-                FROM Games
-            ) AS Subquery
-            WHERE RowNum > 1
-        );
-        ",
-    )?;
+    db.batch_execute(GAMES_DELETE_DUPLICATES)?;
 
     Ok(())
 }

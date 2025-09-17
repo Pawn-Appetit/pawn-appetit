@@ -1,3 +1,6 @@
+-- Database indexes for optimal game query performance
+-- Creates indexes on Games table for common search patterns
+
 CREATE INDEX IF NOT EXISTS games_date_idx ON Games(Date);
 CREATE INDEX IF NOT EXISTS games_white_idx ON Games(WhiteID);
 CREATE INDEX IF NOT EXISTS games_black_idx ON Games(BlackID);

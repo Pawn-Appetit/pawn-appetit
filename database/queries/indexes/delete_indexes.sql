@@ -1,3 +1,6 @@
+-- Drop database indexes and vacuum for database cleanup
+-- Removes performance indexes and reclaims storage space
+
 DROP INDEX IF EXISTS games_date_idx;
 DROP INDEX IF EXISTS games_white_idx;
 DROP INDEX IF EXISTS games_black_idx;
