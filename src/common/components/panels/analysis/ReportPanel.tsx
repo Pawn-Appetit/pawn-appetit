@@ -120,7 +120,7 @@ const GameStats = memo(
                     {annotation}
                   </Grid.Col>
                   <Grid.Col span={4} c={w + b > 0 ? color : undefined}>
-                    {translationKey ? t(`Annotate.${translationKey}`) : name}
+                    {translationKey ? t(`chess.annotate.${translationKey}`) : name}
                   </Grid.Col>
                   <Grid.Col
                     className={cx(b > 0 && label)}
