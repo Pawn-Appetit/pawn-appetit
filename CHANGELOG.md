@@ -1,5 +1,48 @@
 # Pawn Appétit
 
+## v0.6.4
+
+### ✨ Features
+
+* **Theme**
+
+  * Added **Wood Theme** with natural wood grain colors
+
+* **Gameplay**
+
+  * Introduced **Blindfold Mode** for training and advanced practice - thanks [gm-m](https://github.com/gm-m) 🎉
+
+### 🛠 Improvements & Refactors
+
+* **Database**
+
+  * Reorganized **SQL schema and queries** for better structure and maintainability
+
+### 🐛 Fixes
+
+* **Engines**
+
+  * Restored **UCI message parsing** lost during refactor, fixing empty analysis results
+
+* **UI**
+
+  * Updated **ActionIcon variant** to default for reload button
+  * Corrected **translation key** for puzzle file type
+
+* **Utilities**
+
+  * Normalized **date input format** in `parseDate` function
+
+### 📖 Documentation
+
+* Refined **README layout** and updated badge styles
+* Refreshed **README screenshots** 📝
+
+### 🧹 Chores
+
+* Updated **project dependencies**
+* Added **issue templates** for bugs, documentation, features, and translations 🔧
+
 ## v0.6.3
 
 ### 🐛 Fixes
