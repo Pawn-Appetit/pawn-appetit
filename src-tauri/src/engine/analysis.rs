@@ -1,6 +1,6 @@
 use std::{path::PathBuf, time::{Instant, Duration}};
 
-use log::{debug, error, info, warn};
+use log::{debug, error, info, trace, warn};
 use shakmaty::{
     fen::Fen, uci::UciMove, CastlingMode, Chess, EnPassantMode, Position,
 };
@@ -17,7 +17,7 @@ use crate::{
 };
 
 use super::{
-    communication::{parse_info_to_best_moves, UciCommunicator},
+    communication::{parse_info_to_best_moves, UciCommunicator, AnalysisHandler},
     events::emit_progress_update,
     process::EngineProcess,
     types::{
@@ -232,47 +232,66 @@ impl GameAnalyzer {
         debug!("Starting single position analysis");
         
         let mut communicator = UciCommunicator::new(reader);
-        let mut best_moves_collection = Vec::new();
-        let mut current_best_moves = Vec::new();
-        let last_depth = 0u32;
+        let mut analysis_handler = AnalysisHandler::new();
         
         let options = proc.options();
         let real_multipv = self.calculate_multipv(options)?;
+        analysis_handler.set_multipv(real_multipv);
+        
+        debug!("Analysis setup: MultiPV={}, FEN={}", real_multipv, options.fen);
         
         loop {
             match communicator.read_line(Duration::from_secs(10)).await? {
                 Some(line) => {
-                    debug!("Engine output: {}", line);
+                    trace!("Engine output: {}", line);
                     
                     if line.starts_with("bestmove") {
-                        debug!("Analysis complete with {} moves at depth {}", current_best_moves.len(), last_depth);
-                        if !current_best_moves.is_empty() {
-                            best_moves_collection.push(BestMoves {
-                                uci_moves: current_best_moves,
-                                san_moves: Vec::new(),
-                                multipv: 1,
-                                depth: last_depth,
-                                score: vampirc_uci::uci::Score {
-                                    value: vampirc_uci::uci::ScoreValue::Cp(0),
-                                    lower_bound: Some(false),
-                                    upper_bound: Some(false),
-                                    wdl: None,
-                                },
-                                nodes: 0,
-                                nps: 0,
-                            });
+                        debug!("Analysis complete - received bestmove command");
+                        // Return the last complete set of best moves
+                        let final_moves = analysis_handler.last_best_moves().to_vec();
+                        if final_moves.is_empty() {
+                            warn!("No analysis results found - returning empty");
+                        } else {
+                            debug!("Returning {} best moves with depths: {:?}", 
+                                   final_moves.len(), 
+                                   final_moves.iter().map(|m| m.depth).collect::<Vec<_>>());
                         }
-                        break;
+                        return Ok(final_moves);
+                    }
+                    
+                    // Parse UCI message
+                    let message = communicator.parse_message(&line);
+                    if let vampirc_uci::UciMessage::Info(attrs) = message {
+                        // Process the info message through the analysis handler
+                        match analysis_handler.process_info_message(attrs, &options.fen, &options.moves) {
+                            Ok(Some(complete_moves)) => {
+                                debug!("Received complete analysis update: {} moves at depth {}", 
+                                       complete_moves.len(),
+                                       complete_moves.first().map(|m| m.depth).unwrap_or(0));
+                                // Continue collecting updates until bestmove
+                            }
+                            Ok(None) => {
+                                // Partial update, continue waiting
+                                trace!("Partial analysis update received");
+                            }
+                            Err(e) => {
+                                debug!("Failed to process info message: {}", e);
+                                // Continue processing other messages
+                            }
+                        }
                     }
                 }
                 None => {
-                    debug!("Engine stdout closed");
+                    debug!("Engine stdout closed without bestmove");
                     break;
                 }
             }
         }
 
-        Ok(best_moves_collection)
+        // If we exit without bestmove, return what we have
+        let final_moves = analysis_handler.last_best_moves().to_vec();
+        debug!("Analysis ended without bestmove, returning {} moves", final_moves.len());
+        Ok(final_moves)
     }
 
     /// Analyze a single position  
@@ -288,22 +307,47 @@ impl GameAnalyzer {
 
     /// Calculate effective MultiPV for a position
     fn calculate_multipv(&self, options: &EngineOptions) -> EngineResult<u16> {
-        Ok(1) // Default to 1 for simplicity
+        use super::communication::calculate_effective_multipv;
+        
+        // Look for MultiPV setting in extra options, default to 2
+        let requested_multipv = options.extra_options
+            .iter()
+            .find(|opt| opt.name.to_lowercase() == "multipv")
+            .and_then(|opt| opt.value.parse::<u16>().ok())
+            .unwrap_or(2);
+            
+        calculate_effective_multipv(requested_multipv, &options.fen, &options.moves)
     }
 
     /// Detect if a move is a sacrifice
-    fn detect_sacrifice(&self, _previous_pos: &Chess, _current_pos: &Chess) -> bool {
-        false // No sacrifice detection for now
+    fn detect_sacrifice(&self, previous_pos: &Chess, current_pos: &Chess) -> bool {
+        use super::evaluation::{SacrificeDetector};
+        
+        let detector = SacrificeDetector::default();
+        detector.is_sacrifice(previous_pos, current_pos)
     }
 
     /// Prepare engine options from UCI options
     fn prepare_engine_options(&self, uci_options: &[EngineOption]) -> Vec<EngineOption> {
-        uci_options.to_vec()
+        let mut options = uci_options.to_vec();
+        self.ensure_multipv_option(&mut options);
+        options
     }
 
     /// Ensure MultiPV option is set
-    fn ensure_multipv_option(&self, _options: &mut Vec<EngineOption>) {
-        // No-op for now
+    fn ensure_multipv_option(&self, options: &mut Vec<EngineOption>) {
+        // Check if MultiPV is already set
+        let has_multipv = options.iter().any(|opt| opt.name.to_lowercase() == "multipv");
+        
+        if !has_multipv {
+            debug!("Adding default MultiPV=2 option");
+            options.push(EngineOption {
+                name: "MultiPV".to_string(),
+                value: "2".to_string(),
+            });
+        } else {
+            debug!("MultiPV option already present in engine options");
+        }
     }
 
     /// Check if position is a novelty
