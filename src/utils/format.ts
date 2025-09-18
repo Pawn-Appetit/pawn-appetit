@@ -280,7 +280,7 @@ export function parseDate(dateInput: string | Date | number | null | undefined):
   try {
     let normalized = dateInput.trim();
     if (/^\d{4}\.\d{2}\.\d{2}$/.test(normalized)) {
-        normalized = normalized.replace(/\./g, "-");
+      normalized = normalized.replace(/\./g, "-");
     }
 
     const date = new Date(normalized);

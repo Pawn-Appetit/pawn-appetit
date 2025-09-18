@@ -27,10 +27,10 @@ import ErrorComponent from "@/common/components/ErrorComponent";
 import { EventMonitor } from "@/components/debug/EventMonitor";
 import ThemeProvider from "@/features/themes/components/ThemeProvider";
 import { commands } from "./bindings";
+import { IS_DEV } from "./config";
 import i18n from "./i18n";
 import { routeTree } from "./routeTree.gen";
 import { openFile } from "./utils/files";
-import { IS_DEV } from "./config";
 
 export type Dirs = {
   documentDir: string;
@@ -41,7 +41,7 @@ const APP_FOLDER_NAME = "Pawn Appetit";
 
 let directoriesCache: Promise<Dirs> | null = null;
 
-const loadDirectories = async (): Promise<Dirs> => {
+export const loadDirectories = async (): Promise<Dirs> => {
   if (directoriesCache) {
     return directoriesCache;
   }

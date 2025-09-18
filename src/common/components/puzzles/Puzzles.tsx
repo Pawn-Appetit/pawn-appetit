@@ -1,15 +1,12 @@
 import { Divider, Paper, Portal, ScrollArea, Stack } from "@mantine/core";
-import { useLoaderData } from "@tanstack/react-router";
-import { readDir } from "@tauri-apps/plugin-fs";
+import { useNavigate } from "@tanstack/react-router";
 import { useAtom } from "jotai";
-import { useContext, useState } from "react";
-import useSWR from "swr";
+import { useContext } from "react";
 import { useStore } from "zustand";
 import ChallengeHistory from "@/common/components/ChallengeHistory";
 import GameNotation from "@/common/components/GameNotation";
 import MoveControls from "@/common/components/MoveControls";
 import { TreeStateContext } from "@/common/components/TreeStateContext";
-import { processEntriesRecursively } from "@/features/files/components/file";
 import {
   hidePuzzleRatingAtom,
   inOrderPuzzlesAtom,
@@ -19,36 +16,21 @@ import {
 } from "@/state/atoms";
 import { positionFromFen } from "@/utils/chessops";
 import { logger } from "@/utils/logger";
+import { navigateToDatabasesWithModal } from "@/utils/navigation";
 import { getAdaptivePuzzleRange, PUZZLE_DEBUG_LOGS } from "@/utils/puzzles";
-import { AddPuzzle, PuzzleControls, PuzzleSettings, PuzzleStatistics } from "./components";
+import { PuzzleControls, PuzzleSettings, PuzzleStatistics } from "./components";
 import { usePuzzleDatabase, usePuzzleSession } from "./hooks";
 import PuzzleBoard from "./PuzzleBoard";
 
-const useFileDirectory = (dir: string) => {
-  const { data, error, isLoading, mutate } = useSWR("file-directory", async () => {
-    const entries = await readDir(dir);
-    const allEntries = processEntriesRecursively(dir, entries);
-    return allEntries;
-  });
-  return {
-    files: data,
-    isLoading,
-    error,
-    mutate,
-  };
-};
-
 function Puzzles({ id }: { id: string }) {
-  const store = useContext(TreeStateContext)!;
+  const navigate = useNavigate();
+  const store = useContext(TreeStateContext);
+  if (!store) throw new Error("TreeStateContext not found");
   const reset = useStore(store, (s) => s.reset);
-
-  const { documentDir } = useLoaderData({ from: "/boards" });
-  const { files } = useFileDirectory(documentDir);
 
   // Custom hooks for state management
   const {
     puzzleDbs,
-    setPuzzleDbs,
     selectedDb,
     setSelectedDb,
     ratingRange,
@@ -58,12 +40,11 @@ function Puzzles({ id }: { id: string }) {
     maxRating,
     generatePuzzle: generatePuzzleFromDb,
     clearPuzzleCache,
-  } = usePuzzleDatabase(files);
+  } = usePuzzleDatabase();
 
   const { puzzles, currentPuzzle, changeCompletion, addPuzzle, clearSession, selectPuzzle } = usePuzzleSession(id);
 
   // Local state
-  const [addOpened, setAddOpened] = useState(false);
   const [progressive, setProgressive] = useAtom(progressivePuzzlesAtom);
   const [hideRating, setHideRating] = useAtom(hidePuzzleRatingAtom);
   const [inOrder, setInOrder] = useAtom(inOrderPuzzlesAtom);
@@ -143,11 +124,15 @@ function Puzzles({ id }: { id: string }) {
 
   const handleDatabaseChange = (value: string | null) => {
     PUZZLE_DEBUG_LOGS && logger.debug("Database changed:", value);
-    setSelectedDb(value);
-  };
 
-  const handleAddDatabase = () => {
-    setAddOpened(true);
+    if (value === "add") {
+      navigateToDatabasesWithModal(navigate, {
+        tab: "puzzles",
+        redirectTo: "/boards",
+      });
+    } else {
+      setSelectedDb(value);
+    }
   };
 
   return (
@@ -166,19 +151,10 @@ function Puzzles({ id }: { id: string }) {
 
       <Portal target="#topRight" style={{ height: "100%" }}>
         <Paper h="100%" withBorder p="md">
-          <AddPuzzle
-            puzzleDbs={puzzleDbs}
-            opened={addOpened}
-            setOpened={setAddOpened}
-            setPuzzleDbs={setPuzzleDbs}
-            files={files}
-          />
-
           <PuzzleSettings
             puzzleDbs={puzzleDbs}
             selectedDb={selectedDb}
             onDatabaseChange={handleDatabaseChange}
-            onAddDatabase={handleAddDatabase}
             ratingRange={ratingRange}
             onRatingRangeChange={setRatingRange}
             minRating={minRating}

@@ -4,7 +4,6 @@ import { parseSan } from "chessops/san";
 import { useAtom } from "jotai";
 import { useCallback, useEffect, useState } from "react";
 import { commands, type PuzzleDatabaseInfo, type Token } from "@/bindings";
-import type { Directory, FileMetadata } from "@/features/files/components/file";
 import { puzzleRatingRangeAtom, selectedPuzzleDbAtom } from "@/state/atoms";
 import { getPgnHeaders } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
@@ -34,7 +33,7 @@ type PuzzleCacheEntry = {
 
 const PuzzleDbFromPgnCache = new Map<string, PuzzleCacheEntry>();
 
-export const usePuzzleDatabase = (files: (FileMetadata | Directory)[] | undefined) => {
+export const usePuzzleDatabase = () => {
   const [puzzleDbs, setPuzzleDbs] = useState<PuzzleDatabaseInfo[]>([]);
   const [selectedDb, setSelectedDb] = useAtom(selectedPuzzleDbAtom);
   const [ratingRange, setRatingRange] = useAtom(puzzleRatingRangeAtom);
@@ -42,12 +41,10 @@ export const usePuzzleDatabase = (files: (FileMetadata | Directory)[] | undefine
 
   // Load puzzle databases
   useEffect(() => {
-    if (files) {
-      getPuzzleDatabases(files).then((databases) => {
-        setPuzzleDbs(databases);
-      });
-    }
-  }, [files]);
+    getPuzzleDatabases().then((databases) => {
+      setPuzzleDbs(databases);
+    });
+  }, []);
 
   const loadDb3RatingRange = useCallback(
     async (dbPath: string) => {

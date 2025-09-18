@@ -1,9 +1,9 @@
 import { appDataDir, resolve } from "@tauri-apps/api/path";
-import { BaseDirectory, readDir } from "@tauri-apps/plugin-fs";
 import { commands, type PuzzleDatabaseInfo } from "@/bindings";
-import type { Directory, FileInfoMetadata, FileMetadata } from "@/features/files/components/file";
+import type { FileInfoMetadata, FileMetadata } from "@/features/files/components/file";
 import { logger } from "./logger";
 import { unwrap } from "./unwrap";
+import { loadDirectories } from "@/App";
 
 export const PUZZLE_DEBUG_LOGS = false;
 
@@ -28,6 +28,71 @@ export const PROGRESSIVE_MAX_PROB = 0.6;
 export const ADAPTIVE_CONSECUTIVE_FAILURES = 3;
 export const ADAPTIVE_EASY_MIN_PROB = 0.6;
 export const ADAPTIVE_EASY_MAX_PROB = 0.8;
+
+// Helper functions to get data from different sections
+async function getDatabasesFromDatabasesSection(): Promise<PuzzleDatabaseInfo[]> {
+  const { readDir } = await import("@tauri-apps/plugin-fs");
+  const { BaseDirectory } = await import("@tauri-apps/plugin-fs");
+
+  let dbPuzzles: PuzzleDatabaseInfo[] = [];
+
+  // Get .db3 puzzle databases from AppData/db folder
+  try {
+    const files = await readDir("puzzles", { baseDir: BaseDirectory.AppData });
+    const dbs = files.filter((file) => file.name?.endsWith(".db3"));
+    dbPuzzles = (await Promise.allSettled(dbs.map((db) => getPuzzleDatabase(db.name))))
+      .filter((r) => r.status === "fulfilled")
+      .map((r) => (r as PromiseFulfilledResult<PuzzleDatabaseInfo>).value);
+    logger.debug(
+      "Loaded puzzle databases:",
+      dbPuzzles.map((db) => ({ title: db.title, puzzleCount: db.puzzleCount })),
+    );
+  } catch (err) {
+    logger.error("Error loading .db3 puzzles:", err);
+  }
+
+  return dbPuzzles;
+}
+
+async function getFilesFromFilesSection(): Promise<PuzzleDatabaseInfo[]> {
+  const { readDir } = await import("@tauri-apps/plugin-fs");
+  const { BaseDirectory } = await import("@tauri-apps/plugin-fs");
+  const { processEntriesRecursively } = await import("@/features/files/components/file");
+
+  let localPuzzles: PuzzleDatabaseInfo[] = [];
+
+  try {
+    const dirs = await loadDirectories();
+    const documentsDir = dirs?.documentDir;
+    const entries = await readDir(documentsDir, { baseDir: BaseDirectory.AppLocalData });
+    const allEntries = await processEntriesRecursively(documentsDir, entries);
+
+    // Get local .pgn puzzle files from document directory
+    const puzzleFiles = allEntries.filter((file): file is FileMetadata => {
+      if (file.type !== "file" || !file.path.endsWith(".pgn")) return false;
+      const fileInfo = file.metadata as FileInfoMetadata;
+      return fileInfo?.type === "puzzle";
+    });
+
+    // Convert puzzle files to database format
+    localPuzzles = await Promise.all(
+      puzzleFiles.map(async (file) => {
+        const stats = unwrap(await commands.getFileMetadata(file.path));
+        return {
+          title: file.name.replace(".pgn", ""),
+          description: "Custom puzzle collection",
+          puzzleCount: unwrap(await commands.countPgnGames(file.path)),
+          storageSize: stats.last_modified,
+          path: file.path,
+        };
+      }),
+    );
+  } catch (err) {
+    logger.error("Error loading local puzzles:", err);
+  }
+
+  return localPuzzles;
+}
 
 // Simple Elo-like rating calculations
 export function expectedScore(playerRating: number, puzzleRating: number): number {
@@ -124,52 +189,16 @@ export function getAdaptivePuzzleRange(playerRating: number, recentResults: Comp
 async function getPuzzleDatabase(name: string): Promise<PuzzleDatabaseInfo> {
   const appDataDirPath = await appDataDir();
   const path = await resolve(appDataDirPath, "puzzles", name);
+
   return unwrap(await commands.getPuzzleDbInfo(path));
 }
 
-export async function getPuzzleDatabases(localFiles: (FileMetadata | Directory)[]): Promise<PuzzleDatabaseInfo[]> {
-  let dbPuzzles: PuzzleDatabaseInfo[] = [];
+export async function getPuzzleDatabases(): Promise<PuzzleDatabaseInfo[]> {
+  // Get puzzle databases from the databases section (AppData/db folder)
+  const dbPuzzles = await getDatabasesFromDatabasesSection();
 
-  // Get .db3 puzzle databases from AppData/puzzles folder
-  try {
-    const files = await readDir("puzzles", { baseDir: BaseDirectory.AppData });
-    const dbs = files.filter((file) => file.name?.endsWith(".db3"));
-    dbPuzzles = (await Promise.allSettled(dbs.map((db) => getPuzzleDatabase(db.name))))
-      .filter((r) => r.status === "fulfilled")
-      .map((r) => (r as PromiseFulfilledResult<PuzzleDatabaseInfo>).value);
-    logger.debug(
-      "Loaded puzzle databases:",
-      dbPuzzles.map((db) => ({ title: db.title, puzzleCount: db.puzzleCount })),
-    );
-  } catch (err) {
-    logger.error("Error loading .db3 puzzles:", err);
-  }
-
-  // Get local .pgn puzzle files from document directory
-  let localPuzzles: PuzzleDatabaseInfo[] = [];
-  try {
-    const puzzleFiles = localFiles.filter((file): file is FileMetadata => {
-      if (file.type !== "file" || !file.path.endsWith(".pgn")) return false;
-      const fileInfo = file.metadata as FileInfoMetadata;
-      return fileInfo?.type === "puzzle";
-    });
-
-    // Convert puzzle files to database format
-    localPuzzles = await Promise.all(
-      puzzleFiles.map(async (file) => {
-        const stats = unwrap(await commands.getFileMetadata(file.path));
-        return {
-          title: file.name.replace(".pgn", ""),
-          description: "Custom puzzle collection",
-          puzzleCount: unwrap(await commands.countPgnGames(file.path)),
-          storageSize: stats.last_modified,
-          path: file.path,
-        };
-      }),
-    );
-  } catch (err) {
-    logger.error("Error loading local puzzles:", err);
-  }
+  // Get puzzle files from the files section (document directory)
+  const localPuzzles = await getFilesFromFilesSection();
 
   // Combine both types of puzzle sources
   return [...dbPuzzles, ...localPuzzles];

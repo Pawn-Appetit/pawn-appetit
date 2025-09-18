@@ -445,6 +445,33 @@ async getPuzzleRatingRange(file: string) : Promise<Result<[number, number], stri
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Imports puzzles from a local file into a new puzzle database
+ * 
+ * This function can handle different types of puzzle files:
+ * - PGN files containing puzzles (with FEN positions and solution moves)
+ * - Existing puzzle database files (.db, .db3)
+ * - Compressed files (.zst)
+ * 
+ * # Arguments
+ * * `source_file` - Path to the source puzzle file
+ * * `db_path` - Path where the new puzzle database should be created
+ * * `title` - Title for the puzzle database
+ * * `description` - Optional description for the puzzle database
+ * * `app` - Tauri app handle for progress events
+ * 
+ * # Returns
+ * * `Ok(())` if import was successful
+ * * `Err(Error)` if there was a problem importing the file
+ */
+async importPuzzleFile(sourceFile: string, dbPath: string, title: string, description: string | null) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("import_puzzle_file", { sourceFile, dbPath, title, description }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async getTelemetryEnabled() : Promise<Result<boolean, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_telemetry_enabled") };

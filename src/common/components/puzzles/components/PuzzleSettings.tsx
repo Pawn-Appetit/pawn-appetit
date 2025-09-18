@@ -6,7 +6,6 @@ interface PuzzleSettingsProps {
   puzzleDbs: PuzzleDatabaseInfo[];
   selectedDb: string | null;
   onDatabaseChange: (value: string | null) => void;
-  onAddDatabase: () => void;
   ratingRange: [number, number];
   onRatingRangeChange: (value: [number, number]) => void;
   minRating: number;
@@ -24,7 +23,6 @@ export const PuzzleSettings = ({
   puzzleDbs,
   selectedDb,
   onDatabaseChange,
-  onAddDatabase,
   ratingRange,
   onRatingRangeChange,
   minRating,
@@ -38,14 +36,6 @@ export const PuzzleSettings = ({
   onInOrderChange,
 }: PuzzleSettingsProps) => {
   const { t } = useTranslation();
-
-  const handleDatabaseChange = (value: string | null) => {
-    if (value === "add") {
-      onAddDatabase();
-    } else {
-      onDatabaseChange(value);
-    }
-  };
 
   const isProgressiveDisabled = !dbRatingRange || (dbRatingRange && dbRatingRange[0] === dbRatingRange[1]);
   const isProgressiveChecked = dbRatingRange && dbRatingRange[0] === dbRatingRange[1] ? false : progressive;
@@ -62,7 +52,7 @@ export const PuzzleSettings = ({
         value={selectedDb}
         clearable={false}
         placeholder={t("features.puzzle.selectDatabase")}
-        onChange={handleDatabaseChange}
+        onChange={onDatabaseChange}
       />
       <Divider my="sm" />
       <Group>

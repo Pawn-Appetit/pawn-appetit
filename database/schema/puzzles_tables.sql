@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS puzzles (
+    id INTEGER PRIMARY KEY,
+    fen TEXT NOT NULL,
+    moves TEXT NOT NULL,
+    rating INTEGER NOT NULL,
+    rating_deviation INTEGER NOT NULL DEFAULT 0,
+    popularity INTEGER NOT NULL DEFAULT 0,
+    nb_plays INTEGER NOT NULL DEFAULT 0
+);

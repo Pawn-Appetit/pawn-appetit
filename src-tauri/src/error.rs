@@ -9,6 +9,12 @@ pub enum Error {
     #[error(transparent)]
     Io(#[from] std::io::Error),
 
+    #[error("I/O error: {0}")]
+    IoError(std::io::Error),
+
+    #[error("Unsupported file format: {0}")]
+    UnsupportedFileFormat(String),
+
     #[error(transparent)]
     Zip(#[from] zip::result::ZipError),
 

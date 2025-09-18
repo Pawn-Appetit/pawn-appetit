@@ -1,5 +1,5 @@
 import { Box } from "@mantine/core";
-import { useHotkeys, useElementSize, useForceUpdate } from "@mantine/hooks";
+import { useElementSize, useForceUpdate, useHotkeys } from "@mantine/hooks";
 import { type Move, makeUci, type NormalMove, parseSquare } from "chessops";
 import { chessgroundDests, chessgroundMove } from "chessops/compat";
 import equal from "fast-deep-equal";
@@ -8,9 +8,9 @@ import { useContext, useState } from "react";
 import { useStore } from "zustand";
 import { Chessground } from "@/common/components/Chessground";
 import { TreeStateContext } from "@/common/components/TreeStateContext";
-import { showCoordinatesAtom, blindfoldAtom } from "@/state/atoms";
+import { blindfoldAtom, showCoordinatesAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
-import { chessboard, blindfold } from "@/styles/Chessboard.css";
+import { blindfold, chessboard } from "@/styles/Chessboard.css";
 import { positionFromFen } from "@/utils/chessops";
 import { logger } from "@/utils/logger";
 import { recordPuzzleSolved } from "@/utils/puzzleStreak";
@@ -82,9 +82,7 @@ function PuzzleBoard({
   const setBlindfold = useSetAtom(blindfoldAtom);
   const keyMap = useAtomValue(keyMapAtom);
 
-  useHotkeys([
-    [keyMap.BLINDFOLD.keys, () => setBlindfold((v) => !v)],
-  ]);
+  useHotkeys([[keyMap.BLINDFOLD.keys, () => setBlindfold((v) => !v)]]);
 
   function checkMove(move: Move) {
     if (!pos) return;

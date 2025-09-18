@@ -9,9 +9,9 @@ import FileInput from "@/common/components/FileInput";
 import ColorSchemeSettings from "@/features/themes/components/ColorSchemeSettings";
 import ThemeSelectionSettings from "@/features/themes/components/ThemeSettings";
 import {
-  blindfoldAtom,
   autoPromoteAtom,
   autoSaveAtom,
+  blindfoldAtom,
   enableBoardScrollAtom,
   eraseDrawablesOnClickAtom,
   forcedEnPassantAtom,

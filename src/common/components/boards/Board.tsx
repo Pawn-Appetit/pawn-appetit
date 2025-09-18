@@ -57,7 +57,7 @@ import {
   snapArrowsAtom,
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
-import { chessboard, blindfold } from "@/styles/Chessboard.css";
+import { blindfold, chessboard } from "@/styles/Chessboard.css";
 import { ANNOTATION_INFO, isBasicAnnotation } from "@/utils/annotation";
 import { getMaterialDiff, getVariationLine } from "@/utils/chess";
 import { chessopsError, forceEnPassant, positionFromFen } from "@/utils/chessops";

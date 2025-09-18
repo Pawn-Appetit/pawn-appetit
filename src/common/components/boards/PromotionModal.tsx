@@ -61,7 +61,6 @@ const PromotionModal = memo(function PromotionModal({
                   key={p}
                   w="100%"
                   h="100%"
-                  // pos="relative"
                   onClick={() => {
                     confirmMove(p);
                   }}
