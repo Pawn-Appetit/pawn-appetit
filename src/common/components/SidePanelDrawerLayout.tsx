@@ -1,6 +1,6 @@
 import { Drawer, Group, Paper, Stack } from "@mantine/core";
 import type { ReactNode } from "react";
-import { useResponsiveLayout, type LayoutType } from "@/common/hooks/useResponsiveLayout";
+import { type LayoutType, useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 
 export type { LayoutType };
 
@@ -42,13 +42,13 @@ export function SidePanelDrawerLayout({
   // Use sidepanel layout when:
   // 1. panelsType is "sidepanel" AND layoutType is "desktop"
   // 2. This allows desktop to use drawer when panelsType is "drawer"
-  const useSidepanel = layout.panels.type === "sidepanel" && layoutType === "desktop";
+  const useSidePanel = layout.panels.type === "sidepanel" && layoutType === "desktop";
 
-  if (useSidepanel) {
+  if (useSidePanel) {
     return (
       <Group grow h="100%" p="md" {...mainContentProps} align="start">
         <Stack h="100%">{mainContent}</Stack>
-        <Paper withBorder p="md" h="100%" {...detailContentProps}>
+        <Paper h="100%" {...detailContentProps}>
           {detailContent}
         </Paper>
       </Group>

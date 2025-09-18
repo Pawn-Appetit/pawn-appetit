@@ -1,29 +1,29 @@
 import { ActionIcon, Group, Menu } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import {
+  IconArrowBack,
+  IconCamera,
+  IconChess,
+  IconChessFilled,
   IconChevronLeft,
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
+  IconDeviceFloppy,
   IconDotsVertical,
-  IconChess,
-  IconChessFilled,
-  IconCamera,
-  IconArrowBack,
-  IconTarget,
-  IconZoomCheck,
-  IconEraser,
   IconEdit,
   IconEditOff,
-  IconDeviceFloppy,
-  IconReload,
+  IconEraser,
   IconPlus,
+  IconReload,
   IconSwitchVertical,
+  IconTarget,
+  IconZoomCheck,
 } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { memo, useContext, useMemo } from "react";
-import { useStore } from "zustand";
 import { useTranslation } from "react-i18next";
+import { useStore } from "zustand";
 import { keyMapAtom } from "@/state/keybindings";
 import { TreeStateContext } from "./TreeStateContext";
 
@@ -136,7 +136,11 @@ function MoveControls({
               }
               onClick={changeTabType}
             >
-              {t(currentTabType === "analysis" ? "features.board.actions.playFromHere" : "features.board.actions.analyzeGame")}
+              {t(
+                currentTabType === "analysis"
+                  ? "features.board.actions.playFromHere"
+                  : "features.board.actions.analyzeGame",
+              )}
             </Menu.Item>
           )}
           {!eraseDrawablesOnClick && clearShapes && (
@@ -159,7 +163,7 @@ function MoveControls({
           )}
           {reload && (
             <Menu.Item leftSection={<IconReload size="1.3rem" />} onClick={() => reload()}>
-              {t("features.menu.view.reload")}
+              {t("features.menu.reload")}
             </Menu.Item>
           )}
           {addGame && currentTabSourceType === "file" && (

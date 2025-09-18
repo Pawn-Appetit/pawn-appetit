@@ -19,7 +19,7 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
-import { useDebouncedValue, useToggle, useMediaQuery } from "@mantine/hooks";
+import { useDebouncedValue, useToggle } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import {
   IconArrowRight,
@@ -43,15 +43,14 @@ import { commands } from "@/bindings";
 import GenericCard from "@/common/components/GenericCard";
 import * as classes from "@/common/components/GenericCard.css";
 import OpenFolderButton from "@/common/components/OpenFolderButton";
+import { SidePanelDrawerLayout } from "@/common/components/SidePanelDrawerLayout";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { processEntriesRecursively } from "@/features/files/components/file";
 import { referenceDbAtom } from "@/state/atoms";
 import { useActiveDatabaseViewStore } from "@/state/store/database";
 import { getDatabases, type SuccessDatabaseInfo } from "@/utils/db";
 import { getPuzzleDatabases } from "@/utils/puzzles";
 import { unwrap } from "@/utils/unwrap";
-import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
-import { SidePanelDrawerLayout } from "@/common/components/SidePanelDrawerLayout";
-import { vars } from "@/styles/theme";
 import AddDatabase from "./components/AddDatabase";
 import { PlayerSearchInput } from "./components/PlayerSearchInput";
 
@@ -126,6 +125,8 @@ export default function DatabasesPage() {
 
   const setActiveDatabase = useActiveDatabaseViewStore((store) => store.setDatabase);
   const [referenceDatabase, setReferenceDatabase] = useAtom(referenceDbAtom);
+
+  const { layout } = useResponsiveLayout();
 
   useEffect(() => {
     if (search.value === "add") {
@@ -251,38 +252,47 @@ export default function DatabasesPage() {
 
       <Header />
 
-      <Group grow flex={1} style={{ overflow: "hidden" }} align="start" px="md" pb="md">
-        <DatabaseList
-          query={query}
-          onQueryChange={setQuery}
-          sortBy={sortBy}
-          onSortToggle={handleSortToggle}
-          category={category}
-          onCategoryChange={handleCategoryChange}
-          onAddNew={() => setOpen(true)}
-          convertLoading={convertLoading}
-          progress={progress}
-          isLoading={isLoading}
-          databases={filteredDatabases}
-          selectedDatabase={selectedDatabase}
-          onSelectDatabase={setSelected}
-          onDatabaseDoubleClick={handleDatabaseDoubleClick}
-          referenceDatabase={referenceDatabase}
+      <Box flex={1} mih={0}>
+        <SidePanelDrawerLayout
+          mainContent={
+            <DatabaseList
+              query={query}
+              onQueryChange={setQuery}
+              sortBy={sortBy}
+              onSortToggle={handleSortToggle}
+              category={category}
+              onCategoryChange={handleCategoryChange}
+              onAddNew={() => setOpen(true)}
+              convertLoading={convertLoading}
+              progress={progress}
+              isLoading={isLoading}
+              databases={filteredDatabases}
+              selectedDatabase={selectedDatabase}
+              onSelectDatabase={setSelected}
+              onDatabaseDoubleClick={handleDatabaseDoubleClick}
+              referenceDatabase={referenceDatabase}
+            />
+          }
+          detailContent={
+            <DatabaseDetails
+              selectedDatabase={selectedDatabase}
+              isReference={isReference}
+              onChangeReference={changeReferenceDatabase}
+              mutate={mutate}
+              exportLoading={exportLoading}
+              setExportLoading={setExportLoading}
+              convertLoading={convertLoading}
+              setConvertLoading={setConvertLoading}
+              onSelect={setSelected}
+              refreshPuzzleDatabases={refreshPuzzleDatabases}
+            />
+          }
+          isDetailOpen={selectedDatabase !== null}
+          onDetailClose={() => {}}
+          detailTitle={selectedDatabase?.type === "success" ? selectedDatabase.title : "Database Details"}
+          layoutType={layout.databases.layoutType}
         />
-
-        <DatabaseDetails
-          selectedDatabase={selectedDatabase}
-          isReference={isReference}
-          onChangeReference={changeReferenceDatabase}
-          mutate={mutate}
-          exportLoading={exportLoading}
-          setExportLoading={setExportLoading}
-          convertLoading={convertLoading}
-          setConvertLoading={setConvertLoading}
-          onSelect={setSelected}
-          refreshPuzzleDatabases={refreshPuzzleDatabases}
-        />
-      </Group>
+      </Box>
     </Stack>
   );
 }
@@ -333,8 +343,6 @@ function DatabaseList({
   onDatabaseDoubleClick,
   referenceDatabase,
 }: DatabaseListProps) {
-  const { t } = useTranslation();
-
   return (
     <Stack>
       <DatabaseControls
@@ -456,11 +464,25 @@ function DatabaseGrid({
   onDatabaseDoubleClick,
   referenceDatabase,
 }: DatabaseGridProps) {
-  const { t } = useTranslation();
+  const { layout } = useResponsiveLayout();
+
+  // Calculate responsive values based on layout flags
+  const isMobile = layout.databases.layoutType === "mobile";
+  const gridCols = isMobile ? 1 : { base: 1, md: 2 };
 
   if (isLoading) {
+    if (isMobile) {
+      return (
+        <Stack gap="md">
+          <Skeleton h="8rem" />
+          <Skeleton h="8rem" />
+          <Skeleton h="8rem" />
+        </Stack>
+      );
+    }
+
     return (
-      <SimpleGrid cols={{ base: 1, md: 2 }} spacing={{ base: "md", md: "sm" }}>
+      <SimpleGrid cols={gridCols} spacing={{ base: "md", md: "sm" }}>
         {Array.from({ length: SKELETON_COUNT }, (_, i) => (
           <Skeleton key={i} h="8rem" />
         ))}
@@ -477,7 +499,7 @@ function DatabaseGrid({
   }
 
   return (
-    <SimpleGrid cols={{ base: 1, md: 2 }} spacing={{ base: "md", md: "sm" }}>
+    <SimpleGrid cols={gridCols} spacing={{ base: "md", md: "sm" }}>
       {databases.map((database) => (
         <DatabaseCard
           key={database.filename}

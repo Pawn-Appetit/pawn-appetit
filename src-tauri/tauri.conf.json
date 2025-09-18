@@ -91,7 +91,8 @@
         "maximized": true,
         "visible": false,
         "decorations": false,
-        "minWidth": 800,
+        "minWidth": 1024,
+        "minHeight": 640,
         "minimizable": true,
         "backgroundColor": "#1a1b1e"
       }
