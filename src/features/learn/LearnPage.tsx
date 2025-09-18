@@ -1,32 +1,11 @@
-import {
-  Alert,
-  Badge,
-  Box,
-  Button,
-  Card,
-  Grid,
-  Group,
-  Progress,
-  Stack,
-  Text,
-  ThemeIcon,
-  Title,
-  Tooltip,
-} from "@mantine/core";
-import {
-  IconBook,
-  IconBrain,
-  IconClock,
-  IconInfoCircle,
-  IconStar,
-  IconTarget,
-  IconTargetArrow,
-  IconTrophy,
-} from "@tabler/icons-react";
+import { Alert, Badge, Box, Button, Card, Grid, Group, Progress, Stack, Text, ThemeIcon, Title, Tooltip } from "@mantine/core";
+import { IconBook, IconBrain, IconClock, IconInfoCircle, IconTarget, IconTargetArrow } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { useUserStatsStore } from "../../state/userStatsStore";
+import { CompactProgressSection } from "./components/CompactProgressSection";
 import { practiceManager } from "./constants/practices";
 import { useProgressData } from "./hooks/useProgressData";
 import { progressManager } from "./utils/progressManager";
@@ -51,6 +30,7 @@ function calculateCurrentStreak(completionDates: string[]): number {
 export default function LearnPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { layout } = useResponsiveLayout();
   const userStats = useUserStatsStore((state) => state.userStats);
 
   const handleExerciseSelect = (_exerciseId: string, type: "lesson" | "practice") => {
@@ -198,96 +178,11 @@ export default function LearnPage() {
       </Box>
 
       <Stack gap="xl">
-        <Stack gap="md">
-          <Title order={3} mb="xs">
-            Your Progress
-          </Title>
-          <Grid gutter="md">
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Card p="md" radius="md" withBorder h="120px">
-                <Group gap="sm" align="center">
-                  <ThemeIcon color="blue" variant="light" size="lg" gradient={{ from: "blue", to: "cyan" }}>
-                    <IconTrophy size={20} />
-                  </ThemeIcon>
-                  <Text size="sm" c="dimmed">
-                    Overall Progress
-                  </Text>
-                  <Tooltip label="How much of all lessons and practice you've completed">
-                    <IconInfoCircle size={14} color="#888" style={{ marginLeft: 4 }} />
-                  </Tooltip>
-                </Group>
-                <Progress.Root mt="md" radius="xl" size="md">
-                  <Tooltip label={`${overallProgress.toFixed(1)}%`}>
-                    <Progress.Section value={overallProgress} color="blue" />
-                  </Tooltip>
-                </Progress.Root>
-                <Text size="xs" mt={4} c="dimmed">
-                  {overallProgress.toFixed(1)}%
-                </Text>
-              </Card>
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Card p="md" radius="md" withBorder h="120px">
-                <Group gap="sm" align="center">
-                  <ThemeIcon color="yellow" variant="light" size="lg" gradient={{ from: "yellow", to: "orange" }}>
-                    <IconStar size={20} />
-                  </ThemeIcon>
-                  <Text size="sm" c="dimmed">
-                    Skill Level
-                  </Text>
-                  <Tooltip label="Your current chess mastery level">
-                    <IconInfoCircle size={14} color="#888" style={{ marginLeft: 4 }} />
-                  </Tooltip>
-                </Group>
-                <Text fw={700} size="lg" mt="xs" style={{ letterSpacing: 1 }}>
-                  {(() => {
-                    const percent = overallProgress;
-                    if (percent >= 90) return "Master";
-                    if (percent >= 70) return "Advanced";
-                    if (percent >= 40) return "Intermediate";
-                    return "Beginner";
-                  })()}
-                </Text>
-              </Card>
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Card p="md" radius="md" withBorder h="120px">
-                <Group gap="sm" align="center">
-                  <ThemeIcon color="green" variant="light" size="lg" gradient={{ from: "green", to: "lime" }}>
-                    <IconClock size={20} />
-                  </ThemeIcon>
-                  <Text size="sm" c="dimmed">
-                    Streak
-                  </Text>
-                  <Tooltip label="How many days in a row you've practiced or learned">
-                    <IconInfoCircle size={14} color="#888" style={{ marginLeft: 4 }} />
-                  </Tooltip>
-                </Group>
-                <Text fw={700} size="lg" mt="xs">
-                  {currentStreak} <span style={{ fontWeight: 400, fontSize: 12 }}>days</span>
-                </Text>
-              </Card>
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Card p="md" radius="md" withBorder h="120px">
-                <Group gap="sm" align="center">
-                  <ThemeIcon color="violet" variant="light" size="lg" gradient={{ from: "violet", to: "pink" }}>
-                    <IconTrophy size={20} />
-                  </ThemeIcon>
-                  <Text size="sm" c="dimmed">
-                    Points
-                  </Text>
-                  <Tooltip label="Total points earned from all activities">
-                    <IconInfoCircle size={14} color="#888" style={{ marginLeft: 4 }} />
-                  </Tooltip>
-                </Group>
-                <Text fw={700} size="lg" mt="xs">
-                  {userStats.totalPoints} <span style={{ fontWeight: 400, fontSize: 12 }}>pts</span>
-                </Text>
-              </Card>
-            </Grid.Col>
-          </Grid>
-        </Stack>
+        <CompactProgressSection
+          overallProgress={overallProgress}
+          currentStreak={currentStreak}
+          totalPoints={userStats.totalPoints}
+        />
 
         <Stack gap="md">
           <Title order={3} mb="xs">
@@ -295,27 +190,8 @@ export default function LearnPage() {
           </Title>
           <Grid gutter="md">
             {learningPaths.map((path) => (
-              <Grid.Col key={path.id} span={{ base: 12, sm: 6 }}>
-                <Card
-                  shadow="md"
-                  p="lg"
-                  radius="md"
-                  withBorder
-                  onClick={path.onClick}
-                  style={{
-                    cursor: "pointer",
-                    transition: "box-shadow 0.2s, transform 0.2s",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.10)";
-                    e.currentTarget.style.transform = "translateY(-2px) scale(1.01)";
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.04)";
-                    e.currentTarget.style.transform = "none";
-                  }}
-                >
+              <Grid.Col key={path.id} span={layout.learn.layoutType === "mobile" ? { base: 12 } : { base: 12, sm: 6 }}>
+                <Card shadow="sm" p="lg" radius="md" withBorder onClick={path.onClick}>
                   <Stack gap="md" h="100%">
                     <Group justify="space-between" align="flex-start" mb="xs">
                       <ThemeIcon size={60} radius="md" variant="light" color={path.color}>

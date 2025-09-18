@@ -159,7 +159,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
       createForm.reset();
     } catch {
       notifications.show({
-        title: t("Error"),
+        title: t("common.error"),
         message: t("settings.appearance.theme.createError"),
         color: "red",
       });
@@ -178,7 +178,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
       }
     } catch {
       notifications.show({
-        title: t("Error"),
+        title: t("common.error"),
         message: t("settings.appearance.theme.deleteError"),
         color: "red",
       });
@@ -197,7 +197,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
       }
     } catch {
       notifications.show({
-        title: t("Error"),
+        title: t("common.error"),
         message: t("settings.appearance.theme.duplicateError"),
         color: "red",
       });
@@ -228,7 +228,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
       }
     } catch {
       notifications.show({
-        title: t("Error"),
+        title: t("common.error"),
         message: t("settings.appearance.theme.exportError"),
         color: "red",
       });
@@ -253,7 +253,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
       setImportFile(null);
     } catch {
       notifications.show({
-        title: t("Error"),
+        title: t("common.error"),
         message: t("settings.appearance.theme.importError"),
         color: "red",
       });
@@ -399,7 +399,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
 
             <Group justify="flex-end" mt="md">
               <Button variant="subtle" onClick={() => setCreateModalOpen(false)}>
-                {t("Cancel")}
+                {t("common.cancel")}
               </Button>
               <Button type="submit">{t("settings.appearance.theme.create")}</Button>
             </Group>

@@ -7,7 +7,9 @@ import { readDir, remove } from "@tauri-apps/plugin-fs";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import OpenFolderButton from "@/common/components/OpenFolderButton";
+import { DatabaseSidePanelDrawerLayout } from "@/common/components/SidePanelDrawerLayout";
 import DirectoryTable from "./components/DirectoryTable";
 import FileCard from "./components/FileCard";
 import { FILE_TYPES, type FileMetadata, type FileType, processEntriesRecursively } from "./components/file";
@@ -30,9 +32,13 @@ const useFileDirectory = (dir: string) => {
 
 function FilesPage() {
   const { t } = useTranslation();
+  const { layout } = useResponsiveLayout();
 
   const { documentDir } = useLoaderData({ from: "/files" });
   const { files, isLoading, mutate } = useFileDirectory(documentDir);
+
+  // Calculate responsive values based on layout flags
+  const isMobile = layout.files.layoutType === "mobile";
 
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<FileMetadata | null>(null);
@@ -72,88 +78,101 @@ function FilesPage() {
         <OpenFolderButton folder={documentDir} />
       </Group>
 
-      <Group grow flex={1} style={{ overflow: "hidden" }} px="md" pb="md">
-        <Stack h="100%">
-          <Group>
-            <Input
-              style={{ flexGrow: 1 }}
-              rightSection={<IconSearch size="1rem" />}
-              placeholder={t("features.files.search")}
-              value={search}
-              onChange={(e) => setSearch(e.currentTarget.value)}
+      <DatabaseSidePanelDrawerLayout
+        mainContent={
+          <Stack>
+            <Group wrap={isMobile ? "wrap" : "nowrap"}>
+              <Input
+                style={{ flexGrow: 1, minWidth: isMobile ? "100%" : "200px" }}
+                rightSection={<IconSearch size="1rem" />}
+                placeholder={t("features.files.search")}
+                value={search}
+                onChange={(e) => setSearch(e.currentTarget.value)}
+              />
+              <Group wrap={isMobile ? "wrap" : "nowrap"}>
+                <Button
+                  size={isMobile ? "sm" : "xs"}
+                  leftSection={<IconPlus size="1rem" />}
+                  onClick={() => toggleCreateModal()}
+                >
+                  {t("common.create")}
+                </Button>
+                <Button
+                  size={isMobile ? "sm" : "xs"}
+                  color="red"
+                  disabled={!selected}
+                  leftSection={<IconX size="1rem" />}
+                  onClick={() => {
+                    modals.openConfirmModal({
+                      title: t("features.files.delete.title"),
+                      withCloseButton: false,
+                      children: (
+                        <>
+                          <Text>
+                            {t("features.files.delete.message", {
+                              fileName: selected?.name,
+                            })}
+                          </Text>
+                          <Text>{t("common.cannotUndo")}</Text>
+                        </>
+                      ),
+                      labels: { confirm: t("common.remove"), cancel: t("common.cancel") },
+                      confirmProps: { color: "red" },
+                      onConfirm: async () => {
+                        if (selected) {
+                          await remove(selected.path);
+                          await remove(selected.path.replace(".pgn", ".info"));
+                          mutate(files?.filter((file) => file.name !== selected.name));
+                        }
+                        setSelected(null);
+                      },
+                    });
+                  }}
+                >
+                  {t("common.delete")}
+                </Button>
+              </Group>
+            </Group>
+            <Group wrap={isMobile ? "wrap" : "nowrap"}>
+              {FILE_TYPES.map((item) => (
+                <Chip
+                  variant="outline"
+                  key={item.value}
+                  onChange={(v) => setFilter((filter) => (v ? item.value : filter === item.value ? null : filter))}
+                  checked={filter === item.value}
+                >
+                  {t(item.labelKey)}
+                </Chip>
+              ))}
+            </Group>
+
+            <DirectoryTable
+              files={files}
+              setFiles={mutate}
+              isLoading={isLoading}
+              setSelectedFile={setSelected}
+              selectedFile={selected}
+              search={search}
+              filter={filter || ""}
             />
-            <Button size="xs" leftSection={<IconPlus size="1rem" />} onClick={() => toggleCreateModal()}>
-              {t("common.create")}
-            </Button>
-            <Button
-              size="xs"
-              color="red"
-              disabled={!selected}
-              leftSection={<IconX size="1rem" />}
-              onClick={() => {
-                modals.openConfirmModal({
-                  title: t("features.files.delete.title"),
-                  withCloseButton: false,
-                  children: (
-                    <>
-                      <Text>
-                        {t("features.files.delete.message", {
-                          fileName: selected?.name,
-                        })}
-                      </Text>
-                      <Text>{t("common.cannotUndo")}</Text>
-                    </>
-                  ),
-                  labels: { confirm: t("common.remove"), cancel: t("common.cancel") },
-                  confirmProps: { color: "red" },
-                  onConfirm: async () => {
-                    if (selected) {
-                      await remove(selected.path);
-                      await remove(selected.path.replace(".pgn", ".info"));
-                      mutate(files?.filter((file) => file.name !== selected.name));
-                    }
-                    setSelected(null);
-                  },
-                });
-              }}
-            >
-              {t("common.delete")}
-            </Button>
-          </Group>
-          <Group>
-            {FILE_TYPES.map((item) => (
-              <Chip
-                variant="outline"
-                key={item.value}
-                onChange={(v) => setFilter((filter) => (v ? item.value : filter === item.value ? null : filter))}
-                checked={filter === item.value}
-              >
-                {t(item.labelKey)}
-              </Chip>
-            ))}
-          </Group>
-
-          <DirectoryTable
-            files={files}
-            setFiles={mutate}
-            isLoading={isLoading}
-            setSelectedFile={setSelected}
-            selectedFile={selected}
-            search={search}
-            filter={filter || ""}
-          />
-        </Stack>
-
-        <Paper withBorder p="md" h="100%">
-          {selected ? (
-            <FileCard selected={selected} games={games} setGames={setGames} toggleEditModal={toggleEditModal} />
-          ) : (
-            <Center h="100%">
-              <Text>{t("features.files.noFileSelected")}</Text>
-            </Center>
-          )}
-        </Paper>
-      </Group>
+          </Stack>
+        }
+        detailContent={
+          <Paper withBorder p="md" h="100%">
+            {selected ? (
+              <FileCard selected={selected} games={games} setGames={setGames} toggleEditModal={toggleEditModal} />
+            ) : (
+              <Center h="100%">
+                <Text>{t("features.files.noFileSelected")}</Text>
+              </Center>
+            )}
+          </Paper>
+        }
+        isDetailOpen={selected !== null}
+        onDetailClose={() => setSelected(null)}
+        detailTitle={selected?.name || "File Details"}
+        layoutType={layout.files.layoutType}
+      />
     </Stack>
   );
 }

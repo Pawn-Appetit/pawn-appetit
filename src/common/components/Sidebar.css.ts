@@ -6,8 +6,15 @@ export const link = style({
   height: "3rem",
   display: "flex",
   alignItems: "center",
-  borderLeft: "3px solid transparent",
-  borderRight: "3px solid transparent",
+  "@media": {
+    [`(width >= ${vars.breakpoints.sm})`]: {
+      borderLeft: "3px solid transparent",
+      borderRight: "3px solid transparent",
+    },
+    [`(width < ${vars.breakpoints.sm})`]: {
+      borderTop: "3px solid transparent",
+    },
+  },
   justifyContent: "center",
   [vars.lightSelector]: {
     color: vars.colors.gray[7],
@@ -27,11 +34,19 @@ export const link = style({
 });
 
 export const active = style({
-  borderLeftColor: vars.colors.primary,
   [vars.lightSelector]: {
     color: vars.colors.dark[5],
   },
   [vars.darkSelector]: {
     color: vars.colors.white,
+  },
+
+  "@media": {
+    [`(width >= ${vars.breakpoints.sm})`]: {
+      borderLeftColor: vars.colors.primary,
+    },
+    [`(width < ${vars.breakpoints.sm})`]: {
+      borderTopColor: vars.colors.primary,
+    },
   },
 });

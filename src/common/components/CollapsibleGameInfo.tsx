@@ -1,5 +1,6 @@
-import { Box, Group, Input, Select, SimpleGrid, Slider, Text } from "@mantine/core";
+import { ActionIcon, Box, Group, Input, Select, SimpleGrid, Slider, Text } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
+import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import cx from "clsx";
 import { memo, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,20 +13,23 @@ import type { GameHeaders } from "@/utils/treeReducer";
 import * as classes from "./GameInfo.css";
 import { TreeStateContext } from "./TreeStateContext";
 
-function GameInfo({
+function CollapsibleGameInfo({
   headers,
   simplified,
   changeTitle,
+  defaultCollapsed = false,
 }: {
   headers: GameHeaders;
   simplified?: "repertoire" | "puzzle";
   changeTitle?: (title: string) => void;
+  defaultCollapsed?: boolean;
 }) {
   const { t } = useTranslation();
   const store = useContext(TreeStateContext);
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
 
   if (!store) {
-    throw new Error("GameInfo must be used within a TreeStateProvider");
+    throw new Error("CollapsibleGameInfo must be used within a TreeStateProvider");
   }
 
   const disabled = false;
@@ -38,17 +42,44 @@ function GameInfo({
   const event = headers.event === "?" ? "" : headers.event;
   const site = headers.site === "?" ? "" : headers.site;
 
-  return (
+  // Minimal info to show when collapsed
+  const renderCollapsedView = () => (
+    <Box px="md" pt="md">
+      <Group wrap="nowrap" gap="xs" justify="space-between">
+        <Group>
+          <Text size="sm" fw={500} truncate style={{ maxWidth: "120px" }}>
+            {headers.white}
+          </Text>
+          <Text size="xs" c="dimmed">
+            {headers.white_elo || "?"}
+          </Text>
+          <Text size="xs" c="dimmed">
+            vs
+          </Text>
+          <Text size="sm" fw={500} truncate style={{ maxWidth: "120px" }}>
+            {headers.black}
+          </Text>
+          <Text size="xs" c="dimmed">
+            {headers.black_elo || "?"}
+          </Text>
+          <Text size="xs" c="dimmed" visibleFrom="md">
+            {headers.result}
+          </Text>
+        </Group>
+        <ActionIcon variant="subtle" size="sm" onClick={() => setIsCollapsed(!isCollapsed)}>
+          {isCollapsed ? <IconChevronDown size="1rem" /> : <IconChevronUp size="1rem" />}
+        </ActionIcon>
+      </Group>
+    </Box>
+  );
+
+  // Full info to show when expanded
+  const renderExpandedView = () => (
     <Box px="md" pt="md">
       <FideInfo opened={whiteOpened} setOpened={setWhiteOpened} name={headers.white} />
       <FideInfo opened={blackOpened} setOpened={setBlackOpened} name={headers.black} />
 
-      <Group w="100%" wrap="nowrap">
-        {simplified === "repertoire" && (
-          <Text c="dimmed" tt="uppercase" fw="bold" className={classes.colorHover} onClick={() => setWhiteOpened(true)}>
-            {t("chess.white")}
-          </Text>
-        )}
+      <Group w="100%" wrap="nowrap" justify="space-between" align="center">
         <Group wrap="nowrap" justify={simplified ? "start" : "center"} w="100%">
           <ContentEditable
             disabled={disabled}
@@ -94,19 +125,11 @@ function GameInfo({
             </>
           )}
         </Group>
-        {!simplified && (
-          <Text
-            c="dimmed"
-            tt="uppercase"
-            fw="bold"
-            ta="right"
-            onClick={() => setBlackOpened(true)}
-            className={classes.colorHover}
-          >
-            Black
-          </Text>
-        )}
+        <ActionIcon variant="subtle" size="sm" onClick={() => setIsCollapsed(!isCollapsed)}>
+          {isCollapsed ? <IconChevronDown size="1rem" /> : <IconChevronUp size="1rem" />}
+        </ActionIcon>
       </Group>
+
       {simplified === "puzzle" && (
         <Group gap={4}>
           <Input.Wrapper label={t("features.puzzle.rating")} flex={1}>
@@ -123,10 +146,10 @@ function GameInfo({
           </Input.Wrapper>
         </Group>
       )}
+
       {simplified === "repertoire" && (
         <Group gap={4}>
           <Text size="sm">opening for</Text>
-
           <Select
             allowDeselect={false}
             value={headers.orientation || "white"}
@@ -158,6 +181,7 @@ function GameInfo({
           />
         </Group>
       )}
+
       {!simplified && (
         <SimpleGrid cols={3} spacing={0}>
           <input
@@ -268,6 +292,8 @@ function GameInfo({
       )}
     </Box>
   );
+
+  return <>{isCollapsed ? renderCollapsedView() : renderExpandedView()}</>;
 }
 
-export default memo(GameInfo);
+export default memo(CollapsibleGameInfo);

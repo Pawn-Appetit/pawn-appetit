@@ -30,10 +30,9 @@ import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { commands, events, type GoMode } from "@/bindings";
 import GameInfo from "@/common/components/GameInfo";
-import GameNotation from "@/common/components/GameNotation";
-import MoveControls from "@/common/components/MoveControls";
 import TimeInput from "@/common/components/TimeInput";
 import { TreeStateContext } from "@/common/components/TreeStateContext";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { activeTabAtom, currentGameStateAtom, currentPlayersAtom, enginesAtom, tabsAtom } from "@/state/atoms";
 import { getMainLine } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
@@ -42,7 +41,8 @@ import type { LocalEngine } from "@/utils/engines";
 import { saveGameRecord } from "@/utils/gameRecords";
 import { type GameHeaders, treeIteratorMainLine } from "@/utils/treeReducer";
 import EngineSettingsForm from "../panels/analysis/EngineSettingsForm";
-import Board from "./Board";
+import ResponsiveBoard from "./ResponsiveBoard";
+import ResponsiveGameAnalysis from "./ResponsiveGameAnalysis";
 
 function EnginesSelect({
   engine,
@@ -632,119 +632,139 @@ function BoardGame() {
   const onePlayerIsEngine =
     (players.white.type === "engine" || players.black.type === "engine") && players.white.type !== players.black.type;
 
+  const { layout } = useResponsiveLayout();
+  const isMobileLayout = layout.chessBoard.layoutType === "mobile";
+
   return (
     <>
-      <Portal target="#left" style={{ height: "100%" }}>
-        <Board
-          dirty={false}
-          editingMode={false}
-          toggleEditingMode={() => undefined}
-          viewOnly={gameState !== "playing"}
-          disableVariations
-          boardRef={boardRef}
-          canTakeBack={onePlayerIsEngine}
-          movable={movable}
-          whiteTime={gameState === "playing" ? (whiteTime ?? undefined) : undefined}
-          blackTime={gameState === "playing" ? (blackTime ?? undefined) : undefined}
-        />
-      </Portal>
-      <Portal target="#topRight" style={{ height: "100%", overflow: "hidden" }}>
-        <Paper withBorder shadow="sm" p="md" h="100%">
-          {gameState === "settingUp" && (
-            <ScrollArea h="100%" offsetScrollbars>
-              <Stack>
-                <Group>
-                  <Text flex={1} ta="center" fz="lg" fw="bold">
-                    {match(inputColor)
-                      .with("white", () => t("chess.white"))
-                      .with("random", () => t("chess.random"))
-                      .with("black", () => t("chess.black"))
-                      .exhaustive()}
-                  </Text>
-                  <ActionIcon onClick={cycleColor}>
-                    <IconArrowsExchange />
-                  </ActionIcon>
-                  <Text flex={1} ta="center" fz="lg" fw="bold">
-                    {match(inputColor)
-                      .with("white", () => t("chess.black"))
-                      .with("random", () => t("chess.random"))
-                      .with("black", () => t("chess.white"))
-                      .exhaustive()}
-                  </Text>
-                </Group>
-                <Box flex={1}>
-                  <Group style={{ alignItems: "start" }}>
-                    <OpponentForm
-                      sameTimeControl={sameTimeControl}
-                      opponent={player1Settings}
-                      setOpponent={setPlayer1Settings}
-                      setOtherOpponent={setPlayer2Settings}
-                    />
-                    <Divider orientation="vertical" />
-                    <OpponentForm
-                      sameTimeControl={sameTimeControl}
-                      opponent={player2Settings}
-                      setOpponent={setPlayer2Settings}
-                      setOtherOpponent={setPlayer1Settings}
-                    />
-                  </Group>
-                </Box>
+      {isMobileLayout ? (
+        // Mobile layout: ResponsiveBoard handles everything, no Portal needed
+        <Box style={{ width: "100%", flex: 1, overflow: "hidden" }}>
+          <ResponsiveBoard
+            dirty={false}
+            editingMode={false}
+            toggleEditingMode={() => undefined}
+            viewOnly={gameState !== "playing"}
+            disableVariations
+            boardRef={boardRef}
+            canTakeBack={onePlayerIsEngine}
+            movable={movable}
+            whiteTime={gameState === "playing" ? (whiteTime ?? undefined) : undefined}
+            blackTime={gameState === "playing" ? (blackTime ?? undefined) : undefined}
+            topBar={false}
+            // Board controls props
+            changeTabType={changeToAnalysisMode}
+            currentTabType="play"
+          />
+        </Box>
+      ) : (
+        // Desktop layout: Use Portal system with Mosaic layout
+        <>
+          <Portal target="#left" style={{ height: "100%" }}>
+            <ResponsiveBoard
+              dirty={false}
+              editingMode={false}
+              toggleEditingMode={() => undefined}
+              viewOnly={gameState !== "playing"}
+              disableVariations
+              boardRef={boardRef}
+              canTakeBack={onePlayerIsEngine}
+              movable={movable}
+              whiteTime={gameState === "playing" ? (whiteTime ?? undefined) : undefined}
+              blackTime={gameState === "playing" ? (blackTime ?? undefined) : undefined}
+              topBar={false}
+              // Board controls props
+              changeTabType={changeToAnalysisMode}
+              currentTabType="play"
+            />
+          </Portal>
+          <Portal target="#topRight" style={{ height: "100%", overflow: "hidden" }}>
+            <Paper withBorder shadow="sm" p="md" h="100%">
+              {gameState === "settingUp" && (
+                <ScrollArea h="100%" offsetScrollbars>
+                  <Stack>
+                    <Group>
+                      <Text flex={1} ta="center" fz="lg" fw="bold">
+                        {match(inputColor)
+                          .with("white", () => t("chess.white"))
+                          .with("random", () => t("chess.random"))
+                          .with("black", () => t("chess.black"))
+                          .exhaustive()}
+                      </Text>
+                      <ActionIcon onClick={cycleColor}>
+                        <IconArrowsExchange />
+                      </ActionIcon>
+                      <Text flex={1} ta="center" fz="lg" fw="bold">
+                        {match(inputColor)
+                          .with("white", () => t("chess.black"))
+                          .with("random", () => t("chess.random"))
+                          .with("black", () => t("chess.white"))
+                          .exhaustive()}
+                      </Text>
+                    </Group>
+                    <Box flex={1}>
+                      <Group style={{ alignItems: "start" }}>
+                        <OpponentForm
+                          sameTimeControl={sameTimeControl}
+                          opponent={player1Settings}
+                          setOpponent={setPlayer1Settings}
+                          setOtherOpponent={setPlayer2Settings}
+                        />
+                        <Divider orientation="vertical" />
+                        <OpponentForm
+                          sameTimeControl={sameTimeControl}
+                          opponent={player2Settings}
+                          setOpponent={setPlayer2Settings}
+                          setOtherOpponent={setPlayer1Settings}
+                        />
+                      </Group>
+                    </Box>
 
-                <Group justify="space-between">
-                  <Checkbox
-                    label="Same time control"
-                    checked={sameTimeControl}
-                    onChange={(e) => setSameTimeControl(e.target.checked)}
-                  />
-                  <Button
-                    onClick={startGame}
-                    disabled={
-                      ((player1Settings.type === "engine" || player2Settings.type === "engine") &&
-                        engines.length === 0) ||
-                      error !== null
-                    }
-                  >
-                    Start game
-                  </Button>
-                </Group>
-              </Stack>
-            </ScrollArea>
-          )}
-          {(gameState === "playing" || gameState === "gameOver") && (
-            <Stack h="100%">
-              <Box flex={1}>
-                <GameInfo headers={headers} />
-              </Box>
-              <Group grow>
-                <Button
-                  onClick={() => {
-                    setGameState("settingUp");
-                    setWhiteTime(null);
-                    setBlackTime(null);
-                    setFen(INITIAL_FEN);
-                    setHeaders({
-                      ...headers,
-                      result: "*",
-                    });
-                  }}
-                  leftSection={<IconPlus />}
-                >
-                  New Game
-                </Button>
-                <Button variant="default" onClick={() => changeToAnalysisMode()} leftSection={<IconZoomCheck />}>
-                  Analyze
-                </Button>
-              </Group>
-            </Stack>
-          )}
-        </Paper>
-      </Portal>
-      <Portal target="#bottomRight" style={{ height: "100%" }}>
-        <Stack h="100%" gap="xs">
-          <GameNotation topBar />
-          <MoveControls />
-        </Stack>
-      </Portal>
+                    <Group justify="space-between">
+                      <Checkbox
+                        label="Same time control"
+                        checked={sameTimeControl}
+                        onChange={(e) => setSameTimeControl(e.target.checked)}
+                      />
+                      <Button onClick={startGame} disabled={error !== null}>
+                        Start game
+                      </Button>
+                    </Group>
+                  </Stack>
+                </ScrollArea>
+              )}
+              {(gameState === "playing" || gameState === "gameOver") && (
+                <Stack h="100%">
+                  <Box flex={1}>
+                    <GameInfo headers={headers} />
+                  </Box>
+                  <Group grow>
+                    <Button
+                      onClick={() => {
+                        setGameState("settingUp");
+                        setWhiteTime(null);
+                        setBlackTime(null);
+                        setFen(INITIAL_FEN);
+                        setHeaders({
+                          ...headers,
+                          result: "*",
+                        });
+                      }}
+                      leftSection={<IconPlus />}
+                    >
+                      New Game
+                    </Button>
+                    <Button variant="default" onClick={() => changeToAnalysisMode()} leftSection={<IconZoomCheck />}>
+                      Analyze
+                    </Button>
+                  </Group>
+                </Stack>
+              )}
+            </Paper>
+          </Portal>
+        </>
+      )}
+      <ResponsiveGameAnalysis topBar />
     </>
   );
 }

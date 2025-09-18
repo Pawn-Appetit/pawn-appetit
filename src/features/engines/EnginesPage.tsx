@@ -32,6 +32,7 @@ import { useAtom } from "jotai";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWRImmutable from "swr/immutable";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { commands, type UciOptionConfig } from "@/bindings";
 import GenericCard from "@/common/components/GenericCard";
 import * as classes from "@/common/components/GenericCard.css";
@@ -46,6 +47,7 @@ import AddEngine from "./components/AddEngine";
 
 export default function EnginesPage() {
   const { t } = useTranslation();
+  const { layout } = useResponsiveLayout();
 
   const [engines, setEngines] = useAtom(enginesAtom);
   const [opened, setOpened] = useState(false);
@@ -53,6 +55,10 @@ export default function EnginesPage() {
   const [sortBy, setSortBy] = useState<"name" | "elo">("name");
   const { selected } = Route.useSearch();
   const navigate = useNavigate();
+
+  // Calculate responsive values based on layout flags
+  const isMobile = layout.engines.layoutType === "mobile";
+  const gridCols = isMobile ? 1 : { base: 1, md: 2 };
   const setSelected = (v: number | null) => {
     // @ts-expect-error
     navigate({ search: { selected: v ?? undefined } });
@@ -119,7 +125,7 @@ export default function EnginesPage() {
                 Try adjusting your search or add a new engine.
               </Alert>
             ) : (
-              <SimpleGrid cols={{ base: 1, md: 2 }} spacing={{ base: "md", md: "sm" }}>
+              <SimpleGrid cols={gridCols} spacing={{ base: "md", md: "sm" }}>
                 {filteredIndices.map((i: number) => {
                   const item = engines[i];
                   const stats =
@@ -161,7 +167,7 @@ export default function EnginesPage() {
               </Text>
             </Stack>
           ) : selectedEngine.type === "local" ? (
-            <EngineSettings selected={selected} setSelected={setSelected} />
+            <EngineSettings selected={selected} setSelected={setSelected} isMobile={isMobile} />
           ) : (
             <Stack>
               <Divider variant="dashed" label={t("common.generalSettings")} />
@@ -238,7 +244,15 @@ export default function EnginesPage() {
   );
 }
 
-function EngineSettings({ selected, setSelected }: { selected: number; setSelected: (v: number | null) => void }) {
+function EngineSettings({
+  selected,
+  setSelected,
+  isMobile,
+}: {
+  selected: number;
+  setSelected: (v: number | null) => void;
+  isMobile: boolean;
+}) {
   const { t } = useTranslation();
 
   const [engines, setEngines] = useAtom(enginesAtom);
@@ -332,7 +346,7 @@ function EngineSettings({ selected, setSelected }: { selected: number; setSelect
       copy[selected] = { ...(copy[selected] as LocalEngine), settings };
       return copy;
     });
-  }, [options, selected, engine.path, engine.settings]);
+  }, [options, selected, engine.path, engine.settings, setEngines]);
   type UciOptionWithCurrent =
     | {
         type: "spin";
@@ -370,6 +384,8 @@ function EngineSettings({ selected, setSelected }: { selected: number; setSelect
             return { type: "check", value: { ...opt.value, value: cur } };
           }
           case "button":
+            return null;
+          default:
             return null;
         }
       })
@@ -412,7 +428,7 @@ function EngineSettings({ selected, setSelected }: { selected: number; setSelect
     <ScrollArea h="100%" offsetScrollbars>
       <Stack>
         <Divider variant="dashed" label={t("common.generalSettings")} />
-        <Group grow align="start" wrap="nowrap">
+        {isMobile ? (
           <Stack>
             <Group wrap="nowrap" w="100%">
               <TextInput
@@ -448,33 +464,92 @@ function EngineSettings({ selected, setSelected }: { selected: number; setSelect
               checked={!!engine.loaded}
               onChange={(e) => setEngine({ ...engine, loaded: e.currentTarget.checked })}
             />
+            <Center>
+              {engine.image ? (
+                <Paper withBorder style={{ cursor: "pointer" }} onClick={changeImage}>
+                  <LocalImage src={engine.image} alt={engine.name} mah="8rem" maw="100%" fit="contain" />
+                </Paper>
+              ) : (
+                <ActionIcon
+                  size="8rem"
+                  variant="subtle"
+                  styles={{
+                    root: {
+                      border: "1px dashed",
+                    },
+                  }}
+                  onClick={changeImage}
+                >
+                  <IconPhotoPlus size="2rem" />
+                </ActionIcon>
+              )}
+            </Center>
           </Stack>
-          <Center>
-            {engine.image ? (
-              <Paper withBorder style={{ cursor: "pointer" }} onClick={changeImage}>
-                <LocalImage src={engine.image} alt={engine.name} mah="10rem" maw="100%" fit="contain" />
-              </Paper>
-            ) : (
-              <ActionIcon
-                size="10rem"
-                variant="subtle"
-                styles={{
-                  root: {
-                    border: "1px dashed",
-                  },
-                }}
-                onClick={changeImage}
-              >
-                <IconPhotoPlus size="2.5rem" />
-              </ActionIcon>
-            )}
-          </Center>
-        </Group>
+        ) : (
+          <Group grow align="start" wrap="nowrap">
+            <Stack>
+              <Group wrap="nowrap" w="100%">
+                <TextInput
+                  flex={1}
+                  label={t("common.name")}
+                  value={engine.name}
+                  onChange={(e) => setEngine({ ...engine, name: e.currentTarget.value })}
+                />
+                <TextInput
+                  label={t("common.version")}
+                  w="5rem"
+                  value={engine.version}
+                  placeholder="?"
+                  onChange={(e) => setEngine({ ...engine, version: e.currentTarget.value })}
+                />
+              </Group>
+              <Group grow>
+                <NumberInput
+                  label="ELO"
+                  value={engine.elo || undefined}
+                  min={0}
+                  placeholder={t("common.unknown")}
+                  onChange={(v) =>
+                    setEngine({
+                      ...engine,
+                      elo: typeof v === "number" ? v : undefined,
+                    })
+                  }
+                />
+              </Group>
+              <Switch
+                label={t("common.enabled")}
+                checked={!!engine.loaded}
+                onChange={(e) => setEngine({ ...engine, loaded: e.currentTarget.checked })}
+              />
+            </Stack>
+            <Center>
+              {engine.image ? (
+                <Paper withBorder style={{ cursor: "pointer" }} onClick={changeImage}>
+                  <LocalImage src={engine.image} alt={engine.name} mah="10rem" maw="100%" fit="contain" />
+                </Paper>
+              ) : (
+                <ActionIcon
+                  size="10rem"
+                  variant="subtle"
+                  styles={{
+                    root: {
+                      border: "1px dashed",
+                    },
+                  }}
+                  onClick={changeImage}
+                >
+                  <IconPhotoPlus size="2.5rem" />
+                </ActionIcon>
+              )}
+            </Center>
+          </Group>
+        )}
         <Divider variant="dashed" label={t("features.engines.settings.searchSettings")} />
         <GoModeInput goMode={engine.go || null} setGoMode={(v) => setEngine({ ...engine, go: v })} />
 
         <Divider variant="dashed" label={t("features.engines.settings.advancedSettings")} />
-        <SimpleGrid cols={2}>
+        <SimpleGrid cols={isMobile ? 1 : 2}>
           {completeOptions
             .filter((option) => option.type !== "check")
             .map((option) => {
@@ -536,10 +611,12 @@ function EngineSettings({ selected, setSelected }: { selected: number; setSelect
                     />
                   );
                 }
+                default:
+                  return null;
               }
             })}
         </SimpleGrid>
-        <SimpleGrid cols={2}>
+        <SimpleGrid cols={isMobile ? 1 : 2}>
           {completeOptions
             .filter((option) => option.type === "check")
             .map((o) => (
@@ -661,6 +738,8 @@ function JSONModal({
 }
 
 function EngineName({ engine, stats }: { engine: Engine; stats?: { label: string; value: string }[] }) {
+  const { layout } = useResponsiveLayout();
+  const isMobile = layout.engines.layoutType === "mobile";
   const { data: fileExists, isLoading } = useSWRImmutable(
     ["file-exists", engine.type === "local" ? engine.path : null],
     async ([, path]) => {
@@ -677,18 +756,18 @@ function EngineName({ engine, stats }: { engine: Engine; stats?: { label: string
     <Group>
       <Box flex="1">
         {engine.image ? (
-          <LocalImage src={engine.image} alt={engine.name} h="135px" />
+          <LocalImage src={engine.image} alt={engine.name} h={isMobile ? "100px" : "135px"} />
         ) : engine.type !== "local" ? (
-          <IconCloud size="135px" />
+          <IconCloud size={isMobile ? "100px" : "135px"} />
         ) : (
-          <IconCpu size="135px" />
+          <IconCpu size={isMobile ? "100px" : "135px"} />
         )}
       </Box>
 
       <Stack flex="1" gap={0}>
         <Stack gap="xs">
           <Group align="center" gap="xs" wrap="wrap">
-            <Text fw="bold" lineClamp={1} c={hasError ? "red" : undefined}>
+            <Text fw="bold" lineClamp={1} c={hasError ? "red" : undefined} size={isMobile ? "sm" : "md"}>
               {engine.name} {hasError ? "(file missing)" : ""}
             </Text>
             {engine.type === "local" && engine.version && (
@@ -715,10 +794,10 @@ function EngineName({ engine, stats }: { engine: Engine; stats?: { label: string
         <Group justify="space-between">
           {stats?.map((stat) => (
             <Stack key={stat.label} gap="0" align="center">
-              <Text size="xs" c="dimmed" fw="bold" className={classes.label} mt="1rem">
+              <Text size="xs" c="dimmed" fw="bold" className={classes.label} mt={isMobile ? "0.5rem" : "1rem"}>
                 {stat.label}
               </Text>
-              <Text fw={700} size="lg" style={{ lineHeight: 1 }}>
+              <Text fw={700} size={isMobile ? "md" : "lg"} style={{ lineHeight: 1 }}>
                 {stat.value}
               </Text>
             </Stack>

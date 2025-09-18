@@ -15,11 +15,11 @@ import { Spotlight, type SpotlightActionData, type SpotlightActionGroupData, spo
 import { IconSearch, IconSettings } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom } from "jotai";
 import { type JSX, type SVGProps, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { nativeBarAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { env } from "@/utils/detectEnvironment";
 import { linksdata } from "./Sidebar";
 import * as classes from "./TopBar.css";
@@ -122,23 +122,23 @@ function getActions(
 }
 
 function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
-  const isNative = useAtomValue(nativeBarAtom);
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { colorScheme } = useMantineColorScheme();
   const osColorScheme = useColorScheme();
+  const { layout } = useResponsiveLayout();
 
   const [maximized, setMaximized] = useState(true);
   const [keyMap] = useAtom(keyMapAtom);
 
   return (
     <Group h="100%">
-      <Box>
-        <Group data-tauri-drag-region gap="xs" px="sm">
-          <Box h="1.4rem" w="1.4rem">
-            <Image src="/logo.png" fit="fill" />
-          </Box>
-          {!isNative && (
+      {layout.menuBar.mode === "custom" && (
+        <Box>
+          <Group data-tauri-drag-region gap="xs" px="sm">
+            <Box h="1.4rem" w="1.4rem">
+              <Image src="/logo.png" fit="fill" />
+            </Box>
             <Group gap={0}>
               {menuActions.map((action) => (
                 <Menu
@@ -185,16 +185,23 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
                 </Menu>
               ))}
             </Group>
-          )}
-        </Group>
-      </Box>
+          </Group>
+        </Box>
+      )}
       <Group style={{ flexGrow: 1 }} justify="center" data-tauri-drag-region>
+        <Box
+          style={{ flex: 1 }}
+          h="1.4rem"
+          data-tauri-drag-region
+          hiddenFrom={layout.menuBar.mode === "native" ? "xs" : "sm"}
+        />
         <UnstyledButton
           onClick={spotlight.open}
           size="xs"
           pl="12px"
           pr="4px"
           py="2px"
+          visibleFrom={layout.menuBar.mode === "native" ? "xs" : "sm"}
           style={{
             border: "1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4))",
             borderRadius: "4px",
@@ -222,7 +229,7 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
           scrollable
         />
       </Group>
-      {env.isDesktop() && !isNative && (
+      {layout.menuBar.displayWindowControls && (
         <Center h="30" mr="xs">
           <Group gap="5px" data-tauri-drag-region>
             <ActionIcon h={25} w={25} radius="lg" onClick={() => appWindow?.minimize()} className={classes.icon}>

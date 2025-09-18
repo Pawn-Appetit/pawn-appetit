@@ -31,11 +31,12 @@ import {
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { applyUciMoveToFen } from "@/utils/applyUciMoveToFen";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { useUserStatsStore } from "../../state/userStatsStore";
 import { CompletionModal } from "./components/CompletionModal";
-import PracticeBoardWithProvider from "./components/practice/PracticeBoard";
+import { PracticeContent } from "./components/PracticeContent";
+import { PracticeBoard } from "./components/PracticeBoard";
 import { PracticeCard } from "./components/practice/PracticeCard";
-import { PracticeExerciseCard } from "./components/practice/PracticeExerciseCard";
 import { type PracticeCategory, type PracticeExercise, practices, uiConfig } from "./constants/practices";
 import { useExerciseState } from "./hooks/useExerciseState";
 
@@ -47,6 +48,7 @@ export default function PracticePage() {
   const [completedCategoryTitle, setCompletedCategoryTitle] = useState("");
   const { navigate } = useRouter();
   const [opened, { close, open }] = useDisclosure(false);
+  const { layout } = useResponsiveLayout();
 
   const { userStats, setUserStats } = useUserStatsStore();
 
@@ -292,142 +294,52 @@ export default function PracticePage() {
               </Group>
             </Group>
 
-            <Flex gap="xl" align="flex-start">
-              <Stack gap="md" flex={1}>
-                <Paper p="lg" withBorder radius="md">
-                  <Group gap="md" mb="md">
-                    <ThemeIcon size={40} variant="gradient" gradient={{ from: selectedPractice.color, to: "cyan" }}>
-                      {uiConfig.icons[selectedPractice.iconName] || uiConfig.icons.crown}
-                    </ThemeIcon>
-                    <Box>
-                      <Title order={3}>{selectedPractice.title}</Title>
-                      <Text c="dimmed">{selectedPractice.description}</Text>
-                    </Box>
-                  </Group>
-
-                  <Group gap="lg">
-                    <Group gap="xs">
-                      <IconTarget size={16} />
-                      <Text size="sm">{selectedPractice.exercises.length} exercises</Text>
-                    </Group>
-                    <Group gap="xs">
-                      <IconClock size={16} />
-                      <Text size="sm">{selectedPractice.estimatedTime} minutes</Text>
-                    </Group>
-                    <Group gap="xs">
-                      <IconTrophy size={16} />
-                      <Text size="sm">
-                        {selectedPractice.exercises.reduce(
-                          (sum: number, ex: PracticeExercise) => sum + (ex.points || 0),
-                          0,
-                        )}{" "}
-                        points
-                      </Text>
-                    </Group>
-                  </Group>
-                </Paper>
-
-                <Title order={4}>Exercises ({selectedPractice.exercises.length})</Title>
-                <Stack gap="md">
-                  {selectedPractice.exercises.map((exercise: PracticeExercise, index: number) => {
-                    const isCompleted =
-                      userStats.completedPractice?.[selectedPractice.id]?.includes(exercise.id) || false;
-                    return (
-                      <PracticeExerciseCard
-                        key={exercise.id}
-                        exercise={{
-                          id: exercise.id,
-                          title: exercise.title,
-                          description: exercise.description,
-                          difficulty: exercise.difficulty,
-                          fen: exercise.gameData.fen,
-                          correctMoves: exercise.gameData.correctMoves
-                            ? [...exercise.gameData.correctMoves]
-                            : undefined,
-                          points: exercise.points,
-                          timeLimit: exercise.timeLimit,
-                          stepsCount: exercise.stepsCount,
-                        }}
-                        index={index}
-                        isCompleted={isCompleted}
-                        onClick={() => {
-                          handleExerciseSelect(exercise);
-                          updateExerciseFen(exercise?.gameData?.fen);
-                        }}
-                      />
-                    );
-                  })}
-                </Stack>
-              </Stack>
-
-              <Box flex={1}>
-                <PracticeBoardWithProvider
-                  key={`${selectedExercise?.id}-${resetCounter}`}
-                  fen={selectedExercise ? currentFen : "8/8/8/8/8/8/8/8 w - - 0 1"}
-                  orientation="white"
-                  engineColor="black"
-                  onMove={(move) => console.log("Move made:", move)}
-                  onPositionChange={(fen) => console.log("Position changed:", fen)}
-                  onChessMove={handleMove}
+            {/* Responsive layout: vertical stacking for mobile, side-by-side for desktop */}
+            {layout.learn.layoutType === "mobile" ? (
+              // Mobile layout: vertical stacking
+              <Stack gap="xl">
+                <PracticeContent
+                  selectedPractice={selectedPractice}
+                  onExerciseSelect={(exercise) => {
+                    handleExerciseSelect(exercise);
+                    updateExerciseFen(exercise?.gameData?.fen);
+                  }}
+                  layoutOrientation={layout.learn.layoutType}
                 />
-
-                {selectedExercise && (
-                  <>
-                    {message && (
-                      <Paper
-                        my="md"
-                        p="md"
-                        withBorder
-                        bg={
-                          message.includes("Correct") || message.includes("Perfect") || message.includes("Excellent")
-                            ? "rgba(0,128,0,0.1)"
-                            : message.includes("Checkmate")
-                              ? "rgba(255,165,0,0.1)"
-                              : "rgba(255, 238, 0, 0.1)"
-                        }
-                      >
-                        <Group>
-                          {message.includes("Correct") ||
-                          message.includes("Perfect") ||
-                          message.includes("Excellent") ? (
-                            <IconCheck size={20} color="green" />
-                          ) : message.includes("Checkmate") ? (
-                            <IconTrophy size={20} color="orange" />
-                          ) : (
-                            <IconX size={20} color="yellow" />
-                          )}
-                          <Text
-                            fw={500}
-                            c={
-                              message.includes("Correct") ||
-                              message.includes("Perfect") ||
-                              message.includes("Excellent")
-                                ? "green"
-                                : message.includes("Checkmate")
-                                  ? "orange"
-                                  : "yellow"
-                            }
-                          >
-                            {message}
-                          </Text>
-                        </Group>
-                      </Paper>
-                    )}
-
-                    {selectedExercise?.stepsCount && (
-                      <Paper mt="md" p="md" withBorder bg="rgba(59, 130, 246, 0.1)">
-                        <Group>
-                          <IconTarget size={20} color="#1c7ed6" />
-                          <Text size="sm" c="blue">
-                            Target: Checkmate in {selectedExercise.stepsCount} moves | Current moves: {playerMoveCount}
-                          </Text>
-                        </Group>
-                      </Paper>
-                    )}
-                  </>
-                )}
-              </Box>
-            </Flex>
+                <PracticeBoard
+                  selectedExercise={selectedExercise}
+                  currentFen={currentFen}
+                  message={message}
+                  playerMoveCount={playerMoveCount}
+                  resetCounter={resetCounter}
+                  onMove={handleMove}
+                />
+              </Stack>
+            ) : (
+              // Desktop layout: side-by-side
+              <Flex gap="xl" align="flex-start">
+                <Box flex={1}>
+                  <PracticeContent
+                    selectedPractice={selectedPractice}
+                    onExerciseSelect={(exercise) => {
+                      handleExerciseSelect(exercise);
+                      updateExerciseFen(exercise?.gameData?.fen);
+                    }}
+                    layoutOrientation={layout.learn.layoutType}
+                  />
+                </Box>
+                <Box flex={1}>
+                  <PracticeBoard
+                    selectedExercise={selectedExercise}
+                    currentFen={currentFen}
+                    message={message}
+                    playerMoveCount={playerMoveCount}
+                    resetCounter={resetCounter}
+                    onMove={handleMove}
+                  />
+                </Box>
+              </Flex>
+            )}
           </>
         )}
       </Stack>

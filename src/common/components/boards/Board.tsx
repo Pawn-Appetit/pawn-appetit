@@ -1,23 +1,7 @@
-import { ActionIcon, Box, Center, Group, Menu, Text, Tooltip, useMantineTheme } from "@mantine/core";
+import { ActionIcon, Box, Center, Group, Text, useMantineTheme } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import {
-  IconArrowBack,
-  IconCamera,
-  IconChess,
-  IconChessFilled,
-  IconChevronRight,
-  IconDeviceFloppy,
-  IconDotsVertical,
-  IconEdit,
-  IconEditOff,
-  IconEraser,
-  IconPlus,
-  IconReload,
-  IconSwitchVertical,
-  IconTarget,
-  IconZoomCheck,
-} from "@tabler/icons-react";
+import { IconChevronRight } from "@tabler/icons-react";
 import { documentDir, homeDir } from "@tauri-apps/api/path";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
@@ -35,8 +19,10 @@ import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 import { Chessground } from "@/common/components/Chessground";
+import MoveControls from "@/common/components/MoveControls";
 import ShowMaterial from "@/common/components/ShowMaterial";
 import { TreeStateContext } from "@/common/components/TreeStateContext";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { updateCardPerformance } from "@/features/files/components/opening";
 import {
   autoPromoteAtom,
@@ -88,6 +74,17 @@ interface ChessboardProps {
   whiteTime?: number;
   blackTime?: number;
   practicing?: boolean;
+  // Board controls props
+  viewPawnStructure?: boolean;
+  setViewPawnStructure?: (value: boolean) => void;
+  takeSnapshot?: () => void;
+  deleteMove?: () => void;
+  changeTabType?: () => void;
+  currentTabType?: "analysis" | "play";
+  eraseDrawablesOnClick?: boolean;
+  clearShapes?: () => void;
+  toggleOrientation?: () => void;
+  currentTabSourceType?: string;
   selectedPiece?: Piece | null;
   setSelectedPiece?: (piece: Piece | null) => void;
 }
@@ -107,10 +104,22 @@ function Board({
   whiteTime,
   blackTime,
   practicing,
+  // Board controls props
+  viewPawnStructure,
+  setViewPawnStructure,
+  takeSnapshot,
+  deleteMove,
+  changeTabType,
+  currentTabType,
+  eraseDrawablesOnClick,
+  clearShapes,
+  toggleOrientation,
+  currentTabSourceType,
   selectedPiece,
   setSelectedPiece,
 }: ChessboardProps) {
   const { t } = useTranslation();
+  const { layout } = useResponsiveLayout();
 
   const store = useContext(TreeStateContext)!;
 
@@ -134,8 +143,8 @@ function Board({
   const goToPrevious = useStore(store, (s) => s.goToPrevious);
   const storeMakeMove = useStore(store, (s) => s.makeMove);
   const setHeaders = useStore(store, (s) => s.setHeaders);
-  const deleteMove = useStore(store, (s) => s.deleteMove);
-  const clearShapes = useStore(store, (s) => s.clearShapes);
+  const storeDeleteMove = useStore(store, (s) => s.deleteMove);
+  const storeClearShapes = useStore(store, (s) => s.clearShapes);
   const setShapes = useStore(store, (s) => s.setShapes);
   const setFen = useStore(store, (s) => s.setFen);
 
@@ -145,7 +154,7 @@ function Board({
   const showDests = useAtomValue(showDestsAtom);
   const showArrows = useAtomValue(showArrowsAtom);
   const showConsecutiveArrows = useAtomValue(showConsecutiveArrowsAtom);
-  const eraseDrawablesOnClick = useAtomValue(eraseDrawablesOnClickAtom);
+  const storeEraseDrawablesOnClick = useAtomValue(eraseDrawablesOnClickAtom);
   const autoPromote = useAtomValue(autoPromoteAtom);
   const forcedEP = useAtomValue(forcedEnPassantAtom);
   const showCoordinates = useAtomValue(showCoordinatesAtom);
@@ -158,19 +167,19 @@ function Board({
     dests = forceEnPassant(dests, pos);
   }
 
-  const [viewPawnStructure, setViewPawnStructure] = useState(false);
+  const [localViewPawnStructure, setLocalViewPawnStructure] = useState(false);
   const [pendingMove, setPendingMove] = useState<NormalMove | null>(null);
 
   const turn = pos?.turn || "white";
   const orientation = headers.orientation || "white";
-  const toggleOrientation = () =>
+  const localToggleOrientation = () =>
     setHeaders({
       ...headers,
       fen: root.fen, // To keep the current board setup
       orientation: orientation === "black" ? "white" : "black",
     });
 
-  const takeSnapshot = async () => {
+  const localTakeSnapshot = async () => {
     const ref = boardRef?.current;
     if (ref == null) return;
 
@@ -205,7 +214,7 @@ function Board({
   };
 
   const keyMap = useAtomValue(keyMapAtom);
-  useHotkeys([[keyMap.SWAP_ORIENTATION.keys, () => toggleOrientation()]]);
+  useHotkeys([[keyMap.SWAP_ORIENTATION.keys, () => (toggleOrientation ?? localToggleOrientation)()]]);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
   const [evalOpen, setEvalOpen] = useAtom(currentEvalOpenAtom);
 
@@ -321,7 +330,7 @@ function Board({
     headers.white_time_control !== undefined ||
     headers.black_time_control !== undefined;
 
-  function changeTabType() {
+  function localChangeTabType() {
     setCurrentTab((t) => {
       return {
         ...t,
@@ -330,105 +339,6 @@ function Board({
     });
   }
 
-  const controls = useMemo(
-    () => (
-      <ActionIcon.Group>
-        <Menu closeOnItemClick={false}>
-          <Menu.Target>
-            <ActionIcon variant="default" size="lg">
-              <IconDotsVertical size="1.3rem" />
-            </ActionIcon>
-          </Menu.Target>
-          <Menu.Dropdown>
-            <Menu.Item
-              leftSection={viewPawnStructure ? <IconChessFilled size="1.3rem" /> : <IconChess size="1.3rem" />}
-              onClick={() => setViewPawnStructure(!viewPawnStructure)}
-            >
-              {t("features.board.actions.togglePawnStructureView")}
-            </Menu.Item>
-            <Menu.Item leftSection={<IconCamera size="1.3rem" />} onClick={() => takeSnapshot()}>
-              {t("features.board.actions.takeSnapshot")}
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
-        {canTakeBack && (
-          <Tooltip label="Take Back">
-            <ActionIcon variant="default" size="lg" onClick={() => deleteMove()}>
-              <IconArrowBack />
-            </ActionIcon>
-          </Tooltip>
-        )}
-        <Tooltip
-          label={t(
-            currentTab?.type === "analysis"
-              ? "features.board.actions.playFromHere"
-              : "features.board.actions.analyzeGame",
-          )}
-        >
-          <ActionIcon variant="default" size="lg" onClick={changeTabType}>
-            {currentTab?.type === "analysis" ? <IconTarget size="1.3rem" /> : <IconZoomCheck size="1.3rem" />}
-          </ActionIcon>
-        </Tooltip>
-        {!eraseDrawablesOnClick && (
-          <Tooltip label={t("features.board.actions.clearDrawings")}>
-            <ActionIcon variant="default" size="lg" onClick={() => clearShapes()}>
-              <IconEraser size="1.3rem" />
-            </ActionIcon>
-          </Tooltip>
-        )}
-        {!disableVariations && (
-          <Tooltip label={t("features.board.actions.editPosition")}>
-            <ActionIcon variant={editingMode ? "filled" : "default"} size="lg" onClick={() => toggleEditingMode()}>
-              {editingMode ? <IconEditOff size="1.3rem" /> : <IconEdit size="1.3rem" />}
-            </ActionIcon>
-          </Tooltip>
-        )}
-
-        {saveFile && (
-          <Tooltip label={t("features.board.actions.savePGN", { key: keyMap.SAVE_FILE.keys })}>
-            <ActionIcon onClick={() => saveFile()} size="lg" variant={dirty && !autoSave ? "outline" : "default"}>
-              <IconDeviceFloppy size="1.3rem" />
-            </ActionIcon>
-          </Tooltip>
-        )}
-        {reload && (
-          <Tooltip label={t("features.menu.reload")}>
-            <ActionIcon onClick={() => reload()} size="lg" variant="default">
-              <IconReload size="1.3rem" />
-            </ActionIcon>
-          </Tooltip>
-        )}
-        {addGame && currentTab?.source?.type === "file" && (
-          <Tooltip label={t("features.board.actions.addGame")}>
-            <ActionIcon variant="default" size="lg" onClick={() => addGame()}>
-              <IconPlus size="1.3rem" />
-            </ActionIcon>
-          </Tooltip>
-        )}
-        <Tooltip
-          label={t("features.board.actions.flipBoard", {
-            key: keyMap.SWAP_ORIENTATION.keys,
-          })}
-        >
-          <ActionIcon variant="default" size="lg" onClick={() => toggleOrientation()}>
-            <IconSwitchVertical size="1.3rem" />
-          </ActionIcon>
-        </Tooltip>
-      </ActionIcon.Group>
-    ),
-    [
-      autoSave,
-      dirty,
-      keyMap,
-      currentTab,
-      disableVariations,
-      saveFile,
-      canTakeBack,
-      toggleEditingMode,
-      toggleOrientation,
-      addGame,
-    ],
-  );
   const materialDiff = getMaterialDiff(currentNode.fen);
   const practiceLock = !!practicing && !deck.positions.find((c) => c.fen === currentNode.fen);
 
@@ -498,9 +408,9 @@ function Board({
             gap: "0.5rem",
             flexWrap: "nowrap",
             overflow: "hidden",
-            maxWidth:
-              //            topbar   bottompadding                tabs                                  bottomb    topbar   evalbar                                gaps    ???
-              "calc(100vh - 2.5rem - var(--mantine-spacing-sm) - 2.778rem - var(--mantine-spacing-sm) - 2.125rem - 2.125rem + 1.563rem + var(--mantine-spacing-md) - 1rem  - 0.75rem)",
+            // Let the board use available space - responsive sizing is handled by the container
+            maxWidth: "100%",
+            maxHeight: "100%",
           }}
         >
           {materialDiff && (
@@ -565,7 +475,7 @@ function Board({
               className={`${chessboard} ${isBlindfold ? blindfold : ""}`}
               ref={boardRef}
               onClick={() => {
-                eraseDrawablesOnClick && clearShapes();
+                (eraseDrawablesOnClick ?? storeEraseDrawablesOnClick) && (clearShapes ?? storeClearShapes)();
               }}
               onWheel={(e) => {
                 if (enableBoardScroll) {
@@ -651,9 +561,13 @@ function Board({
                 premovable={{
                   enabled: false,
                 }}
+                // Leverage Chessground's built-in touch optimization
                 draggable={{
-                  enabled: !viewPawnStructure,
+                  enabled: !viewPawnStructure && !layout.chessBoard.touchOptimized,
                   deleteOnDropOff: editingMode,
+                }}
+                selectable={{
+                  enabled: layout.chessBoard.touchOptimized,
                 }}
                 drawable={{
                   enabled: true,
@@ -682,9 +596,30 @@ function Board({
             )}
 
             {moveInput && <MoveInput currentNode={currentNode} />}
-
-            {controls}
           </Group>
+
+          {/* MoveControls with board controls menu */}
+          <MoveControls
+            viewPawnStructure={viewPawnStructure ?? localViewPawnStructure}
+            setViewPawnStructure={setViewPawnStructure ?? setLocalViewPawnStructure}
+            takeSnapshot={takeSnapshot ?? localTakeSnapshot}
+            canTakeBack={canTakeBack}
+            deleteMove={deleteMove ?? storeDeleteMove}
+            changeTabType={changeTabType ?? localChangeTabType}
+            currentTabType={currentTabType}
+            eraseDrawablesOnClick={eraseDrawablesOnClick ?? storeEraseDrawablesOnClick}
+            clearShapes={clearShapes ?? storeClearShapes}
+            disableVariations={disableVariations}
+            editingMode={editingMode}
+            toggleEditingMode={toggleEditingMode}
+            saveFile={saveFile}
+            dirty={dirty}
+            autoSave={false} // Board component doesn't have autoSave context
+            reload={reload}
+            addGame={addGame}
+            toggleOrientation={toggleOrientation ?? localToggleOrientation}
+            currentTabSourceType={currentTabSourceType}
+          />
         </Box>
       </Box>
     </>

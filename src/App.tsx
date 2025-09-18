@@ -30,6 +30,7 @@ import { commands } from "./bindings";
 import { IS_DEV } from "./config";
 import i18n from "./i18n";
 import { routeTree } from "./routeTree.gen";
+import { getPlatform } from "./common/hooks/useResponsiveLayout";
 import { openFile } from "./utils/files";
 
 export type Dirs = {
@@ -125,6 +126,7 @@ export default function App() {
   const fontSize = useAtomValue(fontSizeAtom);
   const [, setTabs] = useAtom(tabsAtom);
   const [, setActiveTab] = useAtom(activeTabAtom);
+  const platform = getPlatform();
 
   const [isInitialized, setIsInitialized] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);

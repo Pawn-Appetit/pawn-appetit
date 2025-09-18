@@ -6,7 +6,6 @@ import {
   Breadcrumbs,
   Flex,
   Group,
-  Paper,
   Popover,
   SimpleGrid,
   Stack,
@@ -14,23 +13,16 @@ import {
   Title,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import {
-  IconArrowBackUp,
-  IconBulb,
-  IconCheck,
-  IconChevronLeft,
-  IconChevronRight,
-  IconClock,
-  IconX,
-} from "@tabler/icons-react";
+import { IconArrowBackUp, IconBulb } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { applyUciMoveToFen } from "@/utils/applyUciMoveToFen";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { useUserStatsStore } from "../../state/userStatsStore";
 import { CompletionModal } from "./components/CompletionModal";
-import LessonBoardWithProvider from "./components/lessons/LessonBoard";
+import { LessonContent } from "./components/LessonContent";
+import { LessonBoard } from "./components/LessonBoard";
 import { LessonCard } from "./components/lessons/LessonCard";
-import { LessonExerciseCard } from "./components/lessons/LessonExerciseCard";
 import { type Lesson, type LessonExercise, lessons } from "./constants/lessons";
 import { useExerciseState } from "./hooks/useExerciseState";
 
@@ -39,6 +31,7 @@ export default function LessonsPage() {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [completedLessonTitle, setCompletedLessonTitle] = useState("");
   const [opened, { close, open }] = useDisclosure(false);
+  const { layout } = useResponsiveLayout();
 
   const { userStats, setUserStats } = useUserStatsStore();
 
@@ -275,128 +268,56 @@ export default function LessonsPage() {
               )}
             </Group>
 
-            <Flex gap="xl" align="flex-start">
-              <Stack gap="md" flex={1}>
-                <Paper p="lg" withBorder radius="md">
-                  <Stack gap="md">
-                    <Group>
-                      <Badge
-                        size="lg"
-                        variant="filled"
-                        color={
-                          selectedLesson.difficulty === "beginner"
-                            ? "green"
-                            : selectedLesson.difficulty === "intermediate"
-                              ? "blue"
-                              : "red"
-                        }
-                      >
-                        {selectedLesson.difficulty.charAt(0).toUpperCase() + selectedLesson.difficulty.slice(1)}
-                      </Badge>
-                      {selectedLesson.estimatedTime && (
-                        <Group gap="xs">
-                          <IconClock size={16} />
-                          <Text size="sm">{selectedLesson.estimatedTime} minutes</Text>
-                        </Group>
-                      )}
-                    </Group>
-                    <Text>
-                      {selectedLesson.content.introduction?.default || selectedLesson.content.theory?.default || ""}
-                    </Text>
-                  </Stack>
-                </Paper>
-
-                <Title order={4}>Exercises ({selectedLesson.exercises.length})</Title>
-                <SimpleGrid cols={1} spacing="md">
-                  {selectedLesson.exercises.map((exercise: LessonExercise, index: number) => {
-                    const isCompleted =
-                      userStats.completedExercises?.[selectedLesson.id]?.includes(exercise.id) || false;
-                    return (
-                      <LessonExerciseCard
-                        key={exercise.id}
-                        id={exercise.id}
-                        title={`${index + 1}. ${exercise.title.default}`}
-                        description={exercise.description.default}
-                        disabled={exercise?.disabled}
-                        isCompleted={isCompleted}
-                        onClick={() => handleExerciseSelectWithReset(exercise)}
-                      />
-                    );
-                  })}
-                </SimpleGrid>
-              </Stack>
-
-              <Box flex={1}>
-                <LessonBoardWithProvider
-                  fen={selectedExercise ? currentFen : "8/8/8/8/8/8/8/8 w - - 0 1"}
-                  onMove={handleMove}
-                  readOnly={!selectedExercise}
+            {/* Responsive layout: vertical stacking for mobile, side-by-side for desktop */}
+            {layout.learn.layoutType === "mobile" ? (
+              // Mobile layout: vertical stacking
+              <Stack gap="xl">
+                <LessonContent
+                  selectedLesson={selectedLesson}
+                  onExerciseSelect={handleExerciseSelectWithReset}
+                  layoutOrientation={layout.learn.layoutType}
                 />
-
-                {selectedExercise && message && (
-                  <Paper
-                    my="md"
-                    p="md"
-                    withBorder
-                    bg={message.includes("Correct") ? "rgba(0,128,0,0.1)" : "rgba(255,0,0,0.1)"}
-                  >
-                    <Group>
-                      {message.includes("Correct") ? (
-                        <IconCheck size={20} color="green" />
-                      ) : (
-                        <IconX size={20} color="red" />
-                      )}
-                      <Text fw={500} c={message.includes("Correct") ? "green" : "red"}>
-                        {message}
-                      </Text>
-                    </Group>
-                  </Paper>
-                )}
-
-                {selectedExercise && selectedExercise?.gameData.variations?.length > 1 && (
-                  <Group mt="xs" justify="space-between" align="center">
-                    <Group gap="xs">
-                      <ActionIcon
-                        variant="default"
-                        onClick={() => {
-                          if (!selectedExercise?.gameData.variations) return;
-                          const next = Math.max(0, variationIndex - 1);
-                          setVariationIndex(next);
-                          const v = selectedExercise.gameData.variations[next];
-                          if (v?.fen) setCurrentFen(v.fen);
-                          resetState();
-                        }}
-                        disabled={!selectedExercise?.gameData.variations || variationIndex === 0}
-                      >
-                        <IconChevronLeft size={18} />
-                      </ActionIcon>
-                      <ActionIcon
-                        variant="default"
-                        onClick={() => {
-                          if (!selectedExercise?.gameData.variations) return;
-                          const total = selectedExercise.gameData.variations.length;
-                          const next = Math.min(total - 1, variationIndex + 1);
-                          setVariationIndex(next);
-                          const v = selectedExercise.gameData.variations[next];
-                          if (v?.fen) setCurrentFen(v.fen);
-                          resetState();
-                        }}
-                        disabled={
-                          !selectedExercise?.gameData.variations ||
-                          variationIndex >= selectedExercise.gameData.variations.length - 1
-                        }
-                      >
-                        <IconChevronRight size={18} />
-                      </ActionIcon>
-                    </Group>
-                    <Text size="sm" c="dimmed">
-                      Variation {Math.min(variationIndex + 1, selectedExercise?.gameData.variations?.length || 1)} /{" "}
-                      {selectedExercise?.gameData.variations?.length || 1}
-                    </Text>
-                  </Group>
-                )}
-              </Box>
-            </Flex>
+                <LessonBoard
+                  selectedExercise={selectedExercise}
+                  currentFen={currentFen}
+                  message={message}
+                  variationIndex={variationIndex}
+                  onMove={handleMove}
+                  onVariationChange={(index) => {
+                    setVariationIndex(index);
+                    const v = selectedExercise?.gameData.variations?.[index];
+                    if (v?.fen) setCurrentFen(v.fen);
+                  }}
+                  resetState={resetState}
+                />
+              </Stack>
+            ) : (
+              // Desktop layout: side-by-side
+              <Flex gap="xl" align="flex-start">
+                <Box flex={1}>
+                  <LessonContent
+                    selectedLesson={selectedLesson}
+                    onExerciseSelect={handleExerciseSelectWithReset}
+                    layoutOrientation={layout.learn.layoutType}
+                  />
+                </Box>
+                <Box flex={1}>
+                  <LessonBoard
+                    selectedExercise={selectedExercise}
+                    currentFen={currentFen}
+                    message={message}
+                    variationIndex={variationIndex}
+                    onMove={handleMove}
+                    onVariationChange={(index) => {
+                      setVariationIndex(index);
+                      const v = selectedExercise?.gameData.variations?.[index];
+                      if (v?.fen) setCurrentFen(v.fen);
+                    }}
+                    resetState={resetState}
+                  />
+                </Box>
+              </Flex>
+            )}
           </>
         )}
       </Stack>

@@ -1,4 +1,4 @@
-import { AppShell } from "@mantine/core";
+import { AppShell, ScrollArea } from "@mantine/core";
 import { type HotkeyItem, useHotkeys } from "@mantine/hooks";
 import { ModalsProvider, modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
@@ -20,10 +20,11 @@ import AboutModal from "@/common/components/About";
 import { SideBar } from "@/common/components/Sidebar";
 import TopBar from "@/common/components/TopBar";
 import ImportModal from "@/features/boards/components/ImportModal";
-import { activeTabAtom, nativeBarAtom, tabsAtom } from "@/state/atoms";
+import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
 import { openFile } from "@/utils/files";
 import { createTab } from "@/utils/tabs";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 
 type MenuGroup = {
   label: string;
@@ -135,9 +136,9 @@ export const Route = createRootRouteWithContext<{
 });
 
 function RootLayout() {
-  const isNative = useAtomValue(nativeBarAtom);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { layout } = useResponsiveLayout();
 
   const [, setTabs] = useAtom(tabsAtom);
   const [, setActiveTab] = useAtom(activeTabAtom);
@@ -529,10 +530,11 @@ function RootLayout() {
     if (!menu) return;
 
     const applyMenu = async () => {
+      if (layout.menuBar.mode === "disabled") return;
       try {
         const webviewWindow = getCurrentWebviewWindow();
 
-        if (isNative) {
+        if (layout.menuBar.mode === "native") {
           await menu.setAsAppMenu();
           await webviewWindow.setDecorations(true);
         } else {
@@ -546,34 +548,28 @@ function RootLayout() {
     };
 
     applyMenu();
-  }, [menu, isNative]);
+  }, [menu, , layout.menuBar.mode]);
 
   return (
     <ModalsProvider modals={{ importModal: ImportModal, aboutModal: AboutModal }}>
       <AppShell
-        navbar={{
-          width: APP_CONSTANTS.NAVBAR_WIDTH,
-          breakpoint: 0,
-        }}
-        header={{
-          height: APP_CONSTANTS.HEADER_HEIGHT,
-        }}
+        {...layout.appShellProps}
         styles={{
           main: {
             height: "100vh",
             userSelect: "none",
+            overflow: "hidden",
           },
         }}
       >
         <AppShell.Header>
           <TopBar menuActions={menuActions} />
         </AppShell.Header>
-        <AppShell.Navbar>
-          <SideBar />
-        </AppShell.Navbar>
-        <AppShell.Main>
+        <AppShell.Navbar>{layout.sidebar.position === "navbar" && <SideBar />}</AppShell.Navbar>
+        <AppShell.Main style={{ display: "flex", flexDirection: "column" }}>
           <Outlet />
         </AppShell.Main>
+        <AppShell.Footer>{layout.sidebar.position === "footer" && <SideBar />}</AppShell.Footer>
       </AppShell>
     </ModalsProvider>
   );

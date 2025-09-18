@@ -19,7 +19,7 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
-import { useDebouncedValue, useToggle } from "@mantine/hooks";
+import { useDebouncedValue, useToggle, useMediaQuery } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import {
   IconArrowRight,
@@ -49,6 +49,9 @@ import { useActiveDatabaseViewStore } from "@/state/store/database";
 import { getDatabases, type SuccessDatabaseInfo } from "@/utils/db";
 import { getPuzzleDatabases } from "@/utils/puzzles";
 import { unwrap } from "@/utils/unwrap";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
+import { SidePanelDrawerLayout } from "@/common/components/SidePanelDrawerLayout";
+import { vars } from "@/styles/theme";
 import AddDatabase from "./components/AddDatabase";
 import { PlayerSearchInput } from "./components/PlayerSearchInput";
 

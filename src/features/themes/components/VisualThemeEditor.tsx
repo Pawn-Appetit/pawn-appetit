@@ -175,7 +175,7 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
       onClose();
     } catch {
       notifications.show({
-        title: t("Error"),
+        title: t("common.error"),
         message: t("settings.appearance.theme.saveError"),
         color: "red",
       });
@@ -201,10 +201,10 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
           </Button>
           <Group>
             <Button variant="outline" onClick={onClose}>
-              {t("Cancel")}
+              {t("common.cancel")}
             </Button>
             <Button leftSection={<IconDeviceFloppy size={16} />} onClick={handleSave}>
-              {isCreate ? t("Create") : t("Save")}
+              {isCreate ? t("common.create") : t("common.save")}
             </Button>
           </Group>
         </Group>

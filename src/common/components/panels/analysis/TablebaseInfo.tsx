@@ -116,7 +116,7 @@ function OutcomeBadge({
     .with("win", () => (turn === "white" ? t("chess.outcome.whiteWins") : t("chess.outcome.blackWins")))
     .with("loss", () => (turn === "white" ? t("chess.outcome.blackWins") : t("chess.outcome.whiteWins")))
     .with(P.union("draw", "blessed-loss", "cursed-win"), () => t("chess.outcome.draw"))
-    .with(P.union("unknown", "maybe-win", "maybe-loss"), () => t("Tablebase.Unknown"))
+    .with(P.union("unknown", "maybe-win", "maybe-loss"), () => t("features.tablebase.unknown"))
     .exhaustive();
 
   const color = match(category)
@@ -128,7 +128,7 @@ function OutcomeBadge({
     ? normalizedCategory
     : match(category)
         .with("draw", () => t("chess.outcome.draw"))
-        .with("unknown", () => t("Tablebase.Unknown"))
+        .with("unknown", () => t("features.tablebase.unknown"))
         .otherwise(() =>
           dtm ? t("features.tablebase.dtm", { count: Math.abs(dtm) }) : t("features.tablebase.dtz", { count: dtz }),
         );
