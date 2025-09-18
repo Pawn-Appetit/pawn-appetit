@@ -87,6 +87,10 @@ interface ChessboardProps {
   currentTabSourceType?: string;
   selectedPiece?: Piece | null;
   setSelectedPiece?: (piece: Piece | null) => void;
+  // Start Game props
+  startGame?: () => void;
+  gameState?: "settingUp" | "playing" | "gameOver";
+  startGameDisabled?: boolean;
 }
 
 function Board({
@@ -117,6 +121,10 @@ function Board({
   currentTabSourceType,
   selectedPiece,
   setSelectedPiece,
+  // Start Game props
+  startGame,
+  gameState,
+  startGameDisabled,
 }: ChessboardProps) {
   const { t } = useTranslation();
   const { layout } = useResponsiveLayout();
@@ -619,6 +627,10 @@ function Board({
             addGame={addGame}
             toggleOrientation={toggleOrientation ?? localToggleOrientation}
             currentTabSourceType={currentTabSourceType}
+            // Start Game props
+            startGame={startGame}
+            gameState={gameState}
+            startGameDisabled={startGameDisabled}
           />
         </Box>
       </Box>

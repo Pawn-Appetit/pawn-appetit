@@ -14,6 +14,7 @@ import {
   IconEdit,
   IconEditOff,
   IconEraser,
+  IconPlayerPlay,
   IconPlus,
   IconReload,
   IconSwitchVertical,
@@ -49,6 +50,10 @@ interface MoveControlsProps {
   addGame?: () => void;
   toggleOrientation?: () => void;
   currentTabSourceType?: string;
+  // Start Game props for play tabs
+  startGame?: () => void;
+  gameState?: "settingUp" | "playing" | "gameOver";
+  startGameDisabled?: boolean;
 }
 
 function MoveControls({
@@ -66,12 +71,14 @@ function MoveControls({
   editingMode,
   toggleEditingMode,
   saveFile,
-  dirty,
-  autoSave,
   reload,
   addGame,
   toggleOrientation,
   currentTabSourceType,
+  // Start Game props
+  startGame,
+  gameState,
+  startGameDisabled,
 }: MoveControlsProps) {
   const store = useContext(TreeStateContext)!;
   const next = useStore(store, (s) => s.goToNext);
@@ -204,16 +211,41 @@ function MoveControls({
 
   return (
     <Group grow gap="xs">
-      <ActionIcon variant="default" size="lg" onClick={start}>
+      <ActionIcon
+        variant="default"
+        size="lg"
+        onClick={start}
+        disabled={currentTabType === "play" && gameState === "settingUp"}
+      >
         <IconChevronsLeft />
       </ActionIcon>
-      <ActionIcon variant="default" size="lg" onClick={previous}>
+      <ActionIcon
+        variant="default"
+        size="lg"
+        onClick={previous}
+        disabled={currentTabType === "play" && gameState === "settingUp"}
+      >
         <IconChevronLeft />
       </ActionIcon>
-      <ActionIcon variant="default" size="lg" onClick={next}>
+      {currentTabType === "play" && gameState === "settingUp" && startGame && (
+        <ActionIcon variant="default" size="lg" onClick={startGame} disabled={startGameDisabled}>
+          <IconPlayerPlay />
+        </ActionIcon>
+      )}
+      <ActionIcon
+        variant="default"
+        size="lg"
+        onClick={next}
+        disabled={currentTabType === "play" && gameState === "settingUp"}
+      >
         <IconChevronRight />
       </ActionIcon>
-      <ActionIcon variant="default" size="lg" onClick={end}>
+      <ActionIcon
+        variant="default"
+        size="lg"
+        onClick={end}
+        disabled={currentTabType === "play" && gameState === "settingUp"}
+      >
         <IconChevronsRight />
       </ActionIcon>
       {!readOnly && boardControlsMenu}

@@ -2,10 +2,8 @@ import { Box, Portal } from "@mantine/core";
 import { useHotkeys, useToggle } from "@mantine/hooks";
 import { useLoaderData } from "@tanstack/react-router";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
-import type { Piece } from "chessground/types";
 import { useAtom, useAtomValue } from "jotai";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useCallback, useContext, useEffect, useRef } from "react";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/common/components/TreeStateContext";
 import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
@@ -21,17 +19,14 @@ import { keyMapAtom } from "@/state/keybindings";
 import { defaultPGN } from "@/utils/chess";
 import { isTempImportFile } from "@/utils/files";
 import { reloadTab, saveTab, saveToFile } from "@/utils/tabs";
-import ResponsiveBoard from "./ResponsiveBoard";
-import ResponsiveGameAnalysis from "./ResponsiveGameAnalysis";
-import ResponsiveAnalysisPanels from "./ResponsiveAnalysisPanels";
 import EditingCard from "./EditingCard";
 import EvalListener from "./EvalListener";
+import ResponsiveAnalysisPanels from "./ResponsiveAnalysisPanels";
+import ResponsiveBoard from "./ResponsiveBoard";
+import ResponsiveGameAnalysis from "./ResponsiveGameAnalysis";
 
 function BoardAnalysis() {
-  const { t } = useTranslation();
-
   const [editingMode, toggleEditingMode] = useToggle();
-  const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
   const autoSave = useAtomValue(autoSaveAtom);
   const { documentDir } = useLoaderData({ from: "/boards" });

@@ -655,6 +655,10 @@ function BoardGame() {
             // Board controls props
             changeTabType={changeToAnalysisMode}
             currentTabType="play"
+            // Start Game props
+            startGame={startGame}
+            gameState={gameState}
+            startGameDisabled={error !== null}
           />
         </Box>
       ) : (
@@ -676,6 +680,10 @@ function BoardGame() {
               // Board controls props
               changeTabType={changeToAnalysisMode}
               currentTabType="play"
+              // Start Game props
+              startGame={startGame}
+              gameState={gameState}
+              startGameDisabled={error !== null}
             />
           </Portal>
           <Portal target="#topRight" style={{ height: "100%", overflow: "hidden" }}>
@@ -720,15 +728,12 @@ function BoardGame() {
                       </Group>
                     </Box>
 
-                    <Group justify="space-between">
+                    <Group justify="flex-start">
                       <Checkbox
                         label="Same time control"
                         checked={sameTimeControl}
                         onChange={(e) => setSameTimeControl(e.target.checked)}
                       />
-                      <Button onClick={startGame} disabled={error !== null}>
-                        Start game
-                      </Button>
                     </Group>
                   </Stack>
                 </ScrollArea>

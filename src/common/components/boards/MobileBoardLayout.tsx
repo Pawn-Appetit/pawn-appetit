@@ -1,14 +1,13 @@
-import { Stack, Box, Group, Paper, Text, ActionIcon, Collapse } from "@mantine/core";
+import { ActionIcon, Box, Collapse, Group, Paper, Stack, Text } from "@mantine/core";
 import { useToggle } from "@mantine/hooks";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
-import { memo, useCallback, useEffect, useState, Suspense } from "react";
+import { memo, Suspense, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import GameNotation from "@/common/components/GameNotation";
 import { ResponsiveLoadingWrapper } from "@/common/components/ResponsiveLoadingWrapper";
 import { ResponsiveSkeleton } from "@/common/components/ResponsiveSkeleton";
-import Board from "./Board";
-import GameNotation from "@/common/components/GameNotation";
-import MoveControls from "@/common/components/MoveControls";
 import AnalysisPanel from "../panels/analysis/AnalysisPanel";
+import Board from "./Board";
 
 interface MobileBoardLayoutProps {
   // Board props
@@ -33,6 +32,23 @@ interface MobileBoardLayoutProps {
   isLoading?: boolean;
   error?: Error | null;
   onRetry?: () => void;
+
+  // Board controls props
+  viewPawnStructure?: boolean;
+  setViewPawnStructure?: (value: boolean) => void;
+  takeSnapshot?: () => void;
+  deleteMove?: () => void;
+  changeTabType?: () => void;
+  currentTabType?: "analysis" | "play";
+  eraseDrawablesOnClick?: boolean;
+  clearShapes?: () => void;
+  toggleOrientation?: () => void;
+  currentTabSourceType?: string;
+
+  // Start Game props
+  startGame?: () => void;
+  gameState?: "settingUp" | "playing" | "gameOver";
+  startGameDisabled?: boolean;
 }
 
 function MobileBoardLayout({
@@ -58,6 +74,23 @@ function MobileBoardLayout({
   isLoading = false,
   error = null,
   onRetry,
+
+  // Board controls props
+  viewPawnStructure,
+  setViewPawnStructure,
+  takeSnapshot,
+  deleteMove,
+  changeTabType,
+  currentTabType,
+  eraseDrawablesOnClick,
+  clearShapes,
+  toggleOrientation,
+  currentTabSourceType,
+
+  // Start Game props
+  startGame,
+  gameState,
+  startGameDisabled,
 }: MobileBoardLayoutProps) {
   const { t } = useTranslation();
   const [isInitializing, setIsInitializing] = useState(true);
@@ -131,22 +164,37 @@ function MobileBoardLayout({
         </Collapse>
       </Paper>
 
-        <Board
-          dirty={dirty}
-          editingMode={editingMode}
-          toggleEditingMode={toggleEditingMode}
-          viewOnly={viewOnly}
-          disableVariations={disableVariations}
-          movable={movable}
-          boardRef={boardRef}
-          saveFile={saveFile}
-          reload={reload}
-          addGame={addGame}
-          canTakeBack={canTakeBack}
-          whiteTime={whiteTime}
-          blackTime={blackTime}
-          practicing={practicing}
-        />
+      <Board
+        dirty={dirty}
+        editingMode={editingMode}
+        toggleEditingMode={toggleEditingMode}
+        viewOnly={viewOnly}
+        disableVariations={disableVariations}
+        movable={movable}
+        boardRef={boardRef}
+        saveFile={saveFile}
+        reload={reload}
+        addGame={addGame}
+        canTakeBack={canTakeBack}
+        whiteTime={whiteTime}
+        blackTime={blackTime}
+        practicing={practicing}
+        // Board controls props
+        viewPawnStructure={viewPawnStructure}
+        setViewPawnStructure={setViewPawnStructure}
+        takeSnapshot={takeSnapshot}
+        deleteMove={deleteMove}
+        changeTabType={changeTabType}
+        currentTabType={currentTabType}
+        eraseDrawablesOnClick={eraseDrawablesOnClick}
+        clearShapes={clearShapes}
+        toggleOrientation={toggleOrientation}
+        currentTabSourceType={currentTabSourceType}
+        // Start Game props
+        startGame={startGame}
+        gameState={gameState}
+        startGameDisabled={startGameDisabled}
+      />
 
       {editingMode && editingCard ? editingCard : <GameNotation topBar={topBar} />}
     </Stack>

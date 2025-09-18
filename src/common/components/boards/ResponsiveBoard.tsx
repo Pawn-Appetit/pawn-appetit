@@ -1,10 +1,9 @@
-import { Box, Stack, Group, ActionIcon, Tooltip } from "@mantine/core";
+import { Box, Stack } from "@mantine/core";
 import { useElementSize } from "@mantine/hooks";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { IconChess, IconChessKnight, IconChessQueen, IconChessRook } from "@tabler/icons-react";
-import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { ResponsiveLoadingWrapper } from "@/common/components/ResponsiveLoadingWrapper";
 import { ResponsiveSkeleton } from "@/common/components/ResponsiveSkeleton";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import Board from "./Board";
 import MobileBoardLayout from "./MobileBoardLayout";
 
@@ -40,6 +39,10 @@ interface ResponsiveBoardProps {
   clearShapes?: () => void;
   toggleOrientation?: () => void;
   currentTabSourceType?: string;
+  // Start Game props
+  startGame?: () => void;
+  gameState?: "settingUp" | "playing" | "gameOver";
+  startGameDisabled?: boolean;
 }
 
 function ResponsiveBoard({
@@ -74,6 +77,10 @@ function ResponsiveBoard({
   clearShapes,
   toggleOrientation,
   currentTabSourceType,
+  // Start Game props
+  startGame,
+  gameState,
+  startGameDisabled,
 }: ResponsiveBoardProps) {
   const { layout } = useResponsiveLayout();
   const { ref: containerRef } = useElementSize();
@@ -189,6 +196,21 @@ function ResponsiveBoard({
                 isLoading={isLoading}
                 error={error}
                 onRetry={onRetry}
+                // Board controls props
+                viewPawnStructure={viewPawnStructure}
+                setViewPawnStructure={setViewPawnStructure}
+                takeSnapshot={takeSnapshot}
+                deleteMove={deleteMove}
+                changeTabType={changeTabType}
+                currentTabType={currentTabType}
+                eraseDrawablesOnClick={eraseDrawablesOnClick}
+                clearShapes={clearShapes}
+                toggleOrientation={toggleOrientation}
+                currentTabSourceType={currentTabSourceType}
+                // Start Game props
+                startGame={startGame}
+                gameState={gameState}
+                startGameDisabled={startGameDisabled}
               />
             </Box>
           </Stack>
@@ -231,6 +253,10 @@ function ResponsiveBoard({
             clearShapes={clearShapes}
             toggleOrientation={toggleOrientation}
             currentTabSourceType={currentTabSourceType}
+            // Start Game props
+            startGame={startGame}
+            gameState={gameState}
+            startGameDisabled={startGameDisabled}
           />
         </Box>
       </ResponsiveLoadingWrapper>
