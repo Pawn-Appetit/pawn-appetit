@@ -159,13 +159,13 @@ function ReportModal({
 
           <Checkbox
             label={t("features.board.analysis.reversed")}
-            description={t("features.board.analysis.reversed.Desc")}
+            description={t("features.board.analysis.reversedDesc")}
             {...form.getInputProps("reversed", { type: "checkbox" })}
           />
 
           <Checkbox
             label={t("features.board.analysis.annotateNovelties")}
-            description={t("features.board.analysis.annotateNovelties.Desc")}
+            description={t("features.board.analysis.annotateNoveltiesDesc")}
             {...form.getInputProps("novelty", { type: "checkbox" })}
           />
 
