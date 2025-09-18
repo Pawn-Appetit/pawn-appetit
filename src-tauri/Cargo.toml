@@ -9,6 +9,13 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "pawn_appetit_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
 [build-dependencies]
 tauri-build = { version = "2.4.1", features = [] }
 
@@ -19,7 +26,7 @@ tauri = { version = "2.8.5", features = ["protocol-asset"] }
 zip = "2.4.2"
 tokio = { version = "1.47", features = ["full"] }
 futures-util = "0.3.31"
-reqwest = { version = "0.12.23", features = ["stream", "blocking", "json"] }
+reqwest = { version = "0.12.23", features = ["stream", "blocking", "json", "rustls-tls"], default-features = false }
 shakmaty = "0.27.3"
 pgn-reader = "0.26.0"
 csv = "1.3.1"
