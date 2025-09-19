@@ -100,7 +100,7 @@ export async function checkForUpdates(config: VersionCheckConfig): Promise<Versi
   const { versionUrl, currentVersion, timeout = 10000, skipInDev = true } = config;
   
   try {
-    if (skipInDev && import.meta.env.DEV) {
+    if (skipInDev) {
       info('Skipping version check in development mode');
       return {
         hasUpdate: false,

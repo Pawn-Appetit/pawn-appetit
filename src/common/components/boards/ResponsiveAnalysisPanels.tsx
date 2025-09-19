@@ -24,7 +24,7 @@ import PracticePanel from "../panels/practice/PracticePanel";
 
 interface ResponsiveAnalysisPanelsProps {
   currentTab?: string;
-  onTabChange?: (value: string) => void;
+  onTabChange?: (value: string | null) => void;
   isRepertoire?: boolean;
   isPuzzle?: boolean;
   isLoading?: boolean;
@@ -199,7 +199,7 @@ function ResponsiveAnalysisPanels({
           <Text size="sm" fw={500}>
             Analysis Panels
           </Text>
-          <ActionIcon variant="subtle" size="sm" onClick={toggleCollapsed}>
+          <ActionIcon variant="subtle" size="sm" onClick={() => toggleCollapsed()}>
             {isCollapsed ? <IconChevronDown size="1rem" /> : <IconChevronUp size="1rem" />}
           </ActionIcon>
         </Group>

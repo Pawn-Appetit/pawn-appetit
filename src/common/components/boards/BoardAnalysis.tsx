@@ -2,8 +2,9 @@ import { Box, Portal } from "@mantine/core";
 import { useHotkeys, useToggle } from "@mantine/hooks";
 import { useLoaderData } from "@tanstack/react-router";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
+import type { Piece } from "chessground/types";
 import { useAtom, useAtomValue } from "jotai";
-import { useCallback, useContext, useEffect, useRef } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/common/components/TreeStateContext";
 import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
@@ -27,10 +28,11 @@ import ResponsiveGameAnalysis from "./ResponsiveGameAnalysis";
 
 function BoardAnalysis() {
   const [editingMode, toggleEditingMode] = useToggle();
+  const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
   const autoSave = useAtomValue(autoSaveAtom);
   const { documentDir } = useLoaderData({ from: "/boards" });
-  const boardRef = useRef(null);
+  const boardRef = useRef<HTMLDivElement | null>(null);
 
   const store = useContext(TreeStateContext)!;
 
@@ -155,7 +157,14 @@ function BoardAnalysis() {
             addGame={addGame}
             topBar={false}
             editingCard={
-              editingMode ? <EditingCard boardRef={boardRef} setEditingMode={toggleEditingMode} /> : undefined
+              editingMode ? (
+                <EditingCard
+                  boardRef={boardRef}
+                  setEditingMode={toggleEditingMode}
+                  selectedPiece={selectedPiece}
+                  setSelectedPiece={setSelectedPiece}
+                />
+              ) : undefined
             }
             // Board controls props
             canTakeBack={false} // Analysis mode doesn't support take back
@@ -181,7 +190,14 @@ function BoardAnalysis() {
               addGame={addGame}
               topBar={false}
               editingCard={
-                editingMode ? <EditingCard boardRef={boardRef} setEditingMode={toggleEditingMode} /> : undefined
+                editingMode ? (
+                  <EditingCard
+                    boardRef={boardRef}
+                    setEditingMode={toggleEditingMode}
+                    selectedPiece={selectedPiece}
+                    setSelectedPiece={setSelectedPiece}
+                  />
+                ) : undefined
               }
               // Board controls props
               canTakeBack={false} // Analysis mode doesn't support take back
@@ -205,7 +221,14 @@ function BoardAnalysis() {
       <ResponsiveGameAnalysis
         topBar
         editingMode={editingMode}
-        editingCard={<EditingCard boardRef={boardRef} setEditingMode={toggleEditingMode} />}
+        editingCard={
+          <EditingCard
+            boardRef={boardRef}
+            setEditingMode={toggleEditingMode}
+            selectedPiece={selectedPiece}
+            setSelectedPiece={setSelectedPiece}
+          />
+        }
       />
     </>
   );

@@ -14,7 +14,7 @@ import { keyMapAtom } from "@/state/keybindings";
 import { parsePGN } from "@/utils/chess";
 import { getTreeStats } from "@/utils/repertoire";
 import { saveToFile } from "@/utils/tabs";
-import { getNodeAtPath } from "@/utils/treeReducer";
+import { getNodeAtPath, getGameName } from "@/utils/treeReducer";
 import { unwrap } from "@/utils/unwrap";
 import FenSearch from "./FenSearch";
 import FileInfo from "./FileInfo";
@@ -88,6 +88,7 @@ function GameSelectorAccordion({
   const setMissingMoves = useSetAtom(missingMovesAtom);
   const [tempPage, setTempPage] = useState(0);
   const { documentDir } = useLoaderData({ from: "/boards" });
+  const keyMap = useAtomValue(keyMapAtom);
 
   if (currentTab?.source?.type === "file") {
     const gameNumber = currentTab.gameNumber || 0;
@@ -122,6 +123,13 @@ function GameSelectorAccordion({
         const tree = await parsePGN(data[0]);
         setState(tree);
 
+        const gameName = getGameName(tree.headers);
+        setGames((prev) => {
+          const newGames = new Map(prev);
+          newGames.set(page, gameName);
+          return newGames;
+        });
+
         setCurrentTab((prev) => {
           if (!prev) return prev;
           return {
@@ -151,7 +159,6 @@ function GameSelectorAccordion({
       }
     }
 
-    const keyMap = useAtomValue(keyMapAtom);
     useHotkeys([
       [
         keyMap.NEXT_GAME.keys,
