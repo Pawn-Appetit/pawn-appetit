@@ -24,6 +24,9 @@ async findFidePlayer(player: string) : Promise<Result<FidePlayer | null, string>
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Get best moves from the engine for a given position and options.
+ */
 async getBestMoves(id: string, engine: string, tab: string, goMode: GoMode, options: EngineOptions) : Promise<Result<[number, BestMoves[]] | null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_best_moves", { id, engine, tab, goMode, options }) };
@@ -32,6 +35,9 @@ async getBestMoves(id: string, engine: string, tab: string, goMode: GoMode, opti
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Analyze a game using the engine, returning move-by-move analysis.
+ */
 async analyzeGame(id: string, engine: string, goMode: GoMode, options: AnalysisOptions, uciOptions: EngineOption[]) : Promise<Result<MoveAnalysis[], string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("analyze_game", { id, engine, goMode, options, uciOptions }) };
@@ -40,6 +46,9 @@ async analyzeGame(id: string, engine: string, goMode: GoMode, options: AnalysisO
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Stop a specific engine process (without killing it) by engine name and tab.
+ */
 async stopEngine(engine: string, tab: string) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("stop_engine", { engine, tab }) };
@@ -48,6 +57,9 @@ async stopEngine(engine: string, tab: string) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Kill a specific engine process by engine name and tab.
+ */
 async killEngine(engine: string, tab: string) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("kill_engine", { engine, tab }) };
@@ -56,6 +68,9 @@ async killEngine(engine: string, tab: string) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Kill all engine processes associated with a given tab.
+ */
 async killEngines(tab: string) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("kill_engines", { tab }) };
@@ -64,6 +79,9 @@ async killEngines(tab: string) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Retrieve logs for a specific engine process.
+ */
 async getEngineLogs(engine: string, tab: string) : Promise<Result<EngineLog[], string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_engine_logs", { engine, tab }) };
@@ -133,33 +151,12 @@ async getPlayersGameInfo(file: string, id: number) : Promise<Result<PlayerGameIn
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Query a UCI engine for its configuration (name and options).
+ */
 async getEngineConfig(path: string) : Promise<Result<EngineConfig, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_engine_config", { path }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-async diagnoseMultipv(enginePath: string, options: EngineOptions) : Promise<Result<MultiPvDiagnostic, string>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("diagnose_multipv", { enginePath, options }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-async testEngineCapabilities(enginePath: string) : Promise<Result<EngineCapabilityTest, string>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("test_engine_capabilities", { enginePath }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-async generateDebugSteps(diagnostic: MultiPvDiagnostic) : Promise<Result<string[], string>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("generate_debug_steps", { diagnostic }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -595,38 +592,34 @@ reportProgress: "report-progress"
 /** user-defined types **/
 
 /**
- * Options for complete game analysis
+ * Options for full-game analysis (FEN, moves, novelty annotation, etc).
  */
 export type AnalysisOptions = { fen: string; moves: string[]; annotateNovelties: boolean; referenceDb: string | null; reversed: boolean }
 /**
- * Best move information from engine analysis
+ * Best-move line from engine output, including PV, score, and stats.
  */
 export type BestMoves = { nodes: number; depth: number; score: Score; uciMoves: string[]; sanMoves: string[]; multipv: number; nps: number }
 /**
- * Payload for best moves updates during analysis
+ * Event payload for best-move updates (emitted to frontend).
  */
 export type BestMovesPayload = { bestLines: BestMoves[]; engine: string; tab: string; fen: string; moves: string[]; progress: number }
 export type DatabaseInfo = { title: string; description: string; player_count: number; event_count: number; game_count: number; storage_size: number; filename: string; indexed: boolean }
 export type DatabaseProgress = { id: string; progress: number }
 export type DownloadProgress = { progress: number; id: string; finished: boolean }
 /**
- * Engine capability test result
- */
-export type EngineCapabilityTest = { engineName: string; uciSupport: boolean; multipvSupport: boolean; maxMultipv: number | null; otherOptions: string[]; testSuccessful: boolean; errorMessage: string | null }
-/**
- * Complete engine configuration including UCI options
+ * UCI engine configuration (name and available options).
  */
 export type EngineConfig = { name: string; options: UciOptionConfig[] }
 /**
- * Engine logging for debugging and monitoring
+ * Log entry for engine GUI or engine output.
  */
 export type EngineLog = { type: "gui"; value: string } | { type: "engine"; value: string }
 /**
- * Individual engine UCI option
+ * UCI engine option (name-value pair).
  */
 export type EngineOption = { name: string; value: string }
 /**
- * Engine configuration options
+ * Options for configuring engine analysis (FEN, moves, extra UCI options).
  */
 export type EngineOptions = { fen: string; moves: string[]; extraOptions: EngineOption[] }
 export type Event = { id: number; name: string | null }
@@ -636,41 +629,13 @@ export type GameOutcome = "Won" | "Drawn" | "Lost"
 export type GameQueryJs = { options?: QueryOptions<GameSort> | null; player1?: number | null; player2?: number | null; tournament_id?: number | null; start_date?: string | null; end_date?: string | null; range1?: [number, number] | null; range2?: [number, number] | null; sides?: Sides | null; outcome?: string | null; position?: PositionQueryJs | null; wanted_result?: string | null }
 export type GameSort = "id" | "date" | "whiteElo" | "blackElo" | "ply_count"
 /**
- * Analysis modes for engine operation
+ * Engine search mode (depth, time, nodes, etc).
  */
-export type GoMode = 
+export type GoMode = { t: "PlayersTime"; c: PlayersTime } | { t: "Depth"; c: number } | { t: "Time"; c: number } | { t: "Nodes"; c: number } | { t: "Infinite" }
 /**
- * Analyze to a specific depth
- */
-{ t: "Depth"; c: number } | 
-/**
- * Analyze for a specific time in milliseconds
- */
-{ t: "Time"; c: number } | 
-/**
- * Analyze until a specific number of nodes
- */
-{ t: "Nodes"; c: number } | 
-/**
- * Time control with player times and increments
- */
-{ t: "PlayersTime"; c: PlayersTime } | 
-/**
- * Infinite analysis (manual stop required)
- */
-{ t: "Infinite" }
-/**
- * Complete analysis result for a single move
+ * Analysis result for a single move/position.
  */
 export type MoveAnalysis = { best: BestMoves[]; novelty: boolean; is_sacrifice: boolean }
-/**
- * Analysis result for MultiPV engine capability
- */
-export type MultiPvAnalysis = { supported: boolean; default_value: number | null; min_value: number | null; max_value: number | null; option_type: string }
-/**
- * Comprehensive MultiPV diagnostic report
- */
-export type MultiPvDiagnostic = { engineName: string; enginePath: string; multipvSupported: boolean; multipvAnalysis: MultiPvAnalysis; requestedMultipv: number; effectiveMultipv: number; legalMovesCount: bigint; positionFen: string; suggestions: string[]; uciCommandsToVerify: string[] }
 export type NormalizedGame = { id: number; fen: string; event: string; event_id: number; site: string; site_id: number; date?: string | null; time?: string | null; round?: string | null; white: string; white_id: number; white_elo?: number | null; black: string; black_id: number; black_elo?: number | null; result: Outcome; time_control?: string | null; eco?: string | null; ply_count?: number | null; moves: string }
 export type OutOpening = { name: string; fen: string }
 export type Outcome = "1-0" | "0-1" | "1/2-1/2" | "*"
@@ -680,7 +645,7 @@ export type PlayerGameInfo = { site_stats_data: SiteStatsData[] }
 export type PlayerQuery = { options: QueryOptions<PlayerSort>; name?: string | null; range?: [number, number] | null }
 export type PlayerSort = "id" | "name" | "elo"
 /**
- * Time control for both players
+ * Player time controls for GoMode::PlayersTime.
  */
 export type PlayersTime = { white: number; black: number; winc: number; binc: number }
 export type PositionQueryJs = { fen: string; type_: string }
@@ -714,7 +679,7 @@ path: string }
 export type QueryOptions<SortT> = { skipCount: boolean; page?: number | null; pageSize?: number | null; sort: SortT; direction: SortDirection }
 export type QueryResponse<T> = { data: T; count: number | null }
 /**
- * Progress reporting for long-running operations
+ * Event payload for reporting analysis progress.
  */
 export type ReportProgress = { progress: number; id: string; finished: boolean }
 export type Score = { value: ScoreValue; 

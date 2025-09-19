@@ -12,6 +12,7 @@ const DATABASE_VERSION: &str = "1.0.0";
 const CREATE_TABLES_SQL: &str = include_str!("../../../database/schema/core_tables.sql");
 const INITIAL_DATA_SQL: &str = include_str!("../../../database/seeds/initial_data.sql");
 const INFO_INSERT_METADATA: &str = include_str!("../../../database/queries/info/insert_metadata.sql");
+#[cfg(test)]
 const GAMES_CHECK_INDEXES: &str = include_str!("../../../database/queries/games/check_indexes.sql");
 
 pub fn init_db(conn: &mut SqliteConnection, title: &str, description: &str) -> Result<()> {

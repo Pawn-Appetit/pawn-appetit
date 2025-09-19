@@ -1,9 +1,6 @@
 use shakmaty::Chess;
 use specta::Type;
 
-use std::path::PathBuf;
-use crate::engine::EngineState;
-
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
@@ -114,36 +111,31 @@ pub enum Error {
     #[error("Package manager error: {0}")]
     PackageManager(String),
 
+    #[allow(dead_code)]
     #[error("Engine timeout")]
     EngineTimeout,
 
-    #[error("Invalid state transition from {from:?} to {to:?}")]
-    InvalidStateTransition {
-        from: EngineState,
-        to: EngineState,
-    },
-
-    #[error("Unexpected engine state - expected {expected:?}, got {actual:?}")]
-    UnexpectedState {
-        expected: EngineState,
-        actual: EngineState,
-    },
-
+    #[allow(dead_code)]
     #[error("Engine stop timeout")]
     EngineStopTimeout,
 
+    #[allow(dead_code)]
     #[error("Event emission failed")]
     EventEmissionFailed,
 
+    #[allow(dead_code)]
     #[error("FEN parsing error: {0}")]
     FenError(String),
 
+    #[allow(dead_code)]
     #[error("Position setup error: {0}")]
     PositionError(String),
 
+    #[allow(dead_code)]
     #[error("UCI move parsing error: {0}")]
     UciMoveError(String),
 
+    #[allow(dead_code)]
     #[error("Illegal move error: {0}")]
     IllegalMoveError(String),
 }
