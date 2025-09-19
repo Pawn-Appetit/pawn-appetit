@@ -1,10 +1,10 @@
-import { useMemo } from "react";
-import { useAtomValue } from "jotai";
+import type { AppShellProps } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { type } from "@tauri-apps/plugin-os";
-import { vars } from "@/styles/theme";
+import { useAtomValue } from "jotai";
+import { useMemo } from "react";
 import { nativeBarAtom } from "@/state/atoms";
-import type { AppShellProps } from "@mantine/core";
+import { vars } from "@/styles/theme";
 
 // Platform types
 export type Platform = "desktop" | "mobile" | "web";

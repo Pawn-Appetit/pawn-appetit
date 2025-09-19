@@ -10,11 +10,11 @@ import {
   IconTargetArrow,
   IconZoomCheck,
 } from "@tabler/icons-react";
-import { memo, useCallback, useEffect, useState, Suspense } from "react";
+import { memo, Suspense, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { ResponsiveLoadingWrapper } from "@/common/components/ResponsiveLoadingWrapper";
 import { ResponsiveSkeleton } from "@/common/components/ResponsiveSkeleton";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import AnalysisPanel from "../panels/analysis/AnalysisPanel";
 import AnnotationPanel from "../panels/annotation/AnnotationPanel";
 import DatabasePanel from "../panels/database/DatabasePanel";

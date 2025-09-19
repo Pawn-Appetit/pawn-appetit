@@ -1,4 +1,4 @@
-import { Card, Group, Grid, Progress, Stack, Text, ThemeIcon, Title, Tooltip } from "@mantine/core";
+import { Card, Grid, Group, Progress, Stack, Text, ThemeIcon, Title, Tooltip } from "@mantine/core";
 import { IconStar, IconTrophy } from "@tabler/icons-react";
 import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 

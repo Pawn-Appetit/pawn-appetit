@@ -27,10 +27,10 @@ import ErrorComponent from "@/common/components/ErrorComponent";
 import { EventMonitor } from "@/components/debug/EventMonitor";
 import ThemeProvider from "@/features/themes/components/ThemeProvider";
 import { commands } from "./bindings";
+import { getPlatform } from "./common/hooks/useResponsiveLayout";
 import { IS_DEV } from "./config";
 import i18n from "./i18n";
 import { routeTree } from "./routeTree.gen";
-import { getPlatform } from "./common/hooks/useResponsiveLayout";
 import { openFile } from "./utils/files";
 
 export type Dirs = {

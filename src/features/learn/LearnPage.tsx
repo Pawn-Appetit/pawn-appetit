@@ -1,4 +1,18 @@
-import { Alert, Badge, Box, Button, Card, Grid, Group, Progress, Stack, Text, ThemeIcon, Title, Tooltip } from "@mantine/core";
+import {
+  Alert,
+  Badge,
+  Box,
+  Button,
+  Card,
+  Grid,
+  Group,
+  Progress,
+  Stack,
+  Text,
+  ThemeIcon,
+  Title,
+  Tooltip,
+} from "@mantine/core";
 import { IconBook, IconBrain, IconClock, IconInfoCircle, IconTarget, IconTargetArrow } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";

@@ -1,9 +1,9 @@
 import { Portal, Stack } from "@mantine/core";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
+import GameNotation from "@/common/components/GameNotation";
 import { ResponsiveLoadingWrapper } from "@/common/components/ResponsiveLoadingWrapper";
 import { ResponsiveSkeleton } from "@/common/components/ResponsiveSkeleton";
-import GameNotation from "@/common/components/GameNotation";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 
 interface ResponsiveGameAnalysisProps {
   topBar?: boolean;

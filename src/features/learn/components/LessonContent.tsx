@@ -1,9 +1,9 @@
 import { Badge, Group, Paper, Select, SimpleGrid, Stack, Text, Title } from "@mantine/core";
 import { IconClock } from "@tabler/icons-react";
-import { LessonExerciseCard } from "./lessons/LessonExerciseCard";
-import type { Lesson, LessonExercise } from "../constants/lessons";
-import { useUserStatsStore } from "../../../state/userStatsStore";
 import type { LayoutType } from "../../../common/hooks/useResponsiveLayout";
+import { useUserStatsStore } from "../../../state/userStatsStore";
+import type { Lesson, LessonExercise } from "../constants/lessons";
+import { LessonExerciseCard } from "./lessons/LessonExerciseCard";
 
 interface LessonContentProps {
   selectedLesson: Lesson;

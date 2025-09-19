@@ -19,12 +19,12 @@ import type { Dirs } from "@/App";
 import AboutModal from "@/common/components/About";
 import { SideBar } from "@/common/components/Sidebar";
 import TopBar from "@/common/components/TopBar";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import ImportModal from "@/features/boards/components/ImportModal";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
 import { openFile } from "@/utils/files";
 import { createTab } from "@/utils/tabs";
-import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 
 type MenuGroup = {
   label: string;

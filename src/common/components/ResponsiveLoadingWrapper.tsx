@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ReactNode } from "react";
+import React, { type ReactNode, useEffect, useState } from "react";
 import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { ResponsiveSkeleton } from "./ResponsiveSkeleton";
 

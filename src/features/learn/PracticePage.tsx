@@ -30,12 +30,12 @@ import {
 } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { applyUciMoveToFen } from "@/utils/applyUciMoveToFen";
 import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
+import { applyUciMoveToFen } from "@/utils/applyUciMoveToFen";
 import { useUserStatsStore } from "../../state/userStatsStore";
 import { CompletionModal } from "./components/CompletionModal";
-import { PracticeContent } from "./components/PracticeContent";
 import { PracticeBoard } from "./components/PracticeBoard";
+import { PracticeContent } from "./components/PracticeContent";
 import { PracticeCard } from "./components/practice/PracticeCard";
 import { type PracticeCategory, type PracticeExercise, practices, uiConfig } from "./constants/practices";
 import { useExerciseState } from "./hooks/useExerciseState";

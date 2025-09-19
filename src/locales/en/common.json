@@ -63,7 +63,8 @@
     "importMore": "Import More",
     "close": "Close",
     "import": "Import",
-    "all": "All"
+    "all": "All",
+    "convert": "Convert"
   },
   "chess": {
     "checkmate": "Checkmate",
@@ -618,6 +619,7 @@
       "totalMoves": "Total Moves"
     },
     "puzzle": {
+      "title": "Puzzle",
       "jumpToNext": "Jump to next puzzle",
       "jumpToNextOff": "Off",
       "jumpToNextOnSuccess": "On success",
@@ -821,6 +823,8 @@
     },
     "telemetry": "Telemetry",
     "telemetryDesc": "Help improve Pawn Appétit by sharing anonymous usage data",
+    "about": "About",
+    "aboutDesc": "Learn more about Pawn Appétit",
     "moveNotation": "Move notation",
     "moveNotationDesc": "Choose how to display pieces in notation",
     "symbols": "Symbols (♔♕♖♗♘)",

@@ -1,7 +1,7 @@
 import { ActionIcon, Box, Group, Paper, Text } from "@mantine/core";
 import { IconCheck, IconChevronLeft, IconChevronRight, IconX } from "@tabler/icons-react";
-import LessonBoardWithProvider from "./lessons/LessonBoard";
 import type { LessonExercise } from "../constants/lessons";
+import LessonBoardWithProvider from "./lessons/LessonBoard";
 
 interface LessonBoardProps {
   selectedExercise: LessonExercise | null;

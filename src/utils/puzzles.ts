@@ -1,9 +1,9 @@
 import { appDataDir, resolve } from "@tauri-apps/api/path";
+import { loadDirectories } from "@/App";
 import { commands, type PuzzleDatabaseInfo } from "@/bindings";
 import type { FileInfoMetadata, FileMetadata } from "@/features/files/components/file";
 import { logger } from "./logger";
 import { unwrap } from "./unwrap";
-import { loadDirectories } from "@/App";
 
 export const PUZZLE_DEBUG_LOGS = false;
 

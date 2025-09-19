@@ -49,10 +49,10 @@ export default function ThemeSettings() {
         data={themeOptions}
         value={currentThemeId}
         onChange={handleThemeChange}
-        placeholder={t("settings.appearance.title.Theme")}
+        placeholder={t("settings.appearance.theme.manage")}
         w={200}
       />
-      <Tooltip label={t("settings.appearance.title.Theme.Manage")}>
+      <Tooltip label={t("settings.appearance.theme.manageTitle")}>
         <ActionIcon variant="light" onClick={() => setManagerOpen(true)} size="lg">
           <IconSettings size={16} />
         </ActionIcon>

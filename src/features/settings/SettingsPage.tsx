@@ -8,6 +8,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import AboutModal from "@/common/components/About";
 import FileInput from "@/common/components/FileInput";
+import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import ColorSchemeSettings from "@/features/themes/components/ColorSchemeSettings";
 import ThemeSelectionSettings from "@/features/themes/components/ThemeSettings";
 import {
@@ -32,7 +33,6 @@ import {
   spellCheckAtom,
   storedDocumentDirAtom,
 } from "@/state/atoms";
-import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
 import { hasTranslatedPieceChars } from "@/utils/format";
 import ColorControl from "../themes/components/ColorControl";
 import FontSizeSlider from "../themes/components/FontSizeSlider";
@@ -780,7 +780,12 @@ export default function Page() {
   };
 
   const tabConfig = [
-    { value: "board", icon: <IconChess size="1rem" />, label: t("settings.board.title"), header: t("settings.gameplay") },
+    {
+      value: "board",
+      icon: <IconChess size="1rem" />,
+      label: t("settings.board.title"),
+      header: t("settings.gameplay"),
+    },
     { value: "inputs", icon: <IconMouse size="1rem" />, label: t("settings.inputs.title") },
     { value: "anarchy", icon: <IconFlag size="1rem" />, label: t("settings.anarchy.title") },
     {

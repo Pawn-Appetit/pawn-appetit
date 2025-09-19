@@ -1,7 +1,7 @@
 import { Box } from "@mantine/core";
 import type { JSX } from "react";
+import { type LayoutType, SidePanelDrawerLayout } from "@/common/components/SidePanelDrawerLayout";
 import * as classes from "./GridLayout.css";
-import { SidePanelDrawerLayout, type LayoutType } from "@/common/components/SidePanelDrawerLayout";
 
 function GridLayout({
   search,

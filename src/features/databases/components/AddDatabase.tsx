@@ -330,8 +330,8 @@ function AddDatabase({
           value={firstLevelTab}
           onChange={setFirstLevelTab}
           data={[
-            { label: t("features.databases.add.games", "Games"), value: "games" },
-            { label: t("features.puzzle.title", "Puzzles"), value: "puzzles" },
+            { label: t("features.databases.category.games", "Games"), value: "games" },
+            { label: t("features.databases.category.puzzles", "Puzzles"), value: "puzzles" },
           ]}
           fullWidth
         />

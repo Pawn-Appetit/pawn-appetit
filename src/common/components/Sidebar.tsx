@@ -16,8 +16,8 @@ import { Link, useMatchRoute } from "@tanstack/react-router";
 import cx from "clsx";
 import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
-import { hideDashboardOnStartupAtom } from "@/state/atoms";
 import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
+import { hideDashboardOnStartupAtom } from "@/state/atoms";
 import * as classes from "./Sidebar.css";
 
 interface NavbarLinkProps {
