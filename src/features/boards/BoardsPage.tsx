@@ -283,6 +283,28 @@ function TabSwitch({ tab }: { tab: Tab }) {
   const { layout } = useResponsiveLayout();
   const isMobileLayout = layout.chessBoard.layoutType === "mobile";
 
+  const resizeOptions = {
+    minimumPaneSizePercentage: 20,
+    maximumPaneSizePercentage: 50,
+  };
+
+  const handleMosaicChange = (currentNode: MosaicNode<ViewId> | null) => {
+    if (currentNode && typeof currentNode === 'object' && 'direction' in currentNode) {
+      if (currentNode.direction === 'row') {
+        const splitPercentage = currentNode.splitPercentage || 50;
+        const constrainedPercentage = Math.max(20, Math.min(50, splitPercentage));
+
+        if (splitPercentage !== constrainedPercentage) {
+          currentNode = {
+            ...currentNode,
+            splitPercentage: constrainedPercentage
+          };
+        }
+      }
+    }
+    setWindowsState({ currentNode });
+  };
+
   return match(tab.type)
     .with("new", () => <NewTabHome id={tab.value} />)
     .with("play", () => (
@@ -291,8 +313,8 @@ function TabSwitch({ tab }: { tab: Tab }) {
           <Mosaic<ViewId>
             renderTile={(id) => fullLayout[id]}
             value={windowsState.currentNode}
-            onChange={(currentNode) => setWindowsState({ currentNode })}
-            resize={{ minimumPaneSizePercentage: 0 }}
+            onChange={handleMosaicChange}
+            resize={resizeOptions}
           />
         )}
         <BoardGame />
@@ -304,8 +326,8 @@ function TabSwitch({ tab }: { tab: Tab }) {
           <Mosaic<ViewId>
             renderTile={(id) => fullLayout[id]}
             value={windowsState.currentNode}
-            onChange={(currentNode) => setWindowsState({ currentNode })}
-            resize={{ minimumPaneSizePercentage: 0 }}
+            onChange={handleMosaicChange}
+            resize={resizeOptions}
           />
         )}
         <ReportProgressSubscriber id={`report_${tab.value}`} />
@@ -317,8 +339,8 @@ function TabSwitch({ tab }: { tab: Tab }) {
         <Mosaic<ViewId>
           renderTile={(id) => fullLayout[id]}
           value={windowsState.currentNode}
-          onChange={(currentNode) => setWindowsState({ currentNode })}
-          resize={{ minimumPaneSizePercentage: 0 }}
+          onChange={handleMosaicChange}
+          resize={resizeOptions}
         />
         <Puzzles id={tab.value} />
       </TreeStateProvider>
