@@ -73,7 +73,9 @@ export default function GameSelector({
     if (games.size === 0 && total > 0) {
       loadMoreRows(0, Math.min(10, total - 1));
     }
+  }, [games.size, total, loadMoreRows]);
 
+  useEffect(() => {
     const items = rowVirtualizer.getVirtualItems();
     const unloadedItems = items.filter((item) => !isRowLoaded(item.index));
 
@@ -82,7 +84,7 @@ export default function GameSelector({
       const stopIndex = Math.max(...unloadedItems.map((item) => item.index));
       loadMoreRows(startIndex, stopIndex);
     }
-  }, [games.size, total, loadMoreRows, rowVirtualizer]);
+  }, [loadMoreRows, rowVirtualizer.getVirtualItems()]);
 
   return (
     <ScrollArea viewportRef={parentRef} h="100%">
