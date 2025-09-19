@@ -1,7 +1,7 @@
 import { info, error as logError } from "@tauri-apps/plugin-log";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { check } from "@tauri-apps/plugin-updater";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getVersionCheckConfig, VERSION_CHECK_SETTINGS } from "@/config";
 import {
   checkForUpdates,
@@ -48,6 +48,8 @@ export function useVersionCheck(options: UseVersionCheckOptions = {}): UseVersio
   const [isUpdating, setIsUpdating] = useState(false);
   const [lastResult, setLastResult] = useState<VersionCheckResult | null>(null);
   const [isAutoCheckEnabled] = useState(() => isVersionCheckEnabled());
+
+  const autoCheckInitiated = useRef(false);
 
   const checkVersion = useCallback(async () => {
     if (isChecking || isUpdating) {
@@ -129,7 +131,7 @@ export function useVersionCheck(options: UseVersionCheckOptions = {}): UseVersio
   }, [isUpdating, lastResult]);
 
   useEffect(() => {
-    if (!autoCheck || !isAutoCheckEnabled) {
+    if (!autoCheck || !isAutoCheckEnabled || autoCheckInitiated?.current) {
       return;
     }
 
@@ -137,6 +139,8 @@ export function useVersionCheck(options: UseVersionCheckOptions = {}): UseVersio
       info("Skipping version check - not enough time has passed since last check");
       return;
     }
+
+    autoCheckInitiated.current = true;
 
     const timeoutId = setTimeout(() => {
       checkVersion();
