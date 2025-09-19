@@ -1,7 +1,7 @@
 import { parseSquare } from "chessops";
 import { parseFen } from "chessops/fen";
 import { expect, test } from "vitest";
-import { getCastlingSquare } from "../chessops";
+import { getCastlingSquare } from "@/utils/chessops";
 
 test("should get the correct castling square in the starting position", () => {
   const setup = parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").unwrap();

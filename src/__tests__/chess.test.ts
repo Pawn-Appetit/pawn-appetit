@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import type { Token } from "@/bindings";
-import { ANNOTATION_INFO, type Annotation, NAG_INFO } from "../annotation";
-import { getPgnHeaders, hasMorePriority } from "../chess";
+import { ANNOTATION_INFO, type Annotation, NAG_INFO } from "@/utils/annotation";
+import { getPgnHeaders, hasMorePriority } from "@/utils/chess";
 
 test("NAGs are consistent", () => {
   for (const k of Object.keys(ANNOTATION_INFO)) {

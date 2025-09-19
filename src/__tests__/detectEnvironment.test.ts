@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { detectEnvironment, env, getEnvironmentInfo } from "../detectEnvironment";
+import { detectEnvironment, env, getEnvironmentInfo } from "@/utils/detectEnvironment";
 
 // Mock globals for testing
 const mockWindow = (overrides = {}) => {

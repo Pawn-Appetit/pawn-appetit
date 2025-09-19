@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateValidMoves, parseFEN } from "../chess-engine";
+import { calculateValidMoves, parseFEN } from "@/utils/chess-engine";
 
 describe("Chess Engine", () => {
   it("should parse FEN correctly", () => {

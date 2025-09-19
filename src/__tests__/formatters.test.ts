@@ -11,7 +11,7 @@ import {
   createScoreFormatter,
   formatDateToPGN,
   parseDate,
-} from "../format";
+} from "@/utils/format";
 
 // Mock i18n object for testing
 const mockI18n = {

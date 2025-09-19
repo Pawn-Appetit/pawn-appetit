@@ -23,14 +23,17 @@ import "@/styles/chessgroundColorsOverride.css";
 import "@/styles/global.css";
 
 import { documentDir, homeDir, resolve } from "@tauri-apps/api/path";
+import { EventMonitor } from "@/common/components/debug/EventMonitor";
 import ErrorComponent from "@/common/components/ErrorComponent";
-import { EventMonitor } from "@/components/debug/EventMonitor";
+import { VERSION_CHECK_SETTINGS } from "@/config";
 import ThemeProvider from "@/features/themes/components/ThemeProvider";
 import { commands } from "./bindings";
-import { getPlatform } from "./common/hooks/useResponsiveLayout";
+import { showUpdateNotification, UpdateNotificationModal } from "./common/components/UpdateNotification";
+import { useVersionCheck } from "./common/hooks/useVersionCheck";
 import { IS_DEV } from "./config";
 import i18n from "./i18n";
 import { routeTree } from "./routeTree.gen";
+import type { VersionCheckResult } from "./services/version-checker";
 import { openFile } from "./utils/files";
 
 export type Dirs = {
@@ -126,12 +129,42 @@ export default function App() {
   const fontSize = useAtomValue(fontSizeAtom);
   const [, setTabs] = useAtom(tabsAtom);
   const [, setActiveTab] = useAtom(activeTabAtom);
-  const platform = getPlatform();
 
   const [isInitialized, setIsInitialized] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
+  const [updateModalData, setUpdateModalData] = useState<VersionCheckResult | null>(null);
 
   const fontSizeValue = useMemo(() => fontSize || DEFAULT_FONT_SIZE, [fontSize]);
+
+  const { installUpdate, isUpdating } = useVersionCheck({
+    autoCheck: true,
+    onUpdateAvailable: (result) => {
+      if (VERSION_CHECK_SETTINGS.useModalNotification && result.versionInfo) {
+        setUpdateModalData(result);
+      } else if (result.versionInfo) {
+        showUpdateNotification(
+          result.versionInfo,
+          () => installUpdate(),
+          () => setUpdateModalData(result),
+        );
+      }
+    },
+    onCheckError: (error) => {
+      info(`Version check failed: ${error}`);
+    },
+    onNoUpdates: () => {
+      info("No updates available");
+    },
+  });
+
+  const handleUpdateModalClose = useCallback(() => {
+    setUpdateModalData(null);
+  }, []);
+
+  const handleUpdateModalUpdate = useCallback(() => {
+    installUpdate();
+    setUpdateModalData(null);
+  }, [installUpdate]);
 
   const handleCommandLineFile = useCallback(async () => {
     try {
@@ -286,6 +319,17 @@ export default function App() {
           {IS_DEV && <EventMonitor />}
           <Notifications />
           <RouterProvider router={router} />
+
+          {/* Update notification modal */}
+          {updateModalData?.versionInfo && (
+            <UpdateNotificationModal
+              versionInfo={updateModalData.versionInfo}
+              onUpdate={handleUpdateModalUpdate}
+              onSkip={handleUpdateModalClose}
+              onDismiss={handleUpdateModalClose}
+              isUpdating={isUpdating}
+            />
+          )}
         </ContextMenuProvider>
       </ThemeProvider>
     </>

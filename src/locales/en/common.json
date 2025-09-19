@@ -243,6 +243,23 @@
       "copyVariationPGN": "Copy Variation PGN",
       "deleteMove": "Delete Move"
     },
+    "updater": {
+      "newVersionAvailable": "New Version Available",
+      "versionInfo": "Version {{version}} is now available",
+      "prereleaseWarning": "Pre-release Version",
+      "prereleaseDescription": "This is a pre-release version and may contain bugs or unfinished features.",
+      "releaseNotes": "What's New:",
+      "viewFullNotes": "View full release notes",
+      "publishedAt": "Published: {{date}}",
+      "skipVersion": "Skip This Version",
+      "remindLater": "Remind Me Later",
+      "updating": "Updating...",
+      "updateNow": "Update Now",
+      "updateFailed": "Update Failed",
+      "updateCompleted": "Update Completed",
+      "checkingForUpdates": "Checking for Updates",
+      "noUpdatesAvailable": "No Updates Available"
+    },
     "sidebar": {
       "dashboard": "Dashboard",
       "board": "Board",
