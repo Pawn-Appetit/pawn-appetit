@@ -26,6 +26,7 @@ import {
   nativeBarAtom,
   percentageCoverageAtom,
   previewBoardOnHoverAtom,
+  showArrowsAtom,
   showConsecutiveArrowsAtom,
   showCoordinatesAtom,
   showDestsAtom,
@@ -148,6 +149,23 @@ export default function Page() {
               </Text>
             </div>
             <SettingsSwitch atom={showDestsAtom} />
+          </Group>
+        ),
+      },
+      {
+        id: "arrows",
+        title: t("settings.board.arrows"),
+        description: t("settings.board.arrowsDesc"),
+        tab: "board",
+        component: (
+          <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
+            <div>
+              <Text>{t("settings.board.arrows")}</Text>
+              <Text size="xs" c="dimmed">
+                {t("settings.board.arrowsDesc")}
+              </Text>
+            </div>
+            <SettingsSwitch atom={showArrowsAtom} />
           </Group>
         ),
       },
