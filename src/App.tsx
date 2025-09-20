@@ -23,13 +23,13 @@ import "@/styles/chessgroundColorsOverride.css";
 import "@/styles/global.css";
 
 import { documentDir, homeDir, resolve } from "@tauri-apps/api/path";
-import { EventMonitor } from "@/common/components/debug/EventMonitor";
-import ErrorComponent from "@/common/components/ErrorComponent";
+import { EventMonitor } from "@/components/EventMonitor";
+import ErrorComponent from "@/components/ErrorComponent";
 import { VERSION_CHECK_SETTINGS } from "@/config";
 import ThemeProvider from "@/features/themes/components/ThemeProvider";
 import { commands } from "./bindings";
-import { showUpdateNotification, UpdateNotificationModal } from "./common/components/UpdateNotification";
-import { useVersionCheck } from "./common/hooks/useVersionCheck";
+import { showUpdateNotification, UpdateNotificationModal } from "@/components/UpdateNotification";
+import { useVersionCheck } from "@/hooks/useVersionCheck";
 import { IS_DEV } from "./config";
 import i18n from "./i18n";
 import { routeTree } from "./routeTree.gen";

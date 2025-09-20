@@ -5,7 +5,7 @@ import { useAtom, useAtomValue } from "jotai";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
-import GenericCard from "@/common/components/GenericCard";
+import GenericCard from "@/components/GenericCard";
 import { FilenameInput } from "@/features/files/components/FilenameInput";
 import { FileTypeSelector } from "@/features/files/components/FileTypeSelector";
 import type { FileType } from "@/features/files/components/file";

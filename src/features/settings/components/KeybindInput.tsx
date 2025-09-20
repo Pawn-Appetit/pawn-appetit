@@ -3,7 +3,7 @@ import { IconCheck, IconX } from "@tabler/icons-react";
 import cx from "clsx";
 import { useAtom } from "jotai";
 import { useState } from "react";
-import useRecordHotkeys from "@/common/hooks/useRecordHotkeys";
+import useRecordHotkeys from "@/hooks/useRecordHotkeys";
 import { keyMapAtom } from "@/state/keybindings";
 import * as classes from "./KeybindInput.css";
 

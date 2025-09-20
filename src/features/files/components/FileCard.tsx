@@ -5,7 +5,7 @@ import { useAtom, useSetAtom } from "jotai";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { commands } from "@/bindings";
-import GameSelector from "@/common/components/panels/info/GameSelector";
+import GameSelector from "@/components/panels/info/GameSelector";
 import GamePreview from "@/features/databases/components/GamePreview";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import { createTab } from "@/utils/tabs";

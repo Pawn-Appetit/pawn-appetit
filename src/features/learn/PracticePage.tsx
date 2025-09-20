@@ -17,22 +17,12 @@ import {
   Title,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import {
-  IconArrowBackUp,
-  IconBulb,
-  IconCheck,
-  IconClock,
-  IconRefresh,
-  IconSearch,
-  IconTarget,
-  IconTrophy,
-  IconX,
-} from "@tabler/icons-react";
+import { IconArrowBackUp, IconBulb, IconRefresh, IconSearch } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+import { useUserStatsStore } from "@/state/userStatsStore";
 import { applyUciMoveToFen } from "@/utils/applyUciMoveToFen";
-import { useUserStatsStore } from "../../state/userStatsStore";
 import { CompletionModal } from "./components/CompletionModal";
 import { PracticeBoard } from "./components/PracticeBoard";
 import { PracticeContent } from "./components/PracticeContent";

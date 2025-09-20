@@ -32,7 +32,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { DatabaseInfo } from "@/bindings";
 import { commands, events } from "@/bindings";
-import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { downloadChessCom } from "@/utils/chess.com/api";
 import { getDatabases, query_games } from "@/utils/db";
 import { capitalize, parseDate } from "@/utils/format";

@@ -1,6 +1,6 @@
 import { SimpleGrid, Text } from "@mantine/core";
 import { useTranslation } from "react-i18next";
-import GenericCard from "@/common/components/GenericCard";
+import GenericCard from "@/components/GenericCard";
 import type { FileType } from "@/features/files/components/file";
 import { FILE_TYPES, type FileTypeItem } from "@/features/files/components/file";
 

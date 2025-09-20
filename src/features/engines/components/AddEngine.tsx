@@ -21,7 +21,7 @@ import { useAtom } from "jotai";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { commands, events } from "@/bindings";
-import ProgressButton from "@/common/components/ProgressButton";
+import ProgressButton from "@/components/ProgressButton";
 import { enginesAtom } from "@/state/atoms";
 import { type LocalEngine, type RemoteEngine, requiredEngineSettings, useDefaultEngines } from "@/utils/engines";
 import { usePlatform } from "@/utils/files";

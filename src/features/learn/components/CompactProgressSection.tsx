@@ -1,6 +1,6 @@
 import { Card, Grid, Group, Progress, Stack, Text, ThemeIcon, Title, Tooltip } from "@mantine/core";
 import { IconStar, IconTrophy } from "@tabler/icons-react";
-import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 interface CompactProgressSectionProps {
   overallProgress: number;

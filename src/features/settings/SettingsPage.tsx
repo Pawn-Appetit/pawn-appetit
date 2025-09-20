@@ -6,11 +6,11 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { useAtom } from "jotai";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import AboutModal from "@/common/components/About";
-import FileInput from "@/common/components/FileInput";
-import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
+import AboutModal from "@/components/About";
+import FileInput from "@/components/FileInput";
 import ColorSchemeSettings from "@/features/themes/components/ColorSchemeSettings";
 import ThemeSelectionSettings from "@/features/themes/components/ThemeSettings";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import {
   autoPromoteAtom,
   autoSaveAtom,

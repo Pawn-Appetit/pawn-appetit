@@ -1,5 +1,5 @@
 import { Group, Stack, Title } from "@mantine/core";
-import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import Accounts from "./components/Accounts";
 import Databases from "./components/Databases";
 

@@ -5,7 +5,7 @@ import * as Flags from "mantine-flagpack";
 import { useEffect, useId, useState } from "react";
 import useSWR from "swr/immutable";
 import { commands, events } from "@/bindings";
-import ProgressButton from "@/common/components/ProgressButton";
+import ProgressButton from "@/components/ProgressButton";
 import COUNTRIES from "./countries.json";
 
 const flags = Object.entries(Flags).map(([key, value]) => ({

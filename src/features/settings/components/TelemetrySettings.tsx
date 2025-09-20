@@ -1,7 +1,7 @@
 import { Alert, Group, Loader, Switch, Text } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import type React from "react";
-import { useTelemetry } from "@/common/hooks/useTelemetry";
+import { useTelemetry } from "@/hooks/useTelemetry";
 
 interface TelemetrySettingsProps {
   className?: string;

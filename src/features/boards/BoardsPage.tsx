@@ -11,12 +11,12 @@ import { useTranslation } from "react-i18next";
 import { Mosaic, type MosaicNode } from "react-mosaic-component";
 import { match } from "ts-pattern";
 import { commands } from "@/bindings";
-import BoardAnalysis from "@/common/components/boards/BoardAnalysis";
-import BoardGame from "@/common/components/boards/BoardGame";
-import ReportProgressSubscriber from "@/common/components/panels/analysis/ReportProgressSubscriber";
-import Puzzles from "@/common/components/puzzles/Puzzles";
-import { TreeStateContext, TreeStateProvider } from "@/common/components/TreeStateContext";
-import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
+import BoardAnalysis from "@/components/boards/BoardAnalysis";
+import BoardGame from "@/components/boards/BoardGame";
+import ReportProgressSubscriber from "@/components/panels/analysis/ReportProgressSubscriber";
+import Puzzles from "@/components/puzzles/Puzzles";
+import { TreeStateContext, TreeStateProvider } from "@/components/TreeStateContext";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { activeTabAtom, currentTabAtom, tabsAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
 import { createTab, genID, saveToFile, type Tab } from "@/utils/tabs";
@@ -289,15 +289,15 @@ function TabSwitch({ tab }: { tab: Tab }) {
   };
 
   const handleMosaicChange = (currentNode: MosaicNode<ViewId> | null) => {
-    if (currentNode && typeof currentNode === 'object' && 'direction' in currentNode) {
-      if (currentNode.direction === 'row') {
+    if (currentNode && typeof currentNode === "object" && "direction" in currentNode) {
+      if (currentNode.direction === "row") {
         const splitPercentage = currentNode.splitPercentage || 50;
         const constrainedPercentage = Math.max(20, Math.min(50, splitPercentage));
 
         if (splitPercentage !== constrainedPercentage) {
           currentNode = {
             ...currentNode,
-            splitPercentage: constrainedPercentage
+            splitPercentage: constrainedPercentage,
           };
         }
       }

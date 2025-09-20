@@ -5,7 +5,7 @@ import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { commands, type UciOptionConfig } from "@/bindings";
-import FileInput from "@/common/components/FileInput";
+import FileInput from "@/components/FileInput";
 import { type LocalEngine, requiredEngineSettings } from "@/utils/engines";
 import { usePlatform } from "@/utils/files";
 

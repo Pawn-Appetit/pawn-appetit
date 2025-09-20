@@ -17,8 +17,8 @@ import { IconBook, IconBrain, IconClock, IconInfoCircle, IconTarget, IconTargetA
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
-import { useUserStatsStore } from "../../state/userStatsStore";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+import { useUserStatsStore } from "@/state/userStatsStore";
 import { CompactProgressSection } from "./components/CompactProgressSection";
 import { practiceManager } from "./constants/practices";
 import { useProgressData } from "./hooks/useProgressData";

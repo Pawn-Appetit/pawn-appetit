@@ -10,7 +10,7 @@ import useSWRImmutable from "swr/immutable";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import type { Event, NormalizedGame } from "@/bindings";
-import { useLanguageChangeListener } from "@/common/hooks/useLanguageChangeListener";
+import { useLanguageChangeListener } from "@/hooks/useLanguageChangeListener";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import type { DatabaseViewStore } from "@/state/store/database";
 import { getTournamentGames } from "@/utils/db";

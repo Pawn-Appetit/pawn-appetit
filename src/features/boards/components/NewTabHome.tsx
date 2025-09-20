@@ -3,7 +3,7 @@ import { modals } from "@mantine/modals";
 import { IconChess, IconFileImport, IconPuzzle } from "@tabler/icons-react";
 import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
-import Chessboard from "@/common/components/icons/Chessboard";
+import Chessboard from "@/components/icons/Chessboard";
 import { tabsAtom } from "@/state/atoms";
 import type { Tab } from "@/utils/tabs";
 

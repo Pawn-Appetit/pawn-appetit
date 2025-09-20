@@ -11,7 +11,7 @@ import {
   type PuzzleDatabaseInfo,
   type QueryResponse,
 } from "@/bindings";
-import type { LocalOptions } from "@/common/components/panels/database/DatabasePanel";
+import type { LocalOptions } from "@/components/panels/database/DatabasePanel";
 import { unwrap } from "./unwrap";
 
 export type SuccessDatabaseInfo = Extract<DatabaseInfo, { type: "success" }>;

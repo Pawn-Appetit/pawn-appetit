@@ -1,6 +1,6 @@
 import { Box, Combobox, Flex, Input, InputBase, ScrollArea, Text, useCombobox } from "@mantine/core";
 import { useAtom } from "jotai";
-import PieceComponent from "@/common/components/Piece";
+import PieceComponent from "@/components/Piece";
 import { pieceSetAtom } from "@/state/atoms";
 
 type Item = {

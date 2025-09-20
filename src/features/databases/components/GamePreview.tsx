@@ -3,12 +3,12 @@ import { useElementSize } from "@mantine/hooks";
 import { useContext } from "react";
 import useSWRImmutable from "swr/immutable";
 import { useStore } from "zustand";
-import { Chessground } from "@/common/components/Chessground";
-import GameNotation from "@/common/components/GameNotation";
-import MoveControls from "@/common/components/MoveControls";
-import OpeningName from "@/common/components/OpeningName";
-import { TreeStateContext, TreeStateProvider } from "@/common/components/TreeStateContext";
-import { useResponsiveLayout } from "@/common/hooks/useResponsiveLayout";
+import { Chessground } from "@/components/Chessground";
+import GameNotation from "@/components/GameNotation";
+import MoveControls from "@/components/MoveControls";
+import OpeningName from "@/components/OpeningName";
+import { TreeStateContext, TreeStateProvider } from "@/components/TreeStateContext";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { parsePGN } from "@/utils/chess";
 import { type GameHeaders, getNodeAtPath, type TreeState } from "@/utils/treeReducer";
 
