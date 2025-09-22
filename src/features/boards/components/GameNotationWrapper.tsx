@@ -1,27 +1,29 @@
 import { Portal, Stack } from "@mantine/core";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import GameNotation from "@/components/GameNotation";
 import { ResponsiveLoadingWrapper } from "@/components/ResponsiveLoadingWrapper";
 import { ResponsiveSkeleton } from "@/components/ResponsiveSkeleton";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
-interface ResponsiveGameAnalysisProps {
+interface GameNotationWrapperProps {
   topBar?: boolean;
   editingMode?: boolean;
   editingCard?: React.ReactNode;
   isLoading?: boolean;
   error?: Error | null;
   onRetry?: () => void;
+  children?: ReactNode;
 }
 
-function ResponsiveGameAnalysis({
+function GameNotationWrapper({
   topBar = false,
   editingMode = false,
   editingCard,
   isLoading = false,
   error = null,
   onRetry,
-}: ResponsiveGameAnalysisProps) {
+  children = null,
+}: GameNotationWrapperProps) {
   const { layout } = useResponsiveLayout();
   const [isInitializing, setIsInitializing] = useState(true);
   const [initializationError, setInitializationError] = useState<Error | null>(null);
@@ -89,13 +91,8 @@ function ResponsiveGameAnalysis({
   // Render the analysis panels
   const analysisContent = (
     <Stack h="100%" gap={positioning.gap} style={{ flexDirection: positioning.stackDirection }}>
-      {editingMode && editingCard ? (
-        editingCard
-      ) : (
-        <>
-          <GameNotation topBar={topBar} />
-        </>
-      )}
+      {editingMode && editingCard ? editingCard : <GameNotation topBar={topBar} />}
+      {!editingMode && children}
     </Stack>
   );
 
@@ -117,4 +114,4 @@ function ResponsiveGameAnalysis({
   );
 }
 
-export default memo(ResponsiveGameAnalysis);
+export default memo(GameNotationWrapper);

@@ -3,9 +3,9 @@ import { useClickOutside, useHotkeys, useToggle } from "@mantine/hooks";
 import { IconCopy, IconEdit, IconX } from "@tabler/icons-react";
 import cx from "clsx";
 import { useEffect } from "react";
+import { ContentEditable } from "@/components/ContentEditable";
 import type { Tab } from "@/utils/tabs";
-import * as classes from "./BoardTab.css";
-import { ContentEditable } from "./ContentEditable";
+import * as classes from "./styles.css";
 
 export function BoardTab({
   tab,

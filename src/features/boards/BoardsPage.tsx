@@ -11,22 +11,23 @@ import { useTranslation } from "react-i18next";
 import { Mosaic, type MosaicNode } from "react-mosaic-component";
 import { match } from "ts-pattern";
 import { commands } from "@/bindings";
-import BoardAnalysis from "@/components/boards/BoardAnalysis";
-import BoardGame from "@/components/boards/BoardGame";
-import ReportProgressSubscriber from "@/components/panels/analysis/ReportProgressSubscriber";
-import Puzzles from "@/components/puzzles/Puzzles";
-import { TreeStateContext, TreeStateProvider } from "@/components/TreeStateContext";
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+
 import { activeTabAtom, currentTabAtom, tabsAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
 import { createTab, genID, saveToFile, type Tab } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
 import * as classes from "./BoardsPage.css";
 import { BoardTab } from "./components/BoardTab";
-import NewTabHome from "./components/NewTabHome";
 
 import "react-mosaic-component/react-mosaic-component.css";
 import "@/styles/react-mosaic.css";
+import { TreeStateContext, TreeStateProvider } from "@/components/TreeStateContext";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+import BoardAnalysis from "./components/BoardAnalysis";
+import BoardGame from "./components/BoardGame";
+import NewTab from "./components/NewTab";
+import Puzzles from "./components/puzzles/Puzzles";
+import ReportProgressSubscriber from "./components/ReportProgressSubscriber";
 
 export default function BoardsPage() {
   const { t } = useTranslation();
@@ -256,8 +257,11 @@ export default function BoardsPage() {
 type ViewId = "left" | "topRight" | "bottomRight";
 
 const fullLayout: { [viewId: string]: JSX.Element } = {
+  // biome-ignore lint/correctness/useUniqueElementIds: <explanation>
   left: <div id="left" />,
+  // biome-ignore lint/correctness/useUniqueElementIds: <explanation>
   topRight: <div id="topRight" />,
+  // biome-ignore lint/correctness/useUniqueElementIds: <explanation>
   bottomRight: <div id="bottomRight" />,
 };
 
@@ -280,6 +284,7 @@ const windowsStateAtom = atomWithStorage<WindowsState>("windowsState", {
 
 function TabSwitch({ tab }: { tab: Tab }) {
   const [windowsState, setWindowsState] = useAtom(windowsStateAtom);
+
   const { layout } = useResponsiveLayout();
   const isMobileLayout = layout.chessBoard.layoutType === "mobile";
 
@@ -306,7 +311,7 @@ function TabSwitch({ tab }: { tab: Tab }) {
   };
 
   return match(tab.type)
-    .with("new", () => <NewTabHome id={tab.value} />)
+    .with("new", () => <NewTab id={tab.value} />)
     .with("play", () => (
       <TreeStateProvider id={tab.value}>
         {!isMobileLayout && (

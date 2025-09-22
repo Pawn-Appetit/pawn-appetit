@@ -2,8 +2,8 @@ import { Card, CloseButton, Divider } from "@mantine/core";
 import type { Piece } from "chessground/types";
 import { useContext } from "react";
 import { useStore } from "zustand";
+import FenInput from "@/components/panels/info/FenInput";
 import { TreeStateContext } from "@/components/TreeStateContext";
-import FenInput from "../panels/info/FenInput";
 import * as classes from "./EditingCard.css";
 import PiecesGrid from "./PiecesGrid";
 

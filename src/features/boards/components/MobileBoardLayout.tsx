@@ -4,9 +4,9 @@ import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { memo, Suspense, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import GameNotation from "@/components/GameNotation";
+import AnalysisPanel from "@/components/panels/analysis/AnalysisPanel";
 import { ResponsiveLoadingWrapper } from "@/components/ResponsiveLoadingWrapper";
 import { ResponsiveSkeleton } from "@/components/ResponsiveSkeleton";
-import AnalysisPanel from "../panels/analysis/AnalysisPanel";
 import Board from "./Board";
 
 interface MobileBoardLayoutProps {

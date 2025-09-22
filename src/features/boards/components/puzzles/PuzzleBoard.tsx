@@ -8,6 +8,7 @@ import { useContext, useState } from "react";
 import { useStore } from "zustand";
 import { Chessground } from "@/components/Chessground";
 import { TreeStateContext } from "@/components/TreeStateContext";
+import PromotionModal from "@/features/boards/components/PromotionModal";
 import { blindfoldAtom, showCoordinatesAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
 import { blindfold, chessboard } from "@/styles/Chessboard.css";
@@ -17,7 +18,6 @@ import { recordPuzzleSolved } from "@/utils/puzzleStreak";
 import type { Completion, Puzzle } from "@/utils/puzzles";
 import { PUZZLE_DEBUG_LOGS } from "@/utils/puzzles";
 import { getNodeAtPath, treeIteratorMainLine } from "@/utils/treeReducer";
-import PromotionModal from "../boards/PromotionModal";
 
 function PuzzleBoard({
   puzzles,

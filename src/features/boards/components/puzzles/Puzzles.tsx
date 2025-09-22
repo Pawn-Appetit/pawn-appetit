@@ -7,6 +7,7 @@ import ChallengeHistory from "@/components/ChallengeHistory";
 import GameNotation from "@/components/GameNotation";
 import MoveControls from "@/components/MoveControls";
 import { TreeStateContext } from "@/components/TreeStateContext";
+import { usePuzzleDatabase, usePuzzleSession } from "@/features/boards/hooks";
 import {
   hidePuzzleRatingAtom,
   inOrderPuzzlesAtom,
@@ -18,9 +19,10 @@ import { positionFromFen } from "@/utils/chessops";
 import { logger } from "@/utils/logger";
 import { navigateToDatabasesWithModal } from "@/utils/navigation";
 import { getAdaptivePuzzleRange, PUZZLE_DEBUG_LOGS } from "@/utils/puzzles";
-import { PuzzleControls, PuzzleSettings, PuzzleStatistics } from "./components";
-import { usePuzzleDatabase, usePuzzleSession } from "./hooks";
 import PuzzleBoard from "./PuzzleBoard";
+import { PuzzleControls } from "./PuzzleControls";
+import { PuzzleSettings } from "./PuzzleSettings";
+import { PuzzleStatistics } from "./PuzzleStatistics";
 
 function Puzzles({ id }: { id: string }) {
   const navigate = useNavigate();

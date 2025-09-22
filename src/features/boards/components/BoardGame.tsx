@@ -30,6 +30,8 @@ import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { commands, events, type GoMode } from "@/bindings";
 import GameInfo from "@/components/GameInfo";
+import MoveControls from "@/components/MoveControls";
+import EngineSettingsForm from "@/components/panels/analysis/EngineSettingsForm";
 import TimeInput from "@/components/TimeInput";
 import { TreeStateContext } from "@/components/TreeStateContext";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
@@ -40,9 +42,8 @@ import type { TimeControlField } from "@/utils/clock";
 import type { LocalEngine } from "@/utils/engines";
 import { saveGameRecord } from "@/utils/gameRecords";
 import { type GameHeaders, treeIteratorMainLine } from "@/utils/treeReducer";
-import EngineSettingsForm from "../panels/analysis/EngineSettingsForm";
+import GameNotationWrapper from "./GameNotationWrapper";
 import ResponsiveBoard from "./ResponsiveBoard";
-import ResponsiveGameAnalysis from "./ResponsiveGameAnalysis";
 
 function EnginesSelect({
   engine,
@@ -769,7 +770,20 @@ function BoardGame() {
           </Portal>
         </>
       )}
-      <ResponsiveGameAnalysis topBar />
+      <GameNotationWrapper topBar>
+        <MoveControls
+          readOnly
+          // Start Game props
+          currentTabType="play"
+          startGame={startGame}
+          gameState={gameState}
+          startGameDisabled={
+            ((player1Settings.type === "engine" || player2Settings.type === "engine") && engines.length === 0) ||
+            error !== null ||
+            gameState !== "settingUp"
+          }
+        />
+      </GameNotationWrapper>
     </>
   );
 }

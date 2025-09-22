@@ -6,6 +6,7 @@ import type { Piece } from "chessground/types";
 import { useAtom, useAtomValue } from "jotai";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useStore } from "zustand";
+import MoveControls from "@/components/MoveControls";
 import { TreeStateContext } from "@/components/TreeStateContext";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import {
@@ -22,9 +23,9 @@ import { isTempImportFile } from "@/utils/files";
 import { reloadTab, saveTab, saveToFile } from "@/utils/tabs";
 import EditingCard from "./EditingCard";
 import EvalListener from "./EvalListener";
+import GameNotationWrapper from "./GameNotationWrapper";
 import ResponsiveAnalysisPanels from "./ResponsiveAnalysisPanels";
 import ResponsiveBoard from "./ResponsiveBoard";
-import ResponsiveGameAnalysis from "./ResponsiveGameAnalysis";
 
 function BoardAnalysis() {
   const [editingMode, toggleEditingMode] = useToggle();
@@ -218,7 +219,7 @@ function BoardAnalysis() {
           </Portal>
         </>
       )}
-      <ResponsiveGameAnalysis
+      <GameNotationWrapper
         topBar
         editingMode={editingMode}
         editingCard={
@@ -229,7 +230,9 @@ function BoardAnalysis() {
             setSelectedPiece={setSelectedPiece}
           />
         }
-      />
+      >
+        <MoveControls readOnly />
+      </GameNotationWrapper>
     </>
   );
 }

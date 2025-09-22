@@ -5,7 +5,7 @@ import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/TreeStateContext";
 import { positionFromFen } from "@/utils/chessops";
 import { getClockInfo } from "@/utils/clock";
-import * as classes from "./Clock.css";
+import * as classes from "./styles.css";
 
 function Clock({
   color,

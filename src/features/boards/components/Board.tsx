@@ -18,8 +18,11 @@ import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
+import BoardControlsMenu from "@/components/BoardControlsMenu";
 import { Chessground } from "@/components/Chessground";
+import Clock from "@/components/Clock";
 import MoveControls from "@/components/MoveControls";
+import { arrowColors } from "@/components/panels/analysis/BestMoves";
 import ShowMaterial from "@/components/ShowMaterial";
 import { TreeStateContext } from "@/components/TreeStateContext";
 import { updateCardPerformance } from "@/features/files/components/opening";
@@ -48,9 +51,7 @@ import { ANNOTATION_INFO, isBasicAnnotation } from "@/utils/annotation";
 import { getMaterialDiff, getVariationLine } from "@/utils/chess";
 import { chessopsError, forceEnPassant, positionFromFen } from "@/utils/chessops";
 import { logger } from "@/utils/logger";
-import { arrowColors } from "../panels/analysis/BestMoves";
 import AnnotationHint from "./AnnotationHint";
-import Clock from "./Clock";
 import EvalBar from "./EvalBar";
 import MoveInput from "./MoveInput";
 import PromotionModal from "./PromotionModal";
@@ -604,34 +605,59 @@ function Board({
             )}
 
             {moveInput && <MoveInput currentNode={currentNode} />}
+
+            {layout.chessBoard.layoutType !== "mobile" && (
+              <BoardControlsMenu
+                viewPawnStructure={viewPawnStructure ?? localViewPawnStructure}
+                setViewPawnStructure={setViewPawnStructure ?? setLocalViewPawnStructure}
+                takeSnapshot={takeSnapshot ?? localTakeSnapshot}
+                canTakeBack={canTakeBack}
+                deleteMove={deleteMove ?? storeDeleteMove}
+                changeTabType={changeTabType ?? localChangeTabType}
+                currentTabType={currentTabType}
+                eraseDrawablesOnClick={eraseDrawablesOnClick ?? storeEraseDrawablesOnClick}
+                clearShapes={clearShapes ?? storeClearShapes}
+                disableVariations={disableVariations}
+                editingMode={editingMode}
+                toggleEditingMode={toggleEditingMode}
+                saveFile={saveFile}
+                reload={reload}
+                addGame={addGame}
+                toggleOrientation={toggleOrientation ?? localToggleOrientation}
+                currentTabSourceType={currentTabSourceType}
+                count={currentTabType === "play" ? 3 : 6}
+              />
+            )}
           </Group>
 
           {/* MoveControls with board controls menu */}
-          <MoveControls
-            viewPawnStructure={viewPawnStructure ?? localViewPawnStructure}
-            setViewPawnStructure={setViewPawnStructure ?? setLocalViewPawnStructure}
-            takeSnapshot={takeSnapshot ?? localTakeSnapshot}
-            canTakeBack={canTakeBack}
-            deleteMove={deleteMove ?? storeDeleteMove}
-            changeTabType={changeTabType ?? localChangeTabType}
-            currentTabType={currentTabType}
-            eraseDrawablesOnClick={eraseDrawablesOnClick ?? storeEraseDrawablesOnClick}
-            clearShapes={clearShapes ?? storeClearShapes}
-            disableVariations={disableVariations}
-            editingMode={editingMode}
-            toggleEditingMode={toggleEditingMode}
-            saveFile={saveFile}
-            dirty={dirty}
-            autoSave={false} // Board component doesn't have autoSave context
-            reload={reload}
-            addGame={addGame}
-            toggleOrientation={toggleOrientation ?? localToggleOrientation}
-            currentTabSourceType={currentTabSourceType}
-            // Start Game props
-            startGame={startGame}
-            gameState={gameState}
-            startGameDisabled={startGameDisabled}
-          />
+          {layout.chessBoard.layoutType === "mobile" && (
+            <MoveControls
+              viewPawnStructure={viewPawnStructure ?? localViewPawnStructure}
+              setViewPawnStructure={setViewPawnStructure ?? setLocalViewPawnStructure}
+              takeSnapshot={takeSnapshot ?? localTakeSnapshot}
+              canTakeBack={canTakeBack}
+              deleteMove={deleteMove ?? storeDeleteMove}
+              changeTabType={changeTabType ?? localChangeTabType}
+              currentTabType={currentTabType}
+              eraseDrawablesOnClick={eraseDrawablesOnClick ?? storeEraseDrawablesOnClick}
+              clearShapes={clearShapes ?? storeClearShapes}
+              disableVariations={disableVariations}
+              editingMode={editingMode}
+              toggleEditingMode={toggleEditingMode}
+              saveFile={saveFile}
+              dirty={dirty}
+              autoSave={false} // Board component doesn't have autoSave context
+              reload={reload}
+              addGame={addGame}
+              toggleOrientation={toggleOrientation ?? localToggleOrientation}
+              currentTabSourceType={currentTabSourceType}
+              // Start Game props
+              startGame={startGame}
+              gameState={gameState}
+              startGameDisabled={startGameDisabled}
+            />
+          )}
         </Box>
       </Box>
     </>

@@ -12,15 +12,15 @@ import {
 } from "@tabler/icons-react";
 import { memo, Suspense, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import AnalysisPanel from "@/components/panels/analysis/AnalysisPanel";
+import AnnotationPanel from "@/components/panels/annotation/AnnotationPanel";
+import DatabasePanel from "@/components/panels/database/DatabasePanel";
+import InfoPanel from "@/components/panels/info/InfoPanel";
+import GraphPanel from "@/components/panels/practice/GraphPanel";
+import PracticePanel from "@/components/panels/practice/PracticePanel";
 import { ResponsiveLoadingWrapper } from "@/components/ResponsiveLoadingWrapper";
 import { ResponsiveSkeleton } from "@/components/ResponsiveSkeleton";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
-import AnalysisPanel from "../panels/analysis/AnalysisPanel";
-import AnnotationPanel from "../panels/annotation/AnnotationPanel";
-import DatabasePanel from "../panels/database/DatabasePanel";
-import InfoPanel from "../panels/info/InfoPanel";
-import GraphPanel from "../panels/practice/GraphPanel";
-import PracticePanel from "../panels/practice/PracticePanel";
 
 interface ResponsiveAnalysisPanelsProps {
   currentTab?: string;

@@ -1,31 +1,17 @@
-import { ActionIcon, Group, Menu } from "@mantine/core";
+import { ActionIcon, Group } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import {
-  IconArrowBack,
-  IconCamera,
-  IconChess,
-  IconChessFilled,
   IconChevronLeft,
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
-  IconDeviceFloppy,
-  IconDotsVertical,
-  IconEdit,
-  IconEditOff,
-  IconEraser,
   IconPlayerPlay,
-  IconPlus,
-  IconReload,
-  IconSwitchVertical,
-  IconTarget,
-  IconZoomCheck,
 } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
-import { memo, useContext, useMemo } from "react";
-import { useTranslation } from "react-i18next";
+import { memo, useContext } from "react";
 import { useStore } from "zustand";
 import { keyMapAtom } from "@/state/keybindings";
+import BoardControlsMenu from "./BoardControlsMenu";
 import { TreeStateContext } from "./TreeStateContext";
 
 interface MoveControlsProps {
@@ -94,7 +80,7 @@ function MoveControls({
   const previousBranching = useStore(store, (s) => s.previousBranching);
 
   const keyMap = useAtomValue(keyMapAtom);
-  const { t } = useTranslation();
+
   useHotkeys([
     [keyMap.PREVIOUS_MOVE.keys, previous],
     [keyMap.NEXT_MOVE.keys, next],
@@ -108,106 +94,6 @@ function MoveControls({
     [keyMap.NEXT_BRANCHING.keys, nextBranching],
     [keyMap.PREVIOUS_BRANCHING.keys, previousBranching],
   ]);
-
-  const boardControlsMenu = useMemo(
-    () => (
-      <Menu closeOnItemClick={false}>
-        <Menu.Target>
-          <ActionIcon variant="default" size="lg">
-            <IconDotsVertical size="1rem" />
-          </ActionIcon>
-        </Menu.Target>
-        <Menu.Dropdown>
-          {setViewPawnStructure && (
-            <Menu.Item
-              leftSection={viewPawnStructure ? <IconChessFilled size="1.3rem" /> : <IconChess size="1.3rem" />}
-              onClick={() => setViewPawnStructure(!viewPawnStructure)}
-            >
-              {t("features.board.actions.togglePawnStructureView")}
-            </Menu.Item>
-          )}
-          {takeSnapshot && (
-            <Menu.Item leftSection={<IconCamera size="1.3rem" />} onClick={() => takeSnapshot()}>
-              {t("features.board.actions.takeSnapshot")}
-            </Menu.Item>
-          )}
-          {canTakeBack && deleteMoveProp && (
-            <Menu.Item leftSection={<IconArrowBack size="1.3rem" />} onClick={() => deleteMoveProp()}>
-              {t("features.board.actions.takeBack")}
-            </Menu.Item>
-          )}
-          {changeTabType && (
-            <Menu.Item
-              leftSection={
-                currentTabType === "analysis" ? <IconTarget size="1.3rem" /> : <IconZoomCheck size="1.3rem" />
-              }
-              onClick={changeTabType}
-            >
-              {t(
-                currentTabType === "analysis"
-                  ? "features.board.actions.playFromHere"
-                  : "features.board.actions.analyzeGame",
-              )}
-            </Menu.Item>
-          )}
-          {!eraseDrawablesOnClick && clearShapes && (
-            <Menu.Item leftSection={<IconEraser size="1.3rem" />} onClick={() => clearShapes()}>
-              {t("features.board.actions.clearDrawings")}
-            </Menu.Item>
-          )}
-          {!disableVariations && toggleEditingMode && (
-            <Menu.Item
-              leftSection={editingMode ? <IconEditOff size="1.3rem" /> : <IconEdit size="1.3rem" />}
-              onClick={() => toggleEditingMode()}
-            >
-              {t("features.board.actions.editPosition")}
-            </Menu.Item>
-          )}
-          {saveFile && (
-            <Menu.Item leftSection={<IconDeviceFloppy size="1.3rem" />} onClick={() => saveFile()}>
-              {t("features.board.actions.savePGN", { key: keyMap.SAVE_FILE.keys })}
-            </Menu.Item>
-          )}
-          {reload && (
-            <Menu.Item leftSection={<IconReload size="1.3rem" />} onClick={() => reload()}>
-              {t("features.menu.reload")}
-            </Menu.Item>
-          )}
-          {addGame && currentTabSourceType === "file" && (
-            <Menu.Item leftSection={<IconPlus size="1.3rem" />} onClick={() => addGame()}>
-              {t("features.board.actions.addGame")}
-            </Menu.Item>
-          )}
-          {toggleOrientation && (
-            <Menu.Item leftSection={<IconSwitchVertical size="1.3rem" />} onClick={() => toggleOrientation()}>
-              {t("features.board.actions.flipBoard", { key: keyMap.SWAP_ORIENTATION.keys })}
-            </Menu.Item>
-          )}
-        </Menu.Dropdown>
-      </Menu>
-    ),
-    [
-      viewPawnStructure,
-      setViewPawnStructure,
-      takeSnapshot,
-      canTakeBack,
-      deleteMoveProp,
-      changeTabType,
-      currentTabType,
-      eraseDrawablesOnClick,
-      clearShapes,
-      disableVariations,
-      editingMode,
-      toggleEditingMode,
-      saveFile,
-      reload,
-      addGame,
-      toggleOrientation,
-      currentTabSourceType,
-      keyMap,
-      t,
-    ],
-  );
 
   return (
     <Group grow gap="xs">
@@ -227,7 +113,7 @@ function MoveControls({
       >
         <IconChevronLeft />
       </ActionIcon>
-      {currentTabType === "play" && gameState === "settingUp" && startGame && (
+      {currentTabType === "play" && startGame && (
         <ActionIcon variant="default" size="lg" onClick={startGame} disabled={startGameDisabled}>
           <IconPlayerPlay />
         </ActionIcon>
@@ -248,7 +134,27 @@ function MoveControls({
       >
         <IconChevronsRight />
       </ActionIcon>
-      {!readOnly && boardControlsMenu}
+      {!readOnly && (
+        <BoardControlsMenu
+          viewPawnStructure={viewPawnStructure}
+          setViewPawnStructure={setViewPawnStructure}
+          takeSnapshot={takeSnapshot}
+          canTakeBack={canTakeBack}
+          deleteMove={deleteMoveProp}
+          changeTabType={changeTabType}
+          currentTabType={currentTabType}
+          eraseDrawablesOnClick={eraseDrawablesOnClick}
+          clearShapes={clearShapes}
+          disableVariations={disableVariations}
+          editingMode={editingMode}
+          toggleEditingMode={toggleEditingMode}
+          saveFile={saveFile}
+          reload={reload}
+          addGame={addGame}
+          toggleOrientation={toggleOrientation}
+          currentTabSourceType={currentTabSourceType}
+        />
+      )}
     </Group>
   );
 }
