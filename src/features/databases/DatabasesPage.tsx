@@ -288,7 +288,7 @@ export default function DatabasesPage() {
             />
           }
           isDetailOpen={selectedDatabase !== null}
-          onDetailClose={() => {}}
+          onDetailClose={() => setSelected(null)}
           detailTitle={selectedDatabase?.type === "success" ? selectedDatabase.title : "Database Details"}
           layoutType={layout.databases.layoutType}
         />
