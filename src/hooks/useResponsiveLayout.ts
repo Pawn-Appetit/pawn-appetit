@@ -176,7 +176,7 @@ export const useResponsiveLayout: () => {
 
       // Game-specific layout
       gameInfoCollapsedByDefault: isMobileOrSmallScreen,
-      gameNotationUnderBoard: isMobile || extraLargeScreenMax,
+      gameNotationUnderBoard: isMobile,
 
       // Panel configuration
       panels: {
