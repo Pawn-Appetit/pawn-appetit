@@ -55,8 +55,6 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
   const [error, setError] = useState("");
   const { documentDir } = useLoaderData({ from: "/boards" });
 
-  console.log(documentDir);
-
   async function parseGamesFromTarget(
     resolvedTarget: ResolvedPgnTarget,
   ): Promise<{ trees: TreeState[]; errors: { gameIndex: number; error: string; fileName?: string }[] }> {
