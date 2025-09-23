@@ -385,7 +385,8 @@
         "editPosition": "Edit Position",
         "savePGN": "Save PGN ({{key}})",
         "addGame": "Add Game",
-        "flipBoard": "Flip Board ({{key}})"
+        "flipBoard": "Flip Board ({{key}})",
+        "takeBack": "Take Back"
       },
       "tabs": {
         "practice": "Practice",

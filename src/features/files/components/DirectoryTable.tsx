@@ -279,6 +279,7 @@ function Table({
       ]}
       records={files}
       noRecordsText={t("features.files.noFiles")}
+      minHeight={!files.length ? 150 : undefined}
       rowExpansion={{
         allowMultiple: true,
         expanded: {
