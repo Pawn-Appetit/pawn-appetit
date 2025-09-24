@@ -4,7 +4,7 @@ export const defaultTheme: Theme = {
   id: "default",
   name: "Default",
   description: "Default Mantine theme",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -195,7 +195,7 @@ export const githubTheme: Theme = {
   id: "github",
   name: "GitHub",
   description: "GitHub inspired theme with familiar colors",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -386,7 +386,7 @@ export const materialTheme: Theme = {
   id: "material",
   name: "Material Design",
   description: "Google Material Design inspired theme",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -638,7 +638,7 @@ export const catppuccinTheme: Theme = {
   id: "catppuccin",
   name: "Catppuccin",
   description: "Catppuccin Mocha color palette theme",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -829,7 +829,7 @@ export const oledTheme: Theme = {
   id: "oled",
   name: "OLED",
   description: "Pure black theme optimized for OLED displays",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -1020,7 +1020,7 @@ export const oceanTheme: Theme = {
   id: "ocean",
   name: "Ocean Depths",
   description: "Deep blues and aqua inspired by ocean depths",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -1211,7 +1211,7 @@ export const retroGamingTheme: Theme = {
   id: "retro-gaming",
   name: "Retro Gaming",
   description: "8-bit inspired colors reminiscent of classic video games",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -1402,7 +1402,7 @@ export const royalTheme: Theme = {
   id: "royal",
   name: "Royal Purple",
   description: "Luxurious purples and golds fit for royalty",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -1593,7 +1593,7 @@ export const forestTheme: Theme = {
   id: "forest",
   name: "Forest Haven",
   description: "Earth tones and greens inspired by woodland serenity",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -1784,7 +1784,7 @@ export const midnightTheme: Theme = {
   id: "midnight",
   name: "Midnight Blue",
   description: "Dark elegant theme with deep blues and purples",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -1975,7 +1975,7 @@ export const sunsetTheme: Theme = {
   id: "sunset",
   name: "Desert Sunset",
   description: "Warm oranges, pinks, and purples of a desert sunset",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -2166,7 +2166,7 @@ export const arcticTheme: Theme = {
   id: "arctic",
   name: "Arctic Frost",
   description: "Cool blues and whites inspired by arctic landscapes",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -2357,7 +2357,7 @@ export const lavenderTheme: Theme = {
   id: "lavender",
   name: "Lavender Fields",
   description: "Soft purples and pastels inspired by lavender fields",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -2548,7 +2548,7 @@ export const corporateTheme: Theme = {
   id: "corporate",
   name: "Corporate Professional",
   description: "Clean, professional theme for business applications",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -2739,7 +2739,7 @@ export const neonTheme: Theme = {
   id: "neon",
   name: "Neon Cyberpunk",
   description: "Bright neon colors on dark backgrounds for a cyberpunk feel",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -2930,7 +2930,7 @@ export const vintageTheme: Theme = {
   id: "vintage",
   name: "Vintage Sepia",
   description: "Warm browns and creams inspired by vintage photography",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -3121,7 +3121,7 @@ export const pastelTheme: Theme = {
   id: "pastel",
   name: "Pastel Dream",
   description: "Soft pastel colors creating a gentle, dreamy atmosphere",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -3312,7 +3312,7 @@ export const woodTheme: Theme = {
   id: "wood",
   name: "Natural Wood",
   description: "Warm wood grain colors inspired by classic chess boards",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 
@@ -3503,7 +3503,7 @@ export const monochromeTheme: Theme = {
   id: "monochrome",
   name: "Pure Monochrome",
   description: "Classic black and white with grayscale accents",
-  author: "ChessKitchen Team",
+  author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,
 

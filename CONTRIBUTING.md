@@ -115,7 +115,7 @@ i18n.use(initReactI18next).init({
 - Before submitting a PR, first build the app using `pnpm tauri build -b none` and check every feature you've contributed to.
 - Format and lint your code using `pnpm format` followed by `pnpm lint:fix`
 - If you're contributing translations, follow the steps in [Verifying and Finalizing Translation Changes](#verifying-and-finalizing-translation-changes)
-- Go to [the comparison page](https://github.com/ChessKitchen/pawn-appetit/compare) and select the branch you just pushed in the `compare:` dropdown
+- Go to [the comparison page](https://github.com/Pawn-Appetit/pawn-appetit/compare) and select the branch you just pushed in the `compare:` dropdown
 - Submit the new PR. The maintainers will follow up ASAP.
 
 ## Extra Notes

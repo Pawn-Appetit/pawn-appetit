@@ -6568,7 +6568,7 @@ checksum = "943ce29a8a743eb10d6082545d861b24f9d1b160b7d741e0f2cdf726bec909c5"
 [[package]]
 name = "vampirc-uci"
 version = "0.11.1"
-source = "git+https://github.com/ChessKitchen/vampirc-uci.git?rev=5d0ee12d5804d71c9eec6132325b9ac6d72a022a#5d0ee12d5804d71c9eec6132325b9ac6d72a022a"
+source = "git+https://github.com/Pawn-Appetit/vampirc-uci.git?rev=5d0ee12d5804d71c9eec6132325b9ac6d72a022a#5d0ee12d5804d71c9eec6132325b9ac6d72a022a"
 dependencies = [
  "chrono",
  "pest",

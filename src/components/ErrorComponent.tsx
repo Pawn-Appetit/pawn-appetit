@@ -36,7 +36,7 @@ export default function ErrorComponent({ error }: { error: unknown }) {
       <Text>
         Please report this on{" "}
         <Anchor
-          href="https://github.com/ChessKitchen/pawn-appetit/issues/new?assignees=&labels=bug&projects=&template=bug.yml"
+          href="https://github.com/Pawn-Appetit/pawn-appetit/issues/new?assignees=&labels=bug&projects=&template=bug.yml"
           target="_blank"
         >
           Github

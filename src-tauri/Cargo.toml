@@ -2,9 +2,9 @@
 name = "pawn-appetit"
 version = "0.6.4"
 description = "A Modern Chess Database"
-authors = ["ChessKitchen Team"]
+authors = ["Pawn-Appetit Team"]
 license = "GPL-3.0-only"
-repository = "https://github.com/ChessKitchen/pawn-appetit"
+repository = "https://github.com/Pawn-Appetit/pawn-appetit"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -46,7 +46,7 @@ derivative = "2.2.0"
 dashmap = "6.1.0"
 once_cell = "1.21.3"
 rand = "0.8.5"
-vampirc-uci = { git = "https://github.com/ChessKitchen/vampirc-uci.git", rev = "5d0ee12d5804d71c9eec6132325b9ac6d72a022a", features = [
+vampirc-uci = { git = "https://github.com/Pawn-Appetit/vampirc-uci.git", rev = "5d0ee12d5804d71c9eec6132325b9ac6d72a022a", features = [
     "specta",
     "serde",
 ] }

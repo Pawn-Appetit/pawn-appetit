@@ -1,7 +1,7 @@
 <div align="center">
 <!-- Logo -->
-<a href="https://github.com/ChessKitchen/pawn-appetit">
-<img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/src-tauri/icons/icon.png" alt="Pawn Appétit Logo" width="120" />
+<a href="https://github.com/Pawn-Appetit/pawn-appetit">
+<img src="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/src-tauri/icons/icon.png" alt="Pawn Appétit Logo" width="120" />
 </a>
 
 <!-- Title & Tagline -->
@@ -10,54 +10,54 @@
 <div>
 🌐 <a href="https://pawnappetit.com/"><strong>Website</strong></a> •
 💬 <a href="https://discord.gg/8hk49G8ZbX"><strong>Discord</strong></a> •
-📦 <a href="https://github.com/ChessKitchen/pawn-appetit/releases"><strong>Download</strong></a> •
+📦 <a href="https://github.com/Pawn-Appetit/pawn-appetit/releases"><strong>Download</strong></a> •
 📚 <a href="https://pawnappetit.com/docs"><strong>Docs</strong></a>
 </div>
 
 <br />
 
 <!-- Project Info -->
-<a href="https://github.com/ChessKitchen/pawn-appetit/releases">
-<img src="https://img.shields.io/github/v/release/ChessKitchen/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Release&color=success&labelColor=2d3748" alt="Latest Release">
+<a href="https://github.com/Pawn-Appetit/pawn-appetit/releases">
+<img src="https://img.shields.io/github/v/release/Pawn-Appetit/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Release&color=success&labelColor=2d3748" alt="Latest Release">
 </a>
-<a href="https://github.com/ChessKitchen/pawn-appetit/stargazers">
-<img src="https://img.shields.io/github/stars/ChessKitchen/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Stars&color=yellow&labelColor=2d3748" alt="GitHub Stars">
+<a href="https://github.com/Pawn-Appetit/pawn-appetit/stargazers">
+<img src="https://img.shields.io/github/stars/Pawn-Appetit/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Stars&color=yellow&labelColor=2d3748" alt="GitHub Stars">
 </a>
-<a href="https://github.com/ChessKitchen/pawn-appetit/network/members">
-<img src="https://img.shields.io/github/forks/ChessKitchen/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Forks&color=orange&labelColor=2d3748" alt="GitHub Forks">
+<a href="https://github.com/Pawn-Appetit/pawn-appetit/network/members">
+<img src="https://img.shields.io/github/forks/Pawn-Appetit/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Forks&color=orange&labelColor=2d3748" alt="GitHub Forks">
 </a>
-<a href="https://github.com/ChessKitchen/pawn-appetit/graphs/contributors">
-<img src="https://img.shields.io/github/contributors/ChessKitchen/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Contributors&color=brightgreen&labelColor=2d3748" alt="Contributors">
+<a href="https://github.com/Pawn-Appetit/pawn-appetit/graphs/contributors">
+<img src="https://img.shields.io/github/contributors/Pawn-Appetit/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Contributors&color=brightgreen&labelColor=2d3748" alt="Contributors">
 </a>
-<a href="https://github.com/ChessKitchen/pawn-appetit/issues">
-<img src="https://img.shields.io/github/issues/ChessKitchen/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Issues&color=red&labelColor=2d3748" alt="Issues">
+<a href="https://github.com/Pawn-Appetit/pawn-appetit/issues">
+<img src="https://img.shields.io/github/issues/Pawn-Appetit/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Issues&color=red&labelColor=2d3748" alt="Issues">
 </a>
 <!-- Build & Quality -->
-<a href="https://github.com/ChessKitchen/pawn-appetit/actions/workflows/test.yml">
-<img src="https://img.shields.io/github/actions/workflow/status/ChessKitchen/pawn-appetit/test.yml?style=flat-square&logo=github&label=Build&logoColor=white&color=success&labelColor=2d3748" alt="Build Status">
+<a href="https://github.com/Pawn-Appetit/pawn-appetit/actions/workflows/test.yml">
+<img src="https://img.shields.io/github/actions/workflow/status/Pawn-Appetit/pawn-appetit/test.yml?style=flat-square&logo=github&label=Build&logoColor=white&color=success&labelColor=2d3748" alt="Build Status">
 </a>
-<a href="https://github.com/ChessKitchen/pawn-appetit/discussions">
-<img src="https://img.shields.io/github/discussions/ChessKitchen/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Discussions&color=blue&labelColor=2d3748" alt="Discussions">
+<a href="https://github.com/Pawn-Appetit/pawn-appetit/discussions">
+<img src="https://img.shields.io/github/discussions/Pawn-Appetit/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Discussions&color=blue&labelColor=2d3748" alt="Discussions">
 </a>
 <!-- Platform Support -->
-<a href="https://github.com/ChessKitchen/pawn-appetit#supported-platforms">
+<a href="https://github.com/Pawn-Appetit/pawn-appetit#supported-platforms">
 <img src="https://img.shields.io/badge/Platforms-Windows%20|%20macOS%20|%20Linux-blue?style=flat-square&logo=windows&logoColor=white&labelColor=2d3748" alt="Supported Platforms" />
 </a>
 <!-- Miscellaneous -->
-<a href="https://github.com/ChessKitchen/pawn-appetit/blob/main/LICENSE">
-<img src="https://img.shields.io/github/license/ChessKitchen/pawn-appetit?style=flat-square&logo=opensourceinitiative&logoColor=white&color=blue&labelColor=2d3748" alt="License">
+<a href="https://github.com/Pawn-Appetit/pawn-appetit/blob/main/LICENSE">
+<img src="https://img.shields.io/github/license/Pawn-Appetit/pawn-appetit?style=flat-square&logo=opensourceinitiative&logoColor=white&color=blue&labelColor=2d3748" alt="License">
 </a>
-<a href="https://github.com/ChessKitchen/pawn-appetit/releases">
-<img src="https://img.shields.io/github/downloads/ChessKitchen/pawn-appetit/total?style=flat-square&logo=download&logoColor=white&label=Downloads&color=brightgreen&labelColor=2d3748" alt="Total Downloads" />
+<a href="https://github.com/Pawn-Appetit/pawn-appetit/releases">
+<img src="https://img.shields.io/github/downloads/Pawn-Appetit/pawn-appetit/total?style=flat-square&logo=download&logoColor=white&label=Downloads&color=brightgreen&labelColor=2d3748" alt="Total Downloads" />
 </a>
-<img src="https://img.shields.io/github/last-commit/ChessKitchen/pawn-appetit?style=flat-square&logo=git&logoColor=white&label=Updated&color=blue&labelColor=2d3748" alt="Last Commit">
-<img src="https://img.shields.io/github/commit-activity/m/ChessKitchen/pawn-appetit?style=flat-square&logo=pulse&logoColor=white&label=Activity&color=green&labelColor=2d3748" alt="Monthly Activity">
+<img src="https://img.shields.io/github/last-commit/Pawn-Appetit/pawn-appetit?style=flat-square&logo=git&logoColor=white&label=Updated&color=blue&labelColor=2d3748" alt="Last Commit">
+<img src="https://img.shields.io/github/commit-activity/m/Pawn-Appetit/pawn-appetit?style=flat-square&logo=pulse&logoColor=white&label=Activity&color=green&labelColor=2d3748" alt="Monthly Activity">
 
 <br />
 <br />
 
-<a href="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/banner.png" target="_blank">
-<img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/banner.png" alt="Pawn Appétit GUI screenshot showcasing the main interface" width="85%" />
+<a href="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/screenshots/banner.png" target="_blank">
+<img src="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/screenshots/banner.png" alt="Pawn Appétit GUI screenshot showcasing the main interface" width="85%" />
 </a>
 <p>
 <em>Experience professional chess analysis with an intuitive, modern interface</em>
@@ -135,22 +135,22 @@ Explore Pawn Appétit’s clean and modern interface:
 <div align="center">
 
 ### 🎮 Play & Analyze
-[<img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/play-game.png" alt="Play Game" width="320" />](./screenshots/play-game.png)
-[<img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/analyze-game.png" alt="Analyze Game" width="320" />](./screenshots/analyze-game.png)  
+[<img src="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/screenshots/play-game.png" alt="Play Game" width="320" />](./screenshots/play-game.png)
+[<img src="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/screenshots/analyze-game.png" alt="Analyze Game" width="320" />](./screenshots/analyze-game.png)  
 <em>Play chess games and analyze them with powerful engine tools</em>
 
 ---
 
 ### 🧩 Learn & Practice
-[<img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/solve-puzzle.png" alt="Solve Puzzle" width="320" />](./screenshots/solve-puzzle.png)
-[<img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/learn.png" alt="Learn" width="320" />](./screenshots/learn.png)  
+[<img src="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/screenshots/solve-puzzle.png" alt="Solve Puzzle" width="320" />](./screenshots/solve-puzzle.png)
+[<img src="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/screenshots/learn.png" alt="Learn" width="320" />](./screenshots/learn.png)  
 <em>Solve puzzles and improve with guided learning</em>
 
 ---
 
 ### ⚙️ Customize Your Experience
-[<img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/keybindings.png" alt="Keybindings" width="320" />](./screenshots/keybindings.png)
-[<img src="https://github.com/ChessKitchen/pawn-appetit/raw/main/screenshots/settings-appearance.png" alt="Settings Appearance" width="320" />](./screenshots/settings-appearance.png)  
+[<img src="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/screenshots/keybindings.png" alt="Keybindings" width="320" />](./screenshots/keybindings.png)
+[<img src="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/screenshots/settings-appearance.png" alt="Settings Appearance" width="320" />](./screenshots/settings-appearance.png)  
 <em>Flexible keybindings and appearance settings</em>
 
 </div>
@@ -163,9 +163,9 @@ Explore Pawn Appétit’s clean and modern interface:
 
 | Platform | Download |
 |----------|----------|
-| **Windows** | [![Windows](https://img.shields.io/badge/Windows-0078D6?style=flat-square&logo=windows&logoColor=white)](https://github.com/ChessKitchen/pawn-appetit/releases/latest) |
-| **macOS** | [![macOS](https://img.shields.io/badge/macOS-000000?style=flat-square&logo=apple&logoColor=white)](https://github.com/ChessKitchen/pawn-appetit/releases/latest) |
-| **Linux** | [![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat-square&logo=linux&logoColor=black)](https://github.com/ChessKitchen/pawn-appetit/releases/latest) |
+| **Windows** | [![Windows](https://img.shields.io/badge/Windows-0078D6?style=flat-square&logo=windows&logoColor=white)](https://github.com/Pawn-Appetit/pawn-appetit/releases/latest) |
+| **macOS** | [![macOS](https://img.shields.io/badge/macOS-000000?style=flat-square&logo=apple&logoColor=white)](https://github.com/Pawn-Appetit/pawn-appetit/releases/latest) |
+| **Linux** | [![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat-square&logo=linux&logoColor=black)](https://github.com/Pawn-Appetit/pawn-appetit/releases/latest) |
 
 </div>
 
@@ -188,7 +188,7 @@ Ensure you have the required tools installed for your platform:
 1. **Clone the repository**:
 
    ```bash
-   git clone git@github.com:ChessKitchen/pawn-appetit.git
+   git clone git@github.com:Pawn-Appetit/pawn-appetit.git
    cd pawn-appetit
    ```
 
@@ -388,7 +388,7 @@ Pawn Appétit is for chess players **all around the world**! We’re committed t
 - [ ] **Advanced Statistics** - Deeper game insights
 
 ### 💭 **Your Ideas**
-Have a feature request? [Let us know!](https://github.com/ChessKitchen/pawn-appetit/discussions)
+Have a feature request? [Let us know!](https://github.com/Pawn-Appetit/pawn-appetit/discussions)
 
 ## 📊 Telemetry
 
@@ -410,8 +410,8 @@ We're building something amazing together! Here's how you can be part of it:
 
 ### 💬 **Get Help & Connect**
 - 💭 [Discord Server](https://discord.gg/8hk49G8ZbX) - Chat with users and developers
-- 🐛 [Report Issues](https://github.com/ChessKitchen/pawn-appetit/issues) - Help us improve
-- 💡 [Feature Requests](https://github.com/ChessKitchen/pawn-appetit/discussions) - Share your ideas
+- 🐛 [Report Issues](https://github.com/Pawn-Appetit/pawn-appetit/issues) - Help us improve
+- 💡 [Feature Requests](https://github.com/Pawn-Appetit/pawn-appetit/discussions) - Share your ideas
 
 ### 🌟 **Contribute**
 - 🔧 [Development Guide](./CONTRIBUTING.md) - Code contributions welcome

@@ -28,7 +28,7 @@
         "bundleMediaFramework": true
       }
     },
-    "publisher": "ChessKitchen Team",
+    "publisher": "Pawn-Appetit Team",
     "shortDescription": "Ultimate Chess Toolkit",
     "longDescription": "",
     "macOS": {
@@ -61,7 +61,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IENBQUUwNEI2OTg2RjA5QzUKUldURkNXK1l0Z1N1eW9ldFQwV29oZVBGQVc0RFR6cml2WERFWXlhRDE4di8yaW1EbjRCUUY2bHEK",
       "endpoints": [
-        "https://github.com/ChessKitchen/pawn-appetit/releases/latest/download/latest.json"
+        "https://github.com/Pawn-Appetit/pawn-appetit/releases/latest/download/latest.json"
       ]
     }
   },
