@@ -130,6 +130,9 @@ export function useVersionCheck(options: UseVersionCheckOptions = {}): UseVersio
     }
   }, [isUpdating, lastResult]);
 
+  const checkVersionRef = useRef(checkVersion);
+  checkVersionRef.current = checkVersion;
+
   useEffect(() => {
     if (!autoCheck || !isAutoCheckEnabled || autoCheckInitiated?.current) {
       return;
@@ -143,11 +146,11 @@ export function useVersionCheck(options: UseVersionCheckOptions = {}): UseVersio
     autoCheckInitiated.current = true;
 
     const timeoutId = setTimeout(() => {
-      checkVersion();
+      checkVersionRef.current();
     }, startupDelay);
 
     return () => clearTimeout(timeoutId);
-  }, [autoCheck, isAutoCheckEnabled, startupDelay, checkVersion]);
+  }, [autoCheck, isAutoCheckEnabled, startupDelay]);
 
   return {
     isChecking,

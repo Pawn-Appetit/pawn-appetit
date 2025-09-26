@@ -12,8 +12,7 @@ import { chessgroundDests, chessgroundMove } from "chessops/compat";
 import { makeSan } from "chessops/san";
 import domtoimage from "dom-to-image";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { memo, useCallback, useContext, useMemo, useState } from "react";
-import { Helmet } from "react-helmet";
+import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
@@ -167,7 +166,6 @@ function Board({
   const autoPromote = useAtomValue(autoPromoteAtom);
   const forcedEP = useAtomValue(forcedEnPassantAtom);
   const showCoordinates = useAtomValue(showCoordinatesAtom);
-  const autoSave = useAtomValue(autoSaveAtom);
   const isBlindfold = useAtomValue(blindfoldAtom);
   const setBlindfold = useSetAtom(blindfoldAtom);
 
@@ -387,6 +385,33 @@ function Board({
     [editingMode, currentNode, setFen],
   );
 
+  useEffect(() => {
+    const linkId = "view-pawn-structure-css";
+
+    if (viewPawnStructure) {
+      if (!document.getElementById(linkId)) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = "/pieces/view-pawn-structure.css";
+        link.id = linkId;
+
+        document.head.appendChild(link);
+      }
+    } else {
+      const existingLink = document.getElementById(linkId);
+      if (existingLink) {
+        document.head.removeChild(existingLink);
+      }
+    }
+
+    return () => {
+      const existingLink = document.getElementById(linkId);
+      if (existingLink) {
+        document.head.removeChild(existingLink);
+      }
+    };
+  }, [viewPawnStructure]);
+
   useHotkeys([
     [keyMap.TOGGLE_EVAL_BAR.keys, () => setEvalOpen((e) => !e)],
     [keyMap.BLINDFOLD.keys, () => setBlindfold((v) => !v)],
@@ -401,238 +426,207 @@ function Board({
     currentNode.move && square !== undefined ? [chessgroundMove(currentNode.move)[0], makeSquare(square)!] : undefined;
 
   return (
-    <>
-      {viewPawnStructure && (
-        <Helmet>
-          <link rel="stylesheet" href="/pieces/view-pawn-structure.css" />
-        </Helmet>
-      )}
-      <Box w="100%" h="100%">
-        <Box
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            width: "100%",
-            height: "100%",
-            gap: "0.5rem",
-            flexWrap: "nowrap",
-            overflow: "hidden",
-            // Let the board use available space - responsive sizing is handled by the container
-            maxWidth: "100%",
-            maxHeight: "100%",
-          }}
-        >
-          {materialDiff && (
-            <Group ml="2.5rem" h="2.125rem">
-              {hasClock && (
-                <Clock
-                  color={orientation === "black" ? "white" : "black"}
-                  turn={turn}
-                  whiteTime={whiteTime}
-                  blackTime={blackTime}
-                />
-              )}
-              <ShowMaterial
-                diff={materialDiff.diff}
-                pieces={materialDiff.pieces}
-                color={orientation === "white" ? "black" : "white"}
+    <Box w="100%" h="100%">
+      <Box
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          height: "100%",
+          gap: "0.5rem",
+          flexWrap: "nowrap",
+          overflow: "hidden",
+          // Let the board use available space - responsive sizing is handled by the container
+          maxWidth: "100%",
+          maxHeight: "100%",
+        }}
+      >
+        {materialDiff && (
+          <Group ml="2.5rem" h="2.125rem">
+            {hasClock && (
+              <Clock
+                color={orientation === "black" ? "white" : "black"}
+                turn={turn}
+                whiteTime={whiteTime}
+                blackTime={blackTime}
               />
-            </Group>
+            )}
+            <ShowMaterial
+              diff={materialDiff.diff}
+              pieces={materialDiff.pieces}
+              color={orientation === "white" ? "black" : "white"}
+            />
+          </Group>
+        )}
+        <Group
+          style={{
+            position: "relative",
+            flexWrap: "nowrap",
+          }}
+          gap="sm"
+        >
+          {currentNode.annotations.length > 0 && currentNode.move && square !== undefined && (
+            <Box pl="2.5rem" w="100%" h="100%" pos="absolute">
+              <Box pos="relative" w="100%" h="100%">
+                <AnnotationHint orientation={orientation} square={square} annotation={currentNode.annotations[0]} />
+              </Box>
+            </Box>
           )}
-          <Group
+          <Box
+            h="100%"
             style={{
-              position: "relative",
-              flexWrap: "nowrap",
+              width: 25,
             }}
-            gap="sm"
           >
-            {currentNode.annotations.length > 0 && currentNode.move && square !== undefined && (
-              <Box pl="2.5rem" w="100%" h="100%" pos="absolute">
-                <Box pos="relative" w="100%" h="100%">
-                  <AnnotationHint orientation={orientation} square={square} annotation={currentNode.annotations[0]} />
-                </Box>
+            {!evalOpen && (
+              <Center h="100%" w="100%">
+                <ActionIcon size="1rem" onClick={() => setEvalOpen(true)}>
+                  <IconChevronRight />
+                </ActionIcon>
+              </Center>
+            )}
+            {evalOpen && (
+              <Box onClick={() => setEvalOpen(false)} h="100%">
+                <EvalBar score={currentNode.score?.value || null} orientation={orientation} />
               </Box>
             )}
-            <Box
-              h="100%"
-              style={{
-                width: 25,
-              }}
-            >
-              {!evalOpen && (
-                <Center h="100%" w="100%">
-                  <ActionIcon size="1rem" onClick={() => setEvalOpen(true)}>
-                    <IconChevronRight />
-                  </ActionIcon>
-                </Center>
-              )}
-              {evalOpen && (
-                <Box onClick={() => setEvalOpen(false)} h="100%">
-                  <EvalBar score={currentNode.score?.value || null} orientation={orientation} />
-                </Box>
-              )}
-            </Box>
-            <Box
-              style={
-                isBasicAnnotation(currentNode.annotations[0])
-                  ? {
-                      "--light-color": lightColor,
-                      "--dark-color": darkColor,
-                    }
-                  : undefined
-              }
-              className={`${chessboard} ${isBlindfold ? blindfold : ""}`}
-              ref={boardRef}
-              onClick={() => {
-                (eraseDrawablesOnClick ?? storeEraseDrawablesOnClick) && (clearShapes ?? storeClearShapes)();
-              }}
-              onWheel={(e) => {
-                if (enableBoardScroll) {
-                  if (e.deltaY > 0) {
-                    goToNext();
-                  } else {
-                    goToPrevious();
+          </Box>
+          <Box
+            style={
+              isBasicAnnotation(currentNode.annotations[0])
+                ? {
+                    "--light-color": lightColor,
+                    "--dark-color": darkColor,
                   }
+                : undefined
+            }
+            className={`${chessboard} ${isBlindfold ? blindfold : ""}`}
+            ref={boardRef}
+            onClick={() => {
+              (eraseDrawablesOnClick ?? storeEraseDrawablesOnClick) && (clearShapes ?? storeClearShapes)();
+            }}
+            onWheel={(e) => {
+              if (enableBoardScroll) {
+                if (e.deltaY > 0) {
+                  goToNext();
+                } else {
+                  goToPrevious();
+                }
+              }
+            }}
+          >
+            <PromotionModal
+              pendingMove={pendingMove}
+              cancelMove={() => setPendingMove(null)}
+              confirmMove={(p) => {
+                if (pendingMove) {
+                  makeMove({
+                    from: pendingMove.from,
+                    to: pendingMove.to,
+                    promotion: p,
+                  });
                 }
               }}
-            >
-              <PromotionModal
-                pendingMove={pendingMove}
-                cancelMove={() => setPendingMove(null)}
-                confirmMove={(p) => {
-                  if (pendingMove) {
-                    makeMove({
-                      from: pendingMove.from,
-                      to: pendingMove.to,
-                      promotion: p,
-                    });
-                  }
-                }}
-                turn={turn}
-                orientation={orientation}
-              />
+              turn={turn}
+              orientation={orientation}
+            />
 
-              <Chessground
-                selectedPiece={selectedPiece}
-                setSelectedPiece={setSelectedPiece}
-                setBoardFen={setBoardFen}
-                orientation={orientation}
-                fen={currentNode.fen}
-                animation={{ enabled: !editingMode }}
-                coordinates={showCoordinates}
-                movable={{
-                  free: editingMode,
-                  color: movableColor,
-                  dests:
-                    editingMode || viewOnly
+            <Chessground
+              selectedPiece={selectedPiece}
+              setSelectedPiece={setSelectedPiece}
+              setBoardFen={setBoardFen}
+              orientation={orientation}
+              fen={currentNode.fen}
+              animation={{ enabled: !editingMode }}
+              coordinates={showCoordinates}
+              movable={{
+                free: editingMode,
+                color: movableColor,
+                dests:
+                  editingMode || viewOnly
+                    ? undefined
+                    : disableVariations && currentNode.children.length > 0
                       ? undefined
-                      : disableVariations && currentNode.children.length > 0
-                        ? undefined
-                        : dests,
-                  showDests,
-                  events: {
-                    after(orig, dest, metadata) {
-                      if (!editingMode) {
-                        const from = parseSquare(orig)!;
-                        const to = parseSquare(dest)!;
+                      : dests,
+                showDests,
+                events: {
+                  after(orig, dest, metadata) {
+                    if (!editingMode) {
+                      const from = parseSquare(orig)!;
+                      const to = parseSquare(dest)!;
 
-                        if (pos) {
-                          if (
-                            pos.board.get(from)?.role === "pawn" &&
-                            ((dest[1] === "8" && turn === "white") || (dest[1] === "1" && turn === "black"))
-                          ) {
-                            if (autoPromote && !metadata.ctrlKey) {
-                              makeMove({
-                                from,
-                                to,
-                                promotion: "queen",
-                              });
-                            } else {
-                              setPendingMove({
-                                from,
-                                to,
-                              });
-                            }
-                          } else {
+                      if (pos) {
+                        if (
+                          pos.board.get(from)?.role === "pawn" &&
+                          ((dest[1] === "8" && turn === "white") || (dest[1] === "1" && turn === "black"))
+                        ) {
+                          if (autoPromote && !metadata.ctrlKey) {
                             makeMove({
+                              from,
+                              to,
+                              promotion: "queen",
+                            });
+                          } else {
+                            setPendingMove({
                               from,
                               to,
                             });
                           }
+                        } else {
+                          makeMove({
+                            from,
+                            to,
+                          });
                         }
                       }
-                    },
+                    }
                   },
-                }}
-                turnColor={turn}
-                check={pos?.isCheck()}
-                lastMove={editingMode ? undefined : lastMove}
-                premovable={{
-                  enabled: false,
-                }}
-                // Leverage Chessground's built-in touch optimization
-                draggable={{
-                  enabled: !viewPawnStructure && !layout.chessBoard.touchOptimized,
-                  deleteOnDropOff: editingMode,
-                }}
-                selectable={{
-                  enabled: layout.chessBoard.touchOptimized,
-                }}
-                drawable={{
-                  enabled: true,
-                  visible: true,
-                  defaultSnapToValidMove: snapArrows,
-                  autoShapes: shapes,
-                  onChange: (shapes) => {
-                    setShapes(shapes);
-                  },
-                }}
-              />
-            </Box>
-          </Group>
-          <Group justify="space-between" h="2.125rem">
-            {materialDiff && (
-              <Group ml="2.5rem">
-                {hasClock && <Clock color={orientation} turn={turn} whiteTime={whiteTime} blackTime={blackTime} />}
-                <ShowMaterial diff={materialDiff.diff} pieces={materialDiff.pieces} color={orientation} />
-              </Group>
-            )}
+                },
+              }}
+              turnColor={turn}
+              check={pos?.isCheck()}
+              lastMove={editingMode ? undefined : lastMove}
+              premovable={{
+                enabled: false,
+              }}
+              // Leverage Chessground's built-in touch optimization
+              draggable={{
+                enabled: !viewPawnStructure && !layout.chessBoard.touchOptimized,
+                deleteOnDropOff: editingMode,
+              }}
+              selectable={{
+                enabled: layout.chessBoard.touchOptimized,
+              }}
+              drawable={{
+                enabled: true,
+                visible: true,
+                defaultSnapToValidMove: snapArrows,
+                autoShapes: shapes,
+                onChange: (shapes) => {
+                  setShapes(shapes);
+                },
+              }}
+            />
+          </Box>
+        </Group>
+        <Group justify="space-between" h="2.125rem">
+          {materialDiff && (
+            <Group ml="2.5rem">
+              {hasClock && <Clock color={orientation} turn={turn} whiteTime={whiteTime} blackTime={blackTime} />}
+              <ShowMaterial diff={materialDiff.diff} pieces={materialDiff.pieces} color={orientation} />
+            </Group>
+          )}
 
-            {error && (
-              <Text ta="center" c="red">
-                {t(chessopsError(error))}
-              </Text>
-            )}
+          {error && (
+            <Text ta="center" c="red">
+              {t(chessopsError(error))}
+            </Text>
+          )}
 
-            {moveInput && <MoveInput currentNode={currentNode} />}
+          {moveInput && <MoveInput currentNode={currentNode} />}
 
-            {layout.chessBoard.layoutType !== "mobile" && (
-              <BoardControlsMenu
-                viewPawnStructure={viewPawnStructure ?? localViewPawnStructure}
-                setViewPawnStructure={setViewPawnStructure ?? setLocalViewPawnStructure}
-                takeSnapshot={takeSnapshot ?? localTakeSnapshot}
-                canTakeBack={canTakeBack}
-                deleteMove={deleteMove ?? storeDeleteMove}
-                changeTabType={changeTabType ?? localChangeTabType}
-                currentTabType={currentTabType}
-                eraseDrawablesOnClick={eraseDrawablesOnClick ?? storeEraseDrawablesOnClick}
-                clearShapes={clearShapes ?? storeClearShapes}
-                disableVariations={disableVariations}
-                editingMode={editingMode}
-                toggleEditingMode={toggleEditingMode}
-                saveFile={saveFile}
-                reload={reload}
-                addGame={addGame}
-                toggleOrientation={toggleOrientation ?? localToggleOrientation}
-                currentTabSourceType={currentTabSourceType}
-                count={currentTabType === "play" ? 3 : 6}
-              />
-            )}
-          </Group>
-
-          {/* MoveControls with board controls menu */}
-          {layout.chessBoard.layoutType === "mobile" && (
-            <MoveControls
+          {layout.chessBoard.layoutType !== "mobile" && (
+            <BoardControlsMenu
               viewPawnStructure={viewPawnStructure ?? localViewPawnStructure}
               setViewPawnStructure={setViewPawnStructure ?? setLocalViewPawnStructure}
               takeSnapshot={takeSnapshot ?? localTakeSnapshot}
@@ -646,21 +640,45 @@ function Board({
               editingMode={editingMode}
               toggleEditingMode={toggleEditingMode}
               saveFile={saveFile}
-              dirty={dirty}
-              autoSave={false} // Board component doesn't have autoSave context
               reload={reload}
               addGame={addGame}
               toggleOrientation={toggleOrientation ?? localToggleOrientation}
               currentTabSourceType={currentTabSourceType}
-              // Start Game props
-              startGame={startGame}
-              gameState={gameState}
-              startGameDisabled={startGameDisabled}
+              count={currentTabType === "play" ? 3 : 6}
             />
           )}
-        </Box>
+        </Group>
+
+        {/* MoveControls with board controls menu */}
+        {layout.chessBoard.layoutType === "mobile" && (
+          <MoveControls
+            viewPawnStructure={viewPawnStructure ?? localViewPawnStructure}
+            setViewPawnStructure={setViewPawnStructure ?? setLocalViewPawnStructure}
+            takeSnapshot={takeSnapshot ?? localTakeSnapshot}
+            canTakeBack={canTakeBack}
+            deleteMove={deleteMove ?? storeDeleteMove}
+            changeTabType={changeTabType ?? localChangeTabType}
+            currentTabType={currentTabType}
+            eraseDrawablesOnClick={eraseDrawablesOnClick ?? storeEraseDrawablesOnClick}
+            clearShapes={clearShapes ?? storeClearShapes}
+            disableVariations={disableVariations}
+            editingMode={editingMode}
+            toggleEditingMode={toggleEditingMode}
+            saveFile={saveFile}
+            dirty={dirty}
+            autoSave={false} // Board component doesn't have autoSave context
+            reload={reload}
+            addGame={addGame}
+            toggleOrientation={toggleOrientation ?? localToggleOrientation}
+            currentTabSourceType={currentTabSourceType}
+            // Start Game props
+            startGame={startGame}
+            gameState={gameState}
+            startGameDisabled={startGameDisabled}
+          />
+        )}
       </Box>
-    </>
+    </Box>
   );
 }
 

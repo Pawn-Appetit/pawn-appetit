@@ -548,7 +548,7 @@ function RootLayout() {
     };
 
     applyMenu();
-  }, [menu, , layout.menuBar.mode]);
+  }, [menu, layout.menuBar.mode]);
 
   return (
     <ModalsProvider modals={{ importModal: ImportModal, aboutModal: AboutModal }}>
@@ -558,7 +558,6 @@ function RootLayout() {
           main: {
             height: "100vh",
             userSelect: "none",
-            overflow: "hidden",
           },
         }}
       >
