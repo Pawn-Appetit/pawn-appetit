@@ -1,5 +1,82 @@
 # Pawn Appétit
 
+## v0.7.0
+
+### ✨ Features
+
+* **Puzzles**
+
+  * Added option to **install puzzle database from a local file**
+
+* **Version Management**
+
+  * Added **version checking and update notification system**
+
+* **Android**
+
+  * Initial **Android project setup** – thanks [dotneB](https://github.com/dotneB) 🎉
+
+### 🛠 Improvements & Refactors
+
+* **App & Hooks**
+
+  * Refactored app with **custom hooks** for better error handling, performance, and code organization
+
+* **Board**
+
+  * Moved **start game button** from `BoardGame` to `MoveControls`
+  * Relocated **board-related components** from `shared` to `feature`
+  * Improved **board actions logic**
+  * Consolidated **engine management logic** into `chess` module
+
+* **Databases**
+
+  * Improved **`DatabasesPage` layout** structure and readability
+
+* **Components**
+
+  * Updated import paths to **absolute imports** for `LessonContent` and `PracticeContent`
+  * Restructured to a **top-level folder organization**
+
+* **Issue Templates**
+
+  * Updated templates for **clarity** and removed unused ones
+
+### 🐛 Fixes
+
+* **Board**
+
+  * Disabled **game notation under board** on desktop – thanks [dotneB](https://github.com/dotneB) 🎉
+  * Constrained **mosaic pane resizing options**
+  * Restored **show arrows option** – thanks [gm-m](https://github.com/gm-m) 🎉
+  * Updated **games map navigation** when using keyboard shortcuts
+  * Fixed **untitled games** – thanks [gm-m](https://github.com/gm-m) 🎉
+
+* **Database**
+
+  * Fixed **close button not working** in mobile layout – thanks [dotneB](https://github.com/dotneB) 🎉
+
+* **ImportModal**
+
+  * Corrected **document directory path**
+  * Set **minimum height** for empty file list
+  * Updated **`takeBack` translation**
+
+* **Version Check**
+
+  * Prevented **multiple auto-check initiations**
+
+* **Internationalization (i18n)**
+
+  * Updated **translation keys** for checkboxes, annotations, and annotation info
+  * Added **missing translation keys**
+  * Unified **namespaces for annotations**
+
+### 🧹 Chores
+
+* Updated repository references from **ChessKitchen → Pawn-Appetit**
+* Updated dependencies
+
 ## v0.6.4
 
 ### ✨ Features
@@ -173,7 +250,7 @@
   * Added **Arabic translation** and initial support for **RTL layout**
   * Added a **setting to change date display** (international or locale) - thanks [dotneB](https://github.com/dotneB) 🎉
 
-* **Puzzles**  - thanks [dotneB](https://github.com/dotneB) 🎉
+* **Puzzles** - thanks [dotneB](https://github.com/dotneB) 🎉
 
   * Reorganized **puzzle UI** and improved **Adaptive mode**
   * Integrated **progressive puzzle mode** with simplified ELO math
