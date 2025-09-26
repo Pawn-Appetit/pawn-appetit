@@ -3,7 +3,7 @@ import { IconPlus, IconX, IconZoomCheck } from "@tabler/icons-react";
 import { Chess, parseUci } from "chessops";
 import { parseFen } from "chessops/fen";
 import { useAtom, useSetAtom } from "jotai";
-import { useContext, useId, useState } from "react";
+import { useContext, useId } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/TreeStateContext";
@@ -22,6 +22,9 @@ interface PuzzleControlsProps {
   jumpToNext: "off" | "success" | "success-and-failure";
   onJumpToNextChange: (value: "off" | "success" | "success-and-failure") => void;
   turnToMove: "white" | "black" | null;
+  showingSolution: boolean;
+  updateShowingSolution: (isShowing: boolean) => void;
+  isShowingSolutionRef: React.RefObject<boolean>;
 }
 
 export const PuzzleControls = ({
@@ -34,6 +37,9 @@ export const PuzzleControls = ({
   jumpToNext,
   onJumpToNextChange,
   turnToMove,
+  showingSolution,
+  updateShowingSolution,
+  isShowingSolutionRef,
 }: PuzzleControlsProps) => {
   const { t } = useTranslation();
   const jumpToNextId = useId();
@@ -44,8 +50,6 @@ export const PuzzleControls = ({
 
   const [, setTabs] = useAtom(tabsAtom);
   const setActiveTab = useSetAtom(activeTabAtom);
-
-  const [showingSolution, setShowingSolution] = useState(false);
 
   const handleAnalyzePosition = () => {
     if (!currentPuzzle) return;
@@ -71,10 +75,12 @@ export const PuzzleControls = ({
     if (!currentPuzzle) return;
     changeCompletion("incorrect");
 
-    setShowingSolution(true);
+    updateShowingSolution(true);
     goToStart();
 
     for (let i = 0; i < currentPuzzle.moves.length; i++) {
+      if (!isShowingSolutionRef.current) break;
+
       makeMove({
         payload: parseUci(currentPuzzle.moves[i])!,
         mainline: true,
@@ -82,7 +88,12 @@ export const PuzzleControls = ({
       await new Promise((r) => setTimeout(r, 500));
     }
 
-    setShowingSolution(false);
+    updateShowingSolution(false);
+  };
+
+  const handleGeneratePuzzle = () => {
+    updateShowingSolution(false);
+    onGeneratePuzzle();
   };
 
   const handleClearSession = () => {
@@ -110,7 +121,7 @@ export const PuzzleControls = ({
           </Group>
 
           <Tooltip label={t("features.puzzle.newPuzzle")}>
-            <ActionIcon disabled={!selectedDb} onClick={onGeneratePuzzle}>
+            <ActionIcon disabled={!selectedDb} onClick={handleGeneratePuzzle}>
               <IconPlus />
             </ActionIcon>
           </Tooltip>

@@ -1,7 +1,7 @@
 import { Divider, Paper, Portal, ScrollArea, Stack } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtom } from "jotai";
-import { useContext } from "react";
+import { useContext, useRef, useState } from "react";
 import { useStore } from "zustand";
 import ChallengeHistory from "@/components/ChallengeHistory";
 import GameNotation from "@/components/GameNotation";
@@ -52,6 +52,14 @@ function Puzzles({ id }: { id: string }) {
   const [inOrder, setInOrder] = useAtom(inOrderPuzzlesAtom);
   const [jumpToNext, setJumpToNext] = useAtom(jumpToNextPuzzleAtom);
   const [playerRating] = useAtom(puzzlePlayerRatingAtom);
+
+  const [showingSolution, setShowingSolution] = useState(false);
+  const isShowingSolutionRef = useRef<boolean>(false);
+
+  const updateShowingSolution = (isShowing: boolean) => {
+    setShowingSolution(isShowing);
+    isShowingSolutionRef.current = isShowing;
+  };
 
   // Computed values
   const currentPuzzleData = puzzles?.[currentPuzzle];
@@ -124,6 +132,11 @@ function Puzzles({ id }: { id: string }) {
     reset();
   };
 
+  const handleSelectPuzzle = (index: number) => {
+    updateShowingSolution(false);
+    selectPuzzle(index);
+  };
+
   const handleDatabaseChange = (value: string | null) => {
     PUZZLE_DEBUG_LOGS && logger.debug("Database changed:", value);
 
@@ -181,6 +194,9 @@ function Puzzles({ id }: { id: string }) {
             jumpToNext={jumpToNext}
             onJumpToNextChange={setJumpToNext}
             turnToMove={turnToMove}
+            showingSolution={showingSolution}
+            updateShowingSolution={updateShowingSolution}
+            isShowingSolutionRef={isShowingSolutionRef}
           />
           <Divider my="sm" />
 
@@ -198,7 +214,7 @@ function Puzzles({ id }: { id: string }) {
                   label: p.rating.toString(),
                 }))}
                 current={currentPuzzle}
-                select={selectPuzzle}
+                select={handleSelectPuzzle}
               />
             </ScrollArea>
           </Paper>
