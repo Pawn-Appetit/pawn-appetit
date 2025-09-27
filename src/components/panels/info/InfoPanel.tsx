@@ -90,86 +90,91 @@ function GameSelectorAccordion({
   const { documentDir } = useLoaderData({ from: "/boards" });
   const keyMap = useAtomValue(keyMapAtom);
 
-  if (currentTab?.source?.type === "file") {
-    const gameNumber = currentTab.gameNumber || 0;
-    const currentName = games.get(gameNumber) || "Untitled";
+  const gameNumber = currentTab?.gameNumber || 0;
 
-    async function setPage(page: number, forced?: boolean) {
-      if (!forced && dirty) {
-        setTempPage(page);
-        modals.openConfirmModal({
-          title: t("common.unsavedChanges.title"),
-          withCloseButton: false,
-          children: <Text>{t("common.unsavedChanges.desc")}</Text>,
-          labels: { confirm: t("common.saveAndClose"), cancel: t("common.unsavedChanges.closeWithoutSaving") },
-          onConfirm: async () => {
+  async function setPage(page: number, forced?: boolean) {
+    if (currentTab?.source?.type !== "file") return;
+
+    if (!forced && dirty) {
+      setTempPage(page);
+      modals.openConfirmModal({
+        title: t("common.unsavedChanges.title"),
+        withCloseButton: false,
+        children: <Text>{t("common.unsavedChanges.desc")}</Text>,
+        labels: { confirm: t("common.saveAndClose"), cancel: t("common.unsavedChanges.closeWithoutSaving") },
+        onConfirm: async () => {
+          if (currentTab) {
             saveToFile({
               dir: documentDir,
               setCurrentTab,
               tab: currentTab,
               store,
             });
-            setPage(tempPage, true);
-          },
-          onCancel: () => {
-            setPage(tempPage, true);
-          },
-        });
-        return;
-      }
-
-      if (currentTab?.source?.type === "file") {
-        const data = unwrap(await commands.readGames(currentTab.source.path, page, page));
-        const tree = await parsePGN(data[0]);
-        setState(tree);
-
-        const gameName = getGameName(tree.headers);
-        setGames((prev) => {
-          const newGames = new Map(prev);
-          newGames.set(page, gameName);
-          return newGames;
-        });
-
-        setCurrentTab((prev) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            gameNumber: page,
-          };
-        });
-
-        setMissingMoves((prev) => ({
-          ...prev,
-          [currentTab?.value]: null,
-        }));
-      }
-    }
-
-    async function deleteGame(index: number) {
-      if (currentTab?.source?.type === "file") {
-        await commands.deleteGame(currentTab.source.path, index);
-        setCurrentTab((prev) => {
-          if (prev?.source?.type === "file") {
-            prev.source.numGames -= 1;
           }
-
-          return { ...prev };
-        });
-        setGames(new Map());
-      }
-    }
-
-    useHotkeys([
-      [
-        keyMap.NEXT_GAME.keys,
-        () => {
-          if (currentTab.source?.type === "file") {
-            setPage(Math.min(gameNumber + 1, currentTab.source.numGames - 1));
-          }
+          setPage(tempPage, true);
         },
-      ],
-      [keyMap.PREVIOUS_GAME.keys, () => setPage(Math.max(0, gameNumber - 1))],
-    ]);
+        onCancel: () => {
+          setPage(tempPage, true);
+        },
+      });
+      return;
+    }
+
+    if (currentTab?.source?.type === "file") {
+      const data = unwrap(await commands.readGames(currentTab.source.path, page, page));
+      const tree = await parsePGN(data[0]);
+      setState(tree);
+
+      const gameName = getGameName(tree.headers);
+      setGames((prev) => {
+        const newGames = new Map(prev);
+        newGames.set(page, gameName);
+        return newGames;
+      });
+
+      setCurrentTab((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          gameNumber: page,
+        };
+      });
+
+      setMissingMoves((prev) => ({
+        ...prev,
+        [currentTab?.value]: null,
+      }));
+    }
+  }
+
+  async function deleteGame(index: number) {
+    if (currentTab?.source?.type === "file") {
+      await commands.deleteGame(currentTab.source.path, index);
+      setCurrentTab((prev) => {
+        if (prev?.source?.type === "file") {
+          prev.source.numGames -= 1;
+        }
+
+        return { ...prev };
+      });
+      setGames(new Map());
+    }
+  }
+
+  useHotkeys([
+    [
+      keyMap.NEXT_GAME.keys,
+      () => {
+        if (currentTab?.source?.type === "file") {
+          setPage(Math.min(gameNumber + 1, currentTab.source.numGames - 1));
+        }
+      },
+    ],
+    [keyMap.PREVIOUS_GAME.keys, () => setPage(Math.max(0, gameNumber - 1))],
+  ]);
+
+  if (currentTab?.source?.type === "file") {
+    const currentName = games.get(gameNumber) || "Untitled";
 
     return (
       <Accordion>
