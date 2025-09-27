@@ -11,6 +11,7 @@ export const card = style({
 
   [vars.lightSelector]: {
     backgroundColor: vars.colors.white,
+      borderColor: vars.colors.gray[1],
   },
   [vars.darkSelector]: {
     backgroundColor: vars.colors.dark[6],
@@ -18,7 +19,7 @@ export const card = style({
   ":hover": {
     [vars.lightSelector]: {
       backgroundColor: vars.colors.gray[0],
-      borderColor: vars.colors.gray[6],
+      borderColor: vars.colors.gray[3],
     },
     [vars.darkSelector]: {
       backgroundColor: vars.colors.dark[6],
