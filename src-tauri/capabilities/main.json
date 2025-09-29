@@ -3,7 +3,8 @@
     "identifier": "main-capability",
     "description": "Capability for the main window",
     "windows": [
-        "main"
+        "main",
+        "splashscreen"
     ],
     "permissions": [
         "core:window:default",
@@ -14,6 +15,9 @@
         "core:window:allow-unmaximize",
         "core:window:allow-unminimize",
         "core:window:allow-close",
+        "core:event:default",
+        "core:event:allow-listen",
+        "core:event:allow-emit",
         "shell:default",
         "dialog:default",
         "os:default",
