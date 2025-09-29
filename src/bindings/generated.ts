@@ -384,6 +384,10 @@ async updateGame(file: string, gameId: number, update: UpdateGame) : Promise<Res
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Search for chess positions in the database
+ * Returns position statistics and matching games
+ */
 async searchPosition(file: string, query: GameQueryJs, tabId: string) : Promise<Result<[PositionStats[], NormalizedGame[]], string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("search_position", { file, query, tabId }) };

@@ -8,7 +8,7 @@ mod pgn;
 
 use crate::{
     db::{
-        encoding::{decode_move},
+        encoding::{extract_main_line_moves},
         models::*,
         ops::*,
         schema::*,
@@ -1047,16 +1047,22 @@ pub async fn get_players_game_info(
 
                 let mut setups = vec![];
                 let mut chess = Chess::default();
-                for (i, byte) in moves.iter().enumerate() {
+                
+                // Extract main line moves from the extended format
+                let main_moves = match extract_main_line_moves(moves, Some(chess.clone())) {
+                    Ok(moves) => moves,
+                    Err(_) => {
+                        // If extraction fails, skip this game
+                        return None;
+                    }
+                };
+                
+                for (i, m) in main_moves.iter().enumerate() {
                     if i > 54 {
                         // max length of opening in data
                         break;
                     }
-                    let m = match decode_move(*byte, &chess) {
-                        Some(m) => m,
-                        None => break, // Stop processing moves if decoding fails
-                    };
-                    chess.play_unchecked(&m);
+                    chess.play_unchecked(m);
                     setups.push(chess.clone().into_setup(EnPassantMode::Legal));
                 }
 

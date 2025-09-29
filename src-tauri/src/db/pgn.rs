@@ -51,6 +51,11 @@ impl GameTree {
             })
             .sum()
     }
+
+    /// Get access to the inner nodes of the game tree
+    pub fn nodes(&self) -> &Vec<GameTreeNode> {
+        &self.0
+    }
  
     pub fn encode(&self, bytes: &mut Vec<u8>, position: Option<Chess>) {
         let mut cur_position = position.unwrap_or_default();
