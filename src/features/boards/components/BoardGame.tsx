@@ -733,7 +733,17 @@ function BoardGame() {
                       <Checkbox
                         label="Same time control"
                         checked={sameTimeControl}
-                        onChange={(e) => setSameTimeControl(e.target.checked)}
+                        onChange={(e) => {
+                          const isChecked = e.target.checked;
+                          setSameTimeControl(isChecked);
+                          
+                          if (isChecked) {
+                            setPlayer2Settings((prev) => ({
+                              ...prev,
+                              timeControl: player1Settings.timeControl,
+                            }));
+                          }
+                        }}
                       />
                     </Group>
                   </Stack>
