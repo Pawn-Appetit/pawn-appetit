@@ -10,6 +10,7 @@ import {
   FileInput,
   Group,
   JsonInput,
+  Loader,
   Modal,
   NumberInput,
   Paper,
@@ -23,13 +24,13 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { useToggle } from "@mantine/hooks";
+import { useDebouncedValue, useToggle } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import { IconArrowsSort, IconCloud, IconCpu, IconPhotoPlus, IconPlus, IconSearch } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAtom } from "jotai";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWRImmutable from "swr/immutable";
 import { commands, type UciOptionConfig } from "@/bindings";
@@ -45,6 +46,71 @@ import { enginesAtom } from "@/state/atoms";
 import { type Engine, engineSchema, type LocalEngine, requiredEngineSettings } from "@/utils/engines";
 import AddEngine from "./components/AddEngine";
 
+const createEngineSearchText = (engine: Engine): string => {
+  const parts = [
+    engine.name,
+    engine.type === "local" ? engine.path : engine.url,
+    engine.type === "local" ? (engine.version ?? "") : ""
+  ];
+  return parts.join(" ").toLowerCase();
+};
+
+const sortEnginesByName = (a: Engine, b: Engine): number => 
+  a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+
+const sortEnginesByElo = (a: Engine, b: Engine): number => {
+  const eloA = a.type === "local" ? (a.elo ?? -1) : -1;
+  const eloB = b.type === "local" ? (b.elo ?? -1) : -1;
+  return eloB - eloA;
+};
+
+const useEngineFiltering = (engines: Engine[], query: string, sortBy: "name" | "elo") => {
+  return useMemo<number[]>(() => {
+    const startTime = performance.now();
+    const trimmedQuery = query.trim();
+    
+    if (!trimmedQuery) {
+      const result = engines
+        .map((_, i) => i)
+        .sort((a, b) => {
+          const ea = engines[a];
+          const eb = engines[b];
+          return sortBy === "name" ? sortEnginesByName(ea, eb) : sortEnginesByElo(ea, eb);
+        });
+      
+      const endTime = performance.now();
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Engine filtering (sort only) took: ${(endTime - startTime).toFixed(2)}ms`);
+      }
+      return result;
+    }
+    
+    const queryLower = trimmedQuery.toLowerCase();
+    
+    const searchableEngines = engines.map((e, i) => ({
+      index: i,
+      searchText: createEngineSearchText(e)
+    }));
+    
+    const filteredIndices = searchableEngines
+      .filter(({ searchText }) => searchText.includes(queryLower))
+      .map(({ index }) => index);
+    
+    const result = filteredIndices.sort((a, b) => {
+      const ea = engines[a];
+      const eb = engines[b];
+      return sortBy === "name" ? sortEnginesByName(ea, eb) : sortEnginesByElo(ea, eb);
+    });
+    
+    const endTime = performance.now();
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Engine filtering took: ${(endTime - startTime).toFixed(2)}ms for ${engines.length} engines`);
+    }
+    
+    return result;
+  }, [engines, query, sortBy]);
+};
+
 export default function EnginesPage() {
   const { t } = useTranslation();
   const { layout } = useResponsiveLayout();
@@ -52,11 +118,12 @@ export default function EnginesPage() {
   const [engines, setEngines] = useAtom(enginesAtom);
   const [opened, setOpened] = useState(false);
   const [query, setQuery] = useState("");
+  const [debouncedQuery] = useDebouncedValue(query, 300);
   const [sortBy, setSortBy] = useState<"name" | "elo">("name");
+  
   const { selected } = Route.useSearch();
   const navigate = useNavigate();
 
-  // Calculate responsive values based on layout flags
   const isMobile = layout.engines.layoutType === "mobile";
   const gridCols = isMobile ? 1 : { base: 1, md: 2 };
   const setSelected = (v: number | null) => {
@@ -66,26 +133,7 @@ export default function EnginesPage() {
 
   const selectedEngine = selected !== undefined ? engines[selected] : null;
 
-  const filteredIndices = useMemo<number[]>(() => {
-    const indices = engines
-      .map((_, i) => i)
-      .filter((i) => {
-        const e = engines[i];
-        if (!query.trim()) return true;
-        const q = query.toLowerCase();
-        const extra = e.type === "local" ? (e.version ?? "") : "";
-        const hay = [e.name, e.type === "local" ? e.path : e.url, extra].join(" ").toLowerCase();
-        return hay.includes(q);
-      });
-    return indices.sort((a, b) => {
-      const ea = engines[a];
-      const eb = engines[b];
-      if (sortBy === "name") return ea.name.toLowerCase().localeCompare(eb.name.toLowerCase());
-      const eloA = ea.type === "local" ? (ea.elo ?? -1) : -1;
-      const eloB = eb.type === "local" ? (eb.elo ?? -1) : -1;
-      return eloB - eloA;
-    });
-  }, [engines, query, sortBy]);
+  const filteredIndices = useEngineFiltering(engines, debouncedQuery, sortBy);
 
   return (
     <Stack h="100%">
@@ -178,9 +226,13 @@ export default function EnginesPage() {
                 value={selectedEngine.name}
                 onChange={(e) => {
                   setEngines(async (prev) => {
-                    const copy = [...(await prev)];
-                    copy[selected].name = e.currentTarget.value;
-                    return copy;
+                    const engines = await prev;
+                    const updatedEngines = [...engines];
+                    updatedEngines[selected] = {
+                      ...updatedEngines[selected],
+                      name: e.currentTarget.value
+                    };
+                    return updatedEngines;
                   });
                 }}
               />
@@ -191,9 +243,13 @@ export default function EnginesPage() {
                 onChange={(e) => {
                   const checked = e.currentTarget.checked;
                   setEngines(async (prev) => {
-                    const copy = [...(await prev)];
-                    copy[selected].loaded = checked;
-                    return copy;
+                    const engines = await prev;
+                    const updatedEngines = [...engines];
+                    updatedEngines[selected] = {
+                      ...updatedEngines[selected],
+                      loaded: checked
+                    };
+                    return updatedEngines;
                   });
                 }}
               />
@@ -258,22 +314,40 @@ function EngineSettings({
   const [engines, setEngines] = useAtom(enginesAtom);
   const engine = engines[selected] as LocalEngine;
   const [options, setOptions] = useState<{ name: string; options: UciOptionConfig[] } | null>(null);
+  const [isLoadingConfig, setIsLoadingConfig] = useState(false);
+  const [configError, setConfigError] = useState<string | null>(null);
   const processedEngineRef = useRef<string | null>(null);
+  const configCacheRef = useRef<Map<string, { name: string; options: UciOptionConfig[] }>>(new Map());
 
   useEffect(() => {
     let cancelled = false;
 
     async function fetchEngineConfig() {
+      const cacheKey = `${engine.path}-${engine.name}`;
+      
+      if (configCacheRef.current.has(cacheKey)) {
+        const cachedConfig = configCacheRef.current.get(cacheKey);
+        if (cachedConfig) {
+          setOptions(cachedConfig);
+          setConfigError(null);
+          return;
+        }
+      }
+
+      setIsLoadingConfig(true);
+      setConfigError(null);
+      
       try {
         const fileExistsResult = await commands.fileExists(engine.path);
         if (cancelled) return;
 
         if (fileExistsResult.status !== "ok") {
-          console.warn(`Engine file does not exist: ${engine.path}`);
-          setOptions({
+          const fallbackConfig = {
             name: engine.name || "Unknown Engine",
             options: [],
-          });
+          };
+          setOptions(fallbackConfig);
+          setConfigError(t("features.engines.settings.fileNotFound"));
           return;
         }
 
@@ -281,21 +355,29 @@ function EngineSettings({
         if (cancelled) return;
 
         if (result.status === "ok") {
+          configCacheRef.current.set(cacheKey, result.data);
           setOptions(result.data);
+          setConfigError(null);
         } else {
-          console.warn(`Failed to get engine config for ${engine.path}: ${result.error}`);
-          setOptions({
+          const fallbackConfig = {
             name: engine.name || "Unknown Engine",
             options: [],
-          });
+          };
+          setOptions(fallbackConfig);
+          setConfigError(result.error);
         }
       } catch (error) {
         if (cancelled) return;
-        console.warn(`Error getting engine config for ${engine.path}:`, error);
-        setOptions({
+        const fallbackConfig = {
           name: engine.name || "Unknown Engine",
           options: [],
-        });
+        };
+        setOptions(fallbackConfig);
+        setConfigError(error instanceof Error ? error.message : String(error));
+      } finally {
+        if (!cancelled) {
+          setIsLoadingConfig(false);
+        }
       }
     }
 
@@ -306,7 +388,7 @@ function EngineSettings({
     return () => {
       cancelled = true;
     };
-  }, [engine.path, engine.name]);
+  }, [engine.path, engine.name, t]);
 
   function setEngine(newEngine: LocalEngine) {
     setEngines(async (prev) => {
@@ -401,32 +483,54 @@ function EngineSettings({
     });
   }
 
-  function setSetting(name: string, value: string | number | boolean | null, def: string | number | boolean | null) {
-    const newSettings = engine.settings || [];
-    const setting = newSettings.find((setting) => setting.name === name);
-    if (setting) {
-      setting.value = value;
-    } else {
-      newSettings.push({ name, value });
-    }
-    if (value !== def || requiredEngineSettings.includes(name)) {
-      setEngine({
-        ...engine,
+  const setSetting = useCallback((name: string, value: string | number | boolean | null, def: string | number | boolean | null) => {
+    setEngines(async (prev) => {
+      const engines = await prev;
+      const currentEngine = engines[selected] as LocalEngine;
+      const currentSettings = currentEngine.settings || [];
+      const existingSettingIndex = currentSettings.findIndex(s => s.name === name);
+      
+      let newSettings: typeof currentSettings;
+      
+      if (existingSettingIndex >= 0) {
+        newSettings = [...currentSettings];
+        newSettings[existingSettingIndex] = { name, value };
+      } else {
+        newSettings = [...currentSettings, { name, value }];
+      }
+      
+      if (value === def && !requiredEngineSettings.includes(name)) {
+        newSettings = newSettings.filter(setting => setting.name !== name);
+      }
+      
+      const updatedEngines = [...engines];
+      updatedEngines[selected] = {
+        ...currentEngine,
         settings: newSettings,
-      });
-    } else {
-      setEngine({
-        ...engine,
-        settings: newSettings.filter((setting) => setting.name !== name),
-      });
-    }
-  }
+      };
+      
+      return updatedEngines;
+    });
+  }, [selected, setEngines]);
 
   const [jsonModal, toggleJSONModal] = useToggle();
 
   return (
     <ScrollArea h="100%" offsetScrollbars>
       <Stack>
+        {isLoadingConfig && (
+          <Center p="md">
+            <Group>
+              <Loader size="sm" />
+              <Text size="sm">{t("common.loading")}...</Text>
+            </Group>
+          </Center>
+        )}
+        {configError && (
+          <Alert icon={<IconCloud />} title={t("common.error")} color="yellow" variant="light">
+            {configError}
+          </Alert>
+        )}
         <Divider variant="dashed" label={t("common.generalSettings")} />
         {isMobile ? (
           <Stack>
@@ -737,7 +841,7 @@ function JSONModal({
   );
 }
 
-function EngineName({ engine, stats }: { engine: Engine; stats?: { label: string; value: string }[] }) {
+const EngineName = memo(function EngineName({ engine, stats }: { engine: Engine; stats?: { label: string; value: string }[] }) {
   const { layout } = useResponsiveLayout();
   const isMobile = layout.engines.layoutType === "mobile";
   const { data: fileExists, isLoading } = useSWRImmutable(
@@ -806,4 +910,4 @@ function EngineName({ engine, stats }: { engine: Engine; stats?: { label: string
       </Stack>
     </Group>
   );
-}
+});
