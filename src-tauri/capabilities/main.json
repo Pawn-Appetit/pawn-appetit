@@ -18,6 +18,8 @@
         "core:event:default",
         "core:event:allow-listen",
         "core:event:allow-emit",
+        "core:path:default",
+        "core:path:allow-resolve-directory",
         "shell:default",
         "dialog:default",
         "os:default",
