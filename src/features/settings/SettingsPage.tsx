@@ -723,7 +723,7 @@ export default function Page() {
       {
         id: "about",
         title: t("settings.about"),
-        description: t("settings.about.desc"),
+        description: t("settings.aboutDesc"),
         tab: "directories",
         component: <AboutModal />,
       },

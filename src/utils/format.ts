@@ -349,7 +349,7 @@ export function hasTranslatedPieceChars(
   const currentLng = lng || i18n.language;
 
   return Object.keys(PIECE_SYMBOLS).some((key) => {
-    const translatedChar = i18n.t(`PieceChars.${key?.toLowerCase()}`, { lng: currentLng });
+    const translatedChar = i18n.t(`chess.pieceChars.${key?.toLowerCase()}`, { lng: currentLng });
     return key.toLowerCase() !== translatedChar.toLowerCase();
   });
 }
