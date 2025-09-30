@@ -23,7 +23,7 @@ pub async fn close_splashscreen(window: Window) -> Result<(), String> {
                 String::from(error_msg)
             })?;
 
-        let splash_window = window.get_webview_window("splash");
+        let splash_window = window.get_webview_window("splashscreen");
 
         log::info!("Showing main window");
 

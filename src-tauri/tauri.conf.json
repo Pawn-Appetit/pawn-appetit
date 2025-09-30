@@ -69,7 +69,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "label": "splash",
+        "label": "splashscreen",
         "title": "Pawn Appétit",
         "url": "splash.html",
         "width": 400,
