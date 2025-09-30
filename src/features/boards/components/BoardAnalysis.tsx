@@ -30,6 +30,7 @@ import ResponsiveBoard from "./ResponsiveBoard";
 function BoardAnalysis() {
   const [editingMode, toggleEditingMode] = useToggle();
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
+  const [viewPawnStructure, setViewPawnStructure] = useState(false);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
   const autoSave = useAtomValue(autoSaveAtom);
   const { documentDir } = useLoaderData({ from: "/boards" });
@@ -168,6 +169,8 @@ function BoardAnalysis() {
               ) : undefined
             }
             // Board controls props
+            viewPawnStructure={viewPawnStructure}
+            setViewPawnStructure={setViewPawnStructure}
             canTakeBack={false} // Analysis mode doesn't support take back
             changeTabType={() => setCurrentTab((prev) => ({ ...prev, type: "play" }))}
             currentTabType="analysis"
@@ -201,6 +204,8 @@ function BoardAnalysis() {
                 ) : undefined
               }
               // Board controls props
+              viewPawnStructure={viewPawnStructure}
+              setViewPawnStructure={setViewPawnStructure}
               canTakeBack={false} // Analysis mode doesn't support take back
               changeTabType={() => setCurrentTab((prev) => ({ ...prev, type: "play" }))}
               currentTabType="analysis"
