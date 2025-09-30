@@ -1,5 +1,26 @@
 # Pawn Appétit
 
+## v0.7.1
+
+### ✨ Features
+* **Search**
+  * Enhanced **chess position search functionality**
+
+### 🐛 Fixes
+* **BoardGame**
+  * Fixed **same time control out of sync** – thanks [gm-m](https://github.com/gm-m) 🎉
+* **InfoPanel**
+  * Fixed **rendered more hooks than during the previous render** – thanks [gm-m](https://github.com/gm-m) 🎉
+* **Cards**
+  * Adjusted **border styling in light theme**
+* **Puzzles**
+  * Stopped **solution playout** on `view`/`new-puzzle` actions – thanks [gm-m](https://github.com/gm-m) 🎉
+* **Main Process**
+  * Added **event permissions** to main capability
+
+### 🧹 Chores
+* Updated dependencies
+
 ## v0.7.0
 
 ### ✨ Features
