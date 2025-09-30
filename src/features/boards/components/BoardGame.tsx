@@ -312,6 +312,7 @@ function BoardGame() {
   const { t } = useTranslation();
 
   const [inputColor, setInputColor] = useState<"white" | "random" | "black">("white");
+  const [viewPawnStructure, setViewPawnStructure] = useState(false);
 
   function cycleColor() {
     setInputColor((prev) =>
@@ -654,6 +655,8 @@ function BoardGame() {
             blackTime={gameState === "playing" ? (blackTime ?? undefined) : undefined}
             topBar={false}
             // Board controls props
+            viewPawnStructure={viewPawnStructure}
+            setViewPawnStructure={setViewPawnStructure}
             changeTabType={changeToAnalysisMode}
             currentTabType="play"
             // Start Game props
@@ -679,6 +682,8 @@ function BoardGame() {
               blackTime={gameState === "playing" ? (blackTime ?? undefined) : undefined}
               topBar={false}
               // Board controls props
+              viewPawnStructure={viewPawnStructure}
+              setViewPawnStructure={setViewPawnStructure}
               changeTabType={changeToAnalysisMode}
               currentTabType="play"
               // Start Game props
