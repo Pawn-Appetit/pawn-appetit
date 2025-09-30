@@ -1,5 +1,6 @@
 import { Box, Stack } from "@mantine/core";
 import { useElementSize } from "@mantine/hooks";
+import type { Piece } from "chessground/types";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { ResponsiveLoadingWrapper } from "@/components/ResponsiveLoadingWrapper";
 import { ResponsiveSkeleton } from "@/components/ResponsiveSkeleton";
@@ -39,6 +40,8 @@ interface ResponsiveBoardProps {
   clearShapes?: () => void;
   toggleOrientation?: () => void;
   currentTabSourceType?: string;
+  selectedPiece?: Piece | null;
+  setSelectedPiece?: (piece: Piece | null) => void;
   // Start Game props
   startGame?: () => void;
   gameState?: "settingUp" | "playing" | "gameOver";
@@ -77,6 +80,8 @@ function ResponsiveBoard({
   clearShapes,
   toggleOrientation,
   currentTabSourceType,
+  selectedPiece,
+  setSelectedPiece,
   // Start Game props
   startGame,
   gameState,
@@ -207,6 +212,8 @@ function ResponsiveBoard({
                 clearShapes={clearShapes}
                 toggleOrientation={toggleOrientation}
                 currentTabSourceType={currentTabSourceType}
+                selectedPiece={selectedPiece}
+                setSelectedPiece={setSelectedPiece}
                 // Start Game props
                 startGame={startGame}
                 gameState={gameState}
@@ -253,6 +260,8 @@ function ResponsiveBoard({
             clearShapes={clearShapes}
             toggleOrientation={toggleOrientation}
             currentTabSourceType={currentTabSourceType}
+            selectedPiece={selectedPiece}
+            setSelectedPiece={setSelectedPiece}
             // Start Game props
             startGame={startGame}
             gameState={gameState}

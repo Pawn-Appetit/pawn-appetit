@@ -20,6 +20,7 @@ import {
 } from "@mantine/core";
 import { IconAlertCircle, IconArrowsExchange, IconCpu, IconPlus, IconUser, IconZoomCheck } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
+import type { Piece } from "chessground/types";
 import { parseUci } from "chessops";
 import { INITIAL_FEN } from "chessops/fen";
 import equal from "fast-deep-equal";
@@ -313,6 +314,7 @@ function BoardGame() {
 
   const [inputColor, setInputColor] = useState<"white" | "random" | "black">("white");
   const [viewPawnStructure, setViewPawnStructure] = useState(false);
+  const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
 
   function cycleColor() {
     setInputColor((prev) =>
@@ -657,6 +659,8 @@ function BoardGame() {
             // Board controls props
             viewPawnStructure={viewPawnStructure}
             setViewPawnStructure={setViewPawnStructure}
+            selectedPiece={selectedPiece}
+            setSelectedPiece={setSelectedPiece}
             changeTabType={changeToAnalysisMode}
             currentTabType="play"
             // Start Game props
@@ -684,6 +688,8 @@ function BoardGame() {
               // Board controls props
               viewPawnStructure={viewPawnStructure}
               setViewPawnStructure={setViewPawnStructure}
+              selectedPiece={selectedPiece}
+              setSelectedPiece={setSelectedPiece}
               changeTabType={changeToAnalysisMode}
               currentTabType="play"
               // Start Game props

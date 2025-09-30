@@ -171,6 +171,8 @@ function BoardAnalysis() {
             // Board controls props
             viewPawnStructure={viewPawnStructure}
             setViewPawnStructure={setViewPawnStructure}
+            selectedPiece={selectedPiece}
+            setSelectedPiece={setSelectedPiece}
             canTakeBack={false} // Analysis mode doesn't support take back
             changeTabType={() => setCurrentTab((prev) => ({ ...prev, type: "play" }))}
             currentTabType="analysis"
@@ -206,6 +208,8 @@ function BoardAnalysis() {
               // Board controls props
               viewPawnStructure={viewPawnStructure}
               setViewPawnStructure={setViewPawnStructure}
+              selectedPiece={selectedPiece}
+              setSelectedPiece={setSelectedPiece}
               canTakeBack={false} // Analysis mode doesn't support take back
               changeTabType={() => setCurrentTab((prev) => ({ ...prev, type: "play" }))}
               currentTabType="analysis"
