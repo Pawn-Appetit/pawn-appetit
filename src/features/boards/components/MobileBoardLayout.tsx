@@ -1,6 +1,7 @@
 import { ActionIcon, Box, Collapse, Group, Paper, Stack, Text } from "@mantine/core";
 import { useToggle } from "@mantine/hooks";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import type { Piece } from "chessground/types";
 import { memo, Suspense, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import GameNotation from "@/components/GameNotation";
@@ -44,6 +45,8 @@ interface MobileBoardLayoutProps {
   clearShapes?: () => void;
   toggleOrientation?: () => void;
   currentTabSourceType?: string;
+  selectedPiece?: Piece | null;
+  setSelectedPiece?: (piece: Piece | null) => void;
 
   // Start Game props
   startGame?: () => void;
@@ -86,6 +89,8 @@ function MobileBoardLayout({
   clearShapes,
   toggleOrientation,
   currentTabSourceType,
+  selectedPiece,
+  setSelectedPiece,
 
   // Start Game props
   startGame,
@@ -190,6 +195,8 @@ function MobileBoardLayout({
         clearShapes={clearShapes}
         toggleOrientation={toggleOrientation}
         currentTabSourceType={currentTabSourceType}
+        selectedPiece={selectedPiece}
+        setSelectedPiece={setSelectedPiece}
         // Start Game props
         startGame={startGame}
         gameState={gameState}
