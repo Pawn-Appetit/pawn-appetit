@@ -387,7 +387,7 @@ export async function downloadLichess(
 ) {
   let url = `${baseURL}/games/user/${player}`;
   if (timestamp) {
-    url += `&since=${timestamp}`;
+    url += `?since=${timestamp}`;
   }
   const path = await resolve(await appDataDir(), "db", `${player}_lichess.pgn`);
 

@@ -19,20 +19,3 @@ pub fn extract_main_line_moves(bytes: &[u8], start_position: Option<Chess>) -> R
     
     Ok(moves)
 }
-
-/// Decode game moves progressively, yielding positions after each move
-/// This function properly handles the extended format
-pub fn decode_game_positions(bytes: &[u8], start_position: Option<Chess>) -> Result<Vec<Chess>, crate::error::Error> {
-    let moves = extract_main_line_moves(bytes, start_position.clone())?;
-    let mut positions = Vec::new();
-    let mut position = start_position.unwrap_or_default();
-    
-    positions.push(position.clone());
-    
-    for mv in moves {
-        position.play_unchecked(&mv);
-        positions.push(position.clone());
-    }
-    
-    Ok(positions)
-}

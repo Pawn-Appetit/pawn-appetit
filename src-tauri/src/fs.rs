@@ -38,20 +38,13 @@ pub async fn download_file(
     info!("Downloading file from {}", url);
     
     let client = Client::new();
+
     let mut req = client.get(&url);
-    
     // Add Bearer token if present
     if let Some(token) = token {
-        match format!("Bearer {token}").parse() {
-            Ok(header_value) => {
-                let mut header_map = HeaderMap::new();
-                header_map.insert("Authorization", header_value);
-                req = req.headers(header_map);
-            }
-            Err(e) => {
-                info!("Failed to parse Authorization header: {}", e);
-            }
-        }
+        let mut header_map = HeaderMap::new();
+        header_map.insert("Authorization", format!("Bearer {token}").parse().unwrap());
+        req = req.headers(header_map);
     }
     
     let res = req.send().await?;
