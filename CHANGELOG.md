@@ -1,5 +1,19 @@
 # Pawn Appétit
 
+## v0.7.2
+
+### 🐛 Fixes
+* **Engine**
+  * Optimized **engine filtering and loading state management**
+* **Lichess**
+  * Fixed **Lichess API integration**
+* **Board**
+  * Fixed **toggle pawn structure view** – thanks [gm-m](https://github.com/gm-m) 🎉
+  * Fixed **select and paste pieces** in **position editor** – thanks [gm-m](https://github.com/gm-m) 🎉
+* **Internationalization (i18n)**
+  * Replaced `common.saveAndClose` translation key with `common.unsavedChanges.saveAndClose` – thanks [gm-m](https://github.com/gm-m) 🎉
+  * Updated translation keys for **settings** and **piece characters**
+
 ## v0.7.1
 
 ### ✨ Features
