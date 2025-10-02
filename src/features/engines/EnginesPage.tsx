@@ -50,13 +50,12 @@ const createEngineSearchText = (engine: Engine): string => {
   const parts = [
     engine.name,
     engine.type === "local" ? engine.path : engine.url,
-    engine.type === "local" ? (engine.version ?? "") : ""
+    engine.type === "local" ? (engine.version ?? "") : "",
   ];
   return parts.join(" ").toLowerCase();
 };
 
-const sortEnginesByName = (a: Engine, b: Engine): number => 
-  a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+const sortEnginesByName = (a: Engine, b: Engine): number => a.name.toLowerCase().localeCompare(b.name.toLowerCase());
 
 const sortEnginesByElo = (a: Engine, b: Engine): number => {
   const eloA = a.type === "local" ? (a.elo ?? -1) : -1;
@@ -66,9 +65,8 @@ const sortEnginesByElo = (a: Engine, b: Engine): number => {
 
 const useEngineFiltering = (engines: Engine[], query: string, sortBy: "name" | "elo") => {
   return useMemo<number[]>(() => {
-    const startTime = performance.now();
     const trimmedQuery = query.trim();
-    
+
     if (!trimmedQuery) {
       const result = engines
         .map((_, i) => i)
@@ -77,36 +75,27 @@ const useEngineFiltering = (engines: Engine[], query: string, sortBy: "name" | "
           const eb = engines[b];
           return sortBy === "name" ? sortEnginesByName(ea, eb) : sortEnginesByElo(ea, eb);
         });
-      
-      const endTime = performance.now();
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Engine filtering (sort only) took: ${(endTime - startTime).toFixed(2)}ms`);
-      }
+
       return result;
     }
-    
+
     const queryLower = trimmedQuery.toLowerCase();
-    
+
     const searchableEngines = engines.map((e, i) => ({
       index: i,
-      searchText: createEngineSearchText(e)
+      searchText: createEngineSearchText(e),
     }));
-    
+
     const filteredIndices = searchableEngines
       .filter(({ searchText }) => searchText.includes(queryLower))
       .map(({ index }) => index);
-    
+
     const result = filteredIndices.sort((a, b) => {
       const ea = engines[a];
       const eb = engines[b];
       return sortBy === "name" ? sortEnginesByName(ea, eb) : sortEnginesByElo(ea, eb);
     });
-    
-    const endTime = performance.now();
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Engine filtering took: ${(endTime - startTime).toFixed(2)}ms for ${engines.length} engines`);
-    }
-    
+
     return result;
   }, [engines, query, sortBy]);
 };
@@ -120,7 +109,7 @@ export default function EnginesPage() {
   const [query, setQuery] = useState("");
   const [debouncedQuery] = useDebouncedValue(query, 300);
   const [sortBy, setSortBy] = useState<"name" | "elo">("name");
-  
+
   const { selected } = Route.useSearch();
   const navigate = useNavigate();
 
@@ -230,7 +219,7 @@ export default function EnginesPage() {
                     const updatedEngines = [...engines];
                     updatedEngines[selected] = {
                       ...updatedEngines[selected],
-                      name: e.currentTarget.value
+                      name: e.currentTarget.value,
                     };
                     return updatedEngines;
                   });
@@ -247,7 +236,7 @@ export default function EnginesPage() {
                     const updatedEngines = [...engines];
                     updatedEngines[selected] = {
                       ...updatedEngines[selected],
-                      loaded: checked
+                      loaded: checked,
                     };
                     return updatedEngines;
                   });
@@ -324,7 +313,7 @@ function EngineSettings({
 
     async function fetchEngineConfig() {
       const cacheKey = `${engine.path}-${engine.name}`;
-      
+
       if (configCacheRef.current.has(cacheKey)) {
         const cachedConfig = configCacheRef.current.get(cacheKey);
         if (cachedConfig) {
@@ -336,7 +325,7 @@ function EngineSettings({
 
       setIsLoadingConfig(true);
       setConfigError(null);
-      
+
       try {
         const fileExistsResult = await commands.fileExists(engine.path);
         if (cancelled) return;
@@ -483,35 +472,38 @@ function EngineSettings({
     });
   }
 
-  const setSetting = useCallback((name: string, value: string | number | boolean | null, def: string | number | boolean | null) => {
-    setEngines(async (prev) => {
-      const engines = await prev;
-      const currentEngine = engines[selected] as LocalEngine;
-      const currentSettings = currentEngine.settings || [];
-      const existingSettingIndex = currentSettings.findIndex(s => s.name === name);
-      
-      let newSettings: typeof currentSettings;
-      
-      if (existingSettingIndex >= 0) {
-        newSettings = [...currentSettings];
-        newSettings[existingSettingIndex] = { name, value };
-      } else {
-        newSettings = [...currentSettings, { name, value }];
-      }
-      
-      if (value === def && !requiredEngineSettings.includes(name)) {
-        newSettings = newSettings.filter(setting => setting.name !== name);
-      }
-      
-      const updatedEngines = [...engines];
-      updatedEngines[selected] = {
-        ...currentEngine,
-        settings: newSettings,
-      };
-      
-      return updatedEngines;
-    });
-  }, [selected, setEngines]);
+  const setSetting = useCallback(
+    (name: string, value: string | number | boolean | null, def: string | number | boolean | null) => {
+      setEngines(async (prev) => {
+        const engines = await prev;
+        const currentEngine = engines[selected] as LocalEngine;
+        const currentSettings = currentEngine.settings || [];
+        const existingSettingIndex = currentSettings.findIndex((s) => s.name === name);
+
+        let newSettings: typeof currentSettings;
+
+        if (existingSettingIndex >= 0) {
+          newSettings = [...currentSettings];
+          newSettings[existingSettingIndex] = { name, value };
+        } else {
+          newSettings = [...currentSettings, { name, value }];
+        }
+
+        if (value === def && !requiredEngineSettings.includes(name)) {
+          newSettings = newSettings.filter((setting) => setting.name !== name);
+        }
+
+        const updatedEngines = [...engines];
+        updatedEngines[selected] = {
+          ...currentEngine,
+          settings: newSettings,
+        };
+
+        return updatedEngines;
+      });
+    },
+    [selected, setEngines],
+  );
 
   const [jsonModal, toggleJSONModal] = useToggle();
 
@@ -841,7 +833,13 @@ function JSONModal({
   );
 }
 
-const EngineName = memo(function EngineName({ engine, stats }: { engine: Engine; stats?: { label: string; value: string }[] }) {
+const EngineName = memo(function EngineName({
+  engine,
+  stats,
+}: {
+  engine: Engine;
+  stats?: { label: string; value: string }[];
+}) {
   const { layout } = useResponsiveLayout();
   const isMobile = layout.engines.layoutType === "mobile";
   const { data: fileExists, isLoading } = useSWRImmutable(
