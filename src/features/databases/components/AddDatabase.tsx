@@ -128,7 +128,7 @@ const useDatabaseOperations = (
     async (path: string, title: string, description?: string) => {
       try {
         setLoading(true);
-        const dbPath = await resolve(await appDataDir(), "puzzles", `${title}.db3`);
+        const dbPath = await resolve(await appDataDir(), "db", `${title}.db3`);
         unwrap(await commands.convertPgn(path, dbPath, null, title, description ?? null));
         await setDatabases(await getDatabases());
       } catch (error) {
