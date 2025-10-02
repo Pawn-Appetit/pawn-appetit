@@ -25,18 +25,36 @@ import { parseUci } from "chessops";
 import { INITIAL_FEN } from "chessops/fen";
 import equal from "fast-deep-equal";
 import { useAtom, useAtomValue } from "jotai";
-import { Suspense, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type ChangeEvent,
+  type Dispatch,
+  type SetStateAction,
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
-import { commands, events, type GoMode } from "@/bindings";
+import { commands, events, Outcome, type GoMode } from "@/bindings";
 import GameInfo from "@/components/GameInfo";
 import MoveControls from "@/components/MoveControls";
 import EngineSettingsForm from "@/components/panels/analysis/EngineSettingsForm";
 import TimeInput from "@/components/TimeInput";
 import { TreeStateContext } from "@/components/TreeStateContext";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
-import { activeTabAtom, currentGameStateAtom, currentPlayersAtom, enginesAtom, tabsAtom } from "@/state/atoms";
+import {
+  activeTabAtom,
+  currentGameStateAtom,
+  currentPlayersAtom,
+  enginesAtom,
+  GameState,
+  tabsAtom,
+} from "@/state/atoms";
 import { getMainLine } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import type { TimeControlField } from "@/utils/clock";
@@ -46,13 +64,21 @@ import { type GameHeaders, treeIteratorMainLine } from "@/utils/treeReducer";
 import GameNotationWrapper from "./GameNotationWrapper";
 import ResponsiveBoard from "./ResponsiveBoard";
 
-function EnginesSelect({
-  engine,
-  setEngine,
-}: {
+const DEFAULT_TIME_CONTROL: TimeControlField = {
+  seconds: 180_000,
+  increment: 2_000,
+};
+
+const CLOCK_UPDATE_INTERVAL = 100; // ms
+
+type ColorChoice = "white" | "random" | "black";
+
+interface EnginesSelectProps {
   engine: LocalEngine | null;
   setEngine: (engine: LocalEngine | null) => void;
-}) {
+}
+
+function EnginesSelect({ engine, setEngine }: EnginesSelectProps) {
   const navigate = useNavigate();
   const engines = useAtomValue(enginesAtom).filter((e): e is LocalEngine => e.type === "local");
 
@@ -60,7 +86,7 @@ function EnginesSelect({
     if (engines.length > 0 && engine === null) {
       setEngine(engines[0]);
     }
-  }, [engine, engines[0], setEngine]);
+  }, [engine, engines, setEngine]);
 
   if (engines.length === 0) {
     return (
@@ -78,18 +104,22 @@ function EnginesSelect({
     );
   }
 
+  const engineOptions = useMemo(() => engines.map((engine) => ({ label: engine.name, value: engine.path })), [engines]);
+
+  const handleEngineChange = useCallback(
+    (path: string | null) => {
+      setEngine(engines.find((engine) => engine.path === path) ?? null);
+    },
+    [engines, setEngine],
+  );
+
   return (
     <Suspense>
       <Select
         allowDeselect={false}
-        data={engines?.map((engine) => ({
-          label: engine.name,
-          value: engine.path,
-        }))}
+        data={engineOptions}
         value={engine?.path ?? ""}
-        onChange={(e) => {
-          setEngine(engines.find((engine) => engine.path === e) ?? null);
-        }}
+        onChange={handleEngineChange}
         placeholder="Select engine"
       />
     </Suspense>
@@ -109,38 +139,98 @@ export type OpponentSettings =
       go: GoMode;
     };
 
-function OpponentForm({
-  sameTimeControl,
-  opponent,
-  setOpponent,
-  setOtherOpponent,
-}: {
+interface OpponentFormProps {
   sameTimeControl: boolean;
   opponent: OpponentSettings;
-  setOpponent: React.Dispatch<React.SetStateAction<OpponentSettings>>;
-  setOtherOpponent: React.Dispatch<React.SetStateAction<OpponentSettings>>;
-}) {
+  setOpponent: Dispatch<SetStateAction<OpponentSettings>>;
+  setOtherOpponent: Dispatch<SetStateAction<OpponentSettings>>;
+}
+
+function OpponentForm({ sameTimeControl, opponent, setOpponent, setOtherOpponent }: OpponentFormProps) {
   const engines = useAtomValue(enginesAtom).filter((e): e is LocalEngine => e.type === "local");
 
-  function updateType(type: "engine" | "human") {
-    if (type === "human") {
+  const updateType = useCallback(
+    (type: "engine" | "human") => {
+      if (type === "human") {
+        setOpponent((prev) => ({
+          ...prev,
+          type: "human",
+          name: "Player",
+        }));
+      } else {
+        setOpponent((prev) => ({
+          ...prev,
+          type: "engine",
+          engine: null,
+          go: { t: "Depth", c: 1 },
+        }));
+      }
+    },
+    [setOpponent],
+  );
+
+  const updateTimeControl = useCallback(
+    (timeControl: TimeControlField | undefined) => {
+      setOpponent((prev) => ({ ...prev, timeControl }));
+      if (sameTimeControl) {
+        setOtherOpponent((prev) => ({ ...prev, timeControl }));
+      }
+    },
+    [sameTimeControl, setOpponent, setOtherOpponent],
+  );
+
+  const handleTimeControlToggle = useCallback(
+    (v: string) => {
+      updateTimeControl(v === "Time" ? DEFAULT_TIME_CONTROL : undefined);
+    },
+    [updateTimeControl],
+  );
+
+  const handleTimeChange = useCallback(
+    (value: GoMode) => {
+      const seconds = value.t === "Time" ? value.c : 0;
       setOpponent((prev) => ({
         ...prev,
-        type: "human",
-        name: "Player",
-      }));
-    } else {
-      setOpponent((prev) => ({
-        ...prev,
-        type: "engine",
-        engine: null,
-        go: {
-          t: "Depth",
-          c: 1,
+        timeControl: {
+          seconds,
+          increment: prev.timeControl?.increment ?? 0,
         },
       }));
-    }
-  }
+      if (sameTimeControl) {
+        setOtherOpponent((prev) => ({
+          ...prev,
+          timeControl: {
+            seconds,
+            increment: prev.timeControl?.increment ?? 0,
+          },
+        }));
+      }
+    },
+    [sameTimeControl, setOpponent, setOtherOpponent],
+  );
+
+  const handleIncrementChange = useCallback(
+    (value: GoMode) => {
+      const increment = value.t === "Time" ? value.c : 0;
+      setOpponent((prev) => ({
+        ...prev,
+        timeControl: {
+          seconds: prev.timeControl?.seconds ?? 0,
+          increment,
+        },
+      }));
+      if (sameTimeControl) {
+        setOtherOpponent((prev) => ({
+          ...prev,
+          timeControl: {
+            seconds: prev.timeControl?.seconds ?? 0,
+            increment,
+          },
+        }));
+      }
+    },
+    [sameTimeControl, setOpponent, setOtherOpponent],
+  );
 
   return (
     <Stack flex={1}>
@@ -199,124 +289,125 @@ function OpponentForm({
       <SegmentedControl
         data={["Time", "Unlimited"]}
         value={opponent.timeControl ? "Time" : "Unlimited"}
-        onChange={(v) => {
-          setOpponent((prev) => ({
-            ...prev,
-            timeControl: v === "Time" ? DEFAULT_TIME_CONTROL : undefined,
-          }));
-          if (sameTimeControl) {
-            setOtherOpponent((prev) => ({
-              ...prev,
-              timeControl: v === "Time" ? DEFAULT_TIME_CONTROL : undefined,
-            }));
-          }
-        }}
+        onChange={handleTimeControlToggle}
       />
       <Group grow wrap="nowrap">
         {opponent.timeControl && (
           <>
             <InputWrapper label="Time">
-              <TimeInput
-                defaultType="m"
-                value={opponent.timeControl.seconds}
-                setValue={(v) => {
-                  setOpponent((prev) => ({
-                    ...prev,
-                    timeControl: {
-                      seconds: v.t === "Time" ? v.c : 0,
-                      increment: prev.timeControl?.increment ?? 0,
-                    },
-                  }));
-                  if (sameTimeControl) {
-                    setOtherOpponent((prev) => ({
-                      ...prev,
-                      timeControl: {
-                        seconds: v.t === "Time" ? v.c : 0,
-                        increment: prev.timeControl?.increment ?? 0,
-                      },
-                    }));
-                  }
-                }}
-              />
+              <TimeInput defaultType="m" value={opponent.timeControl.seconds} setValue={handleTimeChange} />
             </InputWrapper>
             <InputWrapper label="Increment">
-              <TimeInput
-                defaultType="s"
-                value={opponent.timeControl.increment ?? 0}
-                setValue={(v) => {
-                  setOpponent((prev) => ({
-                    ...prev,
-                    timeControl: {
-                      seconds: prev.timeControl?.seconds ?? 0,
-                      increment: v.t === "Time" ? v.c : 0,
-                    },
-                  }));
-                  if (sameTimeControl) {
-                    setOtherOpponent((prev) => ({
-                      ...prev,
-                      timeControl: {
-                        seconds: prev.timeControl?.seconds ?? 0,
-                        increment: v.t === "Time" ? v.c : 0,
-                      },
-                    }));
-                  }
-                }}
-              />
+              <TimeInput defaultType="s" value={opponent.timeControl.increment ?? 0} setValue={handleIncrementChange} />
             </InputWrapper>
           </>
         )}
       </Group>
 
-      {opponent.type === "engine" && (
+      {opponent.type === "engine" && opponent.engine && !opponent.timeControl && (
         <Stack>
-          {opponent.engine && !opponent.timeControl && (
-            <EngineSettingsForm
-              engine={opponent.engine}
-              remote={false}
-              gameMode
-              settings={{
-                go: opponent.go,
-                settings: opponent.engine.settings || [],
-                enabled: true,
-                synced: false,
-              }}
-              setSettings={(fn) =>
-                setOpponent((prev) => {
-                  if (prev.type === "human") {
-                    return prev;
-                  }
-                  const newSettings = fn({
-                    go: prev.go,
-                    settings: prev.engine?.settings || [],
-                    enabled: true,
-                    synced: false,
-                  });
-                  return { ...prev, ...newSettings };
-                })
-              }
-              minimal={true}
-            />
-          )}
+          <EngineSettingsForm
+            engine={opponent.engine}
+            remote={false}
+            gameMode
+            settings={{
+              go: opponent.go,
+              settings: opponent.engine.settings || [],
+              enabled: true,
+              synced: false,
+            }}
+            setSettings={(fn) =>
+              setOpponent((prev) => {
+                if (prev.type === "human") return prev;
+                const newSettings = fn({
+                  go: prev.go,
+                  settings: prev.engine?.settings || [],
+                  enabled: true,
+                  synced: false,
+                });
+                return { ...prev, ...newSettings };
+              })
+            }
+            minimal={true}
+          />
         </Stack>
       )}
     </Stack>
   );
 }
 
-const DEFAULT_TIME_CONTROL: TimeControlField = {
-  seconds: 180_000,
-  increment: 2_000,
-};
+function useClockTimer(
+  gameState: string,
+  pos: any,
+  whiteTime: number | null,
+  blackTime: number | null,
+  setWhiteTime: Dispatch<SetStateAction<number | null>>,
+  setBlackTime: Dispatch<SetStateAction<number | null>>,
+  players: any,
+  setGameState: (state: GameState) => void,
+  setResult: (result: Outcome) => void,
+) {
+  const [intervalId, setIntervalId] = useState<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
+  }, [pos?.turn]);
+
+  useEffect(() => {
+    if (gameState === "playing") {
+      if (whiteTime !== null && whiteTime <= 0) {
+        setGameState("gameOver");
+        setResult("0-1");
+      } else if (blackTime !== null && blackTime <= 0) {
+        setGameState("gameOver");
+        setResult("1-0");
+      }
+    }
+  }, [gameState, whiteTime, blackTime, setGameState, setResult]);
+
+  useEffect(() => {
+    if (gameState !== "playing" && intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
+  }, [gameState, intervalId]);
+
+  useEffect(() => {
+    if (gameState === "playing" && !intervalId) {
+      const decrementTime = () => {
+        if (pos?.turn === "white" && whiteTime !== null) {
+          setWhiteTime((prev) => prev! - CLOCK_UPDATE_INTERVAL);
+        } else if (pos?.turn === "black" && blackTime !== null) {
+          setBlackTime((prev) => prev! - CLOCK_UPDATE_INTERVAL);
+        }
+      };
+
+      if (pos?.turn === "black" && whiteTime !== null) {
+        setWhiteTime((prev) => prev! + (players.white.timeControl?.increment ?? 0));
+      }
+      if (pos?.turn === "white" && blackTime !== null && pos?.fullmoves !== 1) {
+        setBlackTime((prev) => prev! + (players.black.timeControl?.increment ?? 0));
+      }
+
+      const id = setInterval(decrementTime, CLOCK_UPDATE_INTERVAL);
+      setIntervalId(id);
+    }
+  }, [gameState, intervalId, pos?.turn, pos?.fullmoves, whiteTime, blackTime, players, setWhiteTime, setBlackTime]);
+}
 
 function BoardGame() {
   const activeTab = useAtomValue(activeTabAtom);
   const { t } = useTranslation();
 
-  const [inputColor, setInputColor] = useState<"white" | "random" | "black">("white");
+  const [inputColor, setInputColor] = useState<ColorChoice>("white");
   const [viewPawnStructure, setViewPawnStructure] = useState(false);
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
+  const [sameTimeControl, setSameTimeControl] = useState(true);
 
-  function cycleColor() {
+  const cycleColor = useCallback(() => {
     setInputColor((prev) =>
       match(prev)
         .with("white", () => "black" as const)
@@ -324,7 +415,7 @@ function BoardGame() {
         .with("random", () => "white" as const)
         .exhaustive(),
     );
-  }
+  }, []);
 
   const [player1Settings, setPlayer1Settings] = useState<OpponentSettings>({
     type: "human",
@@ -337,7 +428,7 @@ function BoardGame() {
     timeControl: DEFAULT_TIME_CONTROL,
   });
 
-  function getPlayers() {
+  const getPlayers = useCallback(() => {
     let white = inputColor === "white" ? player1Settings : player2Settings;
     let black = inputColor === "black" ? player1Settings : player2Settings;
     if (inputColor === "random") {
@@ -345,7 +436,7 @@ function BoardGame() {
       black = white === player1Settings ? player2Settings : player1Settings;
     }
     return { white, black };
-  }
+  }, [inputColor, player1Settings, player2Settings]);
 
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (s) => s.root);
@@ -356,35 +447,31 @@ function BoardGame() {
   const appendMove = useStore(store, (s) => s.appendMove);
 
   const [tabs, setTabs] = useAtom(tabsAtom);
-
   const boardRef = useRef(null);
   const [gameState, setGameState] = useAtom(currentGameStateAtom);
+  const [players, setPlayers] = useAtom(currentPlayersAtom);
   const engines = useAtomValue(enginesAtom).filter((e): e is LocalEngine => e.type === "local");
 
-  function changeToAnalysisMode() {
+  const [whiteTime, setWhiteTime] = useState<number | null>(null);
+  const [blackTime, setBlackTime] = useState<number | null>(null);
+
+  const changeToAnalysisMode = useCallback(() => {
     setTabs((prev) => prev.map((tab) => (tab.value === activeTab ? { ...tab, type: "analysis" } : tab)));
-  }
+  }, [activeTab, setTabs]);
+
   const mainLine = Array.from(treeIteratorMainLine(root));
   const lastNode = mainLine[mainLine.length - 1].node;
-  const moves = useMemo(() => getMainLine(root, headers.variant === "Chess960"), [root, headers]);
+  const moves = useMemo(() => getMainLine(root, headers.variant === "Chess960"), [root, headers.variant]);
 
-  const [pos, error] = useMemo(() => {
-    return positionFromFen(lastNode.fen);
-  }, [lastNode.fen]);
+  const [pos, error] = useMemo(() => positionFromFen(lastNode.fen), [lastNode.fen]);
 
   const activeTabData = tabs?.find((tab) => tab.value === activeTab);
 
   useEffect(() => {
     if (activeTabData?.meta?.timeControl) {
       const { timeControl } = activeTabData.meta;
-      setPlayer1Settings((prev) => ({
-        ...prev,
-        timeControl,
-      }));
-      setPlayer2Settings((prev) => ({
-        ...prev,
-        timeControl,
-      }));
+      setPlayer1Settings((prev) => ({ ...prev, timeControl }));
+      setPlayer2Settings((prev) => ({ ...prev, timeControl }));
     }
   }, [activeTabData]);
 
@@ -394,14 +481,8 @@ function BoardGame() {
     }
   }, [pos, setGameState]);
 
-  const [players, setPlayers] = useAtom(currentPlayersAtom);
-
   useEffect(() => {
-    if (pos && gameState === "playing") {
-      if (headers.result !== "*") {
-        setGameState("gameOver");
-        return;
-      }
+    if (pos && gameState === "playing" && headers.result === "*") {
       const currentTurn = pos.turn;
       const player = currentTurn === "white" ? players.white : players.black;
 
@@ -426,18 +507,12 @@ function BoardGame() {
             moves: moves,
             extraOptions: (player.engine.settings || [])
               .filter((s) => s.name !== "MultiPV")
-              .map((s) => ({
-                ...s,
-                value: s.value?.toString() ?? "",
-              })),
+              .map((s) => ({ ...s, value: s.value?.toString() ?? "" })),
           },
         );
       }
     }
-  }, [gameState, pos, players, headers.result, setGameState, activeTab, root.fen, moves]);
-
-  const [whiteTime, setWhiteTime] = useState<number | null>(null);
-  const [blackTime, setBlackTime] = useState<number | null>(null);
+  }, [gameState, pos, players, headers.result, activeTab, root.fen, moves, whiteTime, blackTime]);
 
   useEffect(() => {
     const unlisten = events.bestMovesPayload.listen(({ payload }) => {
@@ -462,51 +537,13 @@ function BoardGame() {
   }, [activeTab, appendMove, pos, root.fen, moves, whiteTime, blackTime]);
 
   const movable = useMemo(() => {
-    if (players.white.type === "human" && players.black.type === "human") {
-      return "turn";
-    }
-    if (players.white.type === "human") {
-      return "white";
-    }
-    if (players.black.type === "human") {
-      return "black";
-    }
+    if (players.white.type === "human" && players.black.type === "human") return "turn";
+    if (players.white.type === "human") return "white";
+    if (players.black.type === "human") return "black";
     return "none";
   }, [players]);
 
-  const [sameTimeControl, setSameTimeControl] = useState(true);
-
-  const [intervalId, setIntervalId] = useState<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    if (intervalId) {
-      clearInterval(intervalId);
-      setIntervalId(null);
-    }
-  }, [pos?.turn]);
-
-  useEffect(() => {
-    if (gameState === "playing" && whiteTime !== null && whiteTime <= 0) {
-      setGameState("gameOver");
-      setResult("0-1");
-    }
-  }, [gameState, whiteTime, setGameState, setResult]);
-
-  useEffect(() => {
-    if (gameState !== "playing") {
-      if (intervalId) {
-        clearInterval(intervalId);
-        setIntervalId(null);
-      }
-    }
-  }, [gameState, intervalId]);
-
-  useEffect(() => {
-    if (gameState === "playing" && blackTime !== null && blackTime <= 0) {
-      setGameState("gameOver");
-      setResult("1-0");
-    }
-  }, [gameState, blackTime, setGameState, setResult]);
+  useClockTimer(gameState, pos, whiteTime, blackTime, setWhiteTime, setBlackTime, players, setGameState, setResult);
 
   useEffect(() => {
     if (gameState === "gameOver" && headers.result && headers.result !== "*") {
@@ -531,107 +568,92 @@ function BoardGame() {
       };
       saveGameRecord(record);
     }
-  }, [gameState, headers.result, players, root, headers, saveGameRecord]);
+  }, [gameState, headers, players, root, lastNode.fen]);
 
-  function decrementTime() {
-    if (gameState === "playing") {
-      if (pos?.turn === "white" && whiteTime !== null) {
-        setWhiteTime((prev) => prev! - 100);
-      } else if (pos?.turn === "black" && blackTime !== null) {
-        setBlackTime((prev) => prev! - 100);
-      }
-    }
-  }
-
-  function startGame() {
+  const startGame = useCallback(() => {
     setGameState("playing");
 
-    const players = getPlayers();
+    const newPlayers = getPlayers();
 
-    if (players.white.timeControl) {
-      setWhiteTime(players.white.timeControl.seconds);
+    if (newPlayers.white.timeControl) {
+      setWhiteTime(newPlayers.white.timeControl.seconds);
     }
 
-    if (players.black.timeControl) {
-      setBlackTime(players.black.timeControl.seconds);
+    if (newPlayers.black.timeControl) {
+      setBlackTime(newPlayers.black.timeControl.seconds);
     }
 
-    setPlayers(players);
+    setPlayers(newPlayers);
 
     const newHeaders: Partial<GameHeaders> = {
-      white: (players.white.type === "human" ? players.white.name : players.white.engine?.name) ?? "?",
-      black: (players.black.type === "human" ? players.black.name : players.black.engine?.name) ?? "?",
+      white: (newPlayers.white.type === "human" ? newPlayers.white.name : newPlayers.white.engine?.name) ?? "?",
+      black: (newPlayers.black.type === "human" ? newPlayers.black.name : newPlayers.black.engine?.name) ?? "?",
       time_control: undefined,
       orientation:
-        players.white.type === "human" && players.black.type === "engine"
+        newPlayers.white.type === "human" && newPlayers.black.type === "engine"
           ? "white"
-          : players.white.type === "engine" && players.black.type === "human"
+          : newPlayers.white.type === "engine" && newPlayers.black.type === "human"
             ? "black"
             : headers.orientation,
     };
 
-    if (players.white.timeControl || players.black.timeControl) {
-      if (sameTimeControl && players.white.timeControl) {
-        newHeaders.time_control = `${players.white.timeControl.seconds / 1000}`;
-        if (players.white.timeControl.increment) {
-          newHeaders.time_control += `+${players.white.timeControl.increment / 1000}`;
+    if (newPlayers.white.timeControl || newPlayers.black.timeControl) {
+      if (sameTimeControl && newPlayers.white.timeControl) {
+        newHeaders.time_control = `${newPlayers.white.timeControl.seconds / 1000}`;
+        if (newPlayers.white.timeControl.increment) {
+          newHeaders.time_control += `+${newPlayers.white.timeControl.increment / 1000}`;
         }
       } else {
-        if (players.white.timeControl) {
-          newHeaders.white_time_control = `${players.white.timeControl.seconds / 1000}`;
-          if (players.white.timeControl.increment) {
-            newHeaders.white_time_control += `+${players.white.timeControl.increment / 1000}`;
+        if (newPlayers.white.timeControl) {
+          newHeaders.white_time_control = `${newPlayers.white.timeControl.seconds / 1000}`;
+          if (newPlayers.white.timeControl.increment) {
+            newHeaders.white_time_control += `+${newPlayers.white.timeControl.increment / 1000}`;
           }
         }
-        if (players.black.timeControl) {
-          newHeaders.black_time_control = `${players.black.timeControl.seconds / 1000}`;
-          if (players.black.timeControl.increment) {
-            newHeaders.black_time_control += `+${players.black.timeControl.increment / 1000}`;
+        if (newPlayers.black.timeControl) {
+          newHeaders.black_time_control = `${newPlayers.black.timeControl.seconds / 1000}`;
+          if (newPlayers.black.timeControl.increment) {
+            newHeaders.black_time_control += `+${newPlayers.black.timeControl.increment / 1000}`;
           }
         }
       }
     }
 
-    setHeaders({
-      ...headers,
-      ...newHeaders,
-      fen: root.fen,
-    });
+    setHeaders({ ...headers, ...newHeaders, fen: root.fen });
 
     setTabs((prev) =>
       prev.map((tab) => {
-        const whiteName = players.white.type === "human" ? players.white.name : (players.white.engine?.name ?? "?");
-
-        const blackName = players.black.type === "human" ? players.black.name : (players.black.engine?.name ?? "?");
-
-        return tab.value === activeTab
-          ? {
-              ...tab,
-              name: `${whiteName} vs. ${blackName}`,
-            }
-          : tab;
+        const whiteName =
+          newPlayers.white.type === "human" ? newPlayers.white.name : (newPlayers.white.engine?.name ?? "?");
+        const blackName =
+          newPlayers.black.type === "human" ? newPlayers.black.name : (newPlayers.black.engine?.name ?? "?");
+        return tab.value === activeTab ? { ...tab, name: `${whiteName} vs. ${blackName}` } : tab;
       }),
     );
-  }
+  }, [activeTab, getPlayers, headers, root.fen, sameTimeControl, setGameState, setHeaders, setPlayers, setTabs]);
 
-  useEffect(() => {
-    if (gameState === "playing" && !intervalId) {
-      const intervalId = setInterval(decrementTime, 100);
-      if (pos?.turn === "black" && whiteTime !== null) {
-        setWhiteTime((prev) => prev! + (players.white.timeControl?.increment ?? 0));
-      }
-      if (pos?.turn === "white" && blackTime !== null) {
-        setBlackTime((prev) => {
-          if (pos?.fullmoves === 1) {
-            return prev!;
-          }
+  const handleNewGame = useCallback(() => {
+    setGameState("settingUp");
+    setWhiteTime(null);
+    setBlackTime(null);
+    setFen(INITIAL_FEN);
+    setHeaders({ ...headers, result: "*" });
+  }, [headers, setFen, setGameState, setHeaders]);
 
-          return prev! + (players.black.timeControl?.increment ?? 0);
-        });
+  const handleSameTimeControlChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const isChecked = e.target.checked;
+      setSameTimeControl(isChecked);
+
+      if (isChecked) {
+        setPlayer2Settings((prev) => ({
+          ...prev,
+          timeControl: player1Settings.timeControl,
+        }));
       }
-      setIntervalId(intervalId);
-    }
-  }, [gameState, intervalId, pos?.turn]);
+    },
+    [player1Settings.timeControl],
+  );
 
   const onePlayerIsEngine =
     (players.white.type === "engine" || players.black.type === "engine") && players.white.type !== players.black.type;
@@ -639,10 +661,14 @@ function BoardGame() {
   const { layout } = useResponsiveLayout();
   const isMobileLayout = layout.chessBoard.layoutType === "mobile";
 
+  const startGameDisabled =
+    ((player1Settings.type === "engine" || player2Settings.type === "engine") && engines.length === 0) ||
+    error !== null ||
+    gameState !== "settingUp";
+
   return (
     <>
       {isMobileLayout ? (
-        // Mobile layout: ResponsiveBoard handles everything, no Portal needed
         <Box style={{ width: "100%", flex: 1, overflow: "hidden" }}>
           <ResponsiveBoard
             dirty={false}
@@ -656,21 +682,18 @@ function BoardGame() {
             whiteTime={gameState === "playing" ? (whiteTime ?? undefined) : undefined}
             blackTime={gameState === "playing" ? (blackTime ?? undefined) : undefined}
             topBar={false}
-            // Board controls props
             viewPawnStructure={viewPawnStructure}
             setViewPawnStructure={setViewPawnStructure}
             selectedPiece={selectedPiece}
             setSelectedPiece={setSelectedPiece}
             changeTabType={changeToAnalysisMode}
             currentTabType="play"
-            // Start Game props
             startGame={startGame}
             gameState={gameState}
             startGameDisabled={error !== null}
           />
         </Box>
       ) : (
-        // Desktop layout: Use Portal system with Mosaic layout
         <>
           <Portal target="#left" style={{ height: "100%" }}>
             <ResponsiveBoard
@@ -685,14 +708,12 @@ function BoardGame() {
               whiteTime={gameState === "playing" ? (whiteTime ?? undefined) : undefined}
               blackTime={gameState === "playing" ? (blackTime ?? undefined) : undefined}
               topBar={false}
-              // Board controls props
               viewPawnStructure={viewPawnStructure}
               setViewPawnStructure={setViewPawnStructure}
               selectedPiece={selectedPiece}
               setSelectedPiece={setSelectedPiece}
               changeTabType={changeToAnalysisMode}
               currentTabType="play"
-              // Start Game props
               startGame={startGame}
               gameState={gameState}
               startGameDisabled={error !== null}
@@ -739,22 +760,11 @@ function BoardGame() {
                         />
                       </Group>
                     </Box>
-
                     <Group justify="flex-start">
                       <Checkbox
                         label="Same time control"
                         checked={sameTimeControl}
-                        onChange={(e) => {
-                          const isChecked = e.target.checked;
-                          setSameTimeControl(isChecked);
-                          
-                          if (isChecked) {
-                            setPlayer2Settings((prev) => ({
-                              ...prev,
-                              timeControl: player1Settings.timeControl,
-                            }));
-                          }
-                        }}
+                        onChange={handleSameTimeControlChange}
                       />
                     </Group>
                   </Stack>
@@ -766,22 +776,10 @@ function BoardGame() {
                     <GameInfo headers={headers} />
                   </Box>
                   <Group grow>
-                    <Button
-                      onClick={() => {
-                        setGameState("settingUp");
-                        setWhiteTime(null);
-                        setBlackTime(null);
-                        setFen(INITIAL_FEN);
-                        setHeaders({
-                          ...headers,
-                          result: "*",
-                        });
-                      }}
-                      leftSection={<IconPlus />}
-                    >
+                    <Button onClick={handleNewGame} leftSection={<IconPlus />}>
                       New Game
                     </Button>
-                    <Button variant="default" onClick={() => changeToAnalysisMode()} leftSection={<IconZoomCheck />}>
+                    <Button variant="default" onClick={changeToAnalysisMode} leftSection={<IconZoomCheck />}>
                       Analyze
                     </Button>
                   </Group>
@@ -794,15 +792,10 @@ function BoardGame() {
       <GameNotationWrapper topBar>
         <MoveControls
           readOnly
-          // Start Game props
           currentTabType="play"
           startGame={startGame}
           gameState={gameState}
-          startGameDisabled={
-            ((player1Settings.type === "engine" || player2Settings.type === "engine") && engines.length === 0) ||
-            error !== null ||
-            gameState !== "settingUp"
-          }
+          startGameDisabled={startGameDisabled}
         />
       </GameNotationWrapper>
     </>
