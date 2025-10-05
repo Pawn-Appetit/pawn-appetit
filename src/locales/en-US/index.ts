@@ -1,10 +1,10 @@
 import common from "./common.json";
 
-const en = {
+const en_US = {
   language: {
-    DisplayName: "English",
+    DisplayName: "English (US)",
   },
   translation: common,
 };
 
-export default en;
+export default en_US;
