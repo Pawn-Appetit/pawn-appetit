@@ -1,5 +1,18 @@
 # Pawn Appétit
 
+## v0.7.3
+
+### 🐛 Fixes
+* **BoardGame**
+  * Fixed **minor bugs** and improved stability
+* **Database**
+  * Updated **database file path** to use `db` directory instead of `puzzles` – thanks [gm-m](https://github.com/gm-m) 🎉
+### ♻️ Refactors
+* **BoardGame**
+  * Optimized **performance** and improved **code organization**
+### 🧹 Chores
+* Updated **dependencies** to latest versions
+
 ## v0.7.2
 
 ### 🐛 Fixes
