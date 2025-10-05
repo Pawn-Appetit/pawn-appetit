@@ -8,6 +8,7 @@ import de from "./locales/de";
 import en from "./locales/en";
 import es from "./locales/es";
 import fr from "./locales/fr";
+import en_GB from "./locales/en-GB";
 import hy from "./locales/hy";
 import it from "./locales/it";
 import ja from "./locales/ja";
@@ -39,6 +40,7 @@ if (lang) {
 
 const resources = {
   "en-US": en,
+  "en-GB": en_GB,
   "de-DE": de,
   "be-BY": be,
   "es-ES": es,
