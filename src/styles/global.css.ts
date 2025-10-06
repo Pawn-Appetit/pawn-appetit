@@ -6,6 +6,15 @@ globalStyle("*", {
   WebkitUserSelect: "none",
 });
 
+globalStyle("html, body", {
+  overscrollBehavior: "none",
+  overflow: "auto"
+});
+
+globalStyle(".mantine-ScrollArea-viewport", {
+  overscrollBehavior: "none",
+});
+
 globalStyle("cg-board square.selected", {
   [vars.darkSelector]: {
     background: "color-mix(in srgb, var(--mantine-primary-color-5) 50%, transparent)",
