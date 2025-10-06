@@ -1,6 +1,11 @@
 import { globalStyle } from "@vanilla-extract/css";
 import { vars } from "./theme";
 
+globalStyle("*", {
+  userSelect: "none",
+  WebkitUserSelect: "none",
+});
+
 globalStyle("cg-board square.selected", {
   [vars.darkSelector]: {
     background: "color-mix(in srgb, var(--mantine-primary-color-5) 50%, transparent)",
