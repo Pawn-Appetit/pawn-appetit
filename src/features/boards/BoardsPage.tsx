@@ -165,6 +165,16 @@ export default function BoardsPage() {
     [keyMap.BOARD_TAB_SEVEN.keys, () => selectTab(6)],
     [keyMap.BOARD_TAB_EIGHT.keys, () => selectTab(7)],
     [keyMap.BOARD_TAB_LAST.keys, () => selectTab(tabs.length - 1)],
+    [keyMap.DUPLICATE_TAB.keys, () => activeTab && duplicateTab(activeTab)],
+    [
+      keyMap.NEW_GAME.keys,
+      () =>
+        createTab({
+          tab: { name: "Play", type: "play" },
+          setTabs,
+          setActiveTab,
+        }),
+    ],
   ]);
 
   return (
