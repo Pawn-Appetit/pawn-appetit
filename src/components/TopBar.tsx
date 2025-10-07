@@ -210,7 +210,7 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
           <Group w="100%">
             <IconSearch size={14} stroke={1.5} color="var(--mantine-color-dimmed)" />
             <Text pr="200px" c="dimmed" size="sm">
-              {keyMap.SPOTLIGHT_SEARCH.name}
+                {t("keybindings.spotlightSearch")}
             </Text>
             <Kbd size="xs" style={{ borderWidth: "1px" }}>
               {keyMap.SPOTLIGHT_SEARCH.keys}

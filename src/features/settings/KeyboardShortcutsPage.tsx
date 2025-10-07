@@ -3,11 +3,13 @@ import { IconReload } from "@tabler/icons-react";
 import { useAtom } from "jotai";
 import { RESET } from "jotai/utils";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { keyMapAtom } from "@/state/keybindings";
 import KeybindInput from "./components/KeybindInput";
 import * as classes from "./SettingsPage.css";
 
 export default function KeyboardShortcutsPage() {
+  const { t } = useTranslation();
   const [keyMap, setKeyMap] = useAtom(keyMapAtom);
   const [search, setSearch] = useState("");
 
@@ -47,7 +49,7 @@ export default function KeyboardShortcutsPage() {
               .map(([action, keybind]) => {
                 return (
                   <Table.Tr key={keybind.name}>
-                    <Table.Td>{keybind.name}</Table.Td>
+                    <Table.Td>{t(keybind.name)}</Table.Td>
                     <Table.Td>
                       <KeybindInput action={action} keybind={keybind} />
                     </Table.Td>
