@@ -131,7 +131,7 @@ function CompleteMoveCell({
           </Menu>
         )}
         {transpositions.length > 0 && (
-          <Tooltip label="Transposition">
+          <Tooltip label={t("moves.transposition")}>
             <ActionIcon size="xs" onClick={() => goToMove(transpositions[0])}>
               <IconArrowsJoin size="0.875rem" />
             </ActionIcon>

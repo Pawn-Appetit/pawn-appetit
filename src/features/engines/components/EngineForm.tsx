@@ -50,7 +50,7 @@ export default function EngineForm({
           const configResult = await commands.getEngineConfig(selected as string);
           config.current = configResult.status === "ok" ? configResult.data : { name: "", options: [] };
           form.setFieldValue("path", selected as string);
-          form.setFieldValue("name", config.current.name || "Unknown Engine");
+          form.setFieldValue("name", config.current.name || t("features.engines.unknownEngine"));
         }}
       />
 

@@ -20,6 +20,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { IconArrowBackUp, IconBulb, IconRefresh, IconSearch } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useUserStatsStore } from "@/state/userStatsStore";
 import { applyUciMoveToFen } from "@/utils/applyUciMoveToFen";
@@ -31,6 +32,7 @@ import { type PracticeCategory, type PracticeExercise, practices, uiConfig } fro
 import { useExerciseState } from "./hooks/useExerciseState";
 
 export default function PracticePage() {
+  const { t } = useTranslation();
   const GROUPS = ["All", "Checkmates", "Basic Tactics", "Intermediate Tactics", "Pawn Endgames", "Rook Endgames"];
   const [activeTab, setActiveTab] = useState<string>(GROUPS[0]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -174,7 +176,7 @@ export default function PracticePage() {
               </Button.Group>
 
               <TextInput
-                placeholder="Search practice categories..."
+                placeholder={t("features.practice.searchPlaceholder")}
                 leftSection={<IconSearch size={16} />}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.currentTarget.value)}
@@ -226,9 +228,9 @@ export default function PracticePage() {
                       <IconSearch size={40} />
                     </ThemeIcon>
                     <Title order={3} c="dimmed">
-                      No categories found
+                      {t("features.practice.noCategoriesFound")}
                     </Title>
-                    <Text c="dimmed">Try adjusting your search criteria</Text>
+                    <Text c="dimmed">{t("features.practice.adjustSearchCriteria")}</Text>
                   </Stack>
                 </Center>
               </Paper>

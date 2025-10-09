@@ -1,5 +1,6 @@
 import { Portal, Stack } from "@mantine/core";
 import { memo, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import GameNotation from "@/components/GameNotation";
 import { ResponsiveLoadingWrapper } from "@/components/ResponsiveLoadingWrapper";
 import { ResponsiveSkeleton } from "@/components/ResponsiveSkeleton";
@@ -24,6 +25,7 @@ function GameNotationWrapper({
   onRetry,
   children = null,
 }: GameNotationWrapperProps) {
+  const { t } = useTranslation();
   const { layout } = useResponsiveLayout();
   const [isInitializing, setIsInitializing] = useState(true);
   const [initializationError, setInitializationError] = useState<Error | null>(null);
@@ -80,9 +82,9 @@ function GameNotationWrapper({
   if (error || initializationError) {
     return (
       <Stack align="center" gap="md">
-        <div>Failed to load game analysis</div>
+        <div>{t("errors.failedToLoadGameAnalysis")}</div>
         <button type="button" onClick={handleRetry}>
-          Retry
+          {t("common.reset")}
         </button>
       </Stack>
     );

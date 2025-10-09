@@ -113,7 +113,7 @@ function EngineSettingsForm({ engine, settings, setSettings, color, minimal, rem
           <SyncSettings settings={settings} engine={engine.name} setSettings={setSettings} />
           <ActionIcon.Group>
             {engine.type === "local" && (
-              <Tooltip label="Kill engine">
+              <Tooltip label={t("analysis.killEngine")}>
                 <ActionIcon
                   variant="default"
                   onClick={() => {

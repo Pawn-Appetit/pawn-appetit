@@ -264,115 +264,126 @@ Pawn Appétit is for chess players **all around the world**! We’re committed t
     <tr>
         <td align="center">
             <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1fa-1f1f8.svg" width="24" height="18" alt="🇺🇸" /><br />
-            <strong>English</strong><br />
+            <strong>English (US)</strong><br />
             <span style="color: #10B981;">✅ 100%</span><br />
-            <a href="./src/locales/en">View</a>
+            <a href="./src/locales/en-US">View</a>
+        </td>
+        <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1ec-1f1e7.svg" width="24" height="18" alt="🇬🇧" /><br />
+            <strong>English (UK)</strong><br />
+            <span style="color: #F59E0B;">🟡 66%</span><br />
+            <a href="./src/locales/en-GB">View</a>
         </td>
         <td align="center">
             <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1e9-1f1ea.svg" width="24" height="18" alt="🇩🇪" /><br />
             <strong>Deutsch</strong><br />
-            <span style="color: #F59E0B;">🟡 83%</span><br />
+            <span style="color: #F59E0B;">🟡 54%</span><br />
             <a href="./src/locales/de">View</a>
         </td>
         <td align="center">
             <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1ea-1f1f8.svg" width="24" height="18" alt="🇪🇸" /><br />
             <strong>Español</strong><br />
-            <span style="color: #F59E0B;">🟡 83%</span><br />
+            <span style="color: #F59E0B;">🟡 54%</span><br />
             <a href="./src/locales/es">View</a>
-        </td>
-        <td align="center">
-            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1eb-1f1f7.svg" width="24" height="18" alt="🇫🇷" /><br />
-            <strong>Français</strong><br />
-            <span style="color: #F59E0B;">🟡 83%</span><br />
-            <a href="./src/locales/fr">View</a>
         </td>
     </tr>
     <tr>
         <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1eb-1f1f7.svg" width="24" height="18" alt="🇫🇷" /><br />
+            <strong>Français</strong><br />
+            <span style="color: #F59E0B;">🟡 54%</span><br />
+            <a href="./src/locales/fr">View</a>
+        </td>
+        <td align="center">
             <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1e6-1f1f2.svg" width="24" height="18" alt="🇦🇲" /><br />
             <strong>Հայերեն</strong><br />
-            <span style="color: #F59E0B;">🟡 83%</span><br />
+            <span style="color: #F59E0B;">🟡 54%</span><br />
             <a href="./src/locales/hy">View</a>
         </td>
         <td align="center">
             <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1ee-1f1f9.svg" width="24" height="18" alt="🇮🇹" /><br />
             <strong>Italiano</strong><br />
-            <span style="color: #F59E0B;">🟡 83%</span><br />
+            <span style="color: #F59E0B;">🟡 54%</span><br />
             <a href="./src/locales/it">View</a>
         </td>
         <td align="center">
             <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1f7-1f1fa.svg" width="24" height="18" alt="🇷🇺" /><br />
             <strong>Русский</strong><br />
-            <span style="color: #F59E0B;">🟡 83%</span><br />
+            <span style="color: #F59E0B;">🟡 54%</span><br />
             <a href="./src/locales/ru">View</a>
-        </td>
-        <td align="center">
-            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1f9-1f1f7.svg" width="24" height="18" alt="🇹🇷" /><br />
-            <strong>Türkçe</strong><br />
-            <span style="color: #F59E0B;">🟡 83%</span><br />
-            <a href="./src/locales/tr">View</a>
         </td>
     </tr>
     <tr>
         <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1f9-1f1f7.svg" width="24" height="18" alt="🇹🇷" /><br />
+            <strong>Türkçe</strong><br />
+            <span style="color: #F59E0B;">🟡 54%</span><br />
+            <a href="./src/locales/tr">View</a>
+        </td>
+        <td align="center">
             <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1e8-1f1f3.svg" width="24" height="18" alt="🇨🇳" /><br />
             <strong>中文</strong><br />
-            <span style="color: #F59E0B;">🟡 83%</span><br />
+            <span style="color: #F59E0B;">🟡 54%</span><br />
             <a href="./src/locales/zh">View</a>
         </td>
         <td align="center">
             <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1e7-1f1fe.svg" width="24" height="18" alt="🇧🇾" /><br />
             <strong>Беларуская</strong><br />
-            <span style="color: #EF4444;">🔴 46%</span><br />
+            <span style="color: #EF4444;">🔴 30%</span><br />
             <a href="./src/locales/be">View</a>
         </td>
         <td align="center">
             <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1f3-1f1f4.svg" width="24" height="18" alt="🇳🇴" /><br />
             <strong>Norsk</strong><br />
-            <span style="color: #EF4444;">🔴 46%</span><br />
+            <span style="color: #EF4444;">🔴 30%</span><br />
             <a href="./src/locales/nb">View</a>
-        </td>
-        <td align="center">
-            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1f5-1f1f1.svg" width="24" height="18" alt="🇵🇱" /><br />
-            <strong>Polski</strong><br />
-            <span style="color: #EF4444;">🔴 46%</span><br />
-            <a href="./src/locales/pl">View</a>
         </td>
     </tr>
     <tr>
         <td align="center">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1f5-1f1f1.svg" width="24" height="18" alt="🇵🇱" /><br />
+            <strong>Polski</strong><br />
+            <span style="color: #EF4444;">🔴 30%</span><br />
+            <a href="./src/locales/pl">View</a>
+        </td>
+        <td align="center">
             <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1f5-1f1f9.svg" width="24" height="18" alt="🇵🇹" /><br />
             <strong>Português</strong><br />
-            <span style="color: #EF4444;">🔴 46%</span><br />
+            <span style="color: #EF4444;">🔴 30%</span><br />
             <a href="./src/locales/pt">View</a>
         </td>
         <td align="center">
             <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1fa-1f1e6.svg" width="24" height="18" alt="🇺🇦" /><br />
             <strong>Українська</strong><br />
-            <span style="color: #EF4444;">🔴 46%</span><br />
+            <span style="color: #EF4444;">🔴 30%</span><br />
             <a href="./src/locales/uk">View</a>
         </td>
         <td align="center">
             <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1f8-1f1e6.svg" width="24" height="18" alt="🇸🇦" /><br />
             <strong>العربية</strong><br />
-            <span style="color: #EF4444;">🔴 23%</span><br />
+            <span style="color: #EF4444;">🔴 15%</span><br />
             <a href="./src/locales/ar">View</a>
         </td>
+    </tr>
+    <tr>
         <td align="center">
             <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1ef-1f1f5.svg" width="24" height="18" alt="🇯🇵" /><br />
             <strong>日本語</strong><br />
-            <span style="color: #EF4444;">🔴 8%</span><br />
+            <span style="color: #EF4444;">🔴 6%</span><br />
             <a href="./src/locales/ja">View</a>
         </td>
+        <td></td>
+        <td></td>
+        <td></td>
     </tr>
 </table>
 <!-- TRANSLATIONS_END -->
 
 ### 📊 Translation Stats
 
-![Translation Progress](https://img.shields.io/badge/Languages-16-blue?style=for-the-badge&logo=google-translate&logoColor=white)
+![Translation Progress](https://img.shields.io/badge/Languages-17-blue?style=for-the-badge&logo=google-translate&logoColor=white)
 ![Complete Translations](https://img.shields.io/badge/Complete-1-success?style=for-the-badge&logo=checkmark&logoColor=white)
-![In Progress](https://img.shields.io/badge/In_Progress-8-orange?style=for-the-badge&logo=progress&logoColor=white)
+![In Progress](https://img.shields.io/badge/In_Progress-9-orange?style=for-the-badge&logo=progress&logoColor=white)
 ![Need Help](https://img.shields.io/badge/Need_Help-7-red?style=for-the-badge&logo=help&logoColor=white)
 
 📢 Want to help translate? See [CONTRIBUTING.md](./CONTRIBUTING.md).

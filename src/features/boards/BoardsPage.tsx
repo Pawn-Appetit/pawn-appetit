@@ -55,10 +55,10 @@ export default function BoardsPage() {
         const tabState = JSON.parse(sessionStorage.getItem(value) || "{}");
         if (tabState && closedTab?.source && tabState.state.dirty && !forced) {
           modals.openConfirmModal({
-            title: "Unsaved Changes",
+            title: t("common.unsavedChanges.title"),
             withCloseButton: false,
-            children: <Text>You have unsaved changes. Do you want to save them before closing?</Text>,
-            labels: { confirm: "Save and Close", cancel: "Close Without Saving" },
+            children: <Text>{t("common.unsavedChanges.desc")}</Text>,
+            labels: { confirm: t("common.unsavedChanges.saveAndClose"), cancel: t("common.unsavedChanges.closeWithoutSaving") },
             onConfirm: async () => {
               saveToFile({
                 dir: documentDir,

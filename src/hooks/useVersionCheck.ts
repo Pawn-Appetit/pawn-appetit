@@ -2,6 +2,7 @@ import { info, error as logError } from "@tauri-apps/plugin-log";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { check } from "@tauri-apps/plugin-updater";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getVersionCheckConfig, VERSION_CHECK_SETTINGS } from "@/config";
 import {
   checkForUpdates,
@@ -44,6 +45,7 @@ export function useVersionCheck(options: UseVersionCheckOptions = {}): UseVersio
     onNoUpdates,
   } = options;
 
+  const { t } = useTranslation();
   const [isChecking, setIsChecking] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [lastResult, setLastResult] = useState<VersionCheckResult | null>(null);
@@ -103,7 +105,7 @@ export function useVersionCheck(options: UseVersionCheckOptions = {}): UseVersio
     try {
       info("Starting update installation via Tauri updater");
 
-      showUpdateProgressNotification();
+      showUpdateProgressNotification(t);
 
       const update = await check();
 
@@ -112,7 +114,7 @@ export function useVersionCheck(options: UseVersionCheckOptions = {}): UseVersio
         await update.downloadAndInstall();
 
         hideUpdateProgressNotification();
-        showUpdateSuccessNotification();
+        showUpdateSuccessNotification(t);
 
         info("Update installed successfully, restarting application");
         setTimeout(() => relaunch(), 2000);
@@ -124,11 +126,11 @@ export function useVersionCheck(options: UseVersionCheckOptions = {}): UseVersio
       logError(`Update installation failed: ${errorMessage}`);
 
       hideUpdateProgressNotification();
-      showUpdateErrorNotification(errorMessage);
+      showUpdateErrorNotification(errorMessage, t);
     } finally {
       setIsUpdating(false);
     }
-  }, [isUpdating, lastResult]);
+  }, [isUpdating, lastResult, t]);
 
   const checkVersionRef = useRef(checkVersion);
   checkVersionRef.current = checkVersion;

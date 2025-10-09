@@ -58,7 +58,7 @@ function GameInfo({
                 ? t("features.repertoire.enterOpeningTitle")
                 : simplified === "puzzle"
                   ? t("features.puzzle.enterTitle")
-                  : "Unknown Event"
+                  : t("gameInfo.unknownEvent")
             }
             className={cx(classes.contentEditable, !event && classes.contentEditablePlaceholder)}
             onChange={(e) => {
@@ -182,7 +182,7 @@ function GameInfo({
             ) : (
               <ContentEditable
                 className={cx(classes.contentEditable, !site && classes.contentEditablePlaceholder)}
-                data-placeholder="Unknown Site"
+                data-placeholder={t("gameInfo.unknownSite")}
                 html={site}
                 onChange={(e) =>
                   setHeaders({

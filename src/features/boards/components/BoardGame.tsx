@@ -40,7 +40,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
-import { commands, events, Outcome, type GoMode } from "@/bindings";
+import { commands, events, type GoMode, type Outcome } from "@/bindings";
 import GameInfo from "@/components/GameInfo";
 import MoveControls from "@/components/MoveControls";
 import EngineSettingsForm from "@/components/panels/analysis/EngineSettingsForm";
@@ -52,7 +52,7 @@ import {
   currentGameStateAtom,
   currentPlayersAtom,
   enginesAtom,
-  GameState,
+  type GameState,
   tabsAtom,
 } from "@/state/atoms";
 import { getMainLine } from "@/utils/chess";
@@ -79,6 +79,7 @@ interface EnginesSelectProps {
 }
 
 function EnginesSelect({ engine, setEngine }: EnginesSelectProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const engines = useAtomValue(enginesAtom).filter((e): e is LocalEngine => e.type === "local");
 
@@ -91,14 +92,11 @@ function EnginesSelect({ engine, setEngine }: EnginesSelectProps) {
   if (engines.length === 0) {
     return (
       <Stack gap="md">
-        <Alert icon={<IconAlertCircle size={16} />} title="No Chess Engines Available" color="orange" variant="light">
-          <Text size="sm">
-            No chess engines are currently installed or detected on your system. To play against an engine, you'll need
-            to install one first.
-          </Text>
+        <Alert icon={<IconAlertCircle size={16} />} title={t("game.noEnginesAvailable")} color="orange" variant="light">
+          <Text size="sm">{t("game.noEnginesAvailableDesc")}</Text>
         </Alert>
         <Button variant="outline" size="sm" onClick={() => navigate({ to: "/engines" })}>
-          Install Engine
+          {t("game.installEngine")}
         </Button>
       </Stack>
     );
@@ -120,7 +118,7 @@ function EnginesSelect({ engine, setEngine }: EnginesSelectProps) {
         data={engineOptions}
         value={engine?.path ?? ""}
         onChange={handleEngineChange}
-        placeholder="Select engine"
+        placeholder={t("game.selectEngine")}
       />
     </Suspense>
   );
@@ -147,6 +145,7 @@ interface OpponentFormProps {
 }
 
 function OpponentForm({ sameTimeControl, opponent, setOpponent, setOtherOpponent }: OpponentFormProps) {
+  const { t } = useTranslation();
   const engines = useAtomValue(enginesAtom).filter((e): e is LocalEngine => e.type === "local");
 
   const updateType = useCallback(
@@ -241,7 +240,7 @@ function OpponentForm({ sameTimeControl, opponent, setOpponent, setOtherOpponent
             label: (
               <Center style={{ gap: 10 }}>
                 <IconUser size={16} />
-                <span>Human</span>
+                <span>{t("board.human")}</span>
               </Center>
             ),
           },
@@ -250,7 +249,7 @@ function OpponentForm({ sameTimeControl, opponent, setOpponent, setOtherOpponent
             label: (
               <Center style={{ gap: 10 }}>
                 <IconCpu size={16} />
-                <span>Engine</span>
+                <span>{t("common.engine")}</span>
                 {engines.length === 0 && (
                   <ThemeIcon size="xs" color="orange" variant="light">
                     <IconAlertCircle size={10} />
@@ -266,7 +265,7 @@ function OpponentForm({ sameTimeControl, opponent, setOpponent, setOtherOpponent
 
       {opponent.type === "human" && (
         <TextInput
-          placeholder="Name"
+          placeholder={t("common.namePlaceholder")}
           value={opponent.name ?? ""}
           onChange={(e) => setOpponent((prev) => ({ ...prev, name: e.target.value }))}
         />
@@ -285,19 +284,19 @@ function OpponentForm({ sameTimeControl, opponent, setOpponent, setOtherOpponent
         />
       )}
 
-      <Divider variant="dashed" label="Time Settings" />
+      <Divider variant="dashed" label={t("game.timeSettings")} />
       <SegmentedControl
-        data={["Time", "Unlimited"]}
-        value={opponent.timeControl ? "Time" : "Unlimited"}
+        data={[t("game.timeControl"), t("game.unlimited")]}
+        value={opponent.timeControl ? t("game.timeControl") : t("game.unlimited")}
         onChange={handleTimeControlToggle}
       />
       <Group grow wrap="nowrap">
         {opponent.timeControl && (
           <>
-            <InputWrapper label="Time">
+            <InputWrapper label={t("game.time")}>
               <TimeInput defaultType="m" value={opponent.timeControl.seconds} setValue={handleTimeChange} />
             </InputWrapper>
-            <InputWrapper label="Increment">
+            <InputWrapper label={t("game.increment")}>
               <TimeInput defaultType="s" value={opponent.timeControl.increment ?? 0} setValue={handleIncrementChange} />
             </InputWrapper>
           </>
@@ -762,7 +761,7 @@ function BoardGame() {
                     </Box>
                     <Group justify="flex-start">
                       <Checkbox
-                        label="Same time control"
+                        label={t("game.sameTimeControl")}
                         checked={sameTimeControl}
                         onChange={handleSameTimeControlChange}
                       />

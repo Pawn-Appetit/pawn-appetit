@@ -1,5 +1,6 @@
 import { Box, Combobox, Flex, Input, InputBase, ScrollArea, Text, useCombobox } from "@mantine/core";
 import { useAtom } from "jotai";
+import { useTranslation } from "react-i18next";
 import PieceComponent from "@/components/Piece";
 import { pieceSetAtom } from "@/state/atoms";
 
@@ -55,6 +56,7 @@ function DisplayPieces() {
 }
 
 export default function PiecesSelect() {
+  const { t } = useTranslation();
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption(),
   });
@@ -98,7 +100,7 @@ export default function PiecesSelect() {
                   {selected.label}
                 </Text>
               ) : (
-                <Input.Placeholder>Pick value</Input.Placeholder>
+                <Input.Placeholder>{t("settings.pickValue")}</Input.Placeholder>
               )}
             </InputBase>
           </Combobox.Target>

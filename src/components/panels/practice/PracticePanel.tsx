@@ -218,7 +218,7 @@ function PracticePanel() {
                         <Text>{t("common.cannotUndo")}</Text>
                       </>
                     ),
-                    labels: { confirm: "Reset", cancel: t("common.cancel") },
+                    labels: { confirm: t("common.reset"), cancel: t("common.cancel") },
                     confirmProps: { color: "red" },
                     onConfirm: () => {
                       const cards = buildFromTree(root, headers.orientation || "white", headers.start || []);
@@ -260,7 +260,7 @@ function PositionsModal({
   const goToMove = useStore(store, (s) => s.goToMove);
   return (
     <Modal opened={open} onClose={() => setOpen(false)} size="xl" title={<b>Practice Positions</b>}>
-      {deck.positions.length === 0 && <Text>You haven't added any positions to practice yet.</Text>}
+      {deck.positions.length === 0 && <Text>{t("practice.noPositionsYet")}</Text>}
       <SimpleGrid cols={2}>
         {deck.positions.map((c) => {
           const position = findFen(c.fen, root);
@@ -319,13 +319,14 @@ function LogsModal({
   setOpen: (open: boolean) => void;
   logs: PracticeData["logs"];
 }) {
+  const { t } = useTranslation();
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (s) => s.root);
   const goToMove = useStore(store, (s) => s.goToMove);
   return (
     <Modal opened={open} onClose={() => setOpen(false)} size="xl" title={<b>Practice Logs</b>}>
       <SimpleGrid cols={2}>
-        {logs.length === 0 && <Text>No logs yet</Text>}
+        {logs.length === 0 && <Text>{t("practice.noLogsYet")}</Text>}
         {logs.map((log) => {
           const position = findFen(log.fen, root);
           const node = getNodeAtPath(root, position);

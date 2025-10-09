@@ -1,6 +1,7 @@
 import { Flex, Paper, Progress, Select, Stack, Text } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import useSWRImmutable from "swr/immutable";
 import type { DatabaseInfo as PlainDatabaseInfo, PlayerGameInfo } from "@/bindings";
 import { commands, events } from "@/bindings";
@@ -37,6 +38,7 @@ interface PersonalInfo {
 }
 
 function Databases() {
+  const { t } = useTranslation();
   const sessions = useAtomValue(sessionsAtom);
 
   const players = Array.from(
@@ -110,16 +112,16 @@ function Databases() {
 
   return (
     <>
-      {isLoading && databases && (
-        <Stack>
+      {progress > 0 && progress < 100 && (
+        <Stack align="center" justify="center" h="80%">
           <Text ta="center" fw="bold" my="auto" fz="lg">
-            Processing Games...
+            {t("accounts.processingGames")}
           </Text>
 
           <Progress value={progress} />
         </Stack>
       )}
-      {error && <Text ta="center">Error loading databases: {error}</Text>}
+      {error && <Text ta="center">{t("accounts.databaseLoadError")} {error}</Text>}
       {personalInfo &&
         (personalInfo.length === 0 ? (
           <Paper

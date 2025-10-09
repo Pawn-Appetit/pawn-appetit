@@ -183,9 +183,9 @@ export default function LearnPage() {
       <Box>
         <Group justify="space-between" align="flex-start" mb="md">
           <Box>
-            <Title mb="xs">Chess Mastery Hub</Title>
+            <Title mb="xs">{t("learn.chessMasteryHub")}</Title>
             <Text size="lg" c="dimmed">
-              Your personalized journey to chess excellence
+              {t("dashboard.cards.learn.desc")}
             </Text>
           </Box>
         </Group>

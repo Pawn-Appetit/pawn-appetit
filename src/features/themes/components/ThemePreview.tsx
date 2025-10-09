@@ -18,6 +18,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { IconBell, IconHeart, IconSearch, IconSettings, IconStar, IconUser } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 import type { Theme } from "../types/theme";
 
 interface ThemePreviewProps {
@@ -25,11 +26,12 @@ interface ThemePreviewProps {
 }
 
 export default function ThemePreview({ theme }: ThemePreviewProps) {
+  const { t } = useTranslation();
   // Sample data for preview
   const tableData = [
-    { id: 1, name: "John Doe", email: "john@example.com", role: "Admin" },
-    { id: 2, name: "Jane Smith", email: "jane@example.com", role: "User" },
-    { id: 3, name: "Bob Johnson", email: "bob@example.com", role: "Moderator" },
+    { id: 1, name: t("themes.preview.demoUser1"), email: "john@example.com", role: t("themes.preview.admin") },
+    { id: 2, name: t("themes.preview.demoUser2"), email: "jane@example.com", role: t("themes.preview.user") },
+    { id: 3, name: t("themes.preview.demoUser3"), email: "bob@example.com", role: t("themes.preview.moderator") },
   ];
 
   return (
@@ -38,24 +40,24 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
         <Group justify="space-between">
           <div>
             <Title order={2} style={{ fontFamily: theme.headings?.fontFamily || theme.fontFamily }}>
-              Theme Preview
+              {t("themes.preview.title")}
             </Title>
             <Text c="dimmed" size="sm">
-              {theme.name} by {theme.author || "Unknown"}
+              {theme.name} by {theme.author || t("themes.preview.unknown")}
             </Text>
           </div>
           <Group>
             <Badge variant="light" color={theme.primaryColor}>
               {theme.primaryColor}
             </Badge>
-            <Badge variant="outline">Preview</Badge>
+            <Badge variant="outline">{t("themes.preview.preview")}</Badge>
           </Group>
         </Group>
 
         {/* Color Palette Preview */}
         <Card withBorder p="md">
           <Title order={4} mb="sm">
-            Color Palette
+            {t("themes.preview.colorPalette")}
           </Title>
           <Stack gap="xs">
             {Object.entries(theme.colors)
@@ -89,37 +91,37 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
         {/* Component Examples */}
         <Card withBorder p="md">
           <Title order={4} mb="md">
-            Component Examples
+            {t("themes.preview.componentExamples")}
           </Title>
 
           <Tabs defaultValue="buttons" variant="outline">
             <Tabs.List>
-              <Tabs.Tab value="buttons">Buttons</Tabs.Tab>
-              <Tabs.Tab value="inputs">Inputs</Tabs.Tab>
-              <Tabs.Tab value="data">Data</Tabs.Tab>
-              <Tabs.Tab value="feedback">Feedback</Tabs.Tab>
+              <Tabs.Tab value="buttons">{t("themes.preview.buttons")}</Tabs.Tab>
+              <Tabs.Tab value="inputs">{t("themes.preview.inputs")}</Tabs.Tab>
+              <Tabs.Tab value="data">{t("themes.preview.data")}</Tabs.Tab>
+              <Tabs.Tab value="feedback">{t("themes.preview.feedback")}</Tabs.Tab>
             </Tabs.List>
 
             <Tabs.Panel value="buttons" pt="md">
               <Stack gap="md">
                 <Group>
-                  <Button color={theme.primaryColor}>Primary Button</Button>
+                  <Button color={theme.primaryColor}>{t("themes.preview.primaryButton")}</Button>
                   <Button variant="outline" color={theme.primaryColor}>
-                    Outline
+                    {t("themes.preview.outline")}
                   </Button>
                   <Button variant="light" color={theme.primaryColor}>
-                    Light
+                    {t("themes.preview.light")}
                   </Button>
                   <Button variant="subtle" color={theme.primaryColor}>
-                    Subtle
+                    {t("themes.preview.subtle")}
                   </Button>
                 </Group>
 
                 <Group>
-                  <Button size="xs">Extra Small</Button>
-                  <Button size="sm">Small</Button>
-                  <Button size="md">Medium</Button>
-                  <Button size="lg">Large</Button>
+                  <Button size="xs">{t("themes.preview.extraSmall")}</Button>
+                  <Button size="sm">{t("themes.preview.small")}</Button>
+                  <Button size="md">{t("themes.preview.medium")}</Button>
+                  <Button size="lg">{t("themes.preview.large")}</Button>
                 </Group>
 
                 <Group>
@@ -139,20 +141,20 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
             <Tabs.Panel value="inputs" pt="md">
               <Stack gap="md">
                 <Group grow>
-                  <TextInput label="Text Input" placeholder="Enter text" radius={theme.defaultRadius} />
+                  <TextInput label={t("themes.preview.textInput")} placeholder={t("themes.preview.enterText")} radius={theme.defaultRadius} />
                   <TextInput
-                    label="With Icon"
-                    placeholder="Search..."
+                    label={t("themes.preview.withIcon")}
+                    placeholder={t("themes.preview.searchPlaceholder")}
                     leftSection={<IconSearch size={16} />}
                     radius={theme.defaultRadius}
                   />
                 </Group>
 
                 <Group grow>
-                  <Input.Wrapper label="Switch">
-                    <Switch label="Enable notifications" color={theme.primaryColor} mt={5} />
+                  <Input.Wrapper label={t("themes.preview.switch")}>
+                    <Switch label={t("themes.preview.enableNotifications")} color={theme.primaryColor} mt={5} />
                   </Input.Wrapper>
-                  <Input.Wrapper label="Slider">
+                  <Input.Wrapper label={t("themes.preview.slider")}>
                     <Slider mt={5} defaultValue={40} color={theme.primaryColor} radius={theme.defaultRadius} />
                   </Input.Wrapper>
                 </Group>
@@ -164,9 +166,9 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
                 <Table striped highlightOnHover>
                   <Table.Thead>
                     <Table.Tr>
-                      <Table.Th>Name</Table.Th>
-                      <Table.Th>Email</Table.Th>
-                      <Table.Th>Role</Table.Th>
+                      <Table.Th>{t("themes.preview.name")}</Table.Th>
+                      <Table.Th>{t("themes.preview.email")}</Table.Th>
+                      <Table.Th>{t("themes.preview.role")}</Table.Th>
                     </Table.Tr>
                   </Table.Thead>
                   <Table.Tbody>
@@ -177,7 +179,7 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
                         <Table.Td>
                           <Badge
                             variant="light"
-                            color={row.role === "Admin" ? "red" : row.role === "Moderator" ? "blue" : "gray"}
+                            color={row.role === t("themes.preview.admin") ? "red" : row.role === t("themes.preview.moderator") ? "blue" : "gray"}
                           >
                             {row.role}
                           </Badge>
@@ -195,26 +197,26 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
 
                 <Group>
                   <Badge variant="filled" color={theme.primaryColor}>
-                    Filled
+                    {t("themes.preview.filled")}
                   </Badge>
                   <Badge variant="light" color={theme.primaryColor}>
-                    Light
+                    {t("themes.preview.light")}
                   </Badge>
                   <Badge variant="outline" color={theme.primaryColor}>
-                    Outline
+                    {t("themes.preview.outline")}
                   </Badge>
                   <Badge variant="dot" color={theme.primaryColor}>
-                    Dot
+                    {t("themes.preview.dot")}
                   </Badge>
                 </Group>
 
                 <Group>
-                  <Tooltip label="Settings">
+                  <Tooltip label={t("themes.preview.settings")}>
                     <ActionIcon variant="light">
                       <IconSettings size={16} />
                     </ActionIcon>
                   </Tooltip>
-                  <Tooltip label="User Profile">
+                  <Tooltip label={t("themes.preview.userProfile")}>
                     <ActionIcon variant="light">
                       <IconUser size={16} />
                     </ActionIcon>
@@ -228,25 +230,25 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
         {/* Typography Preview */}
         <Card withBorder p="md">
           <Title order={4} mb="md">
-            Typography
+            {t("themes.preview.typography")}
           </Title>
           <Stack gap="sm">
             <Title order={1} style={{ fontFamily: theme.headings?.fontFamily || theme.fontFamily }}>
-              Heading 1
+              {t("themes.preview.heading1")}
             </Title>
             <Title order={2} style={{ fontFamily: theme.headings?.fontFamily || theme.fontFamily }}>
-              Heading 2
+              {t("themes.preview.heading2")}
             </Title>
             <Title order={3} style={{ fontFamily: theme.headings?.fontFamily || theme.fontFamily }}>
-              Heading 3
+              {t("themes.preview.heading3")}
             </Title>
-            <Text size="lg">Large text with font family: {theme.fontFamily}</Text>
-            <Text>Regular text that demonstrates the default font styling.</Text>
+            <Text size="lg">{t("themes.preview.largeText", { fontFamily: theme.fontFamily })}</Text>
+            <Text>{t("themes.preview.regularText")}</Text>
             <Text size="sm" c="dimmed">
-              Small dimmed text for secondary information.
+              {t("themes.preview.smallDimmedText")}
             </Text>
             <Text ff={theme.fontFamilyMonospace} size="sm">
-              Monospace text: {theme.fontFamilyMonospace}
+              {t("themes.preview.monospaceText", { fontFamily: theme.fontFamilyMonospace })}
             </Text>
           </Stack>
         </Card>
@@ -254,19 +256,19 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
         {/* Layout Preview */}
         <Card withBorder p="md">
           <Title order={4} mb="md">
-            Layout & Spacing
+            {t("themes.preview.layoutSpacing")}
           </Title>
           <Group gap="md">
             <Paper p="md" withBorder radius={theme.defaultRadius} style={{ flex: 1 }}>
-              <Text fw={500}>Card with {theme.defaultRadius} radius</Text>
+              <Text fw={500}>{t("themes.preview.cardWithRadius", { radius: theme.defaultRadius })}</Text>
               <Text size="sm" c="dimmed">
-                Scale factor: {theme.scale}
+                {t("themes.preview.scaleFactor", { scale: theme.scale })}
               </Text>
             </Paper>
             <Paper p="lg" shadow="md" radius={theme.defaultRadius} style={{ flex: 1 }}>
-              <Text fw={500}>Card with shadow</Text>
+              <Text fw={500}>{t("themes.preview.cardWithShadow")}</Text>
               <Text size="sm" c="dimmed">
-                Using theme colors and spacing
+                {t("themes.preview.usingThemeColors")}
               </Text>
             </Paper>
           </Group>

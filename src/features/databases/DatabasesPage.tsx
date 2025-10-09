@@ -636,9 +636,9 @@ function DatabaseDetails({
     return (
       <Paper withBorder p="md" h="100%">
         <Stack align="center" justify="center" h="100%">
-          <Text ta="center">Select a database to see details</Text>
+          <Text ta="center">{t("databases.selectDatabasePrompt")}</Text>
           <Text c="dimmed" size="sm" ta="center">
-            Tip: Double-click a database to open it.
+            {t("databases.doubleclickTip")}
           </Text>
         </Stack>
       </Paper>
@@ -651,15 +651,15 @@ function DatabaseDetails({
         <ScrollArea h="100%" offsetScrollbars>
           <Stack>
             <Text fz="lg" fw="bold">
-              There was an error loading this database
+              {t("databases.loadError")}
             </Text>
             <Text>
               <Text td="underline" span>
-                Reason:
+                {t("databases.reason")}
               </Text>
               {` ${selectedDatabase.error}`}
             </Text>
-            <Text>Check if the file exists and that it is not corrupted.</Text>
+            <Text>{t("databases.checkFileError")}</Text>
           </Stack>
         </ScrollArea>
       </Paper>

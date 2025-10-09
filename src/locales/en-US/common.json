@@ -64,7 +64,14 @@
     "close": "Close",
     "import": "Import",
     "all": "All",
-    "convert": "Convert"
+    "convert": "Convert",
+    "copied": "Copied",
+    "copy": "Copy",
+    "update": "Update",
+    "reload": "Reload",
+    "reloadFile": "Reload file",
+    "namePlaceholder": "Name",
+    "details": "Details"
   },
   "chess": {
     "checkmate": "Checkmate",
@@ -157,6 +164,226 @@
       "invalidTurn": "Invalid turn",
       "unknown": "Unknown error"
     }
+  },
+  "error": {
+    "title": "An error occurred",
+    "unexpectedError": "Unexpected Error:",
+    "copyStackTrace": "Copy stack trace",
+    "reportPrompt": "Please report this on",
+    "reportOr": "or on the"
+  },
+  "analysis": {
+    "noEnginesInstalled": "No engines installed. Please",
+    "addEngine": "Add an engine",
+    "first": "first.",
+    "checkOpponentThreat": "Check the opponent's threat",
+    "engineSpeed": "How fast the engine is running",
+    "killEngine": "Kill engine",
+    "enableWDL": "Enable WDL"
+  },
+  "logs": {
+    "filterAll": "All",
+    "filterGUI": "GUI",
+    "filterEngine": "Engine",
+    "noEnginesLoaded": "No engines loaded",
+    "noLogsFor": "No logs for",
+    "engine": "engine"
+  },
+  "moves": {
+    "transposition": "Transposition"
+  },
+  "game": {
+    "timeSettings": "Time Settings",
+    "timeControl": "Time",
+    "unlimited": "Unlimited",
+    "time": "Time",
+    "increment": "Increment",
+    "sameTimeControl": "Same time control",
+    "noEnginesAvailable": "No Chess Engines Available",
+    "noEnginesAvailableDesc": "No chess engines are currently installed or detected on your system. To play against an engine, you'll need to install one first.",
+    "installEngine": "Install Engine",
+    "selectEngine": "Select engine",
+    "openingFor": "opening for"
+  },
+  "databases": {
+    "selectDatabasePrompt": "Select a database",
+    "doubleclickTip": "Double-click on a database to select it",
+    "loadError": "Error loading database",
+    "reason": "Reason",
+    "checkFileError": "Check if the file exists and you have permission to read it",
+    "noTournamentSelected": "No tournament selected",
+    "noPlayerSelected": "No player selected",
+    "processingPlayerData": "Processing Player Data",
+    "searchPlaceholder": "Search databases...",
+    "noDatabasesFound": "No databases found",
+    "player1": "Player 1",
+    "player2": "Player 2",
+    "on": "On",
+    "off": "Off",
+    "analyzeGame": "Analyze game",
+    "deleteGame": "Delete game",
+    "fideInfo": {
+      "title": "FIDE Player Info",
+      "sex": "Sex: {{sex}}",
+      "born": "Born: {{birthday}}",
+      "standard": "Standard",
+      "rapid": "Rapid",
+      "blitz": "Blitz"
+    },
+    "playerTable": {
+      "minElo": "Min ELO",
+      "maxElo": "Max ELO"
+    },
+    "tournamentCard": {
+      "tabs": {
+        "games": "Games",
+        "leaderboard": "Leaderboard"
+      }
+    }
+  },
+  "accounts": {
+    "processingGames": "Processing Games...",
+    "databaseLoadError": "Error loading database",
+    "searchPlaceholder": "Search accounts...",
+    "addAccount": "Add Account",
+    "name": "Name",
+    "website": "Website",
+    "username": "Username",
+    "loginWithBrowser": "Login with browser",
+    "loginWithBrowserDesc": "Allows faster game downloads",
+    "selectPlayer": "Select player",
+    "enterUsername": "Enter your username",
+    "noAccountsFound": "No accounts found",
+    "personalCard": {
+      "fideInfo": "FIDE info",
+      "tabs": {
+        "overview": "Overview",
+        "ratings": "Ratings",
+        "openings": "Openings"
+      }
+    },
+    "dateRange": {
+      "allTime": "All time"
+    },
+    "selector": {
+      "allWebsites": "All websites",
+      "allAccounts": "All accounts",
+      "website": "Website",
+      "account": "Account"
+    },
+    "overview": {
+      "clickToSeeMonthDetails": "Click to see the month details",
+      "clickToReturnToYears": "Click to return to the years view"
+    },
+    "accountCard": {
+      "mainAccount": "Main account",
+      "setAsMainAccount": "Set as main account",
+      "updateStats": "Update stats",
+      "downloadGames": "Download games",
+      "removeAccount": "Remove account",
+      "downloaded": "Downloaded",
+      "gamesCount": "{{count}} games"
+    }
+  },
+  "practice": {
+    "noPositionsYet": "no positions yet",
+    "noLogsYet": "No logs yet",
+    "adjustSearchCriteria": "Adjust the search criteria to see some logs",
+    "hintMessage": "Hint: Look for tactical opportunities or patterns in the position"
+  },
+  "repertoire": {
+    "maxDepth": "Max Depth:",
+    "totalMoves": "Total moves:",
+    "analyzing": "Analyzing Repertoire",
+    "noMissingMoves": "No missing moves",
+    "missingMoves": "Missing moves",
+    "refreshMoves": "Refresh moves",
+    "variations": "Variations",
+    "markAsStartHint": "Mark as starting position",
+    "noMissingMovesFound": "No missing moves found",
+    "practicePositions": "Practice Positions",
+    "practiceLogs": "Practice Logs"
+  },
+  "notifications": {
+    "failedToOpenFile": "Failed to open file",
+    "newVersionAvailable": "New version available",
+    "updating": "Updating",
+    "downloadingUpdate": "Downloading and installing update...",
+    "clearAllData": "Clear all data",
+    "dataCleared": "Data cleared",
+    "dataClearedMessage": "All saved data has been cleared. The app will reload.",
+    "failedToClearData": "Failed to clear data",
+    "openingLogs": "Opening Logs",
+    "failedToOpenLogFile": "Failed to open log file",
+    "aboutTitle": "Pawn Appétit",
+    "menuError": "Menu Error",
+    "failedToCreateMenu": "Failed to create application menu",
+    "versionReadyToInstall": "Version {{version}} is ready to install",
+    "updatingApplication": "Updating Application",
+    "updateCompleted": "Update Completed",
+    "appWillRestart": "The application will restart to apply the update",
+    "updateFailed": "Update Failed"
+  },
+  "dashboard": {
+    "noMainAccount": "No main account",
+    "suggestions": {
+      "analyzeLastGame": "Analyze your last game",
+      "exploreOpenings": "Explore popular openings"
+    },
+    "timeControlCards": {
+      "classicalDesc": "Play classical chess games",
+      "rapidDesc": "Play quick-paced rapid games",
+      "blitzDesc": "Play fast-paced blitz games",
+      "bulletDesc": "Play ultra-fast bullet games"
+    },
+    "tabs": {
+      "local": "Local",
+      "lichess": "Lichess"
+    },
+    "tableHeaders": {
+      "opponent": "Opponent",
+      "color": "Color",
+      "result": "Result",
+      "accuracy": "Accuracy",
+      "moves": "Moves",
+      "date": "Date",
+      "account": "Account"
+    },
+    "suggestedForYou": "Suggested for you",
+    "dailyGoals": "Daily goals"
+  },
+  "databaseOptions": {
+    "player": "Player",
+    "search": "Search",
+    "color": "Color",
+    "result": "Result",
+    "any": "Any",
+    "whiteWon": "White Won",
+    "draw": "Draw",
+    "blackWon": "Black Won",
+    "from": "From",
+    "to": "To",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "position": "Position",
+    "exact": "Exact",
+    "partial": "Partial",
+    "currentPosition": "Current Position",
+    "similarStructure": "Similar Structure",
+    "empty": "Empty",
+    "since": "Since",
+    "until": "Until",
+    "pickDate": "Pick date",
+    "playerUsername": "Player's username",
+    "selectColor": "Select color"
+  },
+  "gameInfo": {
+    "unknownEvent": "Unknown Event",
+    "unknownSite": "Unknown Site",
+    "unknownElo": "Unknown ELO",
+    "openingFor": "opening for",
+    "unknownPlaceholder": "?",
+    "unknownDate": "????.??.??"
   },
   "units": {
     "count": "{{count, number}}",
@@ -483,7 +710,10 @@
       "completed": "Completed",
       "exercisesCompleted": "exercises completed",
       "lessonCompleted": "Congratulations! You've completed {{lesson}}!",
-      "completionMessage": "You've successfully completed all exercises in this lesson. Keep up the great work!"
+      "completionMessage": "You've successfully completed all exercises in this lesson. Keep up the great work!",
+      "lessons": "Lessons",
+      "backToLearn": "Back to Learn",
+      "tryTheseMoves": "Try these moves:"
     },
     "practice": {
       "title": "Tactical Practice",
@@ -496,12 +726,30 @@
       "showHint": "Show Hint",
       "hintText": "Look for tactical opportunities or key squares that control the position.",
       "congratulations": "Congratulations!",
-      "completedCategory": "You've completed all exercises in {{category}}!"
+      "completedCategory": "You've completed all exercises in {{category}}!",
+      "practice": "Practice",
+      "backToLearn": "Back to Learn",
+      "backToPractice": "Back to Practice",
+      "searchPlaceholder": "Search practice categories...",
+      "noCategoriesFound": "No categories found",
+      "adjustSearchCriteria": "Try adjusting your search criteria",
+      "resetExercise": "Reset exercise",
+      "lookForBestMove": "Look for the best move in this position. Consider all tactical motifs!",
+      "comingSoon": "Coming Soon",
+      "startTraining": "Start Training",
+      "continue": "Continue"
     },
     "engines": {
       "title": "Your Engines",
+      "searchPlaceholder": "Search engines...",
+      "noEnginesFound": "No engines found",
+      "noEnginesFoundMessage": "Try adjusting your search or add a new engine.",
+      "unknownEngine": "Unknown Engine",
+      "selectImage": "Select image",
+      "invalidConfiguration": "Invalid Configuration",
       "settings": {
         "noEngine": "No engine selected",
+        "selectEngineTip": "Tip: Select an engine to edit its settings.",
         "searchSettings": "Search settings",
         "advancedSettings": "Advanced settings",
         "numOfLines": "Number of lines",
@@ -858,7 +1106,11 @@
     "gameplay": "Gameplay",
     "analysis": "Analysis",
     "interface": "Interface",
-    "system": "System"
+    "system": "System",
+    "telemetryLoading": "Loading telemetry settings...",
+    "telemetryDetails": "Telemetry data is anonymous and helps us understand how Pawn Appétit is used to improve the experience. We never collect personal information or game content. Data is securely stored using Supabase.",
+    "pickValue": "Pick value",
+    "pressAnyKey": "Press any key"
   },
   "formatters": {
     "dateFormat": "{{date, dateformat}}",
@@ -965,5 +1217,102 @@
     "goToPositionNumber": "Go to Position Number",
     "previousGame": "Previous game",
     "nextGame": "Next game"
+  },
+  "errors": {
+    "failedToLoadAnalysisPanels": "Failed to load analysis panels",
+    "failedToLoadGameAnalysis": "Failed to load game analysis",
+    "failedToInitializeChessBoard": "Failed to initialize chess board",
+    "failedToLoadMobileBoardLayout": "Failed to load mobile board layout",
+    "defaultLayout": "Default Layout",
+    "unexpectedError": "Unexpected Error:",
+    "invalidMove": "Invalid move"
+  },
+  "window": {
+    "minimize": "Minimize Window",
+    "maximize": "Maximize Window",
+    "maximizeRestore": "Maximize/Restore Window",
+    "close": "Close Window"
+  },
+  "sidebar": {
+    "more": "More"
+  },
+  "board": {
+    "human": "Human",
+    "moveInput": {
+      "enterMove": "Enter move",
+      "invalidMove": "Invalid move"
+    },
+    "choosePromotionPiece": "Choose promotion piece:"
+  },
+  "learn": {
+    "chessMasteryHub": "Chess Mastery Hub",
+    "progressTooltip": "Progress",
+    "yourProgress": "Your Progress",
+    "overallProgress": "Overall Progress",
+    "streak": "Streak",
+    "streakDays": "{{count}} days",
+    "level": "Level",
+    "totalPoints": "Total Points",
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "master": "Master"
+  },
+  "themes": {
+    "preview": {
+      "title": "Theme Preview",
+      "preview": "Preview",
+      "unknown": "Unknown",
+      "colorPalette": "Color Palette",
+      "componentExamples": "Component Examples",
+      "buttons": "Buttons",
+      "inputs": "Inputs",
+      "data": "Data",
+      "feedback": "Feedback",
+      "primaryButton": "Primary Button",
+      "outline": "Outline",
+      "light": "Light",
+      "subtle": "Subtle",
+      "extraSmall": "Extra Small",
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large",
+      "textInput": "Text Input",
+      "enterText": "Enter text",
+      "withIcon": "With Icon",
+      "searchPlaceholder": "Search...",
+      "switch": "Switch",
+      "enableNotifications": "Enable notifications",
+      "slider": "Slider",
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "demoUser1": "John Doe",
+      "demoUser2": "Jane Smith",
+      "demoUser3": "Bob Johnson",
+      "admin": "Admin",
+      "user": "User",
+      "moderator": "Moderator",
+      "filled": "Filled",
+      "dot": "Dot",
+      "settings": "Settings",
+      "userProfile": "User Profile",
+      "typography": "Typography",
+      "heading1": "Heading 1",
+      "heading2": "Heading 2",
+      "heading3": "Heading 3",
+      "largeText": "Large text with font family: {{fontFamily}}",
+      "regularText": "Regular text that demonstrates the default font styling.",
+      "smallDimmedText": "Small dimmed text for secondary information.",
+      "monospaceText": "Monospace text: {{fontFamily}}",
+      "layoutSpacing": "Layout & Spacing",
+      "cardWithRadius": "Card with {{radius}} radius",
+      "scaleFactor": "Scale factor: {{scale}}",
+      "cardWithShadow": "Card with shadow",
+      "usingThemeColors": "Using theme colors and spacing"
+    }
+  },
+  "about": {
+    "tauriVersion": "Tauri version: {{version}}"
   }
 }

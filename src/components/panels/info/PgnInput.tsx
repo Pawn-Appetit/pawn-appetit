@@ -108,7 +108,7 @@ function PgnInput() {
       <Textarea autosize value={tmp} onChange={(e) => setTmp(e.currentTarget.value)} />
       <CopyButton value={tmp} timeout={2000}>
         {({ copied, copy }) => (
-          <Tooltip label={copied ? "Copied" : "Copy"} withArrow position="right">
+          <Tooltip label={copied ? t("common.copied") : t("common.copy")} withArrow position="right">
             <ActionIcon
               color={copied ? "teal" : "gray"}
               variant="subtle"
@@ -122,7 +122,7 @@ function PgnInput() {
       </CopyButton>
       {realPGN !== tmp && (
         <Button style={{ position: "absolute", bottom: 15, right: 15 }} onClick={() => updatePgn()}>
-          Update
+          {t("common.update")}
         </Button>
       )}
     </Box>

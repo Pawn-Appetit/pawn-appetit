@@ -1,5 +1,6 @@
 import { Badge, Box, Button, Card, Group, Progress, Stack, Text, ThemeIcon } from "@mantine/core";
 import { IconChevronRight, IconClock, IconTarget, IconTrophy } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 
 export interface PracticeCardCategory {
   id: string;
@@ -31,6 +32,7 @@ export function PracticeCard({
   progress: { completed: number; total: number };
   onClick: () => void;
 }) {
+  const { t } = useTranslation();
   const completionPercentage = Math.round((progress.completed / progress.total) * 100);
   const totalPoints = category.exercises.reduce((sum, ex) => sum + (ex.points || 0), 0);
 
@@ -118,7 +120,7 @@ export function PracticeCard({
             rightSection={!!category.exercises.length && <IconChevronRight size={16} />}
             disabled={category.exercises.length === 0}
           >
-            {category.exercises.length === 0 ? "Coming Soon" : progress.completed === 0 ? "Start Training" : "Continue"}
+            {category.exercises.length === 0 ? t("features.practice.comingSoon") : progress.completed === 0 ? t("features.practice.startTraining") : t("features.practice.continue")}
           </Button>
         </Box>
       </Stack>

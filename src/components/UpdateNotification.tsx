@@ -164,15 +164,20 @@ export function UpdateNotificationModal({
   );
 }
 
-export function showUpdateNotification(versionInfo: VersionInfo, onUpdate: () => void, onViewDetails: () => void) {
+export function showUpdateNotification(
+  versionInfo: VersionInfo,
+  onUpdate: () => void,
+  onViewDetails: () => void,
+  t: (key: string, params?: Record<string, unknown>) => string,
+) {
   const notificationId = `update-${versionInfo.version}`;
 
   notifications.show({
     id: notificationId,
-    title: "New Version Available",
+    title: t("notifications.newVersionAvailable"),
     message: (
       <Stack gap="xs">
-        <Text size="sm">Version {versionInfo.version} is ready to install</Text>
+        <Text size="sm">{t("notifications.versionReadyToInstall", { version: versionInfo.version })}</Text>
         <Group gap="xs">
           <Button
             size="xs"
@@ -182,7 +187,7 @@ export function showUpdateNotification(versionInfo: VersionInfo, onUpdate: () =>
               onViewDetails();
             }}
           >
-            Details
+            {t("common.details")}
           </Button>
           <Button
             size="xs"
@@ -191,7 +196,7 @@ export function showUpdateNotification(versionInfo: VersionInfo, onUpdate: () =>
               onUpdate();
             }}
           >
-            Update
+            {t("common.update")}
           </Button>
         </Group>
       </Stack>
@@ -203,29 +208,29 @@ export function showUpdateNotification(versionInfo: VersionInfo, onUpdate: () =>
   });
 }
 
-export function showUpdateProgressNotification() {
+export function showUpdateProgressNotification(t: (key: string) => string) {
   return notifications.show({
     id: "update-progress",
-    title: "Updating Application",
-    message: "Downloading and installing update...",
+    title: t("notifications.updatingApplication"),
+    message: t("notifications.downloadingUpdate"),
     loading: true,
     autoClose: false,
     withCloseButton: false,
   });
 }
 
-export function showUpdateSuccessNotification() {
+export function showUpdateSuccessNotification(t: (key: string) => string) {
   notifications.show({
-    title: "Update Completed",
-    message: "The application will restart to apply the update",
+    title: t("notifications.updateCompleted"),
+    message: t("notifications.appWillRestart"),
     color: "green",
     autoClose: 3000,
   });
 }
 
-export function showUpdateErrorNotification(error: string) {
+export function showUpdateErrorNotification(error: string, t: (key: string) => string) {
   notifications.show({
-    title: "Update Failed",
+    title: t("notifications.updateFailed"),
     message: error,
     color: "red",
     autoClose: 10000,

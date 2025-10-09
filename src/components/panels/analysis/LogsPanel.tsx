@@ -5,6 +5,7 @@ import { save } from "@tauri-apps/plugin-dialog";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { useAtomValue } from "jotai";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import { commands } from "@/bindings";
 import { activeTabAtom, enginesAtom, fontSizeAtom } from "@/state/atoms";
@@ -12,6 +13,7 @@ import type { LocalEngine } from "@/utils/engines";
 import { unwrap } from "@/utils/unwrap";
 
 export default function LogsPanel() {
+  const { t } = useTranslation();
   const engines = useAtomValue(enginesAtom);
   const localEngines = engines.filter((e): e is LocalEngine => e.type === "local").filter((e) => e.loaded);
   const [engine, setEngine] = useState<LocalEngine | undefined>(localEngines[0]);
@@ -77,14 +79,14 @@ export default function LogsPanel() {
           value={filter}
           onChange={(value) => setFilter(value as any)}
           data={[
-            { value: "all", label: "All" },
-            { value: "gui", label: "GUI" },
-            { value: "engine", label: "Engine" },
+            { value: "all", label: t("logs.filterAll") },
+            { value: "gui", label: t("logs.filterGUI") },
+            { value: "engine", label: t("logs.filterEngine") },
           ]}
         />
         <Select
           allowDeselect={false}
-          value={engine?.name ?? "No engines loaded"}
+          value={engine?.name ?? t("logs.noEnginesLoaded")}
           onChange={(name) => setEngine(localEngines.find((e) => e.name === name))}
           data={localEngines.map((e) => ({ value: e.name, label: e.name }))}
         />
@@ -92,7 +94,7 @@ export default function LogsPanel() {
 
       {filteredData?.length === 0 && (
         <Text ta="center" mt="lg">
-          No logs for {engine?.name ?? "engine"}
+          {t("logs.noLogsFor")} {engine?.name ?? t("logs.engine")}
         </Text>
       )}
       <ScrollArea flex={1} viewportRef={parentRef}>

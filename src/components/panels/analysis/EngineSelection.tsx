@@ -3,6 +3,7 @@ import { IconCloud, IconCpu } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
 import { memo } from "react";
+import { useTranslation } from "react-i18next";
 import LocalImage from "@/components/LocalImage";
 import { activeTabAtom, enginesAtom } from "@/state/atoms";
 import { type Engine, stopEngine } from "@/utils/engines";
@@ -42,6 +43,7 @@ function EngineBox({ engine, toggleEnabled }: { engine: Engine; toggleEnabled: (
 }
 
 function EngineSelection() {
+  const { t } = useTranslation();
   const [engines, setEngines] = useAtom(enginesAtom);
 
   return (
@@ -49,7 +51,8 @@ function EngineSelection() {
       {engines.length === 0 && (
         <Center>
           <Text>
-            No engines installed. Please <Link to="/engines">Add an engine</Link> first.
+            {t("analysis.noEnginesInstalled")}{" "}
+            <Link to="/engines">{t("analysis.addEngine")}</Link> {t("analysis.first")}
           </Text>
         </Center>
       )}

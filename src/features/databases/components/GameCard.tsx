@@ -2,6 +2,7 @@ import { ActionIcon, Divider, Group, Paper, ScrollArea, Stack, Tooltip } from "@
 import { IconTrash, IconZoomCheck } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtom, useSetAtom } from "jotai";
+import { useTranslation } from "react-i18next";
 import { commands, type NormalizedGame } from "@/bindings";
 import CollapsibleGameInfo from "@/components/CollapsibleGameInfo";
 import { TreeStateProvider } from "@/components/TreeStateContext";
@@ -11,6 +12,7 @@ import { createTab } from "@/utils/tabs";
 import GamePreview from "./GamePreview";
 
 function GameCard({ game, file, mutate }: { game: NormalizedGame; file: string; mutate: () => void }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { layout } = useResponsiveLayout();
 
@@ -56,7 +58,7 @@ function GameCard({ game, file, mutate }: { game: NormalizedGame; file: string; 
           </TreeStateProvider>
           <Divider />
           <Group justify="left" gap={spacing}>
-            <Tooltip label="Analyze game">
+            <Tooltip label={t("databases.analyzeGame")}>
               <ActionIcon
                 variant="subtle"
                 size={layout.databases.density === "compact" ? "lg" : "md"}
@@ -83,7 +85,7 @@ function GameCard({ game, file, mutate }: { game: NormalizedGame; file: string; 
               </ActionIcon>
             </Tooltip>
 
-            <Tooltip label="Delete game">
+            <Tooltip label={t("databases.deleteGame")}>
               <ActionIcon
                 variant="subtle"
                 color="red"

@@ -2,6 +2,7 @@ import { ActionIcon, Box, Flex, Tooltip as MTTooltip, Paper, Select, Tabs, Text 
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useContext, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import type { PlayerGameInfo } from "@/bindings";
 import { DatabaseViewStateContext } from "@/features/databases/components/DatabaseViewStateContext";
@@ -21,6 +22,7 @@ function PersonalPlayerCard({
   setName?: (name: string) => void;
   info: PlayerGameInfo;
 }) {
+  const { t } = useTranslation();
   const store = useContext(DatabaseViewStateContext)!;
   const activeTab = useStore(store, (s) => s?.players?.activeTab);
   const setActiveTab = useStore(store, (s) => s.setPlayersActiveTab);
@@ -42,7 +44,7 @@ function PersonalPlayerCard({
       <FideInfo key={name} opened={opened} setOpened={setOpened} name={name} />
       <Box pos="relative">
         {name !== "Stats" && (
-          <MTTooltip label="FIDE info">
+          <MTTooltip label={t("accounts.personalCard.fideInfo")}>
             <ActionIcon pos="absolute" right={0} onClick={() => setOpened(true)}>
               <IconInfoCircle />
             </ActionIcon>

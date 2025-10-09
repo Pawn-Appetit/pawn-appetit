@@ -99,9 +99,9 @@ function ResponsiveAnalysisPanels({
   if (error || initializationError) {
     return (
       <Stack align="center" gap="md">
-        <div>Failed to load analysis panels</div>
+        <div>{t("errors.failedToLoadAnalysisPanels")}</div>
         <button type="button" onClick={handleRetry}>
-          Retry
+          {t("common.reset")}
         </button>
       </Stack>
     );

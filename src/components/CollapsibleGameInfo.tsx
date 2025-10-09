@@ -89,7 +89,7 @@ function CollapsibleGameInfo({
                 ? t("features.repertoire.enterOpeningTitle")
                 : simplified === "puzzle"
                   ? t("features.puzzle.enterTitle")
-                  : "Unknown Event"
+                  : t("gameInfo.unknownEvent")
             }
             className={cx(classes.contentEditable, !event && classes.contentEditablePlaceholder)}
             onChange={(e) => {

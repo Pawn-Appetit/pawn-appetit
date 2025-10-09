@@ -24,7 +24,7 @@ function FileInfo({ setGames }: { setGames: React.Dispatch<React.SetStateAction<
               <Code>{tab.source.path.split(/[\\/]/).pop()}</Code>
             </Tooltip>
 
-            <Tooltip label="Reload file">
+            <Tooltip label={t("common.reloadFile")}>
               <ActionIcon
                 variant="outline"
                 size="sm"

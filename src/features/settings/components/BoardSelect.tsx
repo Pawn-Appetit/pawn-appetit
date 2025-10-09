@@ -1,5 +1,6 @@
 import { Box, Combobox, Group, Input, InputBase, ScrollArea, Text, useCombobox } from "@mantine/core";
 import { useAtom } from "jotai";
+import { useTranslation } from "react-i18next";
 import { boardImageAtom } from "@/state/atoms";
 
 const boardImages: string[] = [
@@ -56,6 +57,7 @@ function SelectOption({ label }: { label: string }) {
 }
 
 export default function BoardSelect() {
+  const { t } = useTranslation();
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption(),
   });
@@ -88,7 +90,7 @@ export default function BoardSelect() {
           multiline
           w="14rem"
         >
-          {selected ? <SelectOption label={selected} /> : <Input.Placeholder>Pick value</Input.Placeholder>}
+          {selected ? <SelectOption label={selected} /> : <Input.Placeholder>{t("settings.pickValue")}</Input.Placeholder>}
         </InputBase>
       </Combobox.Target>
 

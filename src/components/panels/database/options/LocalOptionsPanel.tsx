@@ -28,10 +28,10 @@ function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
     <Stack>
       <Group>
         <Group>
-          <Text fw="bold">Player:</Text>
+          <Text fw="bold">{t("databaseOptions.player")}:</Text>
           {options.path && (
             <PlayerSearchInput
-              label={"Search"}
+              label={t("databaseOptions.search")}
               value={options.player ?? undefined}
               file={options.path}
               setValue={(v) => setOptions((q) => ({ ...q, player: v || null }))}
@@ -39,7 +39,7 @@ function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
           )}
         </Group>
         <Group>
-          <Text fw="bold">Color:</Text>
+          <Text fw="bold">{t("databaseOptions.color")}:</Text>
           <SegmentedControl
             data={[
               { value: "white", label: t("chess.white") },
@@ -50,13 +50,13 @@ function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
           />
         </Group>
         <Group>
-          <Text fw="bold">Result:</Text>
+          <Text fw="bold">{t("databaseOptions.result")}:</Text>
           <NativeSelect
             data={[
-              { value: "any", label: "Any" },
-              { value: "whitewon", label: "White Won" },
-              { value: "draw", label: "Draw" },
-              { value: "blackwon", label: "Black Won" },
+              { value: "any", label: t("databaseOptions.any") },
+              { value: "whitewon", label: t("databaseOptions.whiteWon") },
+              { value: "draw", label: t("databaseOptions.draw") },
+              { value: "blackwon", label: t("databaseOptions.blackWon") },
             ]}
             value={options.result}
             onChange={(v) =>
@@ -69,8 +69,8 @@ function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
         </Group>
         <Group>
           <DateInput
-            label="From"
-            placeholder="Start date"
+            label={t("databaseOptions.from")}
+            placeholder={t("databaseOptions.startDate")}
             valueFormat="YYYY-MM-DD"
             clearable
             value={parseDate(options.start_date)}
@@ -82,8 +82,8 @@ function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
             }
           />
           <DateInput
-            label="To"
-            placeholder="End date"
+            label={t("databaseOptions.to")}
+            placeholder={t("databaseOptions.endDate")}
             valueFormat="YYYY-MM-DD"
             clearable
             value={parseDate(options.end_date)}
@@ -98,11 +98,11 @@ function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
       </Group>
 
       <Group>
-        <Text fw="bold">Position:</Text>
+        <Text fw="bold">{t("databaseOptions.position")}:</Text>
         <SegmentedControl
           data={[
-            { value: "exact", label: "Exact" },
-            { value: "partial", label: "Partial" },
+            { value: "exact", label: t("databaseOptions.exact") },
+            { value: "partial", label: t("databaseOptions.partial") },
           ]}
           value={options.type}
           onChange={(v) => setOptions({ ...options, type: v as "exact" | "partial" })}
@@ -138,7 +138,7 @@ function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
                 setOptions((q) => ({ ...q, type: "exact", fen: boardFen }));
               }}
             >
-              Current Position
+              {t("databaseOptions.currentPosition")}
             </Button>
             <Button
               variant="default"
@@ -146,7 +146,7 @@ function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
                 setSimilarStructure(boardFen);
               }}
             >
-              Similar Structure
+              {t("databaseOptions.similarStructure")}
             </Button>
             <Button
               variant="default"
@@ -158,7 +158,7 @@ function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
                 }));
               }}
             >
-              Empty
+              {t("databaseOptions.empty")}
             </Button>
           </Group>
         </Stack>

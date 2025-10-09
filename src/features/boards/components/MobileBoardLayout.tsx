@@ -144,9 +144,9 @@ function MobileBoardLayout({
   if (error || initializationError) {
     return (
       <Stack align="center" gap="md">
-        <div>Failed to load mobile board layout</div>
+        <div>{t("errors.failedToLoadMobileBoardLayout")}</div>
         <button type="button" onClick={handleRetry}>
-          Retry
+          {t("common.reset")}
         </button>
       </Stack>
     );

@@ -1,5 +1,6 @@
 import { Card, Grid, Group, Progress, Stack, Text, ThemeIcon, Title, Tooltip } from "@mantine/core";
 import { IconStar, IconTrophy } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 interface CompactProgressSectionProps {
@@ -9,21 +10,22 @@ interface CompactProgressSectionProps {
 }
 
 export function CompactProgressSection({ overallProgress, currentStreak, totalPoints }: CompactProgressSectionProps) {
+  const { t } = useTranslation();
   const { layout } = useResponsiveLayout();
 
   const skillLevel = (() => {
     const percent = overallProgress;
-    if (percent >= 90) return "Master";
-    if (percent >= 70) return "Advanced";
-    if (percent >= 40) return "Intermediate";
-    return "Beginner";
+    if (percent >= 90) return t("learn.master");
+    if (percent >= 70) return t("learn.advanced");
+    if (percent >= 40) return t("learn.intermediate");
+    return t("learn.beginner");
   })();
 
   // On mobile, show a compact horizontal layout
   if (layout.learn.layoutType === "mobile") {
     return (
       <Stack gap="md">
-        <Title order={2}>Your Progress</Title>
+        <Title order={2}>{t("learn.yourProgress")}</Title>
         <Card p="md" radius="md" withBorder>
           <Stack gap="md">
             {/* Overall Progress - Full width on mobile */}
@@ -33,7 +35,7 @@ export function CompactProgressSection({ overallProgress, currentStreak, totalPo
                   <IconTrophy size={16} />
                 </ThemeIcon>
                 <Text size="sm" fw={500}>
-                  Overall Progress
+                  {t("learn.overallProgress")}
                 </Text>
               </Group>
               <Text size="sm" fw={600}>
@@ -53,7 +55,7 @@ export function CompactProgressSection({ overallProgress, currentStreak, totalPo
                   <IconStar size={14} />
                 </ThemeIcon>
                 <Text size="xs" c="dimmed">
-                  Level
+                  {t("learn.level")}
                 </Text>
                 <Text size="sm" fw={600}>
                   {skillLevel}
@@ -65,7 +67,7 @@ export function CompactProgressSection({ overallProgress, currentStreak, totalPo
                   <IconStar size={14} />
                 </ThemeIcon>
                 <Text size="xs" c="dimmed">
-                  Streak
+                  {t("learn.streak")}
                 </Text>
                 <Text size="sm" fw={600}>
                   {currentStreak}d
@@ -77,7 +79,7 @@ export function CompactProgressSection({ overallProgress, currentStreak, totalPo
                   <IconTrophy size={14} />
                 </ThemeIcon>
                 <Text size="xs" c="dimmed">
-                  Points
+                  {t("learn.totalPoints")}
                 </Text>
                 <Text size="sm" fw={600}>
                   {totalPoints}
@@ -93,7 +95,7 @@ export function CompactProgressSection({ overallProgress, currentStreak, totalPo
   // Desktop layout - keep the original 2x2 grid
   return (
     <Stack gap="md">
-      <Title order={2}>Your Progress</Title>
+      <Title order={2}>{t("learn.yourProgress")}</Title>
       <Grid gutter="md">
         <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
           <Card p="md" radius="md" withBorder h="105px">
@@ -102,7 +104,7 @@ export function CompactProgressSection({ overallProgress, currentStreak, totalPo
                 <IconTrophy size={20} />
               </ThemeIcon>
               <Text size="sm" c="dimmed">
-                Overall Progress
+                {t("learn.overallProgress")}
               </Text>
             </Group>
             <Progress.Root mt="lg" radius="xl" size="md">
@@ -134,11 +136,11 @@ export function CompactProgressSection({ overallProgress, currentStreak, totalPo
                 <IconStar size={20} />
               </ThemeIcon>
               <Text size="sm" c="dimmed">
-                Streak
+                {t("learn.streak")}
               </Text>
             </Group>
             <Text fw={600} size="lg" mt="xs">
-              {currentStreak} days
+              {t("learn.streakDays", { count: currentStreak })}
             </Text>
           </Card>
         </Grid.Col>
@@ -149,7 +151,7 @@ export function CompactProgressSection({ overallProgress, currentStreak, totalPo
                 <IconTrophy size={20} />
               </ThemeIcon>
               <Text size="sm" c="dimmed">
-                Points
+                {t("learn.totalPoints")}
               </Text>
             </Group>
             <Text fw={600} size="lg" mt="xs">

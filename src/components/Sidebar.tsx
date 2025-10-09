@@ -87,7 +87,7 @@ export function SideBar() {
           {visibleLinks}
           <Menu shadow="md" position="top">
             <Menu.Target>
-              <Tooltip label="More" position="top">
+              <Tooltip label={t("sidebar.more")} position="top">
                 <ActionIcon variant="subtle" size="xl" className={classes.link}>
                   <IconMenu2 size="2.0rem" stroke={1.5} />
                 </ActionIcon>

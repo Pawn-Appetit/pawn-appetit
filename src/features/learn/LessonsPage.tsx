@@ -16,6 +16,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { IconArrowBackUp, IconBulb } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useUserStatsStore } from "@/state/userStatsStore";
 import { applyUciMoveToFen } from "@/utils/applyUciMoveToFen";
@@ -27,6 +28,7 @@ import { type Lesson, type LessonExercise, lessons } from "./constants/lessons";
 import { useExerciseState } from "./hooks/useExerciseState";
 
 export default function LessonsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [completedLessonTitle, setCompletedLessonTitle] = useState("");
@@ -255,7 +257,7 @@ export default function LessonsPage() {
                     </ActionIcon>
                   </Popover.Target>
                   <Popover.Dropdown style={{ pointerEvents: "none" }}>
-                    <Text mb="lg">Try these moves:</Text>
+                    <Text mb="lg">{t("features.lessons.tryTheseMoves")}</Text>
                     <SimpleGrid cols={{ base: 3, sm: 3, lg: 3 }} spacing="md">
                       {(getActiveVariation()?.correctMoves || []).map((move: string) => (
                         <Badge key={move} color="blue">

@@ -5,6 +5,7 @@ import { useAtom, useAtomValue } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { DataTable, type DataTableSortStatus } from "mantine-datatable";
 import { useContext, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/TreeStateContext";
 import { useLanguageChangeListener } from "@/hooks/useLanguageChangeListener";
@@ -18,6 +19,7 @@ import {
 import { getTreeStats, type MissingMove, openingReport } from "@/utils/repertoire";
 
 function RepertoireInfo() {
+  const { t } = useTranslation();
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (s) => s.root);
   const headers = useStore(store, (s) => s.headers);
@@ -66,8 +68,8 @@ function RepertoireInfo() {
     <Stack style={{ overflow: "hidden" }} h="100%">
       <Group>
         <Text>Variations: {stats.leafs}</Text>
-        <Text>Max Depth: {stats.depth}</Text>
-        <Text>Total moves: {stats.total}</Text>
+        <Text>{t("repertoire.maxDepth")} {stats.depth}</Text>
+        <Text>{t("repertoire.totalMoves")} {stats.total}</Text>
       </Group>
 
       <Group>
@@ -87,7 +89,7 @@ function RepertoireInfo() {
 
       {loading ? (
         <>
-          <Text>Analyzing Repertoire</Text>
+          <Text>{t("repertoire.analyzing")}</Text>
           <Progress value={progress} />
         </>
       ) : (
@@ -110,6 +112,7 @@ const sortStatusAtom = atomWithStorage<SortStatus>(
 );
 
 function MissingMoves({ missingMoves, search }: { missingMoves: MissingMove[]; search: () => void }) {
+  const { t } = useTranslation();
   const store = useContext(TreeStateContext)!;
   const goToMove = useStore(store, (s) => s.goToMove);
   const forceUpdate = useForceUpdate();
@@ -155,8 +158,8 @@ function MissingMoves({ missingMoves, search }: { missingMoves: MissingMove[]; s
           id: "Missing Moves",
           title: (
             <Group gap="xs">
-              <Text>Missing Moves</Text>
-              <Tooltip label="Refresh moves">
+              <Text>{t("repertoire.missingMoves")}</Text>
+              <Tooltip label={t("repertoire.refreshMoves")}>
                 <ActionIcon variant="subtle" onClick={search}>
                   <IconReload size="1rem" />
                 </ActionIcon>
@@ -196,7 +199,7 @@ function MissingMoves({ missingMoves, search }: { missingMoves: MissingMove[]; s
           ],
         },
       ]}
-      noRecordsText="No games found"
+      noRecordsText={t("repertoire.noMissingMoves")}
     />
   );
 }

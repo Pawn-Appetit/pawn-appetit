@@ -136,8 +136,8 @@ export default function EnginesPage() {
           <Group wrap="wrap" gap="xs" justify="space-between">
             <Group>
               <TextInput
-                aria-label="Search engines"
-                placeholder="Search engines..."
+                aria-label={t("features.engines.searchPlaceholder")}
+                placeholder={t("features.engines.searchPlaceholder")}
                 leftSection={<IconSearch size="1rem" />}
                 value={query}
                 onChange={(e) => setQuery(e.currentTarget.value)}
@@ -158,8 +158,8 @@ export default function EnginesPage() {
           </Group>
           <ScrollArea h="calc(100vh - 190px)" offsetScrollbars aria-live="polite">
             {filteredIndices.length === 0 ? (
-              <Alert title="No engines found" color="gray" variant="light">
-                Try adjusting your search or add a new engine.
+              <Alert title={t("features.engines.noEnginesFound")} color="gray" variant="light">
+                {t("features.engines.noEnginesFoundMessage")}
               </Alert>
             ) : (
               <SimpleGrid cols={gridCols} spacing={{ base: "md", md: "sm" }}>
@@ -200,7 +200,7 @@ export default function EnginesPage() {
             <Stack align="center" justify="center" h="100%">
               <Text ta="center">{t("features.engines.settings.noEngine")}</Text>
               <Text c="dimmed" size="sm" ta="center">
-                Tip: Select an engine to edit its settings.
+                {t("features.engines.settings.selectEngineTip")}
               </Text>
             </Stack>
           ) : selectedEngine.type === "local" ? (
@@ -332,7 +332,7 @@ function EngineSettings({
 
         if (fileExistsResult.status !== "ok") {
           const fallbackConfig = {
-            name: engine.name || "Unknown Engine",
+            name: engine.name || t("features.engines.unknownEngine"),
             options: [],
           };
           setOptions(fallbackConfig);
@@ -349,7 +349,7 @@ function EngineSettings({
           setConfigError(null);
         } else {
           const fallbackConfig = {
-            name: engine.name || "Unknown Engine",
+            name: engine.name || t("features.engines.unknownEngine"),
             options: [],
           };
           setOptions(fallbackConfig);
@@ -358,7 +358,7 @@ function EngineSettings({
       } catch (error) {
         if (cancelled) return;
         const fallbackConfig = {
-          name: engine.name || "Unknown Engine",
+          name: engine.name || t("features.engines.unknownEngine"),
           options: [],
         };
         setOptions(fallbackConfig);
@@ -464,7 +464,7 @@ function EngineSettings({
 
   function changeImage() {
     open({
-      title: "Select image",
+      title: t("features.engines.selectImage"),
     }).then((res) => {
       if (typeof res === "string") {
         setEngine({ ...engine, image: res });
@@ -823,7 +823,7 @@ function JSONModal({
             setError(null);
             toggleOpened();
           } else {
-            setError("Invalid Configuration");
+            setError(t("features.engines.invalidConfiguration"));
           }
         }}
       >

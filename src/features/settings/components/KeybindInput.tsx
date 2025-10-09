@@ -3,6 +3,7 @@ import { IconCheck, IconX } from "@tabler/icons-react";
 import cx from "clsx";
 import { useAtom } from "jotai";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import useRecordHotkeys from "@/hooks/useRecordHotkeys";
 import { keyMapAtom } from "@/state/keybindings";
 import * as classes from "./KeybindInput.css";
@@ -49,12 +50,13 @@ function KbdDisplay({ keys, hovering }: { keys: string; hovering: boolean }) {
 }
 
 function ShortcutInput({ keys, action, stop }: { keys: Set<string>; action: string; stop: () => void }) {
+  const { t } = useTranslation();
   const [, setKeymap] = useAtom(keyMapAtom);
   const stringed = Array.from(keys).join("+");
 
   return (
     <Group>
-      {stringed === "" ? <Kbd>Press any key</Kbd> : <KbdDisplay keys={stringed} hovering={false} />}
+      {stringed === "" ? <Kbd>{t("settings.pressAnyKey")}</Kbd> : <KbdDisplay keys={stringed} hovering={false} />}
       <ActionIcon
         variant="outline"
         color="gray"

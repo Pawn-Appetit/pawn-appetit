@@ -234,13 +234,13 @@ export function AccountCard({
                   </Group>
 
                   <Group gap="3px">
-                    <Tooltip label={`${downloadedGames} games`}>
+                    <Tooltip label={t("accounts.accountCard.gamesCount", { count: downloadedGames })}>
                       <Text size="xs" fw="bold" c="dimmed">
                         {percentage === "0" ? "0" : `${percentage}%`}
                       </Text>
                     </Tooltip>
                     <Text size="xs" c="dimmed">
-                      Downloaded
+                      {t("accounts.accountCard.downloaded")}
                     </Text>
                   </Group>
                 </Group>
@@ -248,8 +248,8 @@ export function AccountCard({
             </Group>
           </Accordion.Control>
           <Group gap="xs" className={moduleClasses.accordionActions}>
-            <Tooltip label={isMain ? "Main account" : "Set as main account"}>
-              <ActionIcon size="sm" onClick={setMain} aria-label={isMain ? "Main account" : "Set as main account"}>
+            <Tooltip label={isMain ? t("accounts.accountCard.mainAccount") : t("accounts.accountCard.setAsMainAccount")}>
+              <ActionIcon size="sm" onClick={setMain} aria-label={isMain ? t("accounts.accountCard.mainAccount") : t("accounts.accountCard.setAsMainAccount")}>
                 {isMain ? <IconCircleCheck /> : <IconCircle />}
               </ActionIcon>
             </Tooltip>
@@ -289,12 +289,12 @@ export function AccountCard({
                 <IconEdit />
               </ActionIcon>
             )}
-            <Tooltip label="Update stats">
+            <Tooltip label={t("accounts.accountCard.updateStats")}>
               <ActionIcon onClick={() => reload()}>
                 <IconRefresh size="1rem" />
               </ActionIcon>
             </Tooltip>
-            <Tooltip label="Download games">
+            <Tooltip label={t("accounts.accountCard.downloadGames")}>
               <ActionIcon
                 disabled={loading}
                 onClick={async () => {
@@ -317,7 +317,7 @@ export function AccountCard({
                 {loading ? <Loader size="1rem" /> : <IconDownload size="1rem" />}
               </ActionIcon>
             </Tooltip>
-            <Tooltip label="Remove account">
+            <Tooltip label={t("accounts.accountCard.removeAccount")}>
               <ActionIcon onClick={() => logout()}>
                 <IconX size="1rem" />
               </ActionIcon>

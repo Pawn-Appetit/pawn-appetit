@@ -5,6 +5,7 @@ import { attachConsole, error, info } from "@tauri-apps/plugin-log";
 import { getDefaultStore, useAtom, useAtomValue } from "jotai";
 import { ContextMenuProvider } from "mantine-contextmenu";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { activeTabAtom, fontSizeAtom, pieceSetAtom, storedDocumentDirAtom, tabsAtom } from "./state/atoms";
 
 import "@mantine/charts/styles.css";
@@ -277,6 +278,7 @@ function useFontSizeManager(fontSize: number | null) {
 }
 
 export default function App() {
+  const { t } = useTranslation();
   const pieceSet = useAtomValue(pieceSetAtom);
   const fontSize = useAtomValue(fontSizeAtom);
 
@@ -297,6 +299,7 @@ export default function App() {
           result.versionInfo,
           () => installUpdate(),
           () => setUpdateModalData(result),
+          t,
         );
       }
     },

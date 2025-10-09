@@ -108,7 +108,7 @@ export default function DashboardPage() {
   );
 
   let user = {
-    name: mainAccountName ?? "No main account",
+    name: mainAccountName ?? t("dashboard.noMainAccount"),
     handle: "",
     rating: 0,
   };
@@ -283,7 +283,7 @@ export default function DashboardPage() {
         if (userLost) {
           picked.push({
             id: `analyze:${last.id}`,
-            title: "Analyze your last game",
+            title: t("dashboard.suggestions.analyzeLastGame"),
             tag: "Lessons",
             difficulty: "All",
             onClick: () => {
@@ -340,7 +340,7 @@ export default function DashboardPage() {
       const fallbackId = `fallback:${picked.length}`;
       picked.push({
         id: fallbackId,
-        title: "Explore popular openings",
+        title: t("dashboard.suggestions.exploreOpenings"),
         tag: "Openings",
         difficulty: "All",
         to: "/learn/practice",
@@ -409,8 +409,8 @@ export default function DashboardPage() {
   }[] = [
     {
       icon: <IconClock />,
-      title: "Classical",
-      description: "Play classical chess games",
+      title: t("chess.timeControl.classical"),
+      description: t("dashboard.timeControlCards.classicalDesc"),
       onClick: () => {
         const uuid = genID();
         setTabs((prev: Tab[]) => {
@@ -418,7 +418,7 @@ export default function DashboardPage() {
             ...prev,
             {
               value: uuid,
-              name: "Classical",
+              name: t("chess.timeControl.classical"),
               type: "play",
               meta: {
                 timeControl: {
@@ -436,8 +436,8 @@ export default function DashboardPage() {
     },
     {
       icon: <IconStopwatch />,
-      title: "Rapid",
-      description: "Play quick-paced rapid games",
+      title: t("chess.timeControl.rapid"),
+      description: t("dashboard.timeControlCards.rapidDesc"),
       onClick: () => {
         const uuid = genID();
         setTabs((prev: Tab[]) => {
@@ -445,7 +445,7 @@ export default function DashboardPage() {
             ...prev,
             {
               value: uuid,
-              name: "Rapid",
+              name: t("chess.timeControl.rapid"),
               type: "play",
               meta: {
                 timeControl: {
@@ -463,8 +463,8 @@ export default function DashboardPage() {
     },
     {
       icon: <IconBolt />,
-      title: "Blitz",
-      description: "Play fast-paced blitz games",
+      title: t("chess.timeControl.blitz"),
+      description: t("dashboard.timeControlCards.blitzDesc"),
       onClick: () => {
         const uuid = genID();
         setTabs((prev: Tab[]) => {
@@ -472,7 +472,7 @@ export default function DashboardPage() {
             ...prev,
             {
               value: uuid,
-              name: "Blitz",
+              name: t("chess.timeControl.blitz"),
               type: "play",
               meta: {
                 timeControl: {
@@ -490,8 +490,8 @@ export default function DashboardPage() {
     },
     {
       icon: <IconBolt />,
-      title: "Bullet",
-      description: "Play ultra-fast bullet games",
+      title: t("chess.timeControl.bullet"),
+      description: t("dashboard.timeControlCards.bulletDesc"),
       onClick: () => {
         const uuid = genID();
         setTabs((prev: Tab[]) => {
@@ -499,7 +499,7 @@ export default function DashboardPage() {
             ...prev,
             {
               value: uuid,
-              name: "Bullet",
+              name: t("chess.timeControl.bullet"),
               type: "play",
               meta: {
                 timeControl: {

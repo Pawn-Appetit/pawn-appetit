@@ -158,12 +158,12 @@ function RootLayout() {
     } catch (error) {
       console.error("Failed to open file:", error);
       notifications.show({
-        title: "Error",
-        message: "Failed to open file",
+        title: t("common.error"),
+        message: t("notifications.failedToOpenFile"),
         color: "red",
       });
     }
-  }, [navigate, setActiveTab, setTabs]);
+  }, [navigate, setActiveTab, setTabs, t]);
 
   const createNewTab = useCallback(() => {
     navigate({ to: "/boards" });
@@ -180,13 +180,13 @@ function RootLayout() {
       if (update) {
         const shouldInstall = await ask(
           `A new version (${update.version}) is available. Do you want to install it now?`,
-          { title: "New version available" },
+          { title: t("notifications.newVersionAvailable") },
         );
 
         if (shouldInstall) {
           notifications.show({
-            title: "Updating",
-            message: "Downloading and installing update...",
+            title: t("notifications.updating"),
+            message: t("notifications.downloadingUpdate"),
             loading: true,
           });
 
@@ -200,7 +200,7 @@ function RootLayout() {
       console.error("Update check failed:", error);
       await message("Failed to check for updates. Please try again later.");
     }
-  }, []);
+  }, [t]);
 
   const handleCut = useCallback(async () => {
     const activeElement = document.activeElement;
@@ -397,7 +397,7 @@ function RootLayout() {
   const handleClearData = useCallback(async () => {
     const confirmed = await ask(
       "This will clear all saved data including settings, tabs, and preferences. This action cannot be undone.",
-      { title: "Clear all data" },
+      { title: t("notifications.clearAllData") },
     );
 
     if (confirmed) {
@@ -405,20 +405,20 @@ function RootLayout() {
         localStorage.clear();
         sessionStorage.clear();
         notifications.show({
-          title: "Data cleared",
-          message: "All saved data has been cleared. The app will reload.",
+          title: t("notifications.dataCleared"),
+          message: t("notifications.dataClearedMessage"),
         });
         setTimeout(() => location.reload(), 1000);
       } catch (error) {
         console.error("Failed to clear data:", error);
         notifications.show({
-          title: "Error",
-          message: "Failed to clear data",
+          title: t("common.error"),
+          message: t("notifications.failedToClearData"),
           color: "red",
         });
       }
     }
-  }, []);
+  }, [t]);
 
   const handleOpenLogs = useCallback(async () => {
     try {
@@ -426,7 +426,7 @@ function RootLayout() {
       const logPath = await resolve(logDir, APP_CONSTANTS.LOG_FILENAME);
 
       notifications.show({
-        title: "Opening Logs",
+        title: t("notifications.openingLogs"),
         message: `Log file: ${logPath}`,
       });
 
@@ -434,20 +434,20 @@ function RootLayout() {
     } catch (error) {
       console.error("Failed to open logs:", error);
       notifications.show({
-        title: "Error",
-        message: "Failed to open log file",
+        title: t("common.error"),
+        message: t("notifications.failedToOpenLogFile"),
         color: "red",
       });
     }
-  }, []);
+  }, [t]);
 
   const handleAbout = useCallback(() => {
     modals.openContextModal({
       modal: "aboutModal",
-      title: "Pawn Appétit",
+      title: t("notifications.aboutTitle"),
       innerProps: {},
     });
-  }, []);
+  }, [t]);
 
   const menuActions: MenuGroup[] = useMemo(
     () => [
@@ -521,12 +521,12 @@ function RootLayout() {
     if (menuError) {
       console.error("Menu creation failed:", menuError);
       notifications.show({
-        title: "Menu Error",
-        message: "Failed to create application menu",
+        title: t("notifications.menuError"),
+        message: t("notifications.failedToCreateMenu"),
         color: "red",
       });
     }
-  }, [menuError]);
+  }, [menuError, t]);
 
   useEffect(() => {
     if (!menu) return;

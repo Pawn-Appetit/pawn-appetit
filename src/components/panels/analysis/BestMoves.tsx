@@ -160,7 +160,7 @@ function BestMovesComponent({ id, engine, fen, moves, halfMoves, dragHandleProps
           />
         </Accordion.Control>
         <ActionIcon.Group>
-          <Tooltip label="Check the opponent's threat">
+          <Tooltip label={t("analysis.checkOpponentThreat")}>
             <ActionIcon
               size="lg"
               onClick={() => setThreat(!threat)}
@@ -306,9 +306,9 @@ function EngineTop({
         <Text fw="bold" fz="xl">
           {name}
         </Text>
-        {enabled && !isGameOver && !error && !engineVariations && <Code fz="xs">Loading...</Code>}
+        {enabled && !isGameOver && !error && !engineVariations && <Code fz="xs">{t("common.loading")}</Code>}
         {progress < 100 && enabled && !isGameOver && engineVariations && engineVariations.length > 0 && (
-          <Tooltip label={"How fast the engine is running"}>
+          <Tooltip label={t("analysis.engineSpeed")}>
             <Code fz="xs">{t("units.nodes", { nodes: isComputed ? engineVariations[0].nps : 0 })}</Code>
           </Tooltip>
         )}

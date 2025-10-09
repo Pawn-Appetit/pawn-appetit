@@ -1,5 +1,6 @@
 import { Combobox, Group, Input, InputBase, ScrollArea, Text, useCombobox } from "@mantine/core";
 import { useAtom } from "jotai";
+import { useTranslation } from "react-i18next";
 import { soundCollectionAtom } from "@/state/atoms";
 import { playSound } from "@/utils/sound";
 
@@ -30,6 +31,7 @@ function SelectOption({ label }: { label: string }) {
 }
 
 export default function SoundSelect() {
+  const { t } = useTranslation();
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption(),
   });
@@ -63,7 +65,7 @@ export default function SoundSelect() {
           multiline
           w="10rem"
         >
-          {selected ? <SelectOption label={selected.label} /> : <Input.Placeholder>Pick value</Input.Placeholder>}
+          {selected ? <SelectOption label={selected.label} /> : <Input.Placeholder>{t("settings.pickValue")}</Input.Placeholder>}
         </InputBase>
       </Combobox.Target>
 

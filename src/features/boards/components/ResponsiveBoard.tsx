@@ -2,6 +2,7 @@ import { Box, Stack } from "@mantine/core";
 import { useElementSize } from "@mantine/hooks";
 import type { Piece } from "chessground/types";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ResponsiveLoadingWrapper } from "@/components/ResponsiveLoadingWrapper";
 import { ResponsiveSkeleton } from "@/components/ResponsiveSkeleton";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
@@ -87,6 +88,7 @@ function ResponsiveBoard({
   gameState,
   startGameDisabled,
 }: ResponsiveBoardProps) {
+  const { t } = useTranslation();
   const { layout } = useResponsiveLayout();
   const { ref: containerRef } = useElementSize();
   const [isInitializing, setIsInitializing] = useState(true);
@@ -162,9 +164,9 @@ function ResponsiveBoard({
         style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}
       >
         <Stack align="center" gap="md">
-          <div>Failed to initialize chess board</div>
+          <div>{t("errors.failedToInitializeChessBoard")}</div>
           <button type="button" onClick={handleRetry}>
-            Retry
+            {t("common.reset")}
           </button>
         </Stack>
       </Box>

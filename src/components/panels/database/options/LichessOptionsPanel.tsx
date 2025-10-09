@@ -98,8 +98,8 @@ const LichessOptionsPanel = () => {
       />
       <Group grow>
         <MonthPickerInput
-          label="Since"
-          placeholder="Pick date"
+          label={t("databaseOptions.since")}
+          placeholder={t("databaseOptions.pickDate")}
           value={options.since}
           minDate={MIN_DATE}
           maxDate={new Date()}
@@ -107,8 +107,8 @@ const LichessOptionsPanel = () => {
           clearable
         />
         <MonthPickerInput
-          label="Until"
-          placeholder="Pick date"
+          label={t("databaseOptions.until")}
+          placeholder={t("databaseOptions.pickDate")}
           value={options.until}
           minDate={MIN_DATE}
           maxDate={new Date()}
@@ -118,14 +118,14 @@ const LichessOptionsPanel = () => {
       </Group>
       <Group grow>
         <TextInput
-          label="Player"
-          placeholder="Player's username"
+          label={t("databaseOptions.player")}
+          placeholder={t("databaseOptions.playerUsername")}
           value={options.player ?? ""}
           onChange={(e) => setOptions({ ...options, player: e.currentTarget.value })}
         />
         <Select
-          label="Color"
-          placeholder="Select color"
+          label={t("databaseOptions.color")}
+          placeholder={t("databaseOptions.selectColor")}
           data={[
             { label: t("chess.white"), value: "white" },
             { label: t("chess.black"), value: "black" },

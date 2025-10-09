@@ -1,9 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pawn Appétit</title>
+    <script>
+        const translations = {
+            'en-US': {
+                subtitle: 'Ultimate Chess Toolkit',
+                loading: [
+                    'Initializing chess engine...',
+                    'Loading piece sets...',
+                    'Preparing game board...',
+                    'Almost ready...'
+                ]
+            },
+            'en-GB': {
+                subtitle: 'Ultimate Chess Toolkit',
+                loading: [
+                    'Initialising chess engine...',
+                    'Loading piece sets...',
+                    'Preparing game board...',
+                    'Almost ready...'
+                ]
+            },
+            'de-DE': {
+                subtitle: 'Ultimatives Schach-Toolkit',
+                loading: [
+                    'Schach-Engine wird initialisiert...',
+                    'Figurensätze werden geladen...',
+                    'Spielbrett wird vorbereitet...',
+                    'Fast fertig...'
+                ]
+            },
+            'es-ES': {
+                subtitle: 'Kit de herramientas de ajedrez definitivo',
+                loading: [
+                    'Inicializando motor de ajedrez...',
+                    'Cargando juegos de piezas...',
+                    'Preparando tablero de juego...',
+                    'Casi listo...'
+                ]
+            },
+            'fr-FR': {
+                subtitle: 'Boîte à outils d\'échecs ultime',
+                loading: [
+                    'Initialisation du moteur d\'échecs...',
+                    'Chargement des jeux de pièces...',
+                    'Préparation de l\'échiquier...',
+                    'Presque prêt...'
+                ]
+            },
+            'ru-RU': {
+                subtitle: 'Полный набор шахматных инструментов',
+                loading: [
+                    'Инициализация шахматного движка...',
+                    'Загрузка фигур...',
+                    'Подготовка доски...',
+                    'Почти готово...'
+                ]
+            },
+            'zh-CN': {
+                subtitle: '终极国际象棋工具包',
+                loading: [
+                    '初始化国际象棋引擎...',
+                    '加载棋子...',
+                    '准备棋盘...',
+                    '即将就绪...'
+                ]
+            },
+            'ja-JP': {
+                subtitle: '究極のチェスツールキット',
+                loading: [
+                    'チェスエンジンを初期化中...',
+                    '駒セットを読み込み中...',
+                    'ゲームボードを準備中...',
+                    'もうすぐ準備完了...'
+                ]
+            },
+            'it-IT': {
+                subtitle: 'Kit di strumenti per scacchi definitivo',
+                loading: [
+                    'Inizializzazione motore scacchi...',
+                    'Caricamento set di pezzi...',
+                    'Preparazione scacchiera...',
+                    'Quasi pronto...'
+                ]
+            },
+            'pt-PT': {
+                subtitle: 'Kit de ferramentas de xadrez definitivo',
+                loading: [
+                    'A inicializar motor de xadrez...',
+                    'A carregar conjuntos de peças...',
+                    'A preparar tabuleiro...',
+                    'Quase pronto...'
+                ]
+            },
+            'pl-PL': {
+                subtitle: 'Ostateczny zestaw narzędzi szachowych',
+                loading: [
+                    'Inicjalizacja silnika szachowego...',
+                    'Ładowanie zestawów figur...',
+                    'Przygotowywanie planszy...',
+                    'Prawie gotowe...'
+                ]
+            },
+            'uk-UA': {
+                subtitle: 'Повний набір шахових інструментів',
+                loading: [
+                    'Ініціалізація шахового рушія...',
+                    'Завантаження фігур...',
+                    'Підготовка дошки...',
+                    'Майже готово...'
+                ]
+            },
+            'tr-TR': {
+                subtitle: 'Nihai Satranç Araç Seti',
+                loading: [
+                    'Satranç motoru başlatılıyor...',
+                    'Taş setleri yükleniyor...',
+                    'Oyun tahtası hazırlanıyor...',
+                    'Neredeyse hazır...'
+                ]
+            },
+            'ar-SA': {
+                subtitle: 'مجموعة أدوات الشطرنج النهائية',
+                loading: [
+                    'جاري تهيئة محرك الشطرنج...',
+                    'جاري تحميل مجموعات القطع...',
+                    'جاري تحضير لوحة اللعب...',
+                    'على وشك الانتهاء...'
+                ]
+            },
+            'nb-NO': {
+                subtitle: 'Ultimate sjakktøysett',
+                loading: [
+                    'Initialiserer sjakkmotor...',
+                    'Laster brikkesett...',
+                    'Forbereder spillbrett...',
+                    'Nesten klar...'
+                ]
+            },
+            'be-BY': {
+                subtitle: 'Поўны набор шахматных інструментаў',
+                loading: [
+                    'Ініціялізацыя шахматнага рухавіка...',
+                    'Загрузка фігур...',
+                    'Падрыхтоўка дошкі...',
+                    'Амаль гатова...'
+                ]
+            },
+            'hy-AM': {
+                subtitle: 'Վերջնական շախմատի գործիքների հավաքածու',
+                loading: [
+                    'Շախմատի շարժիչի նախապատրաստում...',
+                    'Խաղաքարերի բեռնում...',
+                    'Խաղատախտակի պատրաստում...',
+                    'Գրեթե պատրաստ է...'
+                ]
+            }
+        };
+
+        function getSystemLanguage() {
+            const lang = navigator.language || navigator.userLanguage || 'en-US';
+            return translations[lang] ? lang : 'en-US';
+        }
+
+        const currentLang = getSystemLanguage();
+        const currentTranslations = translations[currentLang];
+    </script>
     <style>
         html {
             background-color: #1a1b1e;
@@ -132,6 +298,7 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -139,10 +306,13 @@
         }
 
         @keyframes pulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: scale(1);
                 box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
             }
+
             50% {
                 transform: scale(1.05);
                 box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
@@ -150,68 +320,79 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         @keyframes loading {
             0% {
                 left: -100%;
             }
+
             50% {
                 left: 100%;
             }
+
             100% {
                 left: 100%;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="splash-container">
         <div class="logo-container">
             <div class="chess-icon">
-                <img src="./logo.png" alt="Chess Icon" />
+                <img src="./logo.png" alt="Pawn Appétit Logo" class="logo">
             </div>
         </div>
-        
+
         <div>
             <h1 class="app-title">Pawn Appétit</h1>
-            <p class="app-subtitle">Ultimate Chess Toolkit</p>
+            <p class="app-subtitle" id="subtitle">Ultimate Chess Toolkit</p>
         </div>
-        
+
         <div class="loading-container">
             <div class="loading-spinner"></div>
             <div class="progress-bar"></div>
-            <p class="loading-text">Initializing chess engine...</p>
+            <p class="loading-text" id="loading-text">Initializing chess engine...</p>
         </div>
     </div>
 
     <script>
-       document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function () {
             document.body.style.backgroundColor = '#1a1b1e';
             document.documentElement.style.backgroundColor = '#1a1b1e';
 
-            const loadingTexts = [
-                'Initializing chess engine...',
-                'Loading piece sets...',
-                'Preparing game board...',
-                'Almost ready...'
-            ];
+            const subtitleElement = document.getElementById('subtitle');
+            const loadingTextElement = document.getElementById('loading-text');
+
+            if (subtitleElement) {
+                subtitleElement.textContent = currentTranslations.subtitle;
+            }
+
+            if (loadingTextElement) {
+                loadingTextElement.textContent = currentTranslations.loading[0];
+            }
 
             let textIndex = 0;
-            const loadingTextElement = document.querySelector('.loading-text');
 
             const updateText = () => {
-                if (loadingTextElement && textIndex < loadingTexts.length) {
-                    loadingTextElement.textContent = loadingTexts[textIndex];
+                if (loadingTextElement && textIndex < currentTranslations.loading.length) {
+                    loadingTextElement.textContent = currentTranslations.loading[textIndex];
                     textIndex++;
                 }
             };
 
             const intervalId = setInterval(() => {
                 updateText();
-                if (textIndex >= loadingTexts.length) {
+                if (textIndex >= currentTranslations.loading.length) {
                     clearInterval(intervalId);
                 }
             }, 800);
@@ -223,4 +404,5 @@
         });
     </script>
 </body>
+
 </html>
