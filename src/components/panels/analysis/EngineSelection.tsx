@@ -51,8 +51,8 @@ function EngineSelection() {
       {engines.length === 0 && (
         <Center>
           <Text>
-            {t("analysis.noEnginesInstalled")}{" "}
-            <Link to="/engines">{t("analysis.addEngine")}</Link> {t("analysis.first")}
+            {t("analysis.noEnginesInstalled")} <Link to="/engines">{t("analysis.addEngine")}</Link>{" "}
+            {t("analysis.first")}
           </Text>
         </Center>
       )}

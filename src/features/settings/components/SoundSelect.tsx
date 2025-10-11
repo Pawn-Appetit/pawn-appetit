@@ -65,7 +65,11 @@ export default function SoundSelect() {
           multiline
           w="10rem"
         >
-          {selected ? <SelectOption label={selected.label} /> : <Input.Placeholder>{t("settings.pickValue")}</Input.Placeholder>}
+          {selected ? (
+            <SelectOption label={selected.label} />
+          ) : (
+            <Input.Placeholder>{t("settings.pickValue")}</Input.Placeholder>
+          )}
         </InputBase>
       </Combobox.Target>
 

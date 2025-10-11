@@ -8,7 +8,7 @@ globalStyle("*", {
 
 globalStyle("html, body", {
   overscrollBehavior: "none",
-  overflow: "auto"
+  overflow: "auto",
 });
 
 globalStyle(".mantine-ScrollArea-viewport", {

@@ -101,7 +101,10 @@ function GameSelectorAccordion({
         title: t("common.unsavedChanges.title"),
         withCloseButton: false,
         children: <Text>{t("common.unsavedChanges.desc")}</Text>,
-        labels: { confirm: t("common.unsavedChanges.saveAndClose"), cancel: t("common.unsavedChanges.closeWithoutSaving") },
+        labels: {
+          confirm: t("common.unsavedChanges.saveAndClose"),
+          cancel: t("common.unsavedChanges.closeWithoutSaving"),
+        },
         onConfirm: async () => {
           if (currentTab) {
             saveToFile({

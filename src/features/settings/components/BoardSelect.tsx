@@ -90,7 +90,11 @@ export default function BoardSelect() {
           multiline
           w="14rem"
         >
-          {selected ? <SelectOption label={selected} /> : <Input.Placeholder>{t("settings.pickValue")}</Input.Placeholder>}
+          {selected ? (
+            <SelectOption label={selected} />
+          ) : (
+            <Input.Placeholder>{t("settings.pickValue")}</Input.Placeholder>
+          )}
         </InputBase>
       </Combobox.Target>
 

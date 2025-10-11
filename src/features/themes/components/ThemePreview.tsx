@@ -141,7 +141,11 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
             <Tabs.Panel value="inputs" pt="md">
               <Stack gap="md">
                 <Group grow>
-                  <TextInput label={t("themes.preview.textInput")} placeholder={t("themes.preview.enterText")} radius={theme.defaultRadius} />
+                  <TextInput
+                    label={t("themes.preview.textInput")}
+                    placeholder={t("themes.preview.enterText")}
+                    radius={theme.defaultRadius}
+                  />
                   <TextInput
                     label={t("themes.preview.withIcon")}
                     placeholder={t("themes.preview.searchPlaceholder")}
@@ -179,7 +183,13 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
                         <Table.Td>
                           <Badge
                             variant="light"
-                            color={row.role === t("themes.preview.admin") ? "red" : row.role === t("themes.preview.moderator") ? "blue" : "gray"}
+                            color={
+                              row.role === t("themes.preview.admin")
+                                ? "red"
+                                : row.role === t("themes.preview.moderator")
+                                  ? "blue"
+                                  : "gray"
+                            }
                           >
                             {row.role}
                           </Badge>

@@ -248,8 +248,14 @@ export function AccountCard({
             </Group>
           </Accordion.Control>
           <Group gap="xs" className={moduleClasses.accordionActions}>
-            <Tooltip label={isMain ? t("accounts.accountCard.mainAccount") : t("accounts.accountCard.setAsMainAccount")}>
-              <ActionIcon size="sm" onClick={setMain} aria-label={isMain ? t("accounts.accountCard.mainAccount") : t("accounts.accountCard.setAsMainAccount")}>
+            <Tooltip
+              label={isMain ? t("accounts.accountCard.mainAccount") : t("accounts.accountCard.setAsMainAccount")}
+            >
+              <ActionIcon
+                size="sm"
+                onClick={setMain}
+                aria-label={isMain ? t("accounts.accountCard.mainAccount") : t("accounts.accountCard.setAsMainAccount")}
+              >
                 {isMain ? <IconCircleCheck /> : <IconCircle />}
               </ActionIcon>
             </Tooltip>

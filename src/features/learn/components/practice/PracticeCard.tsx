@@ -120,7 +120,11 @@ export function PracticeCard({
             rightSection={!!category.exercises.length && <IconChevronRight size={16} />}
             disabled={category.exercises.length === 0}
           >
-            {category.exercises.length === 0 ? t("features.practice.comingSoon") : progress.completed === 0 ? t("features.practice.startTraining") : t("features.practice.continue")}
+            {category.exercises.length === 0
+              ? t("features.practice.comingSoon")
+              : progress.completed === 0
+                ? t("features.practice.startTraining")
+                : t("features.practice.continue")}
           </Button>
         </Box>
       </Stack>

@@ -68,8 +68,12 @@ function RepertoireInfo() {
     <Stack style={{ overflow: "hidden" }} h="100%">
       <Group>
         <Text>Variations: {stats.leafs}</Text>
-        <Text>{t("repertoire.maxDepth")} {stats.depth}</Text>
-        <Text>{t("repertoire.totalMoves")} {stats.total}</Text>
+        <Text>
+          {t("repertoire.maxDepth")} {stats.depth}
+        </Text>
+        <Text>
+          {t("repertoire.totalMoves")} {stats.total}
+        </Text>
       </Group>
 
       <Group>

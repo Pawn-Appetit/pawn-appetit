@@ -11,7 +11,7 @@ export const card = style({
 
   [vars.lightSelector]: {
     backgroundColor: vars.colors.white,
-      borderColor: vars.colors.gray[1],
+    borderColor: vars.colors.gray[1],
   },
   [vars.darkSelector]: {
     backgroundColor: vars.colors.dark[6],
