@@ -16,6 +16,7 @@ export default function FenSearch({ currentFen }: { currentFen: string }) {
   const store = useContext(TreeStateContext)!;
   const headers = useStore(store, (s) => s.headers);
   const setHeaders = useStore(store, (s) => s.setHeaders);
+  const setFen = useStore(store, (s) => s.setFen);
 
   function addFen(fen: string, chess960: boolean) {
     if (fen) {
@@ -23,6 +24,7 @@ export default function FenSearch({ currentFen }: { currentFen: string }) {
       if (res.isErr) {
         setError(res.error);
       } else {
+        setFen(fen);
         setHeaders({
           ...headers,
           fen,
@@ -89,12 +91,11 @@ export default function FenSearch({ currentFen }: { currentFen: string }) {
           error={error && chessopsError(error)}
           rightSection={isLoading && <Loader size={18} />}
           value={search}
-          onChange={(event) => {
+          onInput={(event) => {
             combobox.openDropdown();
             combobox.updateSelectedOptionIndex();
             setSearch(event.currentTarget.value);
           }}
-          onClick={() => combobox.openDropdown()}
           onFocus={() => combobox.openDropdown()}
           onBlur={() => {
             combobox.closeDropdown();
