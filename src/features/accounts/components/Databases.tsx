@@ -112,7 +112,7 @@ function Databases() {
 
   return (
     <>
-      {progress > 0 && progress < 100 && (
+      {isLoading && progress > 0 && progress < 100 && (
         <Stack align="center" justify="center" h="80%">
           <Text ta="center" fw="bold" my="auto" fz="lg">
             {t("accounts.processingGames")}
@@ -121,7 +121,11 @@ function Databases() {
           <Progress value={progress} />
         </Stack>
       )}
-      {error && <Text ta="center">{t("accounts.databaseLoadError")} {error}</Text>}
+      {error && (
+        <Text ta="center">
+          {t("accounts.databaseLoadError")} {error}
+        </Text>
+      )}
       {personalInfo &&
         (personalInfo.length === 0 ? (
           <Paper
