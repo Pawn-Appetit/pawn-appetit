@@ -22,6 +22,7 @@ interface LanguageInfo {
 interface LanguageMapping {
   [key: string]: LanguageInfo;
 }
+
 export function loadLocaleData(localePath: string): TranslationData | undefined {
   try {
     const indexPath = join(localePath, "index.ts");
@@ -32,10 +33,12 @@ export function loadLocaleData(localePath: string): TranslationData | undefined 
       return undefined;
     }
 
+    // Read the display name from index.ts
     const indexContent = readFileSync(indexPath, "utf-8");
     const displayNameMatch = indexContent.match(/DisplayName:\s*"([^"]+)"/);
     const displayName = displayNameMatch ? displayNameMatch[1] : "Unknown";
 
+    // Read the translation data from common.json
     const commonContent = readFileSync(commonJsonPath, "utf-8");
     const translation = JSON.parse(commonContent);
 
@@ -82,10 +85,11 @@ function calculateTranslationProgress(basePath: string, translatedPath: string):
       return count + (hasTranslation ? 1 : 0);
     }, 0);
 
+    // Write missing keys file if there are missing translations
     if (Object.keys(missingKeys).length > 0) {
       try {
         const outPath = join(translatedPath, "missing.json");
-        fs.writeFileSync(outPath, JSON.stringify(missingKeys, null, 2), "utf-8");
+        fs.writeFileSync(outPath, JSON.stringify(missingKeys, null, 2) + '\n', "utf-8");
         console.log(`Missing keys written to ${outPath}`);
       } catch (err) {
         console.error("Error writing missing keys file:", err);
@@ -124,8 +128,8 @@ const LANGUAGE_INFO: LanguageMapping = {
   be: { emoji: "🇧🇾", nativeName: "Беларуская", englishName: "Belarusian" },
   zh: { emoji: "🇨🇳", nativeName: "中文", englishName: "Chinese" },
   de: { emoji: "🇩🇪", nativeName: "Deutsch", englishName: "German" },
-  "en-US": { emoji: "🇺🇸", nativeName: "English (US)", englishName: "English (US)" },
-  "en-GB": { emoji: "🇬🇧", nativeName: "English (UK)", englishName: "English (UK)" },
+  "en-US": { emoji: "🇺🇸", nativeName: "English US", englishName: "English US" },
+  "en-GB": { emoji: "🇬🇧", nativeName: "English UK", englishName: "English UK" },
   fr: { emoji: "🇫🇷", nativeName: "Français", englishName: "French" },
   pl: { emoji: "🇵🇱", nativeName: "Polski", englishName: "Polish" },
   nb: { emoji: "🇳🇴", nativeName: "Norsk", englishName: "Norwegian Bokmål" },
@@ -139,66 +143,25 @@ const LANGUAGE_INFO: LanguageMapping = {
   ar: { emoji: "🇸🇦", nativeName: "العربية", englishName: "Arabic" },
 };
 
-/**
- * Generates markdown table for translation progress
- * @param translations - Translation progress data
- * @returns Markdown table string
- */
 function generateMarkdown(translations: TranslationProgress): string {
-  const sortedLanguages = Object.entries(translations)
+  const rows = Object.entries(translations)
     .sort((a, b) => b[1] - a[1])
-    .map(([langCode, percent]) => ({ langCode, percent }));
+    .map(([langCode, percent]) => {
+      const emoji = LANGUAGE_INFO[langCode].emoji || "🌐";
+      const status = getStatusEmoji(percent);
+      const displayName =
+        langCode === "en-US" || langCode === "en-GB"
+          ? `${LANGUAGE_INFO[langCode].nativeName}`
+          : `${LANGUAGE_INFO[langCode].nativeName} (${LANGUAGE_INFO[langCode].englishName})`;
 
-  const chunks = [];
-  for (let i = 0; i < sortedLanguages.length; i += 4) {
-    chunks.push(sortedLanguages.slice(i, i + 4));
-  }
-
-  const rows = chunks.map((chunk) => {
-    const cells = chunk.map(({ langCode, percent }) => {
-      const info = LANGUAGE_INFO[langCode];
-      if (!info) {
-        console.warn(`Missing language info for ${langCode}`);
-        return generateLanguageCell(langCode, "🌐", langCode.toUpperCase(), percent);
-      }
-      return generateLanguageCell(langCode, info.emoji, info.nativeName, percent);
+      return `| ${emoji} **${displayName}** | ${status} ${percent}% | [View](./src/locales/${langCode}) |`;
     });
 
-    while (cells.length < 4) {
-      cells.push("<td></td>");
-    }
-
-    return `    <tr>\n        ${cells.join("\n        ")}\n    </tr>`;
-  });
-
-  return ["<table>", ...rows, "</table>"].join("\n");
-}
-
-function generateLanguageCell(langCode: string, emoji: string, displayName: string, percent: number): string {
-  const colorClass = getColorClass(percent);
-  const statusEmoji = getStatusEmoji(percent);
-
-  return `<td align="center">
-            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/${getEmojiCode(emoji)}.svg" width="24" height="18" alt="${emoji}" /><br />
-            <strong>${displayName}</strong><br />
-            <span style="color: ${colorClass};">${statusEmoji} ${percent}%</span><br />
-            <a href="./src/locales/${langCode}">View</a>
-        </td>`;
-}
-
-function getEmojiCode(emoji: string): string {
-  return [...emoji]
-    .map((char) => {
-      const codePoint = char.codePointAt(0);
-      return codePoint ? codePoint.toString(16).toLowerCase() : "";
-    })
-    .join("-");
-}
-
-function getColorClass(percent: number): string {
-  if (percent === 100) return "#10B981";
-  if (percent >= 50) return "#F59E0B";
-  return "#EF4444";
+  return [
+    "| Language  | Progress   | Link                        |",
+    "|-----------|----------|-----------------------------|",
+    ...rows,
+  ].join("\n");
 }
 
 function getStatusEmoji(percent: number): string {
@@ -208,62 +171,16 @@ function getStatusEmoji(percent: number): string {
   return "⚪";
 }
 
-/**
- * Calculate translation statistics from translation progress data
- * @param translations - Translation progress data
- * @returns Object containing translation statistics
- */
-function calculateTranslationStats(translations: TranslationProgress): {
-  totalLanguages: number;
-  complete: number;
-  inProgress: number;
-  needHelp: number;
-} {
-  const percentages = Object.values(translations);
-  const totalLanguages = percentages.length;
-  const complete = percentages.filter((p) => p === 100).length;
-  const inProgress = percentages.filter((p) => p >= 50 && p < 100).length;
-  const needHelp = percentages.filter((p) => p < 50).length;
-
-  return { totalLanguages, complete, inProgress, needHelp };
-}
-
-/**
- * Generate Translation Stats badges markdown
- * @param stats - Translation statistics
- * @returns Markdown string for badges
- */
-function generateTranslationStatsBadges(stats: {
-  totalLanguages: number;
-  complete: number;
-  inProgress: number;
-  needHelp: number;
-}): string {
-  return `![Translation Progress](https://img.shields.io/badge/Languages-${stats.totalLanguages}-blue?style=for-the-badge&logo=google-translate&logoColor=white)
-![Complete Translations](https://img.shields.io/badge/Complete-${stats.complete}-success?style=for-the-badge&logo=checkmark&logoColor=white)
-![In Progress](https://img.shields.io/badge/In_Progress-${stats.inProgress}-orange?style=for-the-badge&logo=progress&logoColor=white)
-![Need Help](https://img.shields.io/badge/Need_Help-${stats.needHelp}-red?style=for-the-badge&logo=help&logoColor=white)`;
-}
-
 function updateReadme(): void {
   try {
     const localesDir = "./src/locales";
-
-    if (!fs.existsSync(localesDir)) {
-      throw new Error(`Locales directory not found: ${localesDir}`);
-    }
-
     const langDirs = fs.readdirSync(localesDir).filter((dir) => {
       const dirPath = join(localesDir, dir);
       return fs.statSync(dirPath).isDirectory() && dir !== "en-US";
     });
 
-    if (langDirs.length === 0) {
-      console.warn("No translation directories found besides English");
-    }
-
     const translations: TranslationProgress = {
-      "en-US": 100,
+      "en-US": 100, // English is always 100% complete
     };
 
     for (const langCode of langDirs) {
@@ -271,41 +188,15 @@ function updateReadme(): void {
       translations[langCode] = percent;
     }
 
-    const readmePath = "./README.md";
-    if (!fs.existsSync(readmePath)) {
-      throw new Error(`README.md not found at ${readmePath}`);
-    }
-
-    const readme = fs.readFileSync(readmePath, "utf-8");
+    const readme = fs.readFileSync("./README.md", "utf-8");
     const table = generateMarkdown(translations);
 
-    // Calculate translation statistics for badges
-    const stats = calculateTranslationStats(translations);
-    const statsBadges = generateTranslationStatsBadges(stats);
-
-    const translationStartMarker = "<!-- TRANSLATIONS_START -->";
-    const translationEndMarker = "<!-- TRANSLATIONS_END -->";
-
-    if (!readme.includes(translationStartMarker) || !readme.includes(translationEndMarker)) {
-      throw new Error("Translation markers not found in README.md");
-    }
-
-    // Update translation table
-    let updated = readme.replace(
+    const updated = readme.replace(
       /<!-- TRANSLATIONS_START -->[\s\S]*?<!-- TRANSLATIONS_END -->/,
-      `${translationStartMarker}\n${table}\n${translationEndMarker}`,
+      `<!-- TRANSLATIONS_START -->\n${table}\n<!-- TRANSLATIONS_END -->`,
     );
 
-    // Update Translation Stats badges
-    const badgePattern = /### 📊 Translation Stats\n\n[\s\S]*?(?=\n📢 Want to help translate\?)/;
-    if (badgePattern.test(updated)) {
-      updated = updated.replace(badgePattern, `### 📊 Translation Stats\n\n${statsBadges}\n`);
-      console.log("✅ Translation Stats badges updated.");
-    } else {
-      console.warn("⚠️  Translation Stats section pattern not found - badges not updated");
-    }
-
-    fs.writeFileSync(readmePath, updated);
+    fs.writeFileSync("./README.md", updated);
     console.log("✅ Translations section updated.");
   } catch (error) {
     console.error("Error updating README:", error);
