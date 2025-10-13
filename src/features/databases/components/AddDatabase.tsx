@@ -470,7 +470,7 @@ function DatabaseCard({ setDatabases, database, databaseId, initInstalled }: Dat
     async (id: number, url: string, name: string) => {
       try {
         setInProgress(true);
-        const path = await resolve(await appDataDir(), "puzzles", `${name}.db3`);
+        const path = await resolve(await appDataDir(), "db", `${name}.db3`);
         await commands.downloadFile(`db_${id}`, url, path, null, null, null);
         await setDatabases(await getDatabases());
       } catch (error) {
@@ -490,7 +490,7 @@ function DatabaseCard({ setDatabases, database, databaseId, initInstalled }: Dat
   return (
     <Paper withBorder radius="md" p="md">
       <Text tt="uppercase" c="dimmed" fw={700} size="xs">
-        {t("features.databases.add.database", "DATABASE")}
+        {t("features.databases.add.title", "DATABASE")}
       </Text>
       <Text fw="bold" mb="xs">
         {database.title}
