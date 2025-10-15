@@ -1055,7 +1055,13 @@
       "collection": "Sound collection",
       "collectionDesc": "Collection of sounds used"
     },
-    "keybindings": "Keybindings",
+    "keybindings": {
+      "title": "Keybindings",
+      "desc": "Customise keyboard shortcuts",
+      "placeholder": "Type to search in keybindings",
+      "command": "Command",
+      "keybinding": "Keybinding"
+    },
     "directories": {
       "title": "Directories",
       "desc": "Customise the directories used by the app",
