@@ -19,48 +19,45 @@
 <div>
 <!-- Build & Quality -->
 <a href="https://github.com/Pawn-Appetit/pawn-appetit/actions/workflows/test.yml">
-<img src="https://img.shields.io/github/actions/workflow/status/Pawn-Appetit/pawn-appetit/test.yml?style=flat-square&logo=githubactions&logoColor=white&label=Build&labelColor=2d3748" alt="Build Status">
+<img src="https://img.shields.io/github/actions/workflow/status/Pawn-Appetit/pawn-appetit/test.yml?style=flat-square&logo=githubactions&logoColor=white&label=Build&labelColor=2d3748&color=success" alt="Build Status">
 </a>
 <a href="https://github.com/Pawn-Appetit/pawn-appetit/releases">
-<img src="https://img.shields.io/github/v/release/Pawn-Appetit/pawn-appetit?style=flat-square&logo=semanticrelease&logoColor=white&label=Version&color=4c9aff&labelColor=2d3748" alt="Latest Release">
+<img src="https://img.shields.io/github/v/release/Pawn-Appetit/pawn-appetit?style=flat-square&logo=semanticrelease&logoColor=white&label=Version&color=3b82f6&labelColor=2d3748" alt="Latest Release">
 </a>
 <a href="https://github.com/Pawn-Appetit/pawn-appetit/blob/main/LICENSE">
-<img src="https://img.shields.io/github/license/Pawn-Appetit/pawn-appetit?style=flat-square&logo=gnu&logoColor=white&color=a42e2b&labelColor=2d3748" alt="License">
+<img src="https://img.shields.io/github/license/Pawn-Appetit/pawn-appetit?style=flat-square&logo=gnu&logoColor=white&color=8b5cf6&labelColor=2d3748" alt="License">
 </a>
-
 <!-- Downloads & Activity -->
 <a href="https://github.com/Pawn-Appetit/pawn-appetit/releases">
-<img src="https://img.shields.io/github/downloads/Pawn-Appetit/pawn-appetit/total?style=flat-square&logo=github&logoColor=white&label=Downloads&color=10b981&labelColor=2d3748" alt="Total Downloads" />
+<img src="https://img.shields.io/github/downloads/Pawn-Appetit/pawn-appetit/total?style=flat-square&logo=github&logoColor=white&label=Downloads&color=success&labelColor=2d3748" alt="Total Downloads" />
 </a>
 <a href="https://github.com/Pawn-Appetit/pawn-appetit/stargazers">
-<img src="https://img.shields.io/github/stars/Pawn-Appetit/pawn-appetit?style=flat-square&logo=starship&logoColor=white&label=Stars&color=fbbf24&labelColor=2d3748" alt="GitHub Stars">
+<img src="https://img.shields.io/github/stars/Pawn-Appetit/pawn-appetit?style=flat-square&logo=starship&logoColor=white&label=Stars&color=3b82f6&labelColor=2d3748" alt="GitHub Stars">
 </a>
 <a href="https://github.com/Pawn-Appetit/pawn-appetit/network/members">
-<img src="https://img.shields.io/github/forks/Pawn-Appetit/pawn-appetit?style=flat-square&logo=git&logoColor=white&label=Forks&color=f97316&labelColor=2d3748" alt="GitHub Forks">
+<img src="https://img.shields.io/github/forks/Pawn-Appetit/pawn-appetit?style=flat-square&logo=git&logoColor=white&label=Forks&color=8b5cf6&labelColor=2d3748" alt="GitHub Forks">
 </a>
 <a href="https://github.com/Pawn-Appetit/pawn-appetit/graphs/contributors">
-<img src="https://img.shields.io/github/contributors/Pawn-Appetit/pawn-appetit?style=flat-square&logo=superuser&logoColor=white&label=Contributors&color=8b5cf6&labelColor=2d3748" alt="Contributors">
+<img src="https://img.shields.io/github/contributors/Pawn-Appetit/pawn-appetit?style=flat-square&logo=superuser&logoColor=white&label=Contributors&color=success&labelColor=2d3748" alt="Contributors">
 </a>
-
 <!-- Community & Support -->
 <a href="https://discord.gg/8hk49G8ZbX">
-<img src="https://img.shields.io/badge/Discord-Join%20Community-5865f2?style=flat-square&logo=discord&logoColor=white&labelColor=2d3748" alt="Discord">
+<img src="https://img.shields.io/badge/Discord-Join%20Community-8b5cf6?style=flat-square&logo=discord&logoColor=white&labelColor=2d3748" alt="Discord">
 </a>
 <a href="https://github.com/Pawn-Appetit/pawn-appetit/discussions">
-<img src="https://img.shields.io/github/discussions/Pawn-Appetit/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Discussions&color=6366f1&labelColor=2d3748" alt="Discussions">
+<img src="https://img.shields.io/github/discussions/Pawn-Appetit/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Discussions&color=3b82f6&labelColor=2d3748" alt="Discussions">
 </a>
 <a href="https://github.com/Pawn-Appetit/pawn-appetit/issues">
-<img src="https://img.shields.io/github/issues/Pawn-Appetit/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Issues&color=ef4444&labelColor=2d3748" alt="Issues">
+<img src="https://img.shields.io/github/issues/Pawn-Appetit/pawn-appetit?style=flat-square&logo=github&logoColor=white&label=Issues&color=8b5cf6&labelColor=2d3748" alt="Issues">
 </a>
-<img src="https://img.shields.io/github/last-commit/Pawn-Appetit/pawn-appetit?style=flat-square&logo=git&logoColor=white&label=Updated&color=06b6d4&labelColor=2d3748" alt="Last Commit">
-<img src="https://img.shields.io/github/commit-activity/m/Pawn-Appetit/pawn-appetit?style=flat-square&logo=edgeimpulse&logoColor=white&label=Activity&&color=green&labelColor=2d3748" alt="Monthly Activity">
-
+<img src="https://img.shields.io/github/last-commit/Pawn-Appetit/pawn-appetit?style=flat-square&logo=git&logoColor=white&label=Updated&color=success&labelColor=2d3748" alt="Last Commit">
+<img src="https://img.shields.io/github/commit-activity/m/Pawn-Appetit/pawn-appetit?style=flat-square&logo=edgeimpulse&logoColor=white&label=Activity&color=success&labelColor=2d3748" alt="Monthly Activity">
 <!-- Platform & Tech -->
 <a href="https://github.com/Pawn-Appetit/pawn-appetit#supported-platforms">
-<img src="https://img.shields.io/badge/Platforms-Windows%20│%20macOS%20│%20Linux-0ea5e9?style=flat-square&logo=tauri&logoColor=white&labelColor=2d3748" alt="Supported Platforms" />
+<img src="https://img.shields.io/badge/Platforms-Windows%20│%20macOS%20│%20Linux-3b82f6?style=flat-square&logo=tauri&logoColor=white&labelColor=2d3748" alt="Supported Platforms" />
 </a>
 <a href="https://www.docker.com/">
-<img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white&labelColor=2d3748" alt="Docker">
+<img src="https://img.shields.io/badge/Docker-Ready-3b82f6?style=flat-square&logo=docker&logoColor=white&labelColor=2d3748" alt="Docker">
 </a>
 </div>
 
