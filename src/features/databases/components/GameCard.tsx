@@ -9,8 +9,10 @@ import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import { createTab } from "@/utils/tabs";
 import GamePreview from "./GamePreview";
+import { useTranslation } from "react-i18next";
 
 function GameCard({ game, file, mutate }: { game: NormalizedGame; file: string; mutate: () => void }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { layout } = useResponsiveLayout();
 
@@ -56,7 +58,7 @@ function GameCard({ game, file, mutate }: { game: NormalizedGame; file: string; 
           </TreeStateProvider>
           <Divider />
           <Group justify="left" gap={spacing}>
-            <Tooltip label="Analyze game">
+            <Tooltip label={t("features.databases.settings.analyzeGame")}>
               <ActionIcon
                 variant="subtle"
                 size={layout.databases.density === "compact" ? "lg" : "md"}
@@ -83,7 +85,7 @@ function GameCard({ game, file, mutate }: { game: NormalizedGame; file: string; 
               </ActionIcon>
             </Tooltip>
 
-            <Tooltip label="Delete game">
+            <Tooltip label={t("features.databases.settings.deleteGame")}>
               <ActionIcon
                 variant="subtle"
                 color="red"
