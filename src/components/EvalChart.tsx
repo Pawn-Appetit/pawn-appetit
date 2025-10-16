@@ -2,7 +2,7 @@ import { AreaChart } from "@mantine/charts";
 import { Alert, Box, LoadingOverlay, Paper, SegmentedControl, Stack, Text, useMantineTheme } from "@mantine/core";
 import equal from "fast-deep-equal";
 import { useAtom } from "jotai";
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import type { CategoricalChartFunc } from "recharts/types/chart/types";
 import { useStore } from "zustand";
@@ -124,14 +124,18 @@ function EvalChart(props: EvalChartProps) {
     return dataMax / (dataMax - dataMin);
   }
 
-  const onChartClick: CategoricalChartFunc = (data: any) => {
-    if (data?.activePayload?.length && data.activePayload[0].payload) {
-      const dataPoint: DataPoint = data.activePayload[0].payload;
-      goToMove(dataPoint.movePath);
-    }
-  };
-
   const data = [...getData()];
+
+  const onChartClick: CategoricalChartFunc = useCallback(
+    (event: any) => {
+      if (event.activeLabel) {
+        const match = data.find((d) => d.name === event.activeLabel);
+        if (match) goToMove(match.movePath);
+      }
+    },
+    [data, goToMove]
+  );
+
   const currentPositionName = data.find((point) => equal(point.movePath, position))?.name;
   const colouroffset = gradientOffset(data);
 
@@ -143,7 +147,12 @@ function EvalChart(props: EvalChartProps) {
 
   return (
     <Stack>
-      <Box pos="relative">
+      <Box
+        pos="relative"
+        onFocusCapture={(e) => {
+          (e.target as HTMLElement).blur?.();
+        }}
+      >
         <LoadingOverlay visible={props.isAnalysing === true} />
         <SegmentedControl
           data={["CP", "WDL"]}
@@ -163,7 +172,7 @@ function EvalChart(props: EvalChartProps) {
             withYAxis={false}
             yAxisProps={{ domain: [-1, 1] }}
             type="split"
-            fillOpacity={0.8}
+            fillOpacity={1}
             splitColors={["gray.1", "black"]}
             splitOffset={colouroffset}
             activeDotProps={{ r: 3, strokeWidth: 1 }}
@@ -204,7 +213,7 @@ function EvalChart(props: EvalChartProps) {
               withXAxis={false}
               withYAxis={false}
               type="percent"
-              fillOpacity={0.8}
+              fillOpacity={1}
               activeDotProps={{ r: 3, strokeWidth: 1 }}
               dotProps={{ r: 0 }}
               referenceLines={[
