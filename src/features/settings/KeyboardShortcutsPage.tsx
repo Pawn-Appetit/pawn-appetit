@@ -17,7 +17,7 @@ export default function KeyboardShortcutsPage() {
     <Box p="lg" h="100%" style={{ overflow: "hidden" }}>
       <Group>
         <Title order={1} fw={500} className={classes.title}>
-          Keybindings
+          {t("settings.keybindings.title")}
         </Title>
         <Tooltip label="Reset">
           <ActionIcon onClick={() => setKeyMap(RESET)}>
@@ -26,10 +26,10 @@ export default function KeyboardShortcutsPage() {
         </Tooltip>
       </Group>
       <Text size="xs" c="dimmed" mt={3} mb="lg">
-        Customize keyboard shortcuts
+        {t("settings.keybindings.desc")}
       </Text>
       <TextInput
-        placeholder="Type to search in keybindings"
+        placeholder={t("settings.keybindings.placeholder")}
         size="xs"
         mb="lg"
         value={search}
@@ -39,8 +39,8 @@ export default function KeyboardShortcutsPage() {
         <Table stickyHeader>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Command</Table.Th>
-              <Table.Th>Keybinding</Table.Th>
+              <Table.Th>{t("settings.keybindings.command")}</Table.Th>
+              <Table.Th>{t("settings.keybindings.keybinding")}</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
