@@ -1,3 +1,4 @@
+import { formatHotkeyDisplay } from "@/utils/formatHotkey";
 import { AppShell } from "@mantine/core";
 import { type HotkeyItem, useHotkeys } from "@mantine/hooks";
 import { ModalsProvider, modals } from "@mantine/modals";
@@ -457,19 +458,19 @@ function RootLayout() {
           {
             label: t("features.menu.newTab"),
             id: "new_tab",
-            shortcut: keyMap.NEW_BOARD_TAB.keys,
+            shortcut: formatHotkeyDisplay(keyMap.NEW_BOARD_TAB.keys),
             action: createNewTab,
           },
           {
             label: t("features.menu.openFile"),
             id: "open_file",
-            shortcut: keyMap.OPEN_FILE.keys,
+            shortcut: formatHotkeyDisplay(keyMap.OPEN_FILE.keys),
             action: openNewFile,
           },
           {
             label: t("features.menu.exit"),
             id: "exit",
-            shortcut: keyMap.EXIT_APP.keys,
+            shortcut: formatHotkeyDisplay(keyMap.EXIT_APP.keys),
             action: () => exit(0),
           },
         ],
@@ -480,7 +481,7 @@ function RootLayout() {
           {
             label: t("features.menu.reload"),
             id: "reload",
-            shortcut: keyMap.APP_RELOAD.keys,
+            shortcut: formatHotkeyDisplay(keyMap.APP_RELOAD.keys),
             action: () => location.reload(),
           },
         ],

@@ -5,6 +5,7 @@ import { useAtom } from "jotai";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import useRecordHotkeys from "@/hooks/useRecordHotkeys";
+import { formatHotkeyDisplay } from "@/utils/formatHotkey";
 import { keyMapAtom } from "@/state/keybindings";
 import * as classes from "./KeybindInput.css";
 
@@ -26,7 +27,7 @@ function KeybindInput({
     <>
       {!isRecording ? (
         <Box onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)} onClick={() => start()}>
-          <KbdDisplay keys={keybind.keys} hovering={hovering} />
+          <KbdDisplay keys={formatHotkeyDisplay(keybind.keys)} hovering={hovering} />
         </Box>
       ) : (
         <ShortcutInput keys={keys} stop={stop} action={action} />
@@ -75,9 +76,8 @@ function ShortcutInput({ keys, action, stop }: { keys: Set<string>; action: stri
           setKeymap((prev) => ({
             ...prev,
             [action]: {
-              /// @ts-expect-error action is key of keymap
               name: prev[action].name,
-              keys: stringed,
+              keys: stringed, // raw for parser
             },
           }));
         }}
