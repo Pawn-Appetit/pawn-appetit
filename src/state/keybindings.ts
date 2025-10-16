@@ -1,7 +1,9 @@
 import { atomWithStorage } from "jotai/utils";
 import type { SyncStorage, SyncStringStorage } from "jotai/vanilla/utils/atomWithStorage";
+export type KeyDef = { name: string; keys: string };
 
-const keys = {
+// Base key definitions using platform-agnostic tokens (e.g., "mod", "alt", lowercase keys)
+const baseKeys: Record<string, KeyDef> = {
   // === File Operations ===
   OPEN_FILE: { name: "keybindings.openFile", keys: "mod+o" },
   SAVE_FILE: { name: "keybindings.saveFile", keys: "mod+s" },
@@ -139,9 +141,15 @@ const keys = {
   NEXT_GAME: { name: "keybindings.nextGame", keys: "pagedown" },
 };
 
+// Build initial key map: raw keys only
+const keys: Record<string, KeyDef> = { ...baseKeys };
+
 export const keyMapAtom = atomWithStorage("keybindings", keys, defaultStorage(keys, localStorage));
 
-function defaultStorage<T>(keys: T, storage: SyncStringStorage): SyncStorage<T> {
+function defaultStorage<T extends Record<string, { name: string; keys: string }>>(
+  keys: T,
+  storage: SyncStringStorage,
+): SyncStorage<T> {
   return {
     getItem(key, initialValue) {
       const storedValue = storage.getItem(key);
@@ -149,9 +157,9 @@ function defaultStorage<T>(keys: T, storage: SyncStringStorage): SyncStorage<T> 
         return initialValue;
       }
       const parsed = JSON.parse(storedValue);
-      for (const key in keys) {
-        if (!(key in parsed)) {
-          parsed[key] = keys[key];
+      for (const k in keys) {
+        if (!(k in parsed)) {
+          parsed[k] = keys[k];
         }
       }
       return parsed;

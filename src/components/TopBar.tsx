@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { keyMapAtom } from "@/state/keybindings";
 import { env } from "@/utils/detectEnvironment";
+import { splitHotkeyDisplay } from "@/utils/formatHotkey";
 import { linksdata } from "./Sidebar";
 import * as classes from "./TopBar.css";
 
@@ -212,9 +213,16 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
             <Text pr="200px" c="dimmed" size="sm">
               {t("keybindings.spotlightSearch")}
             </Text>
-            <Kbd size="xs" style={{ borderWidth: "1px" }}>
-              {keyMap.SPOTLIGHT_SEARCH.keys}
-            </Kbd>
+            <Text size="xs" c="dimmed">
+              {splitHotkeyDisplay(keyMap.SPOTLIGHT_SEARCH.keys).map((part: string, i: number, arr: string[]) => (
+                <span key={i}>
+                  <Kbd size="xs" style={{ borderWidth: "1px" }}>
+                    {part}
+                  </Kbd>
+                  {i < arr.length - 1 && <span style={{ marginInline: 4 }}> + </span>}
+                </span>
+              ))}
+            </Text>
           </Group>
         </UnstyledButton>
         <Spotlight
