@@ -131,71 +131,91 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
 
   const [maximized, setMaximized] = useState(true);
   const [keyMap] = useAtom(keyMapAtom);
+  const isMac = env.getPlatform() === "macos";
+  const isNative = layout.menuBar.mode === "native";
+  // Drag the whole top bar; interactive elements are explicitly marked as non-draggable
+  const enableGroupDrag = true;
+  const dragRegionAttrs = enableGroupDrag ? { "data-tauri-drag-region": "" } : {};
+  const nonDraggableAttrs = enableGroupDrag ? { "data-tauri-drag-region": "false" } : {};
+  const leftSpacerDragAttrs = isNative && isMac ? { "data-tauri-drag-region": "" } : dragRegionAttrs;
 
   return (
-    <Group h="100%">
-      {layout.menuBar.mode === "custom" && (
-        <Box>
-          <Group data-tauri-drag-region gap="xs" px="sm">
-            <Box h="1.4rem" w="1.4rem">
-              <Image src="/logo.png" fit="fill" />
-            </Box>
-            <Group gap={0}>
-              {menuActions.map((action) => (
-                <Menu
-                  key={action.label}
-                  shadow="md"
-                  width={200}
-                  position="bottom-start"
-                  transitionProps={{ duration: 0 }}
-                >
-                  <Menu.Target>
-                    <UnstyledButton
-                      fz="xs"
-                      px="xs"
-                      variant="subtle"
-                      color={
-                        colorScheme === "dark" || (osColorScheme === "dark" && colorScheme === "auto") ? "gray" : "dark"
-                      }
-                      size="compact-md"
-                    >
-                      {action.label}
-                    </UnstyledButton>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    {action.options.map((option, i) =>
-                      option.label === "divider" ? (
-                        <Menu.Divider key={i} />
-                      ) : (
-                        <Menu.Item
-                          key={option.label}
-                          rightSection={
-                            option.shortcut && (
-                              <Text size="xs" c="dimmed">
-                                {option.shortcut}
-                              </Text>
-                            )
-                          }
-                          onClick={option.action}
-                        >
-                          {option.label}
-                        </Menu.Item>
-                      ),
-                    )}
-                  </Menu.Dropdown>
-                </Menu>
-              ))}
+    <Box h="100%" style={{ position: "relative" }}>
+      <Group h="100%">
+        {layout.menuBar.mode === "custom" && (
+          <Box>
+            <Group gap="xs" px="sm" {...dragRegionAttrs}>
+              <Box h="1.4rem" w="1.4rem">
+                <Image src="/logo.png" fit="fill" />
+              </Box>
+              <Group gap={0}>
+                {menuActions.map((action) => (
+                  <Menu
+                    key={action.label}
+                    shadow="md"
+                    width={200}
+                    position="bottom-start"
+                    transitionProps={{ duration: 0 }}
+                  >
+                    <Menu.Target>
+                      <UnstyledButton
+                        fz="xs"
+                        px="xs"
+                        variant="subtle"
+                        color={
+                          colorScheme === "dark" || (osColorScheme === "dark" && colorScheme === "auto")
+                            ? "gray"
+                            : "dark"
+                        }
+                        size="compact-md"
+                        {...nonDraggableAttrs}
+                      >
+                        {action.label}
+                      </UnstyledButton>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      {action.options.map((option, i) =>
+                        option.label === "divider" ? (
+                          <Menu.Divider key={i} />
+                        ) : (
+                          <Menu.Item
+                            key={option.label}
+                            rightSection={
+                              option.shortcut && (
+                                <Text size="xs" c="dimmed">
+                                  {option.shortcut}
+                                </Text>
+                              )
+                            }
+                            onClick={option.action}
+                          >
+                            {option.label}
+                          </Menu.Item>
+                        ),
+                      )}
+                    </Menu.Dropdown>
+                  </Menu>
+                ))}
+              </Group>
             </Group>
-          </Group>
-        </Box>
-      )}
-      <Group style={{ flexGrow: 1 }} justify="center" data-tauri-drag-region>
-        <Box
-          style={{ flex: 1 }}
-          h="1.4rem"
-          data-tauri-drag-region
-          hiddenFrom={layout.menuBar.mode === "native" ? "xs" : "sm"}
-        />
+          </Box>
+        )}
+        <Group style={{ flexGrow: 1 }} justify="center" {...dragRegionAttrs}>
+          {/* Empty flex spacer for dragging */}
+        </Group>
+      </Group>
+
+      {/* Spotlight positioned absolutely to center of entire top bar */}
+      <Box
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          zIndex: 10,
+        }}
+        {...nonDraggableAttrs}
+      >
         <UnstyledButton
           onClick={spotlight.open}
           size="xs"
@@ -207,6 +227,7 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
             border: "1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4))",
             borderRadius: "4px",
           }}
+          {...nonDraggableAttrs}
         >
           <Group w="100%">
             <IconSearch size={14} stroke={1.5} color="var(--mantine-color-dimmed)" />
@@ -236,32 +257,46 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
           }}
           scrollable
         />
-      </Group>
+      </Box>
+
       {layout.menuBar.displayWindowControls && (
-        <Center h="30" mr="xs">
-          <Group gap="5px" data-tauri-drag-region>
-            <ActionIcon h={25} w={25} radius="lg" onClick={() => appWindow?.minimize()} className={classes.icon}>
-              <Icons.minimizeWin />
-            </ActionIcon>
-            <ActionIcon
-              h={25}
-              w={25}
-              radius="lg"
-              onClick={() => {
-                appWindow?.toggleMaximize();
-                setMaximized((prev) => !prev);
-              }}
-              className={classes.icon}
-            >
-              {maximized ? <Icons.maximizeRestoreWin /> : <Icons.maximizeWin />}
-            </ActionIcon>
-            <ActionIcon h={25} w={25} radius="lg" onClick={() => appWindow?.close()} className={classes.icon}>
-              <Icons.closeWin />
-            </ActionIcon>
-          </Group>
-        </Center>
+        <Group style={{ position: "absolute", right: "0.5rem", top: "50%", transform: "translateY(-50%)" }}>
+          <ActionIcon
+            h={25}
+            w={25}
+            radius="lg"
+            onClick={() => appWindow?.minimize()}
+            className={classes.icon}
+            {...nonDraggableAttrs}
+          >
+            <Icons.minimizeWin />
+          </ActionIcon>
+          <ActionIcon
+            h={25}
+            w={25}
+            radius="lg"
+            onClick={() => {
+              appWindow?.toggleMaximize();
+              setMaximized((prev) => !prev);
+            }}
+            className={classes.icon}
+            {...nonDraggableAttrs}
+          >
+            {maximized ? <Icons.maximizeRestoreWin /> : <Icons.maximizeWin />}
+          </ActionIcon>
+          <ActionIcon
+            h={25}
+            w={25}
+            radius="lg"
+            onClick={() => appWindow?.close()}
+            className={classes.icon}
+            {...nonDraggableAttrs}
+          >
+            <Icons.closeWin />
+          </ActionIcon>
+        </Group>
       )}
-    </Group>
+    </Box>
   );
 }
 
