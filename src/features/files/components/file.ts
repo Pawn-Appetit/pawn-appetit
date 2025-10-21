@@ -69,7 +69,7 @@ async function readFileMetadata(path: string): Promise<FileMetadata | null> {
     name: (await basename(path)).replace(".pgn", ""),
     numGames,
     metadata,
-    lastModified: fileMetadata.last_modified,
+    lastModified: Number(fileMetadata.last_modified),
   };
 }
 

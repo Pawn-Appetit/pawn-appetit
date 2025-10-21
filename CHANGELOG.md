@@ -1,6 +1,6 @@
 # Pawn Appétit Changelog
 
-## [Unreleased]
+## [0.8.0]
 
 ### Added
 - New keybindings for copy/paste, engine control, variations, search, panels, training, and navigation

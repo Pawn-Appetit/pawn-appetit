@@ -397,7 +397,7 @@ export async function downloadLichess(
     path,
     token ?? null,
     null,
-    games > 0 ? games * 900 : null, // approx. size of a game
+    games > 0 ? BigInt(games * 900) : null, // approx. size of a game
   );
 }
 
