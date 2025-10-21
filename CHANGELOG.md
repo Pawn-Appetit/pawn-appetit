@@ -12,6 +12,8 @@
 - Replaced static text with translation keys for better localization support
 - Improved loading state in Databases component
 - Updated British English localization ([#341](https://github.com/Chessifier/chessifier/pull/341)) - @AWH1122
+- Implemented hotkey formatting for improved display and accessibility ([#349](https://github.com/Pawn-Appetit/pawn-appetit/pull/349)) - @AWH1122
+- Made chart selectable and removed focus outline ([#348](https://github.com/Pawn-Appetit/pawn-appetit/pull/348)) - @AWH1122
 
 ### Fixed
 - Hardened download functionality with security improvements
@@ -21,6 +23,7 @@
 - Fixed coordinate display to use lowercase chess notation ([#336](https://github.com/Chessifier/chessifier/pull/336)) - @AWH1122
 - Fixed overscrolling behavior ([#338](https://github.com/Chessifier/chessifier/pull/338)) - @AWH1122
 - Stopped text from being selectable when unnecessary ([#333](https://github.com/Chessifier/chessifier/pull/333)) - @AWH1122
+- Updated keybindings translations for improved accessibility ([#347](https://github.com/Pawn-Appetit/pawn-appetit/pull/347)) - @AWH1122
 
 ### Security
 - Fixed path traversal and SSRF vulnerabilities in downloads
