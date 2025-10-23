@@ -18,23 +18,31 @@ export function Chessground({ setBoardFen, selectedPiece, setSelectedPiece, ...c
   const ref = useRef<HTMLDivElement>(null);
   const moveMethod = useAtomValue(moveMethodAtom);
   const boardImage = useAtomValue(boardImageAtom);
+  
+  const setBoardFenRef = useRef(setBoardFen);
+  const setSelectedPieceRef = useRef(setSelectedPiece);
+  
+  useEffect(() => {
+    setBoardFenRef.current = setBoardFen;
+    setSelectedPieceRef.current = setSelectedPiece;
+  });
 
   const handleChange = useCallback(() => {
-    if (setBoardFen && api) {
-      setBoardFen(api.getFen());
+    if (setBoardFenRef.current && api) {
+      setBoardFenRef.current(api.getFen());
     }
-  }, [setBoardFen, api]);
+  }, [api]);
 
   const handleSelect = useCallback(
     (key: Key) => {
       if (chessgroundConfig.movable?.free && selectedPiece && api) {
         api.setPieces(new Map([[key, selectedPiece]]));
-        if (setBoardFen) {
-          setBoardFen(api.getFen());
+        if (setBoardFenRef.current) {
+          setBoardFenRef.current(api.getFen());
         }
       }
     },
-    [chessgroundConfig.movable?.free, selectedPiece, api, setBoardFen],
+    [chessgroundConfig.movable?.free, selectedPiece, api],
   );
 
   useEffect(() => {
@@ -106,10 +114,10 @@ export function Chessground({ setBoardFen, selectedPiece, setSelectedPiece, ...c
   ]);
 
   useEffect(() => {
-    if (!chessgroundConfig.movable?.free && selectedPiece && setSelectedPiece) {
-      setSelectedPiece(null);
+    if (!chessgroundConfig.movable?.free && selectedPiece && setSelectedPieceRef.current) {
+      setSelectedPieceRef.current(null);
     }
-  }, [chessgroundConfig.movable?.free, selectedPiece, setSelectedPiece]);
+  }, [chessgroundConfig.movable?.free, selectedPiece]);
 
   return (
     <Box

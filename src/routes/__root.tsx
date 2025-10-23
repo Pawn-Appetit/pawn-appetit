@@ -1,4 +1,3 @@
-import { formatHotkeyDisplay } from "@/utils/formatHotkey";
 import { AppShell } from "@mantine/core";
 import { type HotkeyItem, useHotkeys } from "@mantine/hooks";
 import { ModalsProvider, modals } from "@mantine/modals";
@@ -25,6 +24,7 @@ import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
 import { openFile } from "@/utils/files";
+import { formatHotkeyDisplay } from "@/utils/formatHotkey";
 import { createTab } from "@/utils/tabs";
 
 type MenuGroup = {

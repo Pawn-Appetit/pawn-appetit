@@ -5,8 +5,8 @@ import { useAtom } from "jotai";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import useRecordHotkeys from "@/hooks/useRecordHotkeys";
-import { formatHotkeyDisplay } from "@/utils/formatHotkey";
 import { keyMapAtom } from "@/state/keybindings";
+import { formatHotkeyDisplay } from "@/utils/formatHotkey";
 import * as classes from "./KeybindInput.css";
 
 function KeybindInput({

@@ -166,12 +166,24 @@ function AppError({ error: errorMsg }: { error: string }) {
   );
 }
 
+const loadedPieceSets = new Set<string>();
+
 function preloadPieceSetCSS(pieceSet: string): Promise<void> {
+  if (loadedPieceSets.has(pieceSet)) {
+    return Promise.resolve();
+  }
+
+  const existingLink = document.getElementById(`piece-set-${pieceSet}`);
+  if (existingLink) {
+    loadedPieceSets.add(pieceSet);
+    return Promise.resolve();
+  }
+
   return new Promise((resolve, reject) => {
     const link = document.createElement("link");
-    link.rel = "preload";
-    link.as = "style";
+    link.rel = "stylesheet";
     link.href = `/pieces/${pieceSet}.css`;
+    link.id = `piece-set-${pieceSet}`;
 
     const timeout = setTimeout(() => {
       reject(new Error(`Timeout loading piece set CSS: ${pieceSet}`));
@@ -179,7 +191,7 @@ function preloadPieceSetCSS(pieceSet: string): Promise<void> {
 
     link.onload = () => {
       clearTimeout(timeout);
-      link.rel = "stylesheet";
+      loadedPieceSets.add(pieceSet);
       info(`Successfully loaded piece set CSS: ${pieceSet}`);
       resolve();
     };
@@ -258,12 +270,22 @@ function usePieceSetManager(pieceSet: string) {
     if (loadingElement) {
       loadingElement.style.display = "none";
     }
+  }, []);
 
-    if (pieceSet) {
-      preloadPieceSetCSS(pieceSet).catch((error) => {
+  useEffect(() => {
+    if (!pieceSet) return;
+    
+    let mounted = true;
+    
+    preloadPieceSetCSS(pieceSet).catch((error) => {
+      if (mounted) {
         console.warn("Piece set CSS preloading failed:", error);
-      });
-    }
+      }
+    });
+
+    return () => {
+      mounted = false;
+    };
   }, [pieceSet]);
 }
 
@@ -347,26 +369,6 @@ export default function App() {
     rootElement.setAttribute("dir", direction);
     rootElement.classList.toggle("rtl", direction === "rtl");
   }, []);
-
-  useEffect(() => {
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = `/pieces/${pieceSet}.css`;
-    link.id = `piece-set-${pieceSet}`;
-
-    link.onerror = () => {
-      console.error(`Failed to load piece set CSS: ${pieceSet}`);
-    };
-
-    document.head.appendChild(link);
-
-    return () => {
-      const existingLink = document.getElementById(`piece-set-${pieceSet}`);
-      if (existingLink) {
-        document.head.removeChild(existingLink);
-      }
-    };
-  }, [pieceSet]);
 
   if (initState === "loading") {
     return <AppLoading />;

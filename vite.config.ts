@@ -1,9 +1,9 @@
 /// <reference types="vitest" />
 import { resolve } from "node:path";
-import { TanStackRouterVite } from "@tanstack/router-vite-plugin";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
 import react from "@vitejs/plugin-react-swc";
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 
 const isDebug = !!process.env.TAURI_ENV_DEBUG;
 
@@ -11,7 +11,11 @@ const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), vanillaExtractPlugin(), TanStackRouterVite()],
+  plugins: [
+    tanstackRouter(),
+    react(),
+    vanillaExtractPlugin(),
+  ],
   clearScreen: false,
   server: {
     port: 1420,

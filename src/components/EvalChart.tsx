@@ -2,7 +2,7 @@ import { AreaChart } from "@mantine/charts";
 import { Alert, Box, LoadingOverlay, Paper, SegmentedControl, Stack, Text, useMantineTheme } from "@mantine/core";
 import equal from "fast-deep-equal";
 import { useAtom } from "jotai";
-import { useContext, useMemo, useCallback } from "react";
+import { useCallback, useContext, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { CategoricalChartFunc } from "recharts/types/chart/types";
 import { useStore } from "zustand";
@@ -133,7 +133,7 @@ function EvalChart(props: EvalChartProps) {
         if (match) goToMove(match.movePath);
       }
     },
-    [data, goToMove]
+    [data, goToMove],
   );
 
   const currentPositionName = data.find((point) => equal(point.movePath, position))?.name;
