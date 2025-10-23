@@ -274,11 +274,48 @@ function Board({
 
   let shapes: DrawShape[] = [];
   if (showArrows && evalOpen && arrows.size > 0 && pos) {
+    const engineLines: Record<
+      number,
+      {
+        engineIndex: number;
+        bestWinChance: number;
+        variations: Array<{
+          variationIndex: number;
+          winChance: number;
+          arrows: Array<{
+            from: string;
+            to: string;
+            color: string;
+            lineWidth: number;
+            isMainLine: boolean;
+            moveNumber: number;
+          }>;
+        }>;
+      }
+    > = {};
+
     const entries = Array.from(arrows.entries()).sort((a, b) => a[0] - b[0]);
     for (const [i, moves] of entries) {
       if (i < 4) {
         const bestWinChance = moves[0].winChance;
+        engineLines[i] = {
+          engineIndex: i,
+          bestWinChance,
+          variations: [],
+        };
         for (const [j, { pv, winChance }] of moves.entries()) {
+          const variation = {
+            variationIndex: j,
+            winChance,
+            arrows: [] as Array<{
+              from: string;
+              to: string;
+              color: string;
+              lineWidth: number;
+              isMainLine: boolean;
+              moveNumber: number;
+            }>,
+          };
           const posClone = pos.clone();
           let prevSquare = null;
           for (const [ii, uci] of pv.entries()) {
@@ -307,10 +344,20 @@ function Board({
                 !shapes.find((s) => s.orig === from && s.dest === to) &&
                 prevSquare === from
               ) {
+                const arrowColor = j === 0 ? arrowColors[i].strong : arrowColors[i].pale;
+
+                variation.arrows.push({
+                  from,
+                  to,
+                  color: arrowColor,
+                  lineWidth: brushSize,
+                  isMainLine: j === 0,
+                  moveNumber: ii,
+                });
                 shapes.push({
                   orig: from,
                   dest: to,
-                  brush: j === 0 ? arrowColors[i].strong : arrowColors[i].pale,
+                  brush: arrowColor,
                   modifiers: {
                     lineWidth: brushSize,
                   },
@@ -321,9 +368,23 @@ function Board({
               }
             }
           }
+
+          engineLines[i].variations.push(variation);
         }
       }
     }
+
+    console.log({
+      totalEngines: arrows.size,
+      enabledEngines: Object.keys(engineLines).length,
+      engineLines,
+      finalShapes: shapes.map((shape) => ({
+        from: shape.orig,
+        to: shape.dest,
+        color: shape.brush,
+        lineWidth: shape.modifiers?.lineWidth,
+      })),
+    });
   }
 
   if (currentNode.shapes.length > 0) {
