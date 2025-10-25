@@ -230,7 +230,7 @@ The binary will be available in your current directory.
 | Feature | Pawn Appétit | ChessBase | Arena | Scid |
 |---------|--------------|-----------|-------|------|
 | **Price** | Free ✅ | $199+ ❌ | Free ✅ | Free ✅ |
-| **Modern UI** | ✅ | ✅ | ❌ | ❌ |
+| **Modern UI** | ✅ | ❌ | ❌ | ❌ |
 | **Cross-platform** | ✅ | Windows only ❌ | Windows only ❌ | ✅ |
 | **Open Source** | ✅ | ❌ | ❌ | ✅ |
 

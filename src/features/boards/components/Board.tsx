@@ -2,7 +2,6 @@ import { ActionIcon, Box, Center, Group, Text, useMantineTheme } from "@mantine/
 import { useHotkeys } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconChevronRight } from "@tabler/icons-react";
-import { documentDir, homeDir } from "@tauri-apps/api/path";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
 import type { DrawShape } from "chessground/draw";
@@ -28,7 +27,6 @@ import { updateCardPerformance } from "@/features/files/components/opening";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import {
   autoPromoteAtom,
-  autoSaveAtom,
   bestMovesFamily,
   blindfoldAtom,
   currentEvalOpenAtom,
@@ -49,7 +47,7 @@ import { blindfold, chessboard } from "@/styles/Chessboard.css";
 import { ANNOTATION_INFO, isBasicAnnotation } from "@/utils/annotation";
 import { getMaterialDiff, getVariationLine } from "@/utils/chess";
 import { chessopsError, forceEnPassant, positionFromFen } from "@/utils/chessops";
-import { logger } from "@/utils/logger";
+import { getDocumentDir } from "@/utils/documentDir";
 import AnnotationHint from "./AnnotationHint";
 import EvalBar from "./EvalBar";
 import MoveInput from "./MoveInput";
@@ -196,13 +194,7 @@ function Board({
 
     domtoimage.toBlob(refChildNode).then(async (blob) => {
       if (blob == null) return;
-      let documentsDirPath: string;
-      try {
-        documentsDirPath = await documentDir();
-      } catch (e) {
-        logger.error("Error getting document directory", e);
-        documentsDirPath = await homeDir();
-      }
+      const documentsDirPath: string = await getDocumentDir();
 
       const filePath = await save({
         title: "Save board snapshot",

@@ -6,6 +6,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { useAtom } from "jotai";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { updateDirectoriesCache } from "@/App";
 import AboutModal from "@/components/About";
 import FileInput from "@/components/FileInput";
 import ColorSchemeSettings from "@/features/themes/components/ColorSchemeSettings";
@@ -707,6 +708,7 @@ export default function Page() {
                 });
                 if (!selected || typeof selected !== "string") return;
                 setFilesDirectory(selected);
+                await updateDirectoriesCache();
               }}
               filename={filesDirectory || null}
             />
@@ -749,7 +751,6 @@ export default function Page() {
       moveNotationData,
       waysToMoveData,
       titleBarData,
-      AboutModal,
     ],
   );
 

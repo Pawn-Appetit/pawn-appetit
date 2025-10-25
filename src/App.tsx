@@ -2,11 +2,11 @@ import { Notifications } from "@mantine/notifications";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { getMatches } from "@tauri-apps/plugin-cli";
 import { attachConsole, error, info } from "@tauri-apps/plugin-log";
-import { getDefaultStore, useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { ContextMenuProvider } from "mantine-contextmenu";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { activeTabAtom, fontSizeAtom, pieceSetAtom, storedDocumentDirAtom, tabsAtom } from "./state/atoms";
+import { activeTabAtom, fontSizeAtom, pieceSetAtom, tabsAtom } from "./state/atoms";
 
 import "@mantine/charts/styles.css";
 import "@mantine/core/styles.css";
@@ -20,7 +20,6 @@ import "@/styles/chessgroundBaseOverride.css";
 import "@/styles/chessgroundColorsOverride.css";
 import "@/styles/global.css";
 
-import { documentDir, homeDir, resolve } from "@tauri-apps/api/path";
 import ErrorComponent from "@/components/ErrorComponent";
 import { EventMonitor } from "@/components/EventMonitor";
 import { showUpdateNotification, UpdateNotificationModal } from "@/components/UpdateNotification";
@@ -32,6 +31,7 @@ import { IS_DEV } from "./config";
 import i18n from "./i18n";
 import { routeTree } from "./routeTree.gen";
 import type { VersionCheckResult } from "./services/version-checker";
+import { getDocumentDir } from "./utils/documentDir";
 import { openFile } from "./utils/files";
 
 export type Dirs = {
@@ -41,7 +41,6 @@ export type Dirs = {
 type InitializationState = "loading" | "initialized" | "error";
 
 const DEFAULT_FONT_SIZE = 18;
-const APP_FOLDER_NAME = "Pawn Appetit";
 const SPINNER_STYLES = {
   width: "24px",
   height: "24px",
@@ -76,29 +75,19 @@ export const loadDirectories = async (): Promise<Dirs> => {
   }
 
   directoriesCache = (async (): Promise<Dirs> => {
-    const store = getDefaultStore();
-    let doc = store.get(storedDocumentDirAtom);
-
-    if (!doc) {
-      try {
-        doc = await resolve(await documentDir(), APP_FOLDER_NAME);
-        info(`Using documents directory: ${doc}`);
-      } catch (e) {
-        error(`Failed to access documents directory: ${e}`);
-        try {
-          doc = await resolve(await homeDir(), APP_FOLDER_NAME);
-          info(`Fallback to home directory: ${doc}`);
-        } catch (homeError) {
-          error(`Failed to access home directory: ${homeError}`);
-          throw new Error(`Cannot access any suitable directory: ${e}, ${homeError}`);
-        }
-      }
-    }
-
-    return { documentDir: doc };
+    return { documentDir: await getDocumentDir() };
   })();
 
   return directoriesCache;
+};
+
+export const clearDirectoriesCache = () => {
+  directoriesCache = null;
+};
+
+export const updateDirectoriesCache = async (): Promise<Dirs> => {
+  clearDirectoriesCache();
+  return loadDirectories();
 };
 
 const router = createRouter({
@@ -274,9 +263,9 @@ function usePieceSetManager(pieceSet: string) {
 
   useEffect(() => {
     if (!pieceSet) return;
-    
+
     let mounted = true;
-    
+
     preloadPieceSetCSS(pieceSet).catch((error) => {
       if (mounted) {
         console.warn("Piece set CSS preloading failed:", error);
