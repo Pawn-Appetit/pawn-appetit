@@ -8,6 +8,7 @@ import { createFile, getFileNameWithoutExtension, isTempImportFile } from "@/uti
 import { unwrap } from "@/utils/unwrap";
 import { getPGN, parsePGN } from "./chess";
 import type { GameHeaders, TreeState } from "./treeReducer";
+import { formatDateToPGN } from "./format";
 
 const dbGameMetadataSchema = z.object({
   type: z.literal("db"),
@@ -118,7 +119,7 @@ export async function saveToFile({
     filePath = tab.source.path;
   } else {
     const userChoice = await save({
-      defaultPath: dir,
+      defaultPath: `${dir}/analyze-game-${formatDateToPGN(new Date())}.pgn`,
       filters: [
         {
           name: "PGN",
