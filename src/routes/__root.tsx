@@ -389,6 +389,7 @@ function RootLayout() {
         [keyMap.EXIT_APP.keys, () => exit(0)],
         [keyMap.OPEN_SETTINGS.keys, () => navigate({ to: "/settings" })],
         [keyMap.SHOW_KEYBINDINGS.keys, () => navigate({ to: "/settings/keyboard-shortcuts" })],
+        [keyMap.TOGGLE_HELP.keys, () => navigate({ to: "/settings/keyboard-shortcuts" })],
       ] as HotkeyItem[],
     [keyMap, createNewTab, navigate, t, setTabs, setActiveTab, openNewFile],
   );

@@ -130,7 +130,7 @@ const baseKeys: Record<string, KeyDef> = {
   // === Settings & Help ===
   OPEN_SETTINGS: { name: "keybindings.openSettings", keys: "mod+," },
   SHOW_KEYBINDINGS: { name: "keybindings.showKeybindings", keys: "mod+/" },
-  TOGGLE_HELP: { name: "keybindings.toggleHelp", keys: "shift+?" },
+  TOGGLE_HELP: { name: "keybindings.toggleHelp", keys: "mod+?" },
 
   // === Navigation Enhancement ===
   JUMP_TO_MOVE: { name: "keybindings.jumpToMove", keys: "mod+g" },
