@@ -18,10 +18,10 @@ export function Chessground({ setBoardFen, selectedPiece, setSelectedPiece, ...c
   const ref = useRef<HTMLDivElement>(null);
   const moveMethod = useAtomValue(moveMethodAtom);
   const boardImage = useAtomValue(boardImageAtom);
-  
+
   const setBoardFenRef = useRef(setBoardFen);
   const setSelectedPieceRef = useRef(setSelectedPiece);
-  
+
   useEffect(() => {
     setBoardFenRef.current = setBoardFen;
     setSelectedPieceRef.current = setSelectedPiece;

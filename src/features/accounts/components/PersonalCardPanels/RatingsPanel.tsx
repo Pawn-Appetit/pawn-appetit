@@ -14,7 +14,6 @@ import WebsiteAccountSelector from "./WebsiteAccountSelector";
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
 function calculateEarliestDate(dateRange: DateRange, ratingDates: number[]): number {
-  if (!ratingDates.length) return 0;
   const lastDate = ratingDates[ratingDates.length - 1];
   switch (dateRange) {
     case DateRange.SevenDays:
@@ -25,17 +24,13 @@ function calculateEarliestDate(dateRange: DateRange, ratingDates: number[]): num
       return lastDate - 90 * MILLISECONDS_PER_DAY;
     case DateRange.OneYear:
       return lastDate - 365 * MILLISECONDS_PER_DAY;
+    case DateRange.AllTime:
     default:
       return Math.min(...ratingDates);
   }
 }
 
-interface RatingsPanelProps {
-  playerName: string;
-  info: PlayerGameInfo;
-}
-
-function RatingsPanel({ playerName, info }: RatingsPanelProps) {
+function RatingsPanel({ playerName, info }: { playerName: string; info: PlayerGameInfo }) {
   const { t } = useTranslation();
   const [dateRange, setDateRange] = useState<DateRange | null>(DateRange.NinetyDays);
   const [timeControl, setTimeControl] = useState<string | null>(null);
@@ -44,96 +39,83 @@ function RatingsPanel({ playerName, info }: RatingsPanelProps) {
   const [timeRange, setTimeRange] = useState({ start: 0, end: 0 });
 
   const dates = useMemo(() => {
-    const today = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
-    return Array.from(
-      new Set([
-        today,
-        ...info.site_stats_data
-          ?.filter((games) => games.site === website)
-          .filter((games) => account === "All accounts" || games.player === account)
-          .flatMap((games) => games.data)
-          .filter((game) => getTimeControl(website!, game.time_control) === timeControl)
-          .map((game) => new Date(game.date).getTime()),
-      ]),
-    ).sort((a, b) => a - b);
+    const timezoneOffset = new Date().getTimezoneOffset() * 60 * 1000; // milliseconds
+    const localDate = new Date(Date.now() - timezoneOffset);
+    const todayString = localDate.toISOString().slice(0, 10);
+    const today = new Date(todayString).getTime();
+
+    const gameDates =
+      info.site_stats_data
+        ?.filter((games) => games.site === website)
+        .filter((games) => account === "All accounts" || games.player === account)
+        .flatMap((games) => games.data)
+        .filter((game) => getTimeControl(website!, game.time_control) === timeControl)
+        .map((game) => new Date(game?.date?.replaceAll(".", "-")).getTime()) ?? [];
+
+    return Array.from(new Set([today, ...gameDates])).sort((a, b) => a - b);
   }, [info.site_stats_data, website, account, timeControl]);
 
   useEffect(() => {
-    const newTimeRange = dateRange
-      ? {
-          start: Math.max(
-            0,
-            dates.findIndex((date) => date >= calculateEarliestDate(dateRange, dates)),
-          ),
-          end: Math.max(0, dates.length - 1),
-        }
-      : {
-          start: 0,
-          end: Math.max(0, dates.length - 1),
-        };
-
-    setTimeRange(newTimeRange);
+    if (dateRange) {
+      const earliestDate = calculateEarliestDate(dateRange as DateRange, dates);
+      const earliestIndex = dates.findIndex((date) => date >= earliestDate);
+      setTimeRange({ start: earliestIndex, end: dates.length - 1 });
+    } else {
+      setTimeRange({ start: 0, end: dates.length > 0 ? dates.length - 1 : 0 });
+    }
   }, [dateRange, dates]);
 
   const [summary, ratingData] = useMemo(() => {
-    if (!website || !timeControl) return [{ games: 0, won: 0, draw: 0, lost: 0 }, []];
-
     const filteredGames =
       info.site_stats_data
         ?.filter((games) => games.site === website)
         .filter((games) => account === "All accounts" || games.player === account)
         .flatMap((games) => games.data)
-        .filter((game) => getTimeControl(website, game.time_control) === timeControl)
+        .filter((game) => getTimeControl(website!, game.time_control) === timeControl)
         .filter((game) => {
-          const gameDate = new Date(game.date).getTime();
-          return gameDate >= (dates[timeRange.start] || 0) && gameDate <= (dates[timeRange.end] || 0);
+          const gameDate = new Date(game?.date?.replaceAll(".", "-")).getTime();
+          const startDate = dates[timeRange.start];
+          const endDate = dates[timeRange.end];
+          return gameDate >= (startDate ?? 0) && gameDate <= (endDate ?? 0);
         }) ?? [];
 
-    const totalGamesCount = filteredGames.length;
     const wonCount = filteredGames.filter((game) => game.result === "Won").length;
     const drawCount = filteredGames.filter((game) => game.result === "Drawn").length;
     const lostCount = filteredGames.filter((game) => game.result === "Lost").length;
 
-    interface RatingDataPoint {
-      date: number;
-      player_elo: number;
-    }
-
-    const ratingData = filteredGames
-      .reduce<RatingDataPoint[]>((acc, game) => {
-        const date = new Date(game.date).getTime();
-        const existingPoint = acc.find((point) => point.date === date);
-
-        if (!existingPoint) {
-          acc.push({ date, player_elo: game.player_elo });
-        } else if (existingPoint.player_elo < game.player_elo) {
-          existingPoint.player_elo = game.player_elo;
+    const ratingData = (() => {
+      const map = new Map<number, { date: number; player_elo: number }>();
+      for (const game of filteredGames) {
+        const date = new Date(game?.date?.replaceAll(".", "-")).getTime();
+        const existingEntry = map.get(date);
+        if (!existingEntry || existingEntry.player_elo < game.player_elo) {
+          map.set(date, { date, player_elo: game.player_elo });
         }
-
-        return acc;
-      }, [])
-      .sort((a, b) => a.date - b.date);
+      }
+      return Array.from(map.values()).sort((a, b) => a.date - b.date);
+    })();
 
     return [
       {
-        games: totalGamesCount,
+        games: filteredGames.length,
         won: wonCount,
         draw: drawCount,
         lost: lostCount,
       },
       ratingData,
     ];
-  }, [info.site_stats_data, website, account, timeControl, timeRange]);
+  }, [info.site_stats_data, website, account, timeControl, dates, timeRange]);
 
   const playerEloDomain = useMemo(() => {
     if (ratingData.length === 0) return null;
 
-    const [minElo, maxElo] = ratingData.reduce<[number, number]>(
-      ([min, max], { player_elo }) => [Math.min(min, player_elo), Math.max(max, player_elo)],
-      [Infinity, -Infinity],
+    return ratingData.reduce<[number, number]>(
+      ([min, max], { player_elo }) => [
+        Math.floor(Math.min(min, player_elo) / 50) * 50,
+        Math.ceil(Math.max(max, player_elo) / 50) * 50,
+      ],
+      [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY],
     );
-
-    return [Math.floor(minElo / 50) * 50, Math.ceil(maxElo / 50) * 50];
   }, [ratingData]);
 
   return (
@@ -145,21 +127,16 @@ function RatingsPanel({ playerName, info }: RatingsPanelProps) {
         allowAll={false}
       />
       <TimeControlSelector onTimeControlChange={setTimeControl} website={website} allowAll={false} />
-      <DateRangeTabs
-        timeRange={dateRange}
-        onTimeRangeChange={(value: string | null) => {
-          setDateRange(value as DateRange | null);
-        }}
-      />
+      <DateRangeTabs timeRange={dateRange} onTimeRangeChange={(value) => setDateRange(value as DateRange | null)} />
       <Text pt="md" fw="bold" fz="lg" ta="center">
         {summary.games === 1 && t("common.games.one", { count: summary.games || 0 })}
         {summary.games > 1 && t("common.games.other", { count: summary.games || 0 })}
       </Text>
-      {dates.length > 1 && summary.games > 0 && (
+      {dates.length > 1 && (
         <>
-          <ResultsChart won={summary.won} draw={summary.draw} lost={summary.lost} size="2rem" />
+          {summary.games > 0 && <ResultsChart won={summary.won} draw={summary.draw} lost={summary.lost} size="2rem" />}
           <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={ratingData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+            <AreaChart data={ratingData}>
               <defs>
                 <linearGradient {...linearGradientProps}>
                   {gradientStops.map((stopProps, index) => (
@@ -167,25 +144,19 @@ function RatingsPanel({ playerName, info }: RatingsPanelProps) {
                   ))}
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3" vertical={false} stroke="var(--mantine-color-gray-3)" />
+              <CartesianGrid strokeDasharray="3" vertical={false} />
               <XAxis
                 dataKey="date"
                 domain={[dates[timeRange.start], dates[timeRange.end]]}
                 tickFormatter={(date) => new Date(date).toLocaleDateString()}
                 type="number"
-                stroke="var(--mantine-color-gray-7)"
-                tick={{ fill: "var(--mantine-color-gray-7)" }}
               />
-              <YAxis
-                domain={playerEloDomain ?? undefined}
-                stroke="var(--mantine-color-gray-7)"
-                tick={{ fill: "var(--mantine-color-gray-7)" }}
-              />
+              {playerEloDomain == null && <YAxis />}
+              {playerEloDomain != null && <YAxis domain={playerEloDomain} />}
               <Tooltip
                 contentStyle={tooltipContentStyle}
                 cursor={tooltipCursorStyle}
                 labelFormatter={(label) => new Date(label).toLocaleDateString()}
-                formatter={(value: number) => [value, "Rating"]}
               />
               <Area
                 name="Rating"

@@ -86,9 +86,9 @@ function PersonalPlayerCard({
         }}
       >
         <Tabs.List>
-          <Tabs.Tab value="overview">Overview</Tabs.Tab>
-          <Tabs.Tab value="ratings">Ratings</Tabs.Tab>
-          <Tabs.Tab value="openings">Openings</Tabs.Tab>
+          <Tabs.Tab value="overview">{t("accounts.personalCard.tabs.overview")}</Tabs.Tab>
+          <Tabs.Tab value="ratings">{t("accounts.personalCard.tabs.ratings")}</Tabs.Tab>
+          <Tabs.Tab value="openings">{t("accounts.personalCard.tabs.openings")}</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="overview">
           <OverviewPanel playerName={name} info={info} />

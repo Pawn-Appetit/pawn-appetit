@@ -7,8 +7,8 @@ import type { TreeStoreState } from "@/state/store/tree";
 import { createFile, getFileNameWithoutExtension, isTempImportFile } from "@/utils/files";
 import { unwrap } from "@/utils/unwrap";
 import { getPGN, parsePGN } from "./chess";
-import type { GameHeaders, TreeState } from "./treeReducer";
 import { formatDateToPGN } from "./format";
+import type { GameHeaders, TreeState } from "./treeReducer";
 
 const dbGameMetadataSchema = z.object({
   type: z.literal("db"),

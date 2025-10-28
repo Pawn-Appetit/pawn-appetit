@@ -14,7 +14,7 @@ export interface DatabaseViewStore {
   players: {
     query: PlayerQuery;
     selectedPlayer?: number;
-    activeTab: "overview" | "openings";
+    activeTab: "overview" | "ratings" | "openings";
   };
   tournaments: {
     query: TournamentQuery;

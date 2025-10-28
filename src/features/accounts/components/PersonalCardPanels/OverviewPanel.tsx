@@ -164,8 +164,7 @@ function DateChart({ dataPerMonth }: { dataPerMonth: { name: string; count: numb
       <BarChart
         data={data}
         onClick={(e) => {
-          // @ts-expect-error
-          const year = Number.parseInt(e.activePayload?.[0]?.payload?.name, 10);
+          const year = Number.parseInt(e?.activeLabel || "", 10);
           if (year) {
             setSelectedYear((prev) => (prev === year ? null : year));
           }
