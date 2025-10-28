@@ -166,8 +166,8 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
       } else if (themeId) {
         updateTheme({ id: themeId, updates: themeData });
         notifications.show({
-          title: t("settings.appearance.theme.Updated"),
-          message: t("settings.appearance.theme.UpdatedMessage", { name: themeData.name }),
+          title: t("settings.appearance.theme.updated"),
+          message: t("settings.appearance.theme.updatedMessage", { name: themeData.name }),
           color: "blue",
         });
       }

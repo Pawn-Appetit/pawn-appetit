@@ -9,6 +9,33 @@ import { themeSchema } from "../types/theme";
 // Storage for custom themes
 export const customThemesAtom = atomWithStorage<Theme[]>("custom-themes", []);
 
+// Cleanup atom to remove duplicate theme IDs on initialization
+export const cleanupDuplicateThemesAtom = atom(null, (get, set) => {
+  const customThemes = get(customThemesAtom);
+  const builtInThemeIds = new Set(builtInThemes.map((t) => t.id));
+  
+  // Remove custom themes that have the same ID as built-in themes
+  // and remove duplicate custom themes (keep the first occurrence)
+  const seenIds = new Set<string>();
+  const cleanedThemes = customThemes.filter((theme) => {
+    if (builtInThemeIds.has(theme.id)) {
+      console.warn(`Removing custom theme "${theme.name}" (${theme.id}) as it conflicts with a built-in theme`);
+      return false;
+    }
+    if (seenIds.has(theme.id)) {
+      console.warn(`Removing duplicate custom theme "${theme.name}" (${theme.id})`);
+      return false;
+    }
+    seenIds.add(theme.id);
+    return true;
+  });
+  
+  // Only update storage if duplicates were found
+  if (cleanedThemes.length !== customThemes.length) {
+    set(customThemesAtom, cleanedThemes);
+  }
+});
+
 // Currently selected theme ID
 export const currentThemeIdAtom = atomWithStorage<string>("current-theme-id", "default");
 
@@ -18,7 +45,12 @@ export const colorSchemeAtom = atomWithStorage<"light" | "dark" | "auto">("color
 // Computed atom for all themes (built-in + custom)
 export const allThemesAtom = atom<Theme[]>((get) => {
   const customThemes = get(customThemesAtom);
-  return [...builtInThemes, ...customThemes];
+  // Filter out custom themes that have the same ID as built-in themes
+  // Built-in themes take precedence
+  const uniqueCustomThemes = customThemes.filter(
+    (customTheme) => !builtInThemes.some((builtInTheme) => builtInTheme.id === customTheme.id)
+  );
+  return [...builtInThemes, ...uniqueCustomThemes];
 });
 
 // Computed atom for current theme
@@ -38,6 +70,22 @@ export const currentThemeAtom = atom<Theme>((get) => {
 
 // Initialize primary color from current theme on app start
 export const initializeThemeAtom = atom(null, (get, set) => {
+  // First, cleanup any duplicate themes
+  const customThemes = get(customThemesAtom);
+  const builtInThemeIds = new Set(builtInThemes.map((t) => t.id));
+  const seenIds = new Set<string>();
+  const cleanedThemes = customThemes.filter((theme) => {
+    if (builtInThemeIds.has(theme.id) || seenIds.has(theme.id)) {
+      return false;
+    }
+    seenIds.add(theme.id);
+    return true;
+  });
+  if (cleanedThemes.length !== customThemes.length) {
+    set(customThemesAtom, cleanedThemes);
+  }
+  
+  // Then initialize the theme
   const currentThemeId = get(currentThemeIdAtom);
   const allThemes = get(allThemesAtom);
   const currentPrimaryColor = get(primaryColorAtom);
@@ -157,6 +205,12 @@ export const createThemeAtom = atom(null, (get, set, theme: Omit<Theme, "id" | "
   const newTheme = operations.create(theme);
 
   const customThemes = get(customThemesAtom);
+  // Prevent adding a custom theme with an ID that already exists
+  const existingTheme = customThemes.find((t) => t.id === newTheme.id) || builtInThemes.find((t) => t.id === newTheme.id);
+  if (existingTheme) {
+    throw new Error(`Theme with ID "${newTheme.id}" already exists`);
+  }
+  
   set(customThemesAtom, [...customThemes, newTheme]);
 
   return newTheme;
@@ -202,6 +256,12 @@ export const duplicateThemeAtom = atom(null, (get, set, { id, newName }: { id: s
   if (!duplicatedTheme) return null;
 
   const customThemes = get(customThemesAtom);
+  // Prevent duplicating with an ID that already exists (should not happen with genID, but safety check)
+  const existingTheme = customThemes.find((t) => t.id === duplicatedTheme.id) || builtInThemes.find((t) => t.id === duplicatedTheme.id);
+  if (existingTheme) {
+    throw new Error(`Theme with ID "${duplicatedTheme.id}" already exists`);
+  }
+  
   set(customThemesAtom, [...customThemes, duplicatedTheme]);
 
   return duplicatedTheme;
@@ -212,6 +272,12 @@ export const importThemeAtom = atom(null, (get, set, themeData: ThemeExport) => 
   const importedTheme = operations.import(themeData);
 
   const customThemes = get(customThemesAtom);
+  // Prevent importing a theme with an ID that already exists
+  const existingTheme = customThemes.find((t) => t.id === importedTheme.id) || builtInThemes.find((t) => t.id === importedTheme.id);
+  if (existingTheme) {
+    throw new Error(`Theme with ID "${importedTheme.id}" already exists`);
+  }
+  
   set(customThemesAtom, [...customThemes, importedTheme]);
 
   return importedTheme;

@@ -151,7 +151,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
 
       notifications.show({
         title: t("settings.appearance.theme.created"),
-        message: t("settings.appearance.theme.createdMessage", newTheme.name),
+        message: t("settings.appearance.theme.createdMessage", { name: newTheme.name }),
         color: "green",
       });
 
@@ -172,7 +172,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
       if (success) {
         notifications.show({
           title: t("settings.appearance.theme.deleted"),
-          message: t("settings.appearance.theme.deletedMessage", theme.name),
+          message: t("settings.appearance.theme.deletedMessage", { name: theme.name }),
           color: "green",
         });
       }
@@ -191,7 +191,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
       if (duplicatedTheme) {
         notifications.show({
           title: t("settings.appearance.theme.duplicated"),
-          message: t("settings.appearance.theme.duplicatedMessage", duplicatedTheme.name),
+          message: t("settings.appearance.theme.duplicatedMessage", { name: duplicatedTheme.name }),
           color: "green",
         });
       }
@@ -222,7 +222,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
 
         notifications.show({
           title: t("settings.appearance.theme.exported"),
-          message: t("settings.appearance.theme.exportedMessage", theme.name),
+          message: t("settings.appearance.theme.exportedMessage", { name: theme.name }),
           color: "green",
         });
       }
@@ -246,7 +246,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
 
       notifications.show({
         title: t("settings.appearance.theme.imported"),
-        message: t("settings.appearance.theme.importedMessage", importedTheme.name),
+        message: t("settings.appearance.theme.importedMessage", { name: importedTheme.name }),
         color: "green",
       });
 
@@ -264,7 +264,7 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
     setCurrentTheme(theme.id);
     notifications.show({
       title: t("settings.appearance.theme.applied"),
-      message: t("settings.appearance.theme.appliedMessage", theme.name),
+      message: t("settings.appearance.theme.appliedMessage", { name: theme.name }),
       color: "blue",
     });
   };

@@ -20,6 +20,7 @@ export {
 // State management
 export {
   allThemesAtom,
+  cleanupDuplicateThemesAtom,
   colorSchemeAtom,
   createThemeAtom,
   currentThemeAtom,
