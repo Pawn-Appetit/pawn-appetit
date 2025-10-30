@@ -122,7 +122,7 @@ impl GameTree {
                         tree.push(GameTreeNode::Move(san));
                         bytes = &bytes[1..];
                     } else {
-                        panic!("Invalid move");
+                        return Err(Error::InvalidBinaryData);
                     }
                 },
                 None => {
