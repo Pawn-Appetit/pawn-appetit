@@ -2,6 +2,7 @@ import { AppShell } from "@mantine/core";
 import { type HotkeyItem, useHotkeys } from "@mantine/hooks";
 import { ModalsProvider, modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
+import { useQuery } from "@tanstack/react-query";
 import { createRootRouteWithContext, Outlet, useNavigate } from "@tanstack/react-router";
 import { Menu, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
 import { appLogDir, resolve } from "@tauri-apps/api/path";
@@ -13,7 +14,6 @@ import { check } from "@tauri-apps/plugin-updater";
 import { useAtom } from "jotai";
 import { useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import useSWRImmutable from "swr/immutable";
 import { match } from "ts-pattern";
 import type { Dirs } from "@/App";
 import AboutModal from "@/components/About";
@@ -517,7 +517,11 @@ function RootLayout() {
     [t, keyMap, createNewTab, openNewFile, handleClearData, handleOpenLogs, checkForUpdates, handleAbout],
   );
 
-  const { data: menu, error: menuError } = useSWRImmutable(["menu", menuActions], () => createMenu(menuActions));
+  const { data: menu, error: menuError } = useQuery({
+    queryKey: ["menu", menuActions],
+    queryFn: () => createMenu(menuActions),
+    staleTime: Infinity,
+  });
 
   useEffect(() => {
     if (menuError) {

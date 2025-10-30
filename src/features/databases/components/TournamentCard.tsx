@@ -1,12 +1,12 @@
 import { ActionIcon, Paper, Stack, Tabs, Text, useMantineTheme } from "@mantine/core";
 import { useForceUpdate } from "@mantine/hooks";
 import { IconEye } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtom, useSetAtom } from "jotai";
 import { DataTable, type DataTableSortStatus } from "mantine-datatable";
 import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
-import useSWRImmutable from "swr/immutable";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import type { Event, NormalizedGame } from "@/bindings";
@@ -47,13 +47,14 @@ function TournamentCard({ tournament, file }: { tournament: Event; file: string 
   const forceUpdate = useForceUpdate();
   useLanguageChangeListener(forceUpdate);
 
-  const { data: games, isLoading } = useSWRImmutable(
-    ["tournament-games", file, tournament.id],
-    async ([_key, file, id]) => {
-      const games = await getTournamentGames(file, id);
+  const { data: games, isLoading } = useQuery({
+    queryKey: ["tournament-games", file, tournament.id],
+    queryFn: async () => {
+      const games = await getTournamentGames(file, tournament.id);
       return games.data;
     },
-  );
+    staleTime: Infinity,
+  });
 
   const [sort, setSort] = useState<DataTableSortStatus<NormalizedGame>>({
     columnAccessor: "date",

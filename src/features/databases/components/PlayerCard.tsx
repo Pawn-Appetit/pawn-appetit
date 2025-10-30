@@ -1,13 +1,17 @@
 import { Center, Loader, Paper, Stack, Text } from "@mantine/core";
-import useSWRImmutable from "swr/immutable";
+import { useQuery } from "@tanstack/react-query";
 import { commands, type Player } from "@/bindings";
 import PersonalPlayerCard from "@/features/accounts/components/PersonalCard";
 import { unwrap } from "@/utils/unwrap";
 
 function PlayerCard({ player, file }: { player: Player; file: string }) {
-  const { data: info, isLoading } = useSWRImmutable(["player-game-info", file, player.id], async ([_key, file, id]) => {
-    const games = await commands.getPlayersGameInfo(file, id);
-    return unwrap(games);
+  const { data: info, isLoading } = useQuery({
+    queryKey: ["player-game-info", file, player.id],
+    queryFn: async () => {
+      const games = await commands.getPlayersGameInfo(file, player.id);
+      return unwrap(games);
+    },
+    staleTime: Infinity,
   });
 
   return (

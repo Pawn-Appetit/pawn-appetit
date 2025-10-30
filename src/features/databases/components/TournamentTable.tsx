@@ -1,9 +1,9 @@
 import { Center, Flex, Text, TextInput } from "@mantine/core";
 import { useForceUpdate, useHotkeys } from "@mantine/hooks";
 import { IconSearch } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import { DataTable } from "mantine-datatable";
 import { useContext } from "react";
-import useSWR from "swr";
 import { useStore } from "zustand";
 import { commands, type Event, type TournamentSort } from "@/bindings";
 import { useLanguageChangeListener } from "@/hooks/useLanguageChangeListener";
@@ -23,7 +23,10 @@ function TournamentTable() {
   const setQuery = useStore(store, (s) => s.setTournamentsQuery);
   const setSelected = useStore(store, (s) => s.setTournamentsSelectedTournamet);
 
-  const { data, isLoading } = useSWR(["tournaments", query], () => commands.getTournaments(file, query).then(unwrap));
+  const { data, isLoading } = useQuery({
+    queryKey: ["tournaments", query, file],
+    queryFn: () => commands.getTournaments(file, query).then(unwrap),
+  });
   const tournaments = data?.data ?? [];
   const count = data?.count;
   const tournament = tournaments.find((t) => t.id === selected);

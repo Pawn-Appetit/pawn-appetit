@@ -1,9 +1,9 @@
 import { ActionIcon, Badge, Card, Center, Divider, Group, Modal, Stack, Text, Tooltip } from "@mantine/core";
 import { IconCloud } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import { BaseDirectory, exists } from "@tauri-apps/plugin-fs";
 import * as Flags from "mantine-flagpack";
 import { useEffect, useId, useState } from "react";
-import useSWR from "swr/immutable";
 import { commands, events } from "@/bindings";
 import ProgressButton from "@/components/ProgressButton";
 import COUNTRIES from "./countries.json";
@@ -28,12 +28,17 @@ function FideInfo({
     data: player,
     error,
     isLoading,
-  } = useSWR(!fileExists || !opened ? null : name, async (name) => {
-    const res = await commands.findFidePlayer(name);
-    if (res.status === "ok") {
-      return res.data;
-    }
-    throw new Error(res.error);
+  } = useQuery({
+    queryKey: ["fide-player", name],
+    queryFn: async () => {
+      const res = await commands.findFidePlayer(name);
+      if (res.status === "ok") {
+        return res.data;
+      }
+      throw new Error(res.error);
+    },
+    enabled: fileExists && opened,
+    staleTime: Infinity,
   });
 
   const country = COUNTRIES.find((c) => c.ioc === player?.country);

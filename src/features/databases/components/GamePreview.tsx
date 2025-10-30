@@ -1,7 +1,7 @@
 import { Box, Group, Stack } from "@mantine/core";
 import { useElementSize } from "@mantine/hooks";
+import { useQuery } from "@tanstack/react-query";
 import { useContext } from "react";
-import useSWRImmutable from "swr/immutable";
 import { useStore } from "zustand";
 import { Chessground } from "@/components/Chessground";
 import GameNotation from "@/components/GameNotation";
@@ -23,8 +23,12 @@ function GamePreviewWrapper({
   hideControls?: boolean;
   showOpening?: boolean;
 }) {
-  const { data: parsedGame } = useSWRImmutable([pgn, headers?.fen], async ([pgn, fen]) => {
-    return await parsePGN(pgn, fen);
+  const { data: parsedGame } = useQuery({
+    queryKey: ["parse-pgn", pgn, headers?.fen],
+    queryFn: async () => {
+      return await parsePGN(pgn, headers?.fen);
+    },
+    staleTime: Infinity,
   });
 
   return (

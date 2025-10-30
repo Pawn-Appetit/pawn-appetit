@@ -1,9 +1,9 @@
 import { ActionIcon, Center, Collapse, Flex, Group, NumberInput, Text, TextInput } from "@mantine/core";
 import { useForceUpdate, useHotkeys } from "@mantine/hooks";
 import { IconDotsVertical, IconSearch } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import { DataTable } from "mantine-datatable";
 import { useContext, useState } from "react";
-import useSWR from "swr";
 import { useStore } from "zustand";
 import type { Player, PlayerSort } from "@/bindings";
 import { useLanguageChangeListener } from "@/hooks/useLanguageChangeListener";
@@ -24,7 +24,10 @@ function PlayerTable() {
   const selectedPlayer = useStore(store, (s) => s.players.selectedPlayer);
   const setSelectedPlayer = useStore(store, (s) => s.setPlayersSelectedPlayer);
 
-  const { data, isLoading } = useSWR(["players", query], () => query_players(file, query));
+  const { data, isLoading } = useQuery({
+    queryKey: ["players", query, file],
+    queryFn: () => query_players(file, query),
+  });
   const players = data?.data ?? [];
   const count = data?.count;
   const player = players.find((p) => p.id === selectedPlayer);

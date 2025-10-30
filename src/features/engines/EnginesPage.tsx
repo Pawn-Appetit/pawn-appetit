@@ -27,12 +27,12 @@ import {
 import { useDebouncedValue, useToggle } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import { IconArrowsSort, IconCloud, IconCpu, IconPhotoPlus, IconPlus, IconSearch } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAtom } from "jotai";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import useSWRImmutable from "swr/immutable";
 import { commands, type UciOptionConfig } from "@/bindings";
 import GenericCard from "@/components/GenericCard";
 import * as classes from "@/components/GenericCard.css";
@@ -842,15 +842,18 @@ const EngineName = memo(function EngineName({
 }) {
   const { layout } = useResponsiveLayout();
   const isMobile = layout.engines.layoutType === "mobile";
-  const { data: fileExists, isLoading } = useSWRImmutable(
-    ["file-exists", engine.type === "local" ? engine.path : null],
-    async ([, path]) => {
+  const { data: fileExists, isLoading } = useQuery({
+    queryKey: ["file-exists", engine.type === "local" ? engine.path : null],
+    queryFn: async () => {
+      const path = engine.type === "local" ? engine.path : null;
       if (path === null) return false;
       if (engine.type !== "local") return true;
       const res = await commands.fileExists(path);
       return res.status === "ok";
     },
-  );
+    enabled: engine.type === "local",
+    staleTime: Infinity,
+  });
 
   const hasError = engine.type === "local" && !isLoading && !fileExists;
 

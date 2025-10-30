@@ -16,13 +16,12 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconAlertCircle } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-dialog";
 import { type Dispatch, type SetStateAction, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { KeyedMutator } from "swr";
-import useSWRImmutable from "swr/immutable";
 import { commands, type DatabaseInfo, events, type PuzzleDatabaseInfo } from "@/bindings";
 import FileInput from "@/components/FileInput";
 import ProgressButton from "@/components/ProgressButton";
@@ -53,7 +52,7 @@ interface AddDatabaseProps {
   opened: boolean;
   setOpened: (opened: boolean) => void;
   setLoading: Dispatch<SetStateAction<boolean>>;
-  setDatabases: KeyedMutator<DatabaseInfo[]>;
+  setDatabases: () => void;
   puzzleDbs?: PuzzleDatabaseInfo[];
   setPuzzleDbs?: Dispatch<SetStateAction<PuzzleDatabaseInfo[]>>;
   initialTab?: "games" | "puzzles";
@@ -61,7 +60,7 @@ interface AddDatabaseProps {
 }
 
 interface DatabaseCardProps {
-  setDatabases: KeyedMutator<DatabaseInfo[]>;
+  setDatabases: () => void;
   database: SuccessDatabaseInfo;
   databaseId: number;
   initInstalled: boolean;
@@ -121,7 +120,7 @@ const useFormValidation = (databases: DatabaseInfo[], puzzleDbs?: PuzzleDatabase
 
 const useDatabaseOperations = (
   setLoading: Dispatch<SetStateAction<boolean>>,
-  setDatabases: KeyedMutator<DatabaseInfo[]>,
+  setDatabases: () => void,
   setPuzzleDbs?: Dispatch<SetStateAction<PuzzleDatabaseInfo[]>>,
 ) => {
   const convertDatabase = useCallback(
@@ -130,7 +129,7 @@ const useDatabaseOperations = (
         setLoading(true);
         const dbPath = await resolve(await appDataDir(), "db", `${title}.db3`);
         unwrap(await commands.convertPgn(path, dbPath, null, title, description ?? null));
-        await setDatabases(await getDatabases());
+        setDatabases();
       } catch (error) {
         console.error("Failed to convert database:", error);
         throw error;
@@ -183,7 +182,11 @@ function AddDatabase({
     data: defaultPuzzleDbs,
     error: puzzleError,
     isLoading: isPuzzleLoading,
-  } = useSWRImmutable("default_puzzle_databases", getDefaultPuzzleDatabases);
+  } = useQuery({
+    queryKey: ["default_puzzle_databases"],
+    queryFn: getDefaultPuzzleDatabases,
+    staleTime: Infinity,
+  });
 
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
@@ -472,7 +475,7 @@ function DatabaseCard({ setDatabases, database, databaseId, initInstalled }: Dat
         setInProgress(true);
         const path = await resolve(await appDataDir(), "db", `${name}.db3`);
         await commands.downloadFile(`db_${id}`, url, path, null, null, null);
-        await setDatabases(await getDatabases());
+        setDatabases();
       } catch (error) {
         console.error("Failed to download database:", error);
         throw error;

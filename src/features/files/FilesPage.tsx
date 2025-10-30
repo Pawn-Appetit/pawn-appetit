@@ -2,26 +2,45 @@ import { Button, Center, Chip, Group, Input, Paper, Stack, Text, Title } from "@
 import { useToggle } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import { IconPlus, IconSearch, IconX } from "@tabler/icons-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLoaderData } from "@tanstack/react-router";
 import { readDir, remove } from "@tauri-apps/plugin-fs";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import useSWR from "swr";
 import OpenFolderButton from "@/components/OpenFolderButton";
 import { DatabaseSidePanelDrawerLayout } from "@/components/SidePanelDrawerLayout";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import DirectoryTable from "./components/DirectoryTable";
 import FileCard from "./components/FileCard";
-import { FILE_TYPES, type FileMetadata, type FileType, processEntriesRecursively } from "./components/file";
+import {
+  type Directory,
+  FILE_TYPES,
+  type FileMetadata,
+  type FileType,
+  processEntriesRecursively,
+} from "./components/file";
 import { CreateModal, EditModal } from "./components/Modals";
 
 const useFileDirectory = (dir: string) => {
-  const { data, error, isLoading, mutate } = useSWR("file-directory", async () => {
-    const entries = await readDir(dir);
-    const allEntries = processEntriesRecursively(dir, entries);
-
-    return allEntries;
+  const { data, error, isLoading, refetch } = useQuery({
+    queryKey: ["file-directory", dir],
+    queryFn: async () => {
+      const entries = await readDir(dir);
+      const allEntries = processEntriesRecursively(dir, entries);
+      return allEntries;
+    },
   });
+
+  const queryClient = useQueryClient();
+
+  const mutate = (newData?: (FileMetadata | Directory)[]) => {
+    if (newData) {
+      queryClient.setQueryData(["file-directory", dir], newData);
+    } else {
+      refetch();
+    }
+  };
+
   return {
     files: data,
     isLoading,

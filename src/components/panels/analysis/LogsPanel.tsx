@@ -1,12 +1,12 @@
 import { ActionIcon, Group, ScrollArea, SegmentedControl, Select, Stack, Table, Text } from "@mantine/core";
 import { IconFileExport, IconRefresh } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { useAtomValue } from "jotai";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import useSWR from "swr";
 import { commands } from "@/bindings";
 import { activeTabAtom, enginesAtom, fontSizeAtom } from "@/state/atoms";
 import type { LocalEngine } from "@/utils/engines";
@@ -20,8 +20,12 @@ export default function LogsPanel() {
 
   const viewport = useRef<HTMLDivElement>(null);
   const activeTab = useAtomValue(activeTabAtom);
-  const { data, mutate } = useSWR(["logs", engine?.path, activeTab], async () => {
-    return engine ? unwrap(await commands.getEngineLogs(engine.path, activeTab!)) : undefined;
+  const { data, refetch } = useQuery({
+    queryKey: ["logs", engine?.path, activeTab],
+    queryFn: async () => {
+      return engine ? unwrap(await commands.getEngineLogs(engine.path, activeTab!)) : undefined;
+    },
+    enabled: !!engine && !!activeTab,
   });
 
   useEffect(() => {
@@ -66,7 +70,7 @@ export default function LogsPanel() {
     <Stack flex={1} h="100%">
       <Group grow>
         <ActionIcon.Group style={{ flexGrow: 0 }}>
-          <ActionIcon size="lg" variant="default" onClick={() => mutate()}>
+          <ActionIcon size="lg" variant="default" onClick={() => refetch()}>
             <IconRefresh size="1.3rem" />
           </ActionIcon>
           <ActionIcon size="lg" variant="default" onClick={exportLogs}>

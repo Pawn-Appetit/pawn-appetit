@@ -30,6 +30,7 @@ import {
   IconSearch,
   IconStar,
 } from "@tabler/icons-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { listen } from "@tauri-apps/api/event";
 import { open as openDialog, save } from "@tauri-apps/plugin-dialog";
@@ -37,7 +38,6 @@ import { readDir } from "@tauri-apps/plugin-fs";
 import { useAtom } from "jotai";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import useSWR from "swr";
 import type { DatabaseInfo, PuzzleDatabaseInfo } from "@/bindings";
 import { commands } from "@/bindings";
 import GenericCard from "@/components/GenericCard";
@@ -110,8 +110,24 @@ export default function DatabasesPage() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/databases/" });
 
-  const { data: databases, isLoading, mutate } = useSWR("databases", getDatabases);
-  const { data: files } = useSWR("file-directory", fetchPuzzleFiles);
+  const queryClient = useQueryClient();
+  const {
+    data: databases,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["databases"],
+    queryFn: getDatabases,
+  });
+
+  const mutate = () => {
+    refetch();
+  };
+
+  const { data: files } = useQuery({
+    queryKey: ["file-directory"],
+    queryFn: fetchPuzzleFiles,
+  });
 
   const [puzzleDbs, setPuzzleDbs] = useState<PuzzleDatabaseInfo[]>([]);
   const [progress, setProgress] = useState<Progress | null>(null);

@@ -1,9 +1,9 @@
 import { Alert, Group, ScrollArea, SegmentedControl, Stack, Tabs, Text } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
+import { useQuery } from "@tanstack/react-query";
 import { useAtom, useAtomValue } from "jotai";
 import { memo, useContext, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import useSWR from "swr/immutable";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/TreeStateContext";
@@ -132,8 +132,12 @@ function DatabasePanel() {
     data: openingData,
     isLoading,
     error,
-  } = useSWR(tabType !== "options" ? dbType : null, async (dbType: DBType) => {
-    return fetchOpening(dbType, tab?.value || "");
+  } = useQuery({
+    queryKey: ["database-opening", dbType, tab?.value],
+    queryFn: async () => {
+      return fetchOpening(dbType, tab?.value || "");
+    },
+    enabled: tabType !== "options" && !!tab?.value,
   });
 
   const grandTotal = openingData?.openings?.reduce((acc, curr) => acc + curr.black + curr.white + curr.draw, 0);
@@ -200,14 +204,14 @@ function DatabasePanel() {
   );
 }
 
-function PanelWithError(props: { value: string; error: string; type: string; children: React.ReactNode }) {
+function PanelWithError(props: { value: string; error: Error | null; type: string; children: React.ReactNode }) {
   const referenceDatabase = useAtomValue(referenceDbAtom);
   let children = props.children;
   if (props.type === "local" && !referenceDatabase) {
     children = <NoDatabaseWarning />;
   }
   if (props.error && props.type !== "local") {
-    children = <Alert color="red">{props.error.toString()}</Alert>;
+    children = <Alert color="red">{props.error.message}</Alert>;
   }
 
   return (

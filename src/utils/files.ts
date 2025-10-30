@@ -1,9 +1,9 @@
 import { Result } from "@badrap/result";
+import { useQuery } from "@tanstack/react-query";
 import { BaseDirectory, basename, extname, resolve, tempDir } from "@tauri-apps/api/path";
 import { exists, mkdir, writeTextFile } from "@tauri-apps/plugin-fs";
 import { platform } from "@tauri-apps/plugin-os";
 import { defaultGame, makePgn } from "chessops/pgn";
-import useSWR from "swr";
 import { commands } from "@/bindings";
 import type { FileMetadata } from "@/features/files/components/file";
 import { unwrap } from "@/utils/unwrap";
@@ -12,8 +12,12 @@ import { createTab, type Tab } from "./tabs";
 import { getGameName } from "./treeReducer";
 
 export function usePlatform() {
-  const r = useSWR("os", async () => {
-    return platform();
+  const r = useQuery({
+    queryKey: ["os"],
+    queryFn: async () => {
+      return platform();
+    },
+    staleTime: Infinity,
   });
   return { os: r.data, ...r };
 }

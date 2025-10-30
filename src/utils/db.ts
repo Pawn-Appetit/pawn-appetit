@@ -1,6 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { BaseDirectory, readDir } from "@tauri-apps/plugin-fs";
-import useSWR from "swr";
 import {
   commands,
   type DatabaseInfo,
@@ -158,8 +158,13 @@ async function getDatabase(name: string): Promise<DatabaseInfo> {
 }
 
 export function useDefaultDatabases(opened: boolean) {
-  const { data, error, isLoading } = useSWR(opened ? "default-dbs" : null, async () => {
-    return DATABASES as SuccessDatabaseInfo[];
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["default-dbs"],
+    queryFn: async () => {
+      return DATABASES as SuccessDatabaseInfo[];
+    },
+    enabled: opened,
+    staleTime: Infinity,
   });
   return {
     defaultDatabases: data,

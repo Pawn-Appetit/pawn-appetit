@@ -1,8 +1,8 @@
 import { Accordion, Badge, Group, Paper, SimpleGrid, Stack, Text } from "@mantine/core";
+import { useQuery } from "@tanstack/react-query";
 import { parseUci } from "chessops";
 import { useContext } from "react";
 import { useTranslation } from "react-i18next";
-import useSWRImmutable from "swr/immutable";
 import { match, P } from "ts-pattern";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/TreeStateContext";
@@ -13,10 +13,12 @@ function TablebaseInfo({ fen, turn }: { fen: string; turn: "white" | "black" }) 
   const store = useContext(TreeStateContext)!;
   const makeMove = useStore(store, (s) => s.makeMove);
   const { t } = useTranslation();
-  const { data, error, isLoading } = useSWRImmutable(
-    ["tablebase", fen],
-    async ([_, fen]) => await getTablebaseInfo(fen),
-  );
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["tablebase", fen],
+    queryFn: async () => await getTablebaseInfo(fen),
+    staleTime: Infinity,
+    enabled: !!fen,
+  });
 
   const sortedMoves = data?.moves.sort((a, b) => {
     if (a.category === "win" && b.category !== "win") {

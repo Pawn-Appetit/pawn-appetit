@@ -1,4 +1,5 @@
 import { Notifications } from "@mantine/notifications";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { getMatches } from "@tauri-apps/plugin-cli";
 import { attachConsole, error, info } from "@tauri-apps/plugin-log";
@@ -89,6 +90,16 @@ export const updateDirectoriesCache = async (): Promise<Dirs> => {
   clearDirectoriesCache();
   return loadDirectories();
 };
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+});
 
 const router = createRouter({
   routeTree,
@@ -368,22 +379,24 @@ export default function App() {
   }
 
   return (
-    <ThemeProvider>
-      <ContextMenuProvider>
-        {IS_DEV && <EventMonitor />}
-        <Notifications />
-        <RouterProvider router={router} />
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <ContextMenuProvider>
+          {IS_DEV && <EventMonitor />}
+          <Notifications />
+          <RouterProvider router={router} />
 
-        {updateModalData?.versionInfo && (
-          <UpdateNotificationModal
-            versionInfo={updateModalData.versionInfo}
-            onUpdate={handleUpdateModalUpdate}
-            onSkip={handleUpdateModalClose}
-            onDismiss={handleUpdateModalClose}
-            isUpdating={isUpdating}
-          />
-        )}
-      </ContextMenuProvider>
-    </ThemeProvider>
+          {updateModalData?.versionInfo && (
+            <UpdateNotificationModal
+              versionInfo={updateModalData.versionInfo}
+              onUpdate={handleUpdateModalUpdate}
+              onSkip={handleUpdateModalClose}
+              onDismiss={handleUpdateModalClose}
+              isUpdating={isUpdating}
+            />
+          )}
+        </ContextMenuProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }

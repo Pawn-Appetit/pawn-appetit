@@ -1,5 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
 import type { Platform } from "@tauri-apps/plugin-os";
-import useSWR from "swr";
 import { z } from "zod";
 import { type BestMoves, commands, type EngineOptions, type GoMode } from "@/bindings";
 import { isInstallMethodSupported } from "./packageManager";
@@ -417,18 +417,23 @@ export function getBestMoves(
 }
 
 export function useDefaultEngines(os: Platform | undefined, opened: boolean) {
-  const { data, error, isLoading } = useSWR(opened ? os : null, async (os: Platform) => {
-    const bmi2: boolean = await commands.isBmi2Compatible();
-    const availableEngines = ENGINES.filter((e) => e.os === os && e.bmi2 === bmi2);
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["default-engines", os],
+    queryFn: async () => {
+      const bmi2: boolean = await commands.isBmi2Compatible();
+      const availableEngines = ENGINES.filter((e) => e.os === os && e.bmi2 === bmi2);
 
-    const supportedEngines = await Promise.all(
-      availableEngines.map(async (engine) => {
-        const isSupported = await isInstallMethodSupported(engine.installMethod || "download");
-        return isSupported ? engine : null;
-      }),
-    );
+      const supportedEngines = await Promise.all(
+        availableEngines.map(async (engine) => {
+          const isSupported = await isInstallMethodSupported(engine.installMethod || "download");
+          return isSupported ? engine : null;
+        }),
+      );
 
-    return supportedEngines.filter((engine): engine is NonNullable<typeof engine> => engine !== null);
+      return supportedEngines.filter((engine): engine is NonNullable<typeof engine> => engine !== null);
+    },
+    enabled: opened && !!os,
+    staleTime: Infinity,
   });
   return {
     defaultEngines: data,

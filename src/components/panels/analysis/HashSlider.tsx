@@ -1,8 +1,8 @@
 import { rem, Slider } from "@mantine/core";
 import { IconGripVertical } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import useSWRImmutable from "swr/immutable";
 import { commands } from "@/bindings";
 
 export default function HashSlider(props: { value: number; setValue: (v: number) => void; color?: string }) {
@@ -13,8 +13,12 @@ export default function HashSlider(props: { value: number; setValue: (v: number)
     setTempValue(Math.log2(props.value));
   }, [props.value]);
 
-  const { data: memorySize } = useSWRImmutable("memory", async () => {
-    return ((await commands.memorySize()) as unknown as number) / 2;
+  const { data: memorySize } = useQuery({
+    queryKey: ["memory"],
+    queryFn: async () => {
+      return ((await commands.memorySize()) as unknown as number) / 2;
+    },
+    staleTime: Infinity,
   });
 
   return (

@@ -16,11 +16,11 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconAlertCircle } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-dialog";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { useTranslation } from "react-i18next";
-import useSWRImmutable from "swr/immutable";
 import { commands, events, type PuzzleDatabaseInfo } from "@/bindings";
 import FileInput from "@/components/FileInput";
 import ProgressButton from "@/components/ProgressButton";
@@ -40,7 +40,15 @@ export function AddPuzzle({
   setPuzzleDbs: Dispatch<SetStateAction<PuzzleDatabaseInfo[]>>;
 }) {
   const { t } = useTranslation();
-  const { data: dbs, error, isLoading } = useSWRImmutable("default_puzzle_databases", getDefaultPuzzleDatabases);
+  const {
+    data: dbs,
+    error,
+    isLoading,
+  } = useQuery({
+    queryKey: ["default_puzzle_databases"],
+    queryFn: getDefaultPuzzleDatabases,
+    staleTime: Infinity,
+  });
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
 

@@ -1,8 +1,8 @@
 import { Flex, Paper, Progress, Select, Stack, Text } from "@mantine/core";
+import { useQuery } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import useSWRImmutable from "swr/immutable";
 import type { DatabaseInfo as PlainDatabaseInfo, PlayerGameInfo } from "@/bindings";
 import { commands, events } from "@/bindings";
 import { sessionsAtom } from "@/state/atoms";
@@ -58,45 +58,52 @@ function Databases() {
     }
   }, [sessions]);
 
-  const { data: databases } = useSWRImmutable<DatabaseInfo[]>(
-    sessions.length === 0 ? null : ["personalDatabases", sessions],
-    async () => {
+  const { data: databases } = useQuery<DatabaseInfo[]>({
+    queryKey: ["personalDatabases", sessions],
+    queryFn: async () => {
       const dbs = (await getDatabases()).filter((db) => db.type === "success");
       return dbs.filter((db) => isDatabaseFromSession(db, sessions));
     },
-  );
+    staleTime: Infinity,
+    enabled: sessions.length > 0,
+  });
 
   const {
     data: personalInfo,
     isLoading,
     error,
-  } = useSWRImmutable<PersonalInfo[]>(databases && name ? ["personalInfo", name, databases] : null, async () => {
-    const playerDbs = playerDbNames.find((p) => p.name === name)?.databases;
-    if (!databases || !playerDbs) return [];
-    const results = await Promise.allSettled(
-      databases
-        .filter((db) => playerDbs.includes((db.type === "success" && db.title) || ""))
-        .map(async (db) => {
-          const players = await query_players(db.file, {
-            name: db.username,
-            options: {
-              pageSize: 1,
-              direction: "asc",
-              sort: "id",
-              skipCount: false,
-            },
-          });
-          if (players.data.length === 0) {
-            throw new Error("Player not found in database");
-          }
-          const player = players.data[0];
-          const info = unwrap(await commands.getPlayersGameInfo(db.file, player.id));
-          return { db, info };
-        }),
-    );
-    return results
-      .filter((r) => r.status === "fulfilled")
-      .map((r) => (r as PromiseFulfilledResult<PersonalInfo>).value);
+  } = useQuery<PersonalInfo[]>({
+    queryKey: ["personalInfo", name, databases],
+    queryFn: async () => {
+      const playerDbs = playerDbNames.find((p) => p.name === name)?.databases;
+      if (!databases || !playerDbs) return [];
+      const results = await Promise.allSettled(
+        databases
+          .filter((db) => playerDbs.includes((db.type === "success" && db.title) || ""))
+          .map(async (db) => {
+            const players = await query_players(db.file, {
+              name: db.username,
+              options: {
+                pageSize: 1,
+                direction: "asc",
+                sort: "id",
+                skipCount: false,
+              },
+            });
+            if (players.data.length === 0) {
+              throw new Error("Player not found in database");
+            }
+            const player = players.data[0];
+            const info = unwrap(await commands.getPlayersGameInfo(db.file, player.id));
+            return { db, info };
+          }),
+      );
+      return results
+        .filter((r) => r.status === "fulfilled")
+        .map((r) => (r as PromiseFulfilledResult<PersonalInfo>).value);
+    },
+    staleTime: Infinity,
+    enabled: !!databases && !!name,
   });
 
   const [progress, setProgress] = useState(0);
@@ -123,7 +130,7 @@ function Databases() {
       )}
       {error && (
         <Text ta="center">
-          {t("accounts.databaseLoadError")} {error}
+          {t("accounts.databaseLoadError")} {error.message}
         </Text>
       )}
       {personalInfo &&

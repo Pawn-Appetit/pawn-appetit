@@ -1,7 +1,7 @@
 import { Combobox, Group, InputBase, Loader, ScrollArea, Text, useCombobox } from "@mantine/core";
+import { useQuery } from "@tanstack/react-query";
 import { type FenError, parseFen } from "chessops/fen";
 import { useContext, useEffect, useRef, useState } from "react";
-import useSWRImmutable from "swr/immutable";
 import { useStore } from "zustand";
 import { commands } from "@/bindings";
 import { TreeStateContext } from "@/components/TreeStateContext";
@@ -44,12 +44,17 @@ export default function FenSearch({ currentFen }: { currentFen: string }) {
     setSearch(currentFen);
   }, [currentFen]);
 
-  const { data, isLoading } = useSWRImmutable(["search_opening_name", search], async ([, search]) => {
-    const res = await commands.searchOpeningName(search);
-    if (res.status === "ok") {
-      return res.data;
-    }
-    throw new Error(res.error);
+  const { data, isLoading } = useQuery({
+    queryKey: ["search_opening_name", search],
+    queryFn: async () => {
+      const res = await commands.searchOpeningName(search);
+      if (res.status === "ok") {
+        return res.data;
+      }
+      throw new Error(res.error);
+    },
+    staleTime: Infinity,
+    enabled: !!search,
   });
 
   const exactOptionMatch = data?.some((item) => item.fen === search);

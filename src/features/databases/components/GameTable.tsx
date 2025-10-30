@@ -14,13 +14,13 @@ import {
 import { DateInput } from "@mantine/dates";
 import { useForceUpdate, useHotkeys } from "@mantine/hooks";
 import { IconExternalLink, IconFilter, IconFilterFilled } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { invoke } from "@tauri-apps/api/core";
 import { useAtom, useSetAtom } from "jotai";
 import { DataTable } from "mantine-datatable";
 import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
-import useSWR from "swr";
 import { useStore } from "zustand";
 import type { GameSort, NormalizedGame, Outcome } from "@/bindings";
 import { useLanguageChangeListener } from "@/hooks/useLanguageChangeListener";
@@ -55,7 +55,13 @@ function GameTable() {
   const openedSettings = useStore(store, (s) => s.games.isFilterExpanded);
   const toggleOpenedSettings = useStore(store, (s) => s.toggleGamesOpenedSettings);
 
-  const { data, isLoading, mutate } = useSWR(["games", query], () => (file ? query_games(file, query) : null));
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["games", query, file],
+    queryFn: () => (file ? query_games(file, query) : null),
+    enabled: !!file,
+  });
+
+  const mutate = () => refetch();
 
   const games = data?.data ?? [];
   const count = data?.count;
