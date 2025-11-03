@@ -336,7 +336,7 @@ async downloadFideDb() : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
-async downloadFile(id: string, url: string, path: string, token: string | null, finalize: boolean | null, totalSize: bigint | null) : Promise<Result<null, string>> {
+async downloadFile(id: string, url: string, path: string, token: string | null, finalize: boolean | null, totalSize: number | null) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("download_file", { id, url, path, token, finalize, totalSize }) };
 } catch (e) {

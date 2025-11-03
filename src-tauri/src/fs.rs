@@ -34,9 +34,18 @@ pub async fn download_file(
     app: tauri::AppHandle,
     token: Option<String>,
     finalize: Option<bool>,
-    total_size: Option<u64>,
+    total_size: Option<f64>,
 ) -> Result<(), Error> {
     let finalize = finalize.unwrap_or(true);
+    
+    // Convert f64 to u64 if total_size is provided
+    let total_size_u64 = total_size.and_then(|size| {
+        if size >= 0.0 && size <= u64::MAX as f64 {
+            Some(size as u64)
+        } else {
+            None
+        }
+    });
     
     let parsed_url = Url::parse(&url).map_err(|e| {
         Error::PackageManager(format!("Invalid URL: {}", e))
@@ -81,7 +90,7 @@ pub async fn download_file(
         )));
     }
     
-    let content_length = total_size.or_else(|| res.content_length());
+    let content_length = total_size_u64.or_else(|| res.content_length());
     
     if let Some(size) = content_length {
         if size > MAX_DOWNLOAD_SIZE {
