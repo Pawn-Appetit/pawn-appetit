@@ -1,3 +1,4 @@
+import type { Piece } from "@lichess-org/chessground/types";
 import {
   ActionIcon,
   Alert,
@@ -20,7 +21,6 @@ import {
 } from "@mantine/core";
 import { IconAlertCircle, IconArrowsExchange, IconCpu, IconPlus, IconUser, IconZoomCheck } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
-import type { Piece } from "chessground/types";
 import { parseUci } from "chessops";
 import { INITIAL_FEN } from "chessops/fen";
 import equal from "fast-deep-equal";

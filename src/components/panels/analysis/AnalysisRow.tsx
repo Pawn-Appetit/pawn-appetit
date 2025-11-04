@@ -1,7 +1,7 @@
+import type { Key } from "@lichess-org/chessground/types";
 import { ActionIcon, Box, Flex, Popover, Table } from "@mantine/core";
 import { useDisclosure, useForceUpdate } from "@mantine/hooks";
 import { IconChevronDown } from "@tabler/icons-react";
-import type { Key } from "chessground/types";
 import { chessgroundMove } from "chessops/compat";
 import { makeFen } from "chessops/fen";
 import { parseSan } from "chessops/san";
@@ -183,7 +183,7 @@ function BoardPopover({
               enabled: true,
               visible: true,
               defaultSnapToValidMove: true,
-              eraseOnClick: true,
+              eraseOnMovablePieceClick: true,
             }}
           />
         </Popover.Dropdown>

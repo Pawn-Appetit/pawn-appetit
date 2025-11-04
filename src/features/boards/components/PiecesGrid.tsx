@@ -1,5 +1,5 @@
+import type { Piece as PieceType } from "@lichess-org/chessground/types";
 import { SimpleGrid } from "@mantine/core";
-import type { Piece as PieceType } from "chessground/types";
 import { COLORS, ROLES } from "chessops";
 import { makeFen, parseFen } from "chessops/fen";
 import Piece from "@/components/Piece";

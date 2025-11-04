@@ -1,8 +1,8 @@
+import { Chessground as NativeChessground } from "@lichess-org/chessground";
+import type { Api } from "@lichess-org/chessground/api";
+import type { Config } from "@lichess-org/chessground/config";
+import type { Key, Piece } from "@lichess-org/chessground/types";
 import { Box } from "@mantine/core";
-import { Chessground as NativeChessground } from "chessground";
-import type { Api } from "chessground/api";
-import type { Config } from "chessground/config";
-import type { Key, Piece } from "chessground/types";
 import { useAtomValue } from "jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { boardImageAtom, moveMethodAtom } from "@/state/atoms";

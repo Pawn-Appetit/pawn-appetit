@@ -1,4 +1,4 @@
-import type { DrawShape } from "chessground/draw";
+import type { DrawShape } from "@lichess-org/chessground/draw";
 import { isNormal, type Move } from "chessops";
 import { INITIAL_FEN, makeFen } from "chessops/fen";
 import { makeSan, parseSan } from "chessops/san";

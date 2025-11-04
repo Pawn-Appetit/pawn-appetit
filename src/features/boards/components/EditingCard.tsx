@@ -1,5 +1,5 @@
+import type { Piece } from "@lichess-org/chessground/types";
 import { Card, CloseButton, Divider } from "@mantine/core";
-import type { Piece } from "chessground/types";
 import { useContext } from "react";
 import { useStore } from "zustand";
 import FenInput from "@/components/panels/info/FenInput";

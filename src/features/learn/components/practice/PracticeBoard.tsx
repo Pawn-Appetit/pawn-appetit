@@ -1,5 +1,5 @@
+import type { DrawShape } from "@lichess-org/chessground/draw";
 import { Box, Paper } from "@mantine/core";
-import type { DrawShape } from "chessground/draw";
 import { makeSquare, type NormalMove, parseSquare, parseUci } from "chessops";
 import { chessgroundDests } from "chessops/compat";
 import { makeFen } from "chessops/fen";

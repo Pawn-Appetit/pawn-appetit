@@ -103,7 +103,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
         if (save) {
           const newFile = await createFile({
             filename,
-            filetype,
+            filetype: filetype as Exclude<FileType, "all">,
             pgn: resolvedTarget.content,
             dir: documentDir,
           });
@@ -174,7 +174,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
               const finalFileName = `${filename}_${baseFileName}`;
               const newFile = await createFile({
                 filename: finalFileName,
-                filetype,
+                filetype: filetype as Exclude<FileType, "all">,
                 pgn: singleFileTarget.content,
                 dir: documentDir,
               });
@@ -230,7 +230,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
       if (save) {
         const newFile = await createFile({
           filename,
-          filetype,
+          filetype: filetype as Exclude<FileType, "all">,
           pgn: resolvedTarget.content,
           dir: documentDir,
         });

@@ -1,5 +1,5 @@
+import type { Color } from "@lichess-org/chessground/types";
 import { Box, Text, Tooltip, useMantineTheme } from "@mantine/core";
-import type { Color } from "chessground/types";
 import { useTranslation } from "react-i18next";
 import type { ScoreValue } from "@/bindings";
 import { getWinChance } from "@/utils/score";

@@ -33,7 +33,7 @@ export function CreateModal({
     const resolvedPgnTarget = await resolvePgnTarget(pgnTarget);
     const newFile = await createFile({
       filename,
-      filetype,
+      filetype: filetype as Exclude<FileType, "all">,
       pgn: resolvedPgnTarget.content,
       dir: documentDir,
     });

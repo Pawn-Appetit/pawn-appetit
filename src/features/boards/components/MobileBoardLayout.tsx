@@ -1,7 +1,7 @@
+import type { Piece } from "@lichess-org/chessground/types";
 import { ActionIcon, Box, Collapse, Group, Paper, Stack, Text } from "@mantine/core";
 import { useToggle } from "@mantine/hooks";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
-import type { Piece } from "chessground/types";
 import { memo, Suspense, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import GameNotation from "@/components/GameNotation";

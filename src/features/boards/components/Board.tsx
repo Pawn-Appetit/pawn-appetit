@@ -1,11 +1,11 @@
+import type { DrawShape } from "@lichess-org/chessground/draw";
+import type { Piece } from "@lichess-org/chessground/types";
 import { ActionIcon, Box, Center, Group, Text, useMantineTheme } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconChevronRight } from "@tabler/icons-react";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
-import type { DrawShape } from "chessground/draw";
-import type { Piece } from "chessground/types";
 import { makeSquare, type NormalMove, parseSquare, parseUci, type SquareName } from "chessops";
 import { chessgroundDests, chessgroundMove } from "chessops/compat";
 import { makeSan } from "chessops/san";

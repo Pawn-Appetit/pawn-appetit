@@ -1,7 +1,7 @@
 // Custom chess engine implementation without external libraries
 // For calculating valid moves from FEN position
 
-import type { Key } from "chessground/types";
+import type { Key } from "@lichess-org/chessground/types";
 
 export type Square = string; // e.g., "e4", "a1"
 export type Piece = {
