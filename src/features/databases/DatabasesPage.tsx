@@ -3,12 +3,15 @@ import {
   Badge,
   Box,
   Button,
+  Center,
   Chip,
   Divider,
+  Drawer,
   Group,
   Loader,
   Paper,
   ScrollArea,
+  SegmentedControl,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -25,17 +28,20 @@ import {
   IconArrowRight,
   IconArrowsSort,
   IconDatabase,
+  IconGrid3x3,
+  IconList,
   IconPlus,
   IconPuzzle,
   IconSearch,
   IconStar,
 } from "@tabler/icons-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { listen } from "@tauri-apps/api/event";
 import { open as openDialog, save } from "@tauri-apps/plugin-dialog";
 import { readDir } from "@tauri-apps/plugin-fs";
 import { useAtom } from "jotai";
+import { DataTable } from "mantine-datatable";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { DatabaseInfo, PuzzleDatabaseInfo } from "@/bindings";
@@ -43,7 +49,6 @@ import { commands } from "@/bindings";
 import GenericCard from "@/components/GenericCard";
 import * as classes from "@/components/GenericCard.css";
 import OpenFolderButton from "@/components/OpenFolderButton";
-import { SidePanelDrawerLayout } from "@/components/SidePanelDrawerLayout";
 import { processEntriesRecursively } from "@/features/files/components/file";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { referenceDbAtom } from "@/state/atoms";
@@ -103,14 +108,11 @@ const CATEGORY_OPTIONS = [
   { labelKey: "features.databases.category.puzzles", value: "puzzles" as const },
 ] as const;
 
-const SKELETON_COUNT = 3;
-
 export default function DatabasesPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const search = useSearch({ from: "/databases/" });
 
-  const queryClient = useQueryClient();
   const {
     data: databases,
     isLoading,
@@ -138,6 +140,7 @@ export default function DatabasesPage() {
   const [category, setCategory] = useState<DatabaseCategory>("all");
   const [convertLoading, setConvertLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
 
   const setActiveDatabase = useActiveDatabaseViewStore((store) => store.setDatabase);
   const [referenceDatabase, setReferenceDatabase] = useAtom(referenceDbAtom);
@@ -253,7 +256,51 @@ export default function DatabasesPage() {
   }, [files]);
 
   return (
-    <Stack h="100%">
+    <>
+      <Header />
+      <Box px="md" pb="md">
+        <DatabaseList
+          query={query}
+          onQueryChange={setQuery}
+          sortBy={sortBy}
+          onSortToggle={handleSortToggle}
+          category={category}
+          onCategoryChange={handleCategoryChange}
+          onAddNew={() => setOpen(true)}
+          convertLoading={convertLoading}
+          progress={progress}
+          isLoading={isLoading}
+          databases={filteredDatabases}
+          selectedDatabase={selectedDatabase}
+          onSelectDatabase={setSelected}
+          onDatabaseDoubleClick={handleDatabaseDoubleClick}
+          referenceDatabase={referenceDatabase}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
+        <Drawer
+          opened={selectedDatabase !== null}
+          onClose={() => setSelected(null)}
+          position="right"
+          size={layout.engines.layoutType === "mobile" ? "100%" : "xl"}
+          title={selectedDatabase?.type === "success" ? selectedDatabase.title : "Database Details"}
+          overlayProps={{ backgroundOpacity: 0.5, blur: 4 }}
+        >
+          <DatabaseDetails
+            selectedDatabase={selectedDatabase}
+            isReference={isReference}
+            onChangeReference={changeReferenceDatabase}
+            mutate={mutate}
+            exportLoading={exportLoading}
+            setExportLoading={setExportLoading}
+            convertLoading={convertLoading}
+            setConvertLoading={setConvertLoading}
+            onSelect={setSelected}
+            refreshPuzzleDatabases={refreshPuzzleDatabases}
+          />
+        </Drawer>
+      </Box>
+
       <AddDatabase
         databases={databases ?? []}
         opened={open}
@@ -265,51 +312,7 @@ export default function DatabasesPage() {
         initialTab={search.tab || "games"}
         redirectTo={search.redirect}
       />
-
-      <Header />
-
-      <Box flex={1} mih={0}>
-        <SidePanelDrawerLayout
-          mainContent={
-            <DatabaseList
-              query={query}
-              onQueryChange={setQuery}
-              sortBy={sortBy}
-              onSortToggle={handleSortToggle}
-              category={category}
-              onCategoryChange={handleCategoryChange}
-              onAddNew={() => setOpen(true)}
-              convertLoading={convertLoading}
-              progress={progress}
-              isLoading={isLoading}
-              databases={filteredDatabases}
-              selectedDatabase={selectedDatabase}
-              onSelectDatabase={setSelected}
-              onDatabaseDoubleClick={handleDatabaseDoubleClick}
-              referenceDatabase={referenceDatabase}
-            />
-          }
-          detailContent={
-            <DatabaseDetails
-              selectedDatabase={selectedDatabase}
-              isReference={isReference}
-              onChangeReference={changeReferenceDatabase}
-              mutate={mutate}
-              exportLoading={exportLoading}
-              setExportLoading={setExportLoading}
-              convertLoading={convertLoading}
-              setConvertLoading={setConvertLoading}
-              onSelect={setSelected}
-              refreshPuzzleDatabases={refreshPuzzleDatabases}
-            />
-          }
-          isDetailOpen={selectedDatabase !== null}
-          onDetailClose={() => setSelected(null)}
-          detailTitle={selectedDatabase?.type === "success" ? selectedDatabase.title : "Database Details"}
-          layoutType={layout.databases.layoutType}
-        />
-      </Box>
-    </Stack>
+    </>
   );
 }
 
@@ -317,7 +320,7 @@ function Header() {
   const { t } = useTranslation();
 
   return (
-    <Group align="center" pl="lg" py="sm">
+    <Group align="center" p="md">
       <Title>{t("features.databases.title")}</Title>
       <OpenFolderButton base="AppDir" folder="db" />
     </Group>
@@ -340,6 +343,8 @@ interface DatabaseListProps {
   onSelectDatabase: (id: string | null) => void;
   onDatabaseDoubleClick: (database: UnifiedDatabase) => void;
   referenceDatabase: string | null;
+  viewMode: "grid" | "table";
+  onViewModeChange: (mode: "grid" | "table") => void;
 }
 
 function DatabaseList({
@@ -358,6 +363,8 @@ function DatabaseList({
   onSelectDatabase,
   onDatabaseDoubleClick,
   referenceDatabase,
+  viewMode,
+  onViewModeChange,
 }: DatabaseListProps) {
   return (
     <Stack>
@@ -371,17 +378,30 @@ function DatabaseList({
         onAddNew={onAddNew}
         convertLoading={convertLoading}
         progress={progress}
+        viewMode={viewMode}
+        onViewModeChange={onViewModeChange}
       />
 
       <ScrollArea h="calc(100vh - 240px)" offsetScrollbars aria-busy={isLoading} aria-live="polite">
-        <DatabaseGrid
-          isLoading={isLoading}
-          databases={databases}
-          selectedDatabase={selectedDatabase}
-          onSelectDatabase={onSelectDatabase}
-          onDatabaseDoubleClick={onDatabaseDoubleClick}
-          referenceDatabase={referenceDatabase}
-        />
+        {viewMode === "grid" ? (
+          <DatabaseGrid
+            isLoading={isLoading}
+            databases={databases}
+            selectedDatabase={selectedDatabase}
+            onSelectDatabase={onSelectDatabase}
+            onDatabaseDoubleClick={onDatabaseDoubleClick}
+            referenceDatabase={referenceDatabase}
+          />
+        ) : (
+          <DatabaseTableView
+            isLoading={isLoading}
+            databases={databases}
+            selectedDatabase={selectedDatabase}
+            onSelectDatabase={onSelectDatabase}
+            onDatabaseDoubleClick={onDatabaseDoubleClick}
+            referenceDatabase={referenceDatabase}
+          />
+        )}
       </ScrollArea>
     </Stack>
   );
@@ -397,6 +417,8 @@ interface DatabaseControlsProps {
   onAddNew: () => void;
   convertLoading: boolean;
   progress: Progress | null;
+  viewMode: "grid" | "table";
+  onViewModeChange: (mode: "grid" | "table") => void;
 }
 
 function DatabaseControls({
@@ -409,6 +431,8 @@ function DatabaseControls({
   onAddNew,
   convertLoading,
   progress,
+  viewMode,
+  onViewModeChange,
 }: DatabaseControlsProps) {
   const { t } = useTranslation();
 
@@ -434,6 +458,30 @@ function DatabaseControls({
           >
             Sort: {sortLabel}
           </Button>
+          <SegmentedControl
+            value={viewMode}
+            onChange={(v) => onViewModeChange(v as "grid" | "table")}
+            data={[
+              {
+                value: "grid",
+                label: (
+                  <Center style={{ gap: 10 }}>
+                    <IconGrid3x3 size="1rem" />
+                    <span>Grid</span>
+                  </Center>
+                ),
+              },
+              {
+                value: "table",
+                label: (
+                  <Center style={{ gap: 10 }}>
+                    <IconList size="1rem" />
+                    <span>Table</span>
+                  </Center>
+                ),
+              },
+            ]}
+          />
         </Group>
         <Button onClick={onAddNew} loading={convertLoading} size="xs" leftSection={<IconPlus size="1rem" />} mr="sm">
           {t("common.addNew")}
@@ -484,7 +532,7 @@ function DatabaseGrid({
 
   // Calculate responsive values based on layout flags
   const isMobile = layout.databases.layoutType === "mobile";
-  const gridCols = isMobile ? 1 : { base: 1, md: 2 };
+  const gridCols = isMobile ? 1 : { base: 1, md: 4 };
 
   if (isLoading) {
     if (isMobile) {
@@ -499,9 +547,9 @@ function DatabaseGrid({
 
     return (
       <SimpleGrid cols={gridCols} spacing={{ base: "md", md: "sm" }}>
-        {Array.from({ length: SKELETON_COUNT }, (_, i) => (
-          <Skeleton key={i} h="8rem" />
-        ))}
+        <Skeleton h="8rem" />
+        <Skeleton h="8rem" />
+        <Skeleton h="8rem" />
       </SimpleGrid>
     );
   }
@@ -527,6 +575,111 @@ function DatabaseGrid({
         />
       ))}
     </SimpleGrid>
+  );
+}
+
+interface DatabaseTableViewProps {
+  isLoading: boolean;
+  databases: UnifiedDatabase[];
+  selectedDatabase: UnifiedDatabase | null;
+  onSelectDatabase: (id: string | null) => void;
+  onDatabaseDoubleClick: (database: UnifiedDatabase) => void;
+  referenceDatabase: string | null;
+}
+
+function DatabaseTableView({
+  isLoading,
+  databases,
+  selectedDatabase,
+  onSelectDatabase,
+  onDatabaseDoubleClick,
+  referenceDatabase,
+}: DatabaseTableViewProps) {
+  const { t } = useTranslation();
+
+  if (isLoading) {
+    return (
+      <Stack gap="md">
+        <Skeleton h="3rem" />
+        <Skeleton h="3rem" />
+        <Skeleton h="3rem" />
+      </Stack>
+    );
+  }
+
+  if (databases.length === 0) {
+    return (
+      <Alert title="No databases found" color="gray" variant="light">
+        Try adjusting your search or create a new database.
+      </Alert>
+    );
+  }
+
+  return (
+    <DataTable<UnifiedDatabase>
+      withTableBorder
+      highlightOnHover
+      records={databases}
+      columns={[
+        {
+          accessor: "title",
+          title: t("common.name"),
+          render: (database) => (
+            <Group wrap="nowrap" gap="sm">
+              <Box>{isPuzzleDatabase(database) ? <IconPuzzle size="1.2rem" /> : <IconDatabase size="1.2rem" />}</Box>
+              <Box miw={0}>
+                <Text fw={600} size="sm" truncate>
+                  {isSuccessDatabase(database) ? database.title : database.error}
+                </Text>
+                {isSuccessDatabase(database) && database.description && (
+                  <Text size="xs" c="dimmed" truncate>
+                    {database.description}
+                  </Text>
+                )}
+              </Box>
+            </Group>
+          ),
+        },
+        {
+          accessor: "type",
+          title: "Type",
+          render: (database) => (
+            <DatabaseBadges database={database} isReference={referenceDatabase === database.file} />
+          ),
+        },
+        {
+          accessor: "game_count",
+          title: isPuzzleDatabase(databases[0])
+            ? t("features.puzzle.title", "Puzzles")
+            : t("features.databases.card.games"),
+          render: (database) => (isSuccessDatabase(database) ? t("units.count", { count: database.game_count }) : "—"),
+        },
+        {
+          accessor: "player_count",
+          title: t("features.databases.card.players"),
+          render: (database) =>
+            isSuccessDatabase(database) && isGameDatabase(database)
+              ? t("units.count", { count: database.player_count })
+              : "—",
+        },
+        {
+          accessor: "storage_size",
+          title: t("features.databases.card.storage"),
+          render: (database) =>
+            isSuccessDatabase(database) ? t("units.bytes", { bytes: database.storage_size ?? 0 }) : "—",
+        },
+      ]}
+      rowClassName={(database) =>
+        selectedDatabase?.filename === database.filename ? "mantine-datatable-row-selected" : ""
+      }
+      noRecordsText={t("common.noRecordsFound", "No records found")}
+      onRowClick={({ record }) => {
+        onSelectDatabase(record.file);
+      }}
+      onRowDoubleClick={({ record }) => {
+        onDatabaseDoubleClick(record);
+      }}
+    />
   );
 }
 
@@ -1067,7 +1220,8 @@ function filterAndSortDatabases(
   category: DatabaseCategory,
   query: string,
   sortBy: "name" | "games",
-  t: any,
+  // biome-ignore lint/suspicious/noExplicitAny: Translation function type
+  _t: any,
 ): UnifiedDatabase[] {
   let filtered = databases;
 
@@ -1103,6 +1257,7 @@ function filterAndSortDatabases(
   });
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: Translation function type
 function getDatabaseStats(database: UnifiedDatabase, t: any) {
   if (isPuzzleDatabase(database)) {
     return [
@@ -1129,6 +1284,7 @@ function getDatabaseStats(database: UnifiedDatabase, t: any) {
   ];
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: Translation function type
 function getDetailedDatabaseStats(database: UnifiedDatabase, t: any) {
   if (!isSuccessDatabase(database)) {
     return [];

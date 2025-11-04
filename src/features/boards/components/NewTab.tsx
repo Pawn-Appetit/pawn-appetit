@@ -73,7 +73,7 @@ export default function NewTabHome({ id }: { id: string }) {
   ];
 
   return (
-    <Stack gap="xl" mt="md">
+    <Stack gap="xl">
       <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }}>
         {cards.map((card) => (
           <Card shadow="sm" p="lg" radius="md" withBorder key={card.title}>

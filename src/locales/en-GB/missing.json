@@ -1,4 +1,6 @@
 {
+  "common.grid": "Grid",
+  "common.table": "Table",
   "common.copied": "Copied",
   "common.copy": "Copy",
   "common.update": "Update",
@@ -23,5 +25,6 @@
   "features.engines.unknownEngine": "Unknown Engine",
   "features.engines.selectImage": "Select image",
   "features.engines.invalidConfiguration": "Invalid Configuration",
-  "features.engines.settings.selectEngineTip": "Tip: Select an engine to edit its settings."
+  "features.engines.settings.selectEngineTip": "Tip: Select an engine to edit its settings.",
+  "features.files.fileType.all": "All"
 }

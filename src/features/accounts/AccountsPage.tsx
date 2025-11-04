@@ -9,7 +9,7 @@ function AccountsPage() {
 
   return (
     <Stack h="100%">
-      <Group align="baseline" pl="lg" py="sm">
+      <Group align="baseline" p="md">
         <Title>Accounts</Title>
       </Group>
 

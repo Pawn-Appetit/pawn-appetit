@@ -126,7 +126,7 @@ export default function DirectoryTable({
         };
       });
   }
-  if (filter) {
+  if (filter && filter !== "all") {
     const typeFilteredFiles = flattedFiles.filter((f) => (f.type === "file" && f.metadata.type) === filter);
     filteredFiles = filteredFiles
       .filter((f) => typeFilteredFiles.some((r) => r.path.includes(f.path)))

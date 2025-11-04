@@ -57,6 +57,8 @@
       "closeWithoutSaving": "Close Without Saving"
     },
     "loading": "Loading...",
+    "grid": "Grid",
+    "table": "Table",
     "continue": "Continue",
     "review": "Review",
     "noGameSelected": "No game selected",
@@ -821,6 +823,7 @@
     "files": {
       "title": "Files",
       "fileType": {
+        "all": "All",
         "fileType": "File type",
         "game": "Game",
         "repertoire": "Repertoire",

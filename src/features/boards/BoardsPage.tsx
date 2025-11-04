@@ -1,5 +1,5 @@
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
-import { ActionIcon, ScrollArea, Tabs, Text } from "@mantine/core";
+import { ActionIcon, Box, ScrollArea, Tabs, Text } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import { IconPlus } from "@tabler/icons-react";
@@ -213,52 +213,54 @@ export default function BoardsPage() {
           width: "100%",
         }}
       >
-        <ScrollArea h="3.75rem" px="md" pt="sm" scrollbarSize={8}>
-          <Droppable droppableId="droppable" direction="horizontal">
-            {(provided) => (
-              <div ref={provided.innerRef} {...provided.droppableProps} style={{ display: "flex" }}>
-                {tabs.map((tab, i) => (
-                  <Draggable key={tab.value} draggableId={tab.value} index={i}>
-                    {(provided) => (
-                      <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                        <BoardTab
-                          tab={tab}
-                          setActiveTab={setActiveTab}
-                          closeTab={closeTab}
-                          renameTab={renameTab}
-                          duplicateTab={duplicateTab}
-                          selected={activeTab === tab.value}
-                        />
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-                <ActionIcon
-                  variant="default"
-                  onClick={() =>
-                    createTab({
-                      tab: {
-                        name: t("features.tabs.newTab"),
-                        type: "new",
-                      },
-                      setTabs,
-                      setActiveTab,
-                    })
-                  }
-                  size="lg"
-                  classNames={{
-                    root: classes.newTab,
-                  }}
-                >
-                  <IconPlus />
-                </ActionIcon>
-              </div>
-            )}
-          </Droppable>
-        </ScrollArea>
+        <Box p="md">
+          <ScrollArea scrollbarSize={8} scrollbars="x">
+            <Droppable droppableId="droppable" direction="horizontal">
+              {(provided) => (
+                <div ref={provided.innerRef} {...provided.droppableProps} style={{ display: "flex" }}>
+                  {tabs.map((tab, i) => (
+                    <Draggable key={tab.value} draggableId={tab.value} index={i}>
+                      {(provided) => (
+                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                          <BoardTab
+                            tab={tab}
+                            setActiveTab={setActiveTab}
+                            closeTab={closeTab}
+                            renameTab={renameTab}
+                            duplicateTab={duplicateTab}
+                            selected={activeTab === tab.value}
+                          />
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                  <ActionIcon
+                    variant="default"
+                    onClick={() =>
+                      createTab({
+                        tab: {
+                          name: t("features.tabs.newTab"),
+                          type: "new",
+                        },
+                        setTabs,
+                        setActiveTab,
+                      })
+                    }
+                    size="lg"
+                    classNames={{
+                      root: classes.newTab,
+                    }}
+                  >
+                    <IconPlus />
+                  </ActionIcon>
+                </div>
+              )}
+            </Droppable>
+          </ScrollArea>
+        </Box>
         {tabs.map((tab) => (
-          <Tabs.Panel key={tab.value} value={tab.value} h="100%" w="100%" pb="sm" px="sm">
+          <Tabs.Panel key={tab.value} value={tab.value} h="100%" w="100%" px="md" pb="md">
             <TabSwitch tab={tab} />
           </Tabs.Panel>
         ))}

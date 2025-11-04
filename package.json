@@ -35,7 +35,7 @@
     "@mantine/tiptap": "^8.3.6",
     "@mantine/vanilla-extract": "^8.3.6",
     "@tabler/icons-react": "^3.35.0",
-    "@tanstack/react-router": "^1.134.9",
+    "@tanstack/react-router": "^1.134.12",
     "@tanstack/react-virtual": "^3.13.12",
     "@tauri-apps/api": "^2.9.0",
     "@tauri-apps/plugin-cli": "^2.4.1",
@@ -92,8 +92,8 @@
     "@biomejs/biome": "2.3.3",
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
-    "@tanstack/router-plugin": "^1.134.9",
-    "@tauri-apps/cli": "2.9.2",
+    "@tanstack/router-plugin": "^1.134.12",
+    "@tauri-apps/cli": "2.9.3",
     "@types/d3": "^7.4.3",
     "@types/lodash": "^4.17.20",
     "@types/react": "^19.2.2",
@@ -103,6 +103,6 @@
     "@vanilla-extract/vite-plugin": "^5.1.1",
     "jsdom": "^27.1.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.6"
+    "vitest": "^4.0.7"
   }
 }

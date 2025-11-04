@@ -179,19 +179,15 @@ export default function LearnPage() {
     100;
 
   return (
-    <Stack gap="xl" p="md">
-      <Box>
-        <Group justify="space-between" align="flex-start" mb="md">
-          <Box>
-            <Title mb="xs">{t("learn.chessMasteryHub")}</Title>
-            <Text size="lg" c="dimmed">
-              {t("dashboard.cards.learn.desc")}
-            </Text>
-          </Box>
-        </Group>
-      </Box>
+    <>
+      <Stack justify="space-between" align="flex-start" p="md" gap="0">
+        <Title mb="xs">{t("learn.chessMasteryHub")}</Title>
+        <Text size="lg" c="dimmed">
+          {t("features.dashboard.cards.learn.desc")}
+        </Text>
+      </Stack>
 
-      <Stack gap="xl">
+      <Stack gap="xl" px="md" pb="md">
         <CompactProgressSection
           overallProgress={overallProgress}
           currentStreak={currentStreak}
@@ -372,6 +368,6 @@ export default function LearnPage() {
           )}
         </Stack>
       </Stack>
-    </Stack>
+    </>
   );
 }

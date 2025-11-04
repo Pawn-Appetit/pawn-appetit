@@ -258,7 +258,7 @@ Pawn Appétit is for chess players **all around the world**! We're committed to 
 | Language  | Progress   | Link                        |
 |-----------|----------|-----------------------------|
 | 🇺🇸 **English US** | ✅ 100% | [View](./src/locales/en-US) |
-| 🇬🇧 **English UK** | 🟡 98% | [View](./src/locales/en-GB) |
+| 🇬🇧 **English UK** | 🟡 97% | [View](./src/locales/en-GB) |
 | 🇩🇪 **Deutsch (German)** | 🟡 54% | [View](./src/locales/de) |
 | 🇪🇸 **Español (Spanish)** | 🟡 54% | [View](./src/locales/es) |
 | 🇫🇷 **Français (French)** | 🟡 54% | [View](./src/locales/fr) |
@@ -273,7 +273,7 @@ Pawn Appétit is for chess players **all around the world**! We're committed to 
 | 🇵🇹 **Português (Portuguese)** | 🔴 30% | [View](./src/locales/pt) |
 | 🇺🇦 **Українська (Ukrainian)** | 🔴 30% | [View](./src/locales/uk) |
 | 🇸🇦 **العربية (Arabic)** | 🔴 15% | [View](./src/locales/ar) |
-| 🇯🇵 **日本語 (Japanese)** | 🔴 6% | [View](./src/locales/ja) |
+| 🇯🇵 **日本語 (Japanese)** | 🔴 5% | [View](./src/locales/ja) |
 <!-- TRANSLATIONS_END -->
 
 Want to help translate? See [CONTRIBUTING.md](./CONTRIBUTING.md).

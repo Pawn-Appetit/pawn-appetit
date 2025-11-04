@@ -894,14 +894,14 @@ export default function Page() {
 
   return (
     <Box h="100%" style={{ overflow: "hidden" }}>
-      <Title order={1} fw={500} p={{ base: "md", sm: "lg" }} className={classes.title}>
+      <Title order={1} fw={500} p="md" className={classes.title}>
         {t("features.sidebar.settings")}
       </Title>
       <TextInput
         placeholder={t("settings.searchPlaceholder")}
         size="xs"
         mb="lg"
-        px={{ base: "md", sm: "lg" }}
+        px="md"
         value={search}
         onChange={(event) => setSearch(event.currentTarget.value)}
         visibleFrom="sm"
@@ -909,7 +909,7 @@ export default function Page() {
       {filteredSettings ? (
         <Box h="calc(100vh - 170px)" style={{ overflow: "hidden" }}>
           <ScrollArea h="100%">
-            <Card className={classes.card} w="100%" pl="lg" pr="xl">
+            <Card className={classes.card} w="100%" pl="md" pr="xl">
               {Object.entries(filteredSettingsByTab).map(([tabId, settings]) => (
                 <div key={tabId}>
                   <Title order={2} fw={500} mt="xl" mb="md">
@@ -962,7 +962,7 @@ export default function Page() {
           ) : (
             <Stack flex={1}>
               <ScrollArea h="calc(100vh - 170px)">
-                <Card className={classes.card} w="100%" pl="lg" pr="xl">
+                <Card className={classes.card} w="100%" pl="md" pr="xl">
                   {renderTabPanels()}
                 </Card>
               </ScrollArea>
