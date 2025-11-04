@@ -1,49 +1,12 @@
-import { BarChart } from "@mantine/charts";
 import type { MantineColor } from "@mantine/core";
-import {
-  ActionIcon,
-  Avatar,
-  Badge,
-  Box,
-  Button,
-  Card,
-  Divider,
-  Grid,
-  Group,
-  Image,
-  Progress,
-  RingProgress,
-  ScrollArea,
-  Select,
-  SimpleGrid,
-  Stack,
-  Table,
-  Tabs,
-  Text,
-  ThemeIcon,
-  Title,
-} from "@mantine/core";
+import { Grid, Stack } from "@mantine/core";
 import { modals } from "@mantine/modals";
-import {
-  IconArrowRight,
-  IconBolt,
-  IconBook2,
-  IconBrain,
-  IconChess,
-  IconClock,
-  IconFlame,
-  IconPuzzle,
-  IconRefresh,
-  IconStopwatch,
-  IconTrophy,
-  IconUpload,
-} from "@tabler/icons-react";
+import { IconBolt, IconChess, IconClock, IconStopwatch } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { info } from "@tauri-apps/plugin-log";
 import { useAtom, useAtomValue } from "jotai";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { Outcome } from "@/bindings";
 import { lessons } from "@/features/learn/constants/lessons";
 import { practices } from "@/features/learn/constants/practices";
 import { activeTabAtom, sessionsAtom, tabsAtom } from "@/state/atoms";
@@ -51,28 +14,24 @@ import { useUserStatsStore } from "@/state/userStatsStore";
 import { type Achievement, getAchievements } from "@/utils/achievements";
 import { type ChessComGame, fetchLastChessComGames } from "@/utils/chess.com/api";
 import { type DailyGoal, getDailyGoals } from "@/utils/dailyGoals";
-import { formatDateToPGN } from "@/utils/format";
 import { type GameRecord, getRecentGames } from "@/utils/gameRecords";
 import { fetchLastLichessGames } from "@/utils/lichess/api";
 import { getPuzzleStats, getTodayPuzzleCount } from "@/utils/puzzleStreak";
 import { createTab, genID, type Tab } from "@/utils/tabs";
-
-function getChessTitle(rating: number): string {
-  if (rating >= 2500) return "Grandmaster";
-  if (rating >= 2200) return "International Master";
-  if (rating >= 2000) return "Expert";
-  if (rating >= 1800) return "Class A";
-  if (rating >= 1600) return "Class B";
-  if (rating >= 1400) return "Class C";
-  if (rating >= 1200) return "Class D";
-  if (rating >= 1000) return "Class E";
-  if (rating >= 800) return "Class F";
-  if (rating >= 600) return "Class G";
-  if (rating >= 400) return "Class H";
-  if (rating >= 200) return "Class I";
-  if (rating >= 100) return "Class J";
-  return "Class K";
-}
+import { DailyGoalsCard } from "./components/DailyGoalsCard";
+import { GamesHistoryCard } from "./components/GamesHistoryCard";
+import { PuzzleStatsCard } from "./components/PuzzleStatsCard";
+import { QuickActionsGrid } from "./components/QuickActionsGrid";
+import { type Suggestion, SuggestionsCard } from "./components/SuggestionsCard";
+import { UserProfileCard } from "./components/UserProfileCard";
+import { WelcomeCard } from "./components/WelcomeCard";
+import { getChessTitle } from "./utils/chessTitle";
+import {
+  createChessComGameHeaders,
+  createLichessGameHeaders,
+  createLocalGameHeaders,
+  createPGNFromMoves,
+} from "./utils/gameHelpers";
 
 export default function DashboardPage() {
   const [isFirstOpen, setIsFirstOpen] = useState(false);
@@ -138,8 +97,14 @@ export default function DashboardPage() {
     ratingHistory = { rapid, blitz, bullet };
   }
 
-  const lichessUsernames = [...new Set(sessions.map((s) => s.lichess?.username).filter(Boolean) as string[])];
-  const chessComUsernames = [...new Set(sessions.map((s) => s.chessCom?.username).filter(Boolean) as string[])];
+  const lichessUsernames = useMemo(
+    () => [...new Set(sessions.map((s) => s.lichess?.username).filter(Boolean) as string[])],
+    [sessions],
+  );
+  const chessComUsernames = useMemo(
+    () => [...new Set(sessions.map((s) => s.chessCom?.username).filter(Boolean) as string[])],
+    [sessions],
+  );
 
   const [selectedLichessUser, setSelectedLichessUser] = useState<string | null>("all");
   const [selectedChessComUser, setSelectedChessComUser] = useState<string | null>("all");
@@ -150,7 +115,21 @@ export default function DashboardPage() {
   }, []);
 
   const [lastLichessUpdate, setLastLichessUpdate] = useState(Date.now());
-  const [lichessGames, setLichessGames] = useState<any[]>([]);
+  const [lichessGames, setLichessGames] = useState<
+    Array<{
+      id: string;
+      players: {
+        white: { user?: { name: string } };
+        black: { user?: { name: string } };
+      };
+      speed: string;
+      createdAt: number;
+      winner?: string;
+      status: string;
+      pgn?: string;
+      lastFen: string;
+    }>
+  >([]);
   useEffect(() => {
     const fetchGames = async () => {
       const usersToFetch =
@@ -166,7 +145,7 @@ export default function DashboardPage() {
       }
     };
     fetchGames();
-  }, [sessions, lastLichessUpdate, selectedLichessUser]);
+  }, [lichessUsernames, selectedLichessUser, lastLichessUpdate]);
 
   const [lastChessComUpdate, setLastChessComUpdate] = useState(Date.now());
   const [chessComGames, setChessComGames] = useState<ChessComGame[]>([]);
@@ -187,7 +166,7 @@ export default function DashboardPage() {
       }
     };
     fetchGames();
-  }, [sessions, lastChessComUpdate, selectedChessComUser]);
+  }, [chessComUsernames, selectedChessComUser, lastChessComUpdate]);
 
   const [puzzleStats, setPuzzleStats] = useState(() => getPuzzleStats());
   useEffect(() => {
@@ -206,15 +185,6 @@ export default function DashboardPage() {
   }, []);
 
   const userStats = useUserStatsStore((s) => s.userStats);
-
-  type Suggestion = {
-    id: string;
-    title: string;
-    tag: "Lessons" | "Openings" | "Endgames" | "Tactics";
-    difficulty: string;
-    to?: string;
-    onClick?: () => void;
-  };
 
   const suggestions: Suggestion[] = (() => {
     const picked: Suggestion[] = [];
@@ -287,47 +257,18 @@ export default function DashboardPage() {
             tag: "Lessons",
             difficulty: "All",
             onClick: () => {
-              const headersForAnalysis = {
-                id: 0,
-                event: "Local Game",
-                site: "Pawn Appetit",
-                date: formatDateToPGN(last.timestamp),
-                white: last.white.name ?? (last.white.engine ? `Engine (${last.white.engine})` : "White"),
-                black: last.black.name ?? (last.black.engine ? `Engine (${last.black.engine})` : "Black"),
-                result: last.result as Outcome,
-                fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-                time_control: last.timeControl,
-                variant: last.variant,
-              };
-
-              let pgn = "";
-              if (last.moves && last.moves.length > 0) {
-                const movesPairs = [];
-                for (let i = 0; i < last.moves.length; i += 2) {
-                  const moveNumber = Math.floor(i / 2) + 1;
-                  const whiteMove = last.moves[i];
-                  const blackMove = last.moves[i + 1];
-
-                  if (blackMove) {
-                    movesPairs.push(`${moveNumber}. ${whiteMove} ${blackMove}`);
-                  } else {
-                    movesPairs.push(`${moveNumber}. ${whiteMove}`);
-                  }
-                }
-                pgn = movesPairs.join(" ") + " " + last.result;
-              } else {
-                pgn = last.result;
-              }
+              const headers = createLocalGameHeaders(last);
+              const pgn = createPGNFromMoves(last.moves, last.result);
 
               createTab({
                 tab: {
-                  name: `${headersForAnalysis.white} - ${headersForAnalysis.black}`,
+                  name: `${headers.white} - ${headers.black}`,
                   type: "analysis",
                 },
                 setTabs,
                 setActiveTab,
                 pgn,
-                headers: headersForAnalysis,
+                headers,
               });
               navigate({ to: "/boards" });
             },
@@ -519,659 +460,128 @@ export default function DashboardPage() {
 
   return (
     <Stack p="md" gap="md">
-      <Card shadow="sm" p="lg" radius="md" withBorder>
-        <Group align="center" justify="space-between" wrap="nowrap">
-          <Stack gap={6} flex={6}>
-            <Title order={1} fw={800}>
-              {t(isFirstOpen ? "features.dashboard.welcome.firstOpen" : "features.dashboard.welcome.back")}
-            </Title>
-            <Text size="sm" c="dimmed">
-              {t("features.dashboard.welcome.desc")}
-            </Text>
-            <Group gap="xs" mt="xs">
-              <Button radius="md" onClick={PLAY_CHESS.onClick} leftSection={<IconChess size={18} />}>
-                {PLAY_CHESS.label}
-              </Button>
-              <Button
-                variant="light"
-                radius="md"
-                onClick={() => {
-                  navigate({ to: "/boards" });
-                  modals.openContextModal({
-                    modal: "importModal",
-                    innerProps: {},
-                  });
-                }}
-                leftSection={<IconUpload size={18} />}
-              >
-                {t("features.tabs.importGame.button")}
-              </Button>
-            </Group>
-          </Stack>
-          <Box flex={4}>
-            <Image src="/chess-play.jpg" alt="Chess play" radius="lg" />
-          </Box>
-        </Group>
-      </Card>
+      <WelcomeCard
+        isFirstOpen={isFirstOpen}
+        onPlayChess={PLAY_CHESS.onClick}
+        onImportGame={() => {
+          navigate({ to: "/boards" });
+          modals.openContextModal({
+            modal: "importModal",
+            innerProps: {},
+          });
+        }}
+      />
 
       <Grid>
         <Grid.Col span={{ base: 12, sm: 12, md: 4, lg: 3, xl: 3 }}>
-          <Card withBorder p="lg" radius="md" h="100%">
-            <Box>
-              <Group gap={6} justify="space-between">
-                <Text fw={700}>{user.name}</Text>
-                <Badge color="yellow" variant="light">
-                  {getChessTitle(user.rating)}
-                </Badge>
-              </Group>
-              <Text size="sm" c="dimmed">
-                {user.handle}
-              </Text>
-            </Box>
-            <Divider my="md" />
-            <Group justify="space-between" align="stretch">
-              {ratingHistory.classical && (
-                <Stack gap={2} p={{ base: "xs", sm: "md" }} style={{ flex: 1 }}>
-                  <Text size="xs" c="teal.6">
-                    Classical
-                  </Text>
-                  <Text fw={700} fz={{ base: "lg", sm: "xl" }}>
-                    {ratingHistory.classical}
-                  </Text>
-                </Stack>
-              )}
-              {ratingHistory.rapid && (
-                <Stack gap={2} p={{ base: "xs", sm: "md" }} style={{ flex: 1 }}>
-                  <Text size="xs" c="teal.6">
-                    Rapid
-                  </Text>
-                  <Text fw={700} fz={{ base: "lg", sm: "xl" }}>
-                    {ratingHistory.rapid}
-                  </Text>
-                </Stack>
-              )}
-              {ratingHistory.blitz && (
-                <Stack gap={2} p={{ base: "xs", sm: "md" }} style={{ flex: 1 }}>
-                  <Text size="xs" c="yellow.6">
-                    Blitz
-                  </Text>
-                  <Text fw={700} fz={{ base: "lg", sm: "xl" }}>
-                    {ratingHistory.blitz}
-                  </Text>
-                </Stack>
-              )}
-              {ratingHistory.bullet && (
-                <Stack gap={2} p={{ base: "xs", sm: "md" }} style={{ flex: 1 }}>
-                  <Text size="xs" c="blue.6">
-                    Bullet
-                  </Text>
-                  <Text fw={700} fz={{ base: "lg", sm: "xl" }}>
-                    {ratingHistory.bullet}
-                  </Text>
-                </Stack>
-              )}
-            </Group>
-          </Card>
+          <UserProfileCard
+            name={user.name}
+            handle={user.handle}
+            title={getChessTitle(user.rating)}
+            ratingHistory={ratingHistory}
+          />
         </Grid.Col>
 
         <Grid.Col span={{ base: 12, sm: 12, md: 8, lg: 9, xl: 9 }}>
-          <Card withBorder p="lg" radius="md" h="100%">
-            <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 2, lg: 4, xl: 4 }}>
-              {quickActions.map((qa) => (
-                <Card key={qa.title} withBorder radius="md" p="md">
-                  <Stack gap={8} align="flex-start">
-                    <Group>
-                      <ThemeIcon variant="light" color={qa.color} size={42} radius="md">
-                        {qa.icon}
-                      </ThemeIcon>
-                      <Text fw={600}>{qa.title}</Text>
-                    </Group>
-                    <Text size="sm" c="dimmed">
-                      {qa.description}
-                    </Text>
-                    <Button variant="light" rightSection={<IconArrowRight size={16} />} onClick={qa.onClick}>
-                      Open
-                    </Button>
-                  </Stack>
-                </Card>
-              ))}
-            </SimpleGrid>
-          </Card>
+          <QuickActionsGrid actions={quickActions} />
         </Grid.Col>
       </Grid>
 
       <Grid>
         <Grid.Col span={{ base: 12, sm: 12, md: 7, lg: 7, xl: 7 }}>
-          <Card withBorder p="lg" radius="md" h="100%">
-            <Tabs value={activeGamesTab} onChange={setActiveGamesTab}>
-              <Group justify="space-between" align="center">
-                <Tabs.List>
-                  <Tabs.Tab value="local">Local</Tabs.Tab>
-                  <Tabs.Tab value="chesscom">Chess.com</Tabs.Tab>
-                  <Tabs.Tab value="lichess">Lichess</Tabs.Tab>
-                </Tabs.List>
-                {activeGamesTab === "chesscom" && (
-                  <Group justify="space-between">
-                    <Select
-                      placeholder="Filter by account"
-                      value={selectedChessComUser}
-                      onChange={setSelectedChessComUser}
-                      data={[
-                        { value: "all", label: "All Accounts" },
-                        ...chessComUsernames.map((name) => ({ value: name, label: name })),
-                      ]}
-                      disabled={chessComUsernames.length <= 1}
-                    />
-                    <ActionIcon variant="subtle" onClick={() => setLastChessComUpdate(Date.now())}>
-                      <IconRefresh size="1rem" />
-                    </ActionIcon>
-                  </Group>
-                )}
-                {activeGamesTab === "lichess" && (
-                  <Group justify="space-between">
-                    <Select
-                      placeholder="Filter by account"
-                      value={selectedLichessUser}
-                      onChange={setSelectedLichessUser}
-                      data={[
-                        { value: "all", label: "All Accounts" },
-                        ...lichessUsernames.map((name) => ({ value: name, label: name })),
-                      ]}
-                      disabled={lichessUsernames.length <= 1}
-                    />
-                    <ActionIcon variant="subtle" onClick={() => setLastLichessUpdate(Date.now())}>
-                      <IconRefresh size="1rem" />
-                    </ActionIcon>
-                  </Group>
-                )}
-              </Group>
-
-              <Tabs.Panel value="local" pt="xs">
-                <ScrollArea h={{ base: 200, sm: 220, md: 240, lg: 260 }} type="auto">
-                  <Table striped highlightOnHover>
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th>Opponent</Table.Th>
-                        <Table.Th>Color</Table.Th>
-                        <Table.Th>Result</Table.Th>
-                        <Table.Th>Accuracy</Table.Th>
-                        <Table.Th>Moves</Table.Th>
-                        <Table.Th>Date</Table.Th>
-                        <Table.Th></Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      {recentGames.map((g) => {
-                        const isUserWhite = g.white.type === "human";
-                        const opponent = isUserWhite ? g.black : g.white;
-                        const color = isUserWhite ? t("chess.white") : t("chess.black");
-                        const now = Date.now();
-                        const diffMs = now - g.timestamp;
-                        let dateStr = "";
-                        if (diffMs < 60 * 60 * 1000) {
-                          dateStr = `${Math.floor(diffMs / (60 * 1000))}m ago`;
-                        } else if (diffMs < 24 * 60 * 60 * 1000) {
-                          dateStr = `${Math.floor(diffMs / (60 * 60 * 1000))}h ago`;
-                        } else {
-                          dateStr = `${Math.floor(diffMs / (24 * 60 * 60 * 1000))}d ago`;
-                        }
-                        return (
-                          <Table.Tr key={g.id}>
-                            <Table.Td>
-                              <Group gap="xs">
-                                <Avatar size={24} radius="xl">
-                                  {" "}
-                                  {(opponent.name ?? "?")[0]?.toUpperCase()}{" "}
-                                </Avatar>
-                                <Text>{opponent.name ?? (opponent.engine ? `Engine (${opponent.engine})` : "?")}</Text>
-                              </Group>
-                            </Table.Td>
-                            <Table.Td>
-                              <Badge variant="light">{color}</Badge>
-                            </Table.Td>
-                            <Table.Td>
-                              <Badge color={g.result === "1-0" ? "teal" : g.result === "0-1" ? "red" : "gray"}>
-                                {" "}
-                                {g.result === "1-0" ? "Win" : g.result === "0-1" ? "Loss" : g.result}{" "}
-                              </Badge>
-                            </Table.Td>
-                            <Table.Td>
-                              <Text size="xs" c="dimmed">
-                                {" "}
-                                -{" "}
-                              </Text>
-                            </Table.Td>
-                            <Table.Td>{g.moves.length}</Table.Td>
-                            <Table.Td c="dimmed">{dateStr}</Table.Td>
-                            <Table.Td>
-                              <Button
-                                size="xs"
-                                variant="light"
-                                onClick={() => {
-                                  const headersForAnalysis = {
-                                    id: 0,
-                                    event: "Local Game",
-                                    site: "Pawn Appetit",
-                                    date: formatDateToPGN(g.timestamp),
-                                    white: g.white.name ?? (g.white.engine ? `Engine (${g.white.engine})` : "White"),
-                                    black: g.black.name ?? (g.black.engine ? `Engine (${g.black.engine})` : "Black"),
-                                    result: g.result as Outcome,
-                                    fen: g.fen,
-                                    time_control: g.timeControl,
-                                    variant: g.variant,
-                                  };
-
-                                  let pgn = "";
-                                  if (g.moves && g.moves.length > 0) {
-                                    const movesPairs = [];
-                                    for (let i = 0; i < g.moves.length; i += 2) {
-                                      const moveNumber = Math.floor(i / 2) + 1;
-                                      const whiteMove = g.moves[i];
-                                      const blackMove = g.moves[i + 1];
-
-                                      if (blackMove) {
-                                        movesPairs.push(`${moveNumber}. ${whiteMove} ${blackMove}`);
-                                      } else {
-                                        movesPairs.push(`${moveNumber}. ${whiteMove}`);
-                                      }
-                                    }
-                                    pgn = movesPairs.join(" ") + " " + g.result;
-                                  } else {
-                                    pgn = g.result;
-                                  }
-
-                                  createTab({
-                                    tab: {
-                                      name: `${headersForAnalysis.white} - ${headersForAnalysis.black}`,
-                                      type: "analysis",
-                                    },
-                                    setTabs,
-                                    setActiveTab,
-                                    pgn,
-                                    headers: headersForAnalysis,
-                                  });
-                                  navigate({ to: "/boards" });
-                                }}
-                              >
-                                {" "}
-                                Analyze{" "}
-                              </Button>
-                            </Table.Td>
-                          </Table.Tr>
-                        );
-                      })}
-                    </Table.Tbody>
-                  </Table>
-                </ScrollArea>
-              </Tabs.Panel>
-
-              <Tabs.Panel value="chesscom" pt="xs">
-                <ScrollArea h={{ base: 200, sm: 220, md: 240, lg: 260 }} type="auto">
-                  <Table striped highlightOnHover>
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th>Opponent</Table.Th>
-                        <Table.Th>Color</Table.Th>
-                        <Table.Th>Result</Table.Th>
-                        <Table.Th>Account</Table.Th>
-                        <Table.Th>Date</Table.Th>
-                        <Table.Th></Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      {chessComGames.map((g) => {
-                        const isUserWhite = chessComUsernames.includes(g.white.username);
-                        const opponent = isUserWhite ? g.black : g.white;
-                        const userAccount = isUserWhite ? g.white : g.black;
-                        const color = isUserWhite ? t("chess.white") : t("chess.black");
-                        const result = isUserWhite ? g.white.result : g.black.result;
-                        return (
-                          <Table.Tr key={g.url}>
-                            <Table.Td>
-                              <Group gap="xs">
-                                <Avatar size={24} radius="xl">
-                                  {" "}
-                                  {opponent.username[0].toUpperCase()}{" "}
-                                </Avatar>
-                                <Text>{opponent.username}</Text>
-                              </Group>
-                            </Table.Td>
-                            <Table.Td>
-                              <Badge variant="light">{color}</Badge>
-                            </Table.Td>
-                            <Table.Td>
-                              <Badge
-                                color={
-                                  result === "win"
-                                    ? "teal"
-                                    : result === "checkmated" || result === "resigned"
-                                      ? "red"
-                                      : "gray"
-                                }
-                              >
-                                {" "}
-                                {result}{" "}
-                              </Badge>
-                            </Table.Td>
-                            <Table.Td>
-                              <Text size="xs">{userAccount.username}</Text>
-                            </Table.Td>
-                            <Table.Td c="dimmed">
-                              {t("formatters.dateFormat", {
-                                date: new Date(g.end_time * 1000),
-                                interpolation: { escapeValue: false },
-                              })}
-                            </Table.Td>
-                            <Table.Td>
-                              <Group gap="xs" wrap="nowrap">
-                                <Button
-                                  size="xs"
-                                  variant="light"
-                                  onClick={() => {
-                                    if (g.pgn) {
-                                      const headersForAnalysis = {
-                                        id: 0,
-                                        event: "Online Game",
-                                        site: "Chess.com",
-                                        date: formatDateToPGN(g.end_time * 1000),
-                                        white: g.white.username,
-                                        black: g.black.username,
-                                        result: (g.white.result === "win"
-                                          ? "1-0"
-                                          : g.black.result === "win"
-                                            ? "0-1"
-                                            : "1/2-1/2") as Outcome,
-                                        fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-                                      };
-                                      createTab({
-                                        tab: {
-                                          name: `${g.white.username} - ${g.black.username}`,
-                                          type: "analysis",
-                                        },
-                                        setTabs,
-                                        setActiveTab,
-                                        pgn: g.pgn,
-                                        headers: headersForAnalysis,
-                                      });
-                                      navigate({ to: "/boards" });
-                                    }
-                                  }}
-                                >
-                                  Analyse
-                                </Button>
-                                <Button size="xs" variant="light" component="a" href={g.url} target="_blank">
-                                  View Online
-                                </Button>
-                              </Group>
-                            </Table.Td>
-                          </Table.Tr>
-                        );
-                      })}
-                    </Table.Tbody>
-                  </Table>
-                </ScrollArea>
-              </Tabs.Panel>
-
-              <Tabs.Panel value="lichess" pt="xs">
-                <ScrollArea h={{ base: 200, sm: 220, md: 240, lg: 260 }} type="auto">
-                  <Table striped highlightOnHover>
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th>Opponent</Table.Th>
-                        <Table.Th>Color</Table.Th>
-                        <Table.Th>Result</Table.Th>
-                        <Table.Th>Account</Table.Th>
-                        <Table.Th>Date</Table.Th>
-                        <Table.Th></Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      {lichessGames.map((g) => {
-                        const isUserWhite = lichessUsernames.includes(g.players.white.user?.name);
-                        const opponent = isUserWhite ? g.players.black : g.players.white;
-                        const userAccount = isUserWhite ? g.players.white : g.players.black;
-                        const color = isUserWhite ? t("chess.white") : t("chess.black");
-                        return (
-                          <Table.Tr key={g.id}>
-                            <Table.Td>
-                              <Group gap="xs">
-                                <Avatar size={24} radius="xl">
-                                  {" "}
-                                  {opponent.user?.name[0].toUpperCase()}{" "}
-                                </Avatar>
-                                <Text>{opponent.user?.name}</Text>
-                              </Group>
-                            </Table.Td>
-                            <Table.Td>
-                              <Badge variant="light">{color}</Badge>
-                            </Table.Td>
-                            <Table.Td>
-                              <Badge color={g.winner === color.toLowerCase() ? "teal" : g.winner ? "red" : "gray"}>
-                                {" "}
-                                {g.status}{" "}
-                              </Badge>
-                            </Table.Td>
-                            <Table.Td>
-                              <Text size="xs">{userAccount.user?.name}</Text>
-                            </Table.Td>
-                            <Table.Td c="dimmed">
-                              {t("formatters.dateFormat", {
-                                date: new Date(g.createdAt),
-                                interpolation: { escapeValue: false },
-                              })}
-                            </Table.Td>
-                            <Table.Td>
-                              <Group gap="xs" wrap="nowrap">
-                                <Button
-                                  size="xs"
-                                  variant="light"
-                                  onClick={() => {
-                                    if (g.pgn) {
-                                      const headersForAnalysis = {
-                                        id: 0,
-                                        event: `Rated ${g.speed} game`,
-                                        site: "Lichess.org",
-                                        date: formatDateToPGN(g.createdAt),
-                                        white: g.players.white.user?.name || "Unknown",
-                                        black: g.players.black.user?.name || "Unknown",
-                                        result: (g.winner === "white"
-                                          ? "1-0"
-                                          : g.winner === "black"
-                                            ? "0-1"
-                                            : "1/2-1/2") as Outcome,
-                                        fen: g.lastFen,
-                                      };
-
-                                      createTab({
-                                        tab: {
-                                          name: `${headersForAnalysis.white} - ${headersForAnalysis.black}`,
-                                          type: "analysis",
-                                        },
-                                        setTabs,
-                                        setActiveTab,
-                                        pgn: g.pgn,
-                                        headers: headersForAnalysis,
-                                      });
-                                      navigate({ to: "/boards" });
-                                    }
-                                  }}
-                                  disabled={!g.pgn}
-                                >
-                                  Analyse
-                                </Button>
-                                <Button
-                                  size="xs"
-                                  variant="light"
-                                  component="a"
-                                  href={`https://lichess.org/${g.id}`}
-                                  target="_blank"
-                                >
-                                  View Online
-                                </Button>
-                              </Group>
-                            </Table.Td>
-                          </Table.Tr>
-                        );
-                      })}
-                    </Table.Tbody>
-                  </Table>
-                </ScrollArea>
-              </Tabs.Panel>
-            </Tabs>
-          </Card>
+          <GamesHistoryCard
+            activeTab={activeGamesTab}
+            onTabChange={setActiveGamesTab}
+            localGames={recentGames}
+            chessComGames={chessComGames}
+            lichessGames={lichessGames}
+            chessComUsernames={chessComUsernames}
+            lichessUsernames={lichessUsernames}
+            selectedChessComUser={selectedChessComUser}
+            selectedLichessUser={selectedLichessUser}
+            onChessComUserChange={setSelectedChessComUser}
+            onLichessUserChange={setSelectedLichessUser}
+            onRefreshChessCom={() => setLastChessComUpdate(Date.now())}
+            onRefreshLichess={() => setLastLichessUpdate(Date.now())}
+            onAnalyzeLocalGame={(game) => {
+              const headers = createLocalGameHeaders(game);
+              const pgn = createPGNFromMoves(game.moves, game.result);
+              createTab({
+                tab: {
+                  name: `${headers.white} - ${headers.black}`,
+                  type: "analysis",
+                },
+                setTabs,
+                setActiveTab,
+                pgn,
+                headers,
+              });
+              navigate({ to: "/boards" });
+            }}
+            onAnalyzeChessComGame={(game) => {
+              if (game.pgn) {
+                const headers = createChessComGameHeaders(game);
+                createTab({
+                  tab: {
+                    name: `${game.white.username} - ${game.black.username}`,
+                    type: "analysis",
+                  },
+                  setTabs,
+                  setActiveTab,
+                  pgn: game.pgn,
+                  headers,
+                });
+                navigate({ to: "/boards" });
+              }
+            }}
+            onAnalyzeLichessGame={(game) => {
+              if (game.pgn) {
+                const headers = createLichessGameHeaders(game);
+                createTab({
+                  tab: {
+                    name: `${headers.white} - ${headers.black}`,
+                    type: "analysis",
+                  },
+                  setTabs,
+                  setActiveTab,
+                  pgn: game.pgn,
+                  headers,
+                });
+                navigate({ to: "/boards" });
+              }
+            }}
+          />
         </Grid.Col>
 
         <Grid.Col span={{ base: 12, sm: 12, md: 5, lg: 5, xl: 5 }}>
-          <Card withBorder p="lg" radius="md" h="100%">
-            <Group justify="space-between" mb="sm">
-              <Text fw={700}>{t("features.tabs.puzzle.title")}</Text>
-              <Button
-                size="xs"
-                variant="light"
-                onClick={() => {
-                  createTab({
-                    tab: { name: t("features.tabs.puzzle.title"), type: "puzzles" },
-                    setTabs,
-                    setActiveTab,
-                  });
-                  navigate({ to: "/boards" });
-                }}
-                leftSection={<IconPuzzle size={16} />}
-              >
-                {t("features.tabs.puzzle.button")}
-              </Button>
-            </Group>
-            <Group align="center" gap="lg">
-              <RingProgress
-                size={180}
-                thickness={12}
-                sections={[{ value: (puzzleStats.currentStreak / puzzleStats.target) * 100, color: "yellow" }]}
-                label={
-                  <Stack gap={0} align="center">
-                    <ThemeIcon color="yellow" variant="light">
-                      <IconFlame size={18} />
-                    </ThemeIcon>
-                    <Text fw={700}>{puzzleStats.currentStreak}</Text>
-                    <Text size="xs" c="dimmed">
-                      day streak
-                    </Text>
-                  </Stack>
-                }
-              />
-              <Box style={{ flex: 1 }}>
-                <Text size="sm" c="dimmed" mb={6}>
-                  This week
-                </Text>
-                <BarChart
-                  h={120}
-                  data={puzzleStats.history}
-                  dataKey="day"
-                  series={[{ name: "solved", color: "yellow.6" }]}
-                  withLegend={false}
-                  gridAxis="none"
-                  xAxisProps={{ hide: true }}
-                  yAxisProps={{ hide: true }}
-                  barProps={{ radius: 4 }}
-                />
-              </Box>
-            </Group>
-          </Card>
+          <PuzzleStatsCard
+            stats={puzzleStats}
+            onStartPuzzles={() => {
+              createTab({
+                tab: { name: t("features.tabs.puzzle.title"), type: "puzzles" },
+                setTabs,
+                setActiveTab,
+              });
+              navigate({ to: "/boards" });
+            }}
+          />
         </Grid.Col>
       </Grid>
 
       <Grid>
         <Grid.Col span={{ base: 12, sm: 12, md: 7, lg: 7, xl: 7 }}>
-          <Card withBorder p="lg" radius="md" h="100%">
-            <Group justify="space-between" mb="sm">
-              <Text fw={700}>Suggested for you</Text>
-              <Group gap="xs">
-                <Badge variant="light" color="grape">
-                  Lessons
-                </Badge>
-                <Badge variant="light" color="blue">
-                  Openings
-                </Badge>
-              </Group>
-            </Group>
-            <Stack>
-              {suggestions.map((s) => (
-                <Group key={s.id} justify="space-between" align="center">
-                  <Group>
-                    <ThemeIcon
-                      variant="light"
-                      color={s.tag === "Openings" ? "blue" : s.tag === "Endgames" ? "grape" : "teal"}
-                    >
-                      {s.tag === "Openings" ? (
-                        <IconBook2 size={16} />
-                      ) : s.tag === "Endgames" ? (
-                        <IconBrain size={16} />
-                      ) : (
-                        <IconTrophy size={16} />
-                      )}
-                    </ThemeIcon>
-                    <Stack gap={0}>
-                      <Text fw={600}>{s.title}</Text>
-                      <Group gap={6}>
-                        <Badge variant="light">{s.tag}</Badge>
-                        <Badge variant="dot" color="gray">
-                          {s.difficulty}
-                        </Badge>
-                      </Group>
-                    </Stack>
-                  </Group>
-                  <Button
-                    variant="light"
-                    onClick={() => {
-                      if (s.onClick) s.onClick();
-                      else if (s.to) navigate({ to: s.to });
-                      else navigate({ to: "/learn" });
-                    }}
-                    rightSection={<IconArrowRight size={16} />}
-                  >
-                    Start
-                  </Button>
-                </Group>
-              ))}
-            </Stack>
-          </Card>
+          <SuggestionsCard
+            suggestions={suggestions}
+            onSuggestionClick={(s) => {
+              if (s.onClick) s.onClick();
+              else if (s.to) navigate({ to: s.to });
+              else navigate({ to: "/learn" });
+            }}
+          />
         </Grid.Col>
 
         <Grid.Col span={{ base: 12, sm: 12, md: 5, lg: 5, xl: 5 }}>
-          <Card withBorder p="lg" radius="md" h="100%">
-            <Group justify="space-between" mb="sm">
-              <Text fw={700}>Daily goals</Text>
-              <ThemeIcon variant="light" color="teal">
-                <IconTrophy size={16} />
-              </ThemeIcon>
-            </Group>
-            <Stack>
-              {goals.map((g) => {
-                const value = Math.round((g.current / g.total) * 100);
-                return (
-                  <Box key={g.id}>
-                    <Group justify="space-between" mb={4}>
-                      <Text size="sm">{g.label}</Text>
-                      <Text size="xs" c="dimmed">
-                        {g.current}/{g.total}
-                      </Text>
-                    </Group>
-                    <Progress value={value} color={value >= 100 ? "teal" : value > 60 ? "yellow" : "green"} />
-                  </Box>
-                );
-              })}
-            </Stack>
-            <Divider my="md" />
-            <Group>
-              <Badge color="yellow" variant="light" leftSection={<IconFlame size={14} />}>
-                Streak {puzzleStats.currentStreak}
-              </Badge>
-              {achievements.map((a) => (
-                <Badge key={a.id} color="teal" variant="light" leftSection={<IconTrophy size={14} />}>
-                  Achievement: {a.label}
-                </Badge>
-              ))}
-            </Group>
-          </Card>
+          <DailyGoalsCard goals={goals} achievements={achievements} currentStreak={puzzleStats.currentStreak} />
         </Grid.Col>
       </Grid>
     </Stack>
