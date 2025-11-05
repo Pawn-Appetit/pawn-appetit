@@ -1,6 +1,20 @@
-import { Alert, Autocomplete, Button, Checkbox, Group, InputWrapper, Modal, Stack, TextInput } from "@mantine/core";
-import { IconArrowsSort, IconInfoCircle, IconPlus, IconSearch } from "@tabler/icons-react";
+import {
+  ActionIcon,
+  Alert,
+  Autocomplete,
+  Button,
+  Checkbox,
+  Group,
+  InputWrapper,
+  Modal,
+  Stack,
+  TextInput,
+  Tooltip,
+} from "@mantine/core";
+import { useLocalStorage } from "@mantine/hooks";
+import { IconArrowsSort, IconDatabase, IconInfoCircle, IconPlus, IconSearch } from "@tabler/icons-react";
 import { listen } from "@tauri-apps/api/event";
+import { t } from "i18next";
 import { useAtom, useAtomValue } from "jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { DatabaseInfo } from "@/bindings";
@@ -12,9 +26,16 @@ import { getChessComAccount } from "@/utils/chess.com/api";
 import { getDatabases } from "@/utils/db";
 import { getLichessAccount } from "@/utils/lichess/api";
 import type { ChessComSession, LichessSession } from "@/utils/session";
+import AccountsTableView from "./AccountsTableView";
 import LichessLogo from "./LichessLogo";
+import type { ViewType } from "./ViewToggle";
+import ViewToggle from "./ViewToggle";
 
-function Accounts() {
+interface AccountsProps {
+  handleOpen: () => void;
+}
+
+function Accounts({ handleOpen }: AccountsProps) {
   const [, setSessions] = useAtom(sessionsAtom);
   const isListening = useRef(false);
   const [databases, setDatabases] = useState<DatabaseInfo[]>([]);
@@ -24,6 +45,10 @@ function Accounts() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "elo">("name");
+  const [view, setView] = useLocalStorage<ViewType>({
+    key: "accounts-view",
+    defaultValue: "grid",
+  });
 
   const addChessComSession = useCallback(
     (alias: string, session: ChessComSession) => {
@@ -129,12 +154,22 @@ function Accounts() {
           >
             Sort: {sortBy === "name" ? "Name" : "ELO"}
           </Button>
+          <ViewToggle value={view} onChange={setView} />
+          <Tooltip label={t("accounts.viewDatabases", "View Player Databases")}>
+            <ActionIcon size="lg" variant="default" onClick={handleOpen}>
+              <IconDatabase size="1.2rem" />
+            </ActionIcon>
+          </Tooltip>
         </Group>
         <Button size="xs" leftSection={<IconPlus size="1rem" />} onClick={() => setOpen(true)} mr="sm">
           Add Account
         </Button>
       </Group>
-      <AccountCards databases={databases} setDatabases={setDatabases} query={query} sortBy={sortBy} />
+      {view === "grid" ? (
+        <AccountCards databases={databases} setDatabases={setDatabases} query={query} sortBy={sortBy} />
+      ) : (
+        <AccountsTableView databases={databases} setDatabases={setDatabases} query={query} sortBy={sortBy} />
+      )}
       <AccountModal open={open} setOpen={setOpen} addLichess={addLichess} addChessCom={addChessCom} />
     </>
   );

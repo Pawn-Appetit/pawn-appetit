@@ -244,6 +244,8 @@
     }
   },
   "accounts": {
+    "title": "Accounts",
+    "viewDatabases": "View Player Databases",
     "processingGames": "Processing Games...",
     "databaseLoadError": "Error loading database",
     "searchPlaceholder": "Search accounts...",

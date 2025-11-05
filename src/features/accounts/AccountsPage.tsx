@@ -1,32 +1,25 @@
 import { Group, Stack, Title } from "@mantine/core";
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+import { useDisclosure } from "@mantine/hooks";
+import { useTranslation } from "react-i18next";
 import Accounts from "./components/Accounts";
-import Databases from "./components/Databases";
+import DatabaseDrawer from "./components/DatabaseDrawer";
 
 function AccountsPage() {
-  const { layout } = useResponsiveLayout();
-  const isMobile = layout.accounts.layoutType === "mobile";
-
+  const { t } = useTranslation();
+  const [opened, { open, close }] = useDisclosure(false);
+    
   return (
-    <Stack h="100%">
-      <Group align="baseline" p="md">
-        <Title>Accounts</Title>
-      </Group>
-
-      {isMobile ? (
-        <Stack flex={1} style={{ overflow: "hidden" }} px="md" pb="md">
-          <Accounts />
-          <Databases />
-        </Stack>
-      ) : (
-        <Group grow flex={1} style={{ overflow: "hidden" }} px="md" pb="md" align="start">
-          <Stack h="100%">
-            <Accounts />
-          </Stack>
-          <Databases />
+    <>
+        <Group p="md">
+          <Title>{t("accounts.title", "Accounts")}</Title>
         </Group>
-      )}
-    </Stack>
+
+        <Stack flex={1} style={{ overflow: "hidden" }} px="md" pb="md">
+          <Accounts handleOpen={open} />
+        </Stack>
+
+      <DatabaseDrawer opened={opened} onClose={close} />
+    </>
   );
 }
 

@@ -72,6 +72,8 @@
   "databases.playerTable.maxElo": "Max ELO",
   "databases.tournamentCard.tabs.games": "Games",
   "databases.tournamentCard.tabs.leaderboard": "Leaderboard",
+  "accounts.title": "Accounts",
+  "accounts.viewDatabases": "View Player Databases",
   "accounts.processingGames": "Processing Games...",
   "accounts.databaseLoadError": "Error loading database",
   "accounts.searchPlaceholder": "Search accounts...",

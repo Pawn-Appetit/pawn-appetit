@@ -8,6 +8,8 @@
   "common.reloadFile": "Reload file",
   "common.namePlaceholder": "Name",
   "common.details": "Details",
+  "accounts.title": "Accounts",
+  "accounts.viewDatabases": "View Player Databases",
   "features.practice.practice": "Practice",
   "features.practice.backToLearn": "Back to Learn",
   "features.practice.backToPractice": "Back to Practice",
