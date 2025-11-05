@@ -6,6 +6,7 @@ import { Box } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { boardImageAtom, moveMethodAtom } from "@/state/atoms";
+import "@lichess-org/chessground/assets/chessground.base.css";
 
 export interface ChessgroundProps extends Config {
   setBoardFen?: (fen: string) => void;

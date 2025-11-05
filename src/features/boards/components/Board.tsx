@@ -1,9 +1,8 @@
 import type { DrawShape } from "@lichess-org/chessground/draw";
 import type { Piece } from "@lichess-org/chessground/types";
-import { ActionIcon, Box, Center, Group, Text, useMantineTheme } from "@mantine/core";
+import { Box, Group, Text, useMantineTheme } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { IconChevronRight } from "@tabler/icons-react";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
 import { makeSquare, type NormalMove, parseSquare, parseUci, type SquareName } from "chessops";
@@ -530,19 +529,9 @@ function Board({
             style={{
               width: 25,
             }}
+            onClick={() => setEvalOpen((prevState) => !prevState)}
           >
-            {!evalOpen && (
-              <Center h="100%" w="100%">
-                <ActionIcon size="1rem" onClick={() => setEvalOpen(true)}>
-                  <IconChevronRight />
-                </ActionIcon>
-              </Center>
-            )}
-            {evalOpen && (
-              <Box onClick={() => setEvalOpen(false)} h="100%">
-                <EvalBar score={currentNode.score?.value || null} orientation={orientation} />
-              </Box>
-            )}
+            <EvalBar score={currentNode.score?.value || null} orientation={orientation} />
           </Box>
           <Box
             style={

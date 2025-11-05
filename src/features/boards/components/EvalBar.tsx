@@ -8,7 +8,19 @@ function EvalBar({ score, orientation }: { score: ScoreValue | null; orientation
   const theme = useMantineTheme();
   const { t } = useTranslation();
 
-  let ScoreBars = null;
+  let ScoreBars = [
+    <Box
+      key="black"
+      style={{
+        height: "100%",
+        backgroundColor: theme.colors.dark[4],
+        transition: "height 0.2s ease",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    />,
+  ];
+
   if (score) {
     const progress = score.type === "cp" ? getWinChance(score.value) : score.value > 0 ? 100 : 0;
 

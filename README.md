@@ -74,7 +74,7 @@
 
 ## Overview
 
-**Pawn Appétit** is a modern, open-source and cross-platform chess application designed for players who demand professional-grade analysis tools without the premium price tag. Built with Rust and Tauri for exceptional performance, it delivers advanced chess engine integration, game analysis, opening repertoire training, and more—all wrapped in an intuitive interface.
+**Pawn Appétit** is a modern, open-source and cross-platform chess application designed for players who demand professional-grade analysis tools without the premium price tag. Built with Rust and Tauri for exceptional performance, it delivers advanced chess engine integration, game analysis, opening repertoire training, and more-all wrapped in an intuitive interface.
 
 Whether you're preparing for tournaments, analyzing your games, or building opening repertoires with spaced repetition, Pawn Appétit provides the tools you need in a fast, lightweight package.
 
