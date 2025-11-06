@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import type { PlayerGameInfo } from "@/bindings";
 import { DatabaseViewStateContext } from "@/features/databases/components/DatabaseViewStateContext";
-import FideInfo from "@/features/databases/components/FideInfo";
+import FideInfo from "@/features/databases/components/drawers/FideInfo";
 import { sessionsAtom } from "@/state/atoms";
 import type { DatabaseViewStore } from "@/state/store/database";
 import OpeningsPanel from "./PersonalCardPanels/OpeningsPanel";

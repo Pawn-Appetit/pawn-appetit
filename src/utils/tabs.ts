@@ -2,7 +2,7 @@ import { save } from "@tauri-apps/plugin-dialog";
 import { z } from "zod";
 import type { StoreApi } from "zustand";
 import { commands } from "@/bindings";
-import { fileMetadataSchema } from "@/features/files/components/file";
+import { fileMetadataSchema } from "@/features/files/utils/file";
 import type { TreeStoreState } from "@/state/store/tree";
 import { createFile, getFileNameWithoutExtension, isTempImportFile } from "@/utils/files";
 import { unwrap } from "@/utils/unwrap";

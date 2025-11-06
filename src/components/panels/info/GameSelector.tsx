@@ -1,10 +1,10 @@
-import { ActionIcon, Box, Group, ScrollArea, Text } from "@mantine/core";
+import { ActionIcon, Badge, Box, Group, ScrollArea, Stack, Text, TextInput } from "@mantine/core";
 import { modals } from "@mantine/modals";
-import { IconX } from "@tabler/icons-react";
+import { IconSearch, IconX } from "@tabler/icons-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import cx from "clsx";
 import { useAtomValue } from "jotai";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { commands } from "@/bindings";
 import { fontSizeAtom } from "@/state/atoms";
@@ -30,9 +30,15 @@ export default function GameSelector({
   activePage: number;
   deleteGame?: (index: number) => void;
 }) {
-  function isRowLoaded(index: number) {
-    return games.has(index);
-  }
+  const { t } = useTranslation();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const isRowLoaded = useCallback(
+    (index: number) => {
+      return games.has(index);
+    },
+    [games],
+  );
 
   const loadMoreRows = useCallback(
     async (startIndex: number, stopIndex: number) => {
@@ -58,66 +64,114 @@ export default function GameSelector({
 
   const fontSize = useAtomValue(fontSizeAtom);
 
+  // Filter games based on search query
+  const filteredIndices = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return Array.from({ length: total }, (_, i) => i);
+    }
+
+    const query = searchQuery.toLowerCase();
+    return Array.from({ length: total }, (_, i) => i).filter((index) => {
+      const gameName = games.get(index);
+      if (!gameName) return false;
+      return gameName.toLowerCase().includes(query);
+    });
+  }, [searchQuery, games, total]);
+
   const parentRef = useRef<HTMLDivElement>(null);
   const rowVirtualizer = useVirtualizer({
-    count: total,
-    estimateSize: () => 30 * (fontSize / 100),
-    getScrollElement: () => parentRef.current!,
+    count: filteredIndices.length,
+    estimateSize: () => 38 * (fontSize / 100),
+    getScrollElement: () => parentRef.current,
+    overscan: 5,
   });
 
+  const virtualItems = rowVirtualizer.getVirtualItems();
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: path is intentionally included to reset games map when path changes
   useEffect(() => {
     setGames(new Map());
   }, [path, setGames]);
 
   useEffect(() => {
     if (games.size === 0 && total > 0) {
-      loadMoreRows(0, Math.min(10, total - 1));
+      loadMoreRows(0, Math.min(20, total - 1));
     }
   }, [games.size, total, loadMoreRows]);
 
   useEffect(() => {
-    const items = rowVirtualizer.getVirtualItems();
-    const unloadedItems = items.filter((item) => !isRowLoaded(item.index));
+    const unloadedItems = virtualItems.filter((item) => !isRowLoaded(filteredIndices[item.index]));
 
     if (unloadedItems.length > 0) {
-      const startIndex = Math.min(...unloadedItems.map((item) => item.index));
-      const stopIndex = Math.max(...unloadedItems.map((item) => item.index));
+      const actualIndices = unloadedItems.map((item) => filteredIndices[item.index]);
+      const startIndex = Math.min(...actualIndices);
+      const stopIndex = Math.max(...actualIndices);
       loadMoreRows(startIndex, stopIndex);
     }
-  }, [loadMoreRows, rowVirtualizer.getVirtualItems()]);
+  }, [virtualItems, filteredIndices, loadMoreRows, isRowLoaded]);
 
   return (
-    <ScrollArea viewportRef={parentRef} h="100%">
-      <Box
-        style={{
-          height: rowVirtualizer.getTotalSize(),
-          width: "100%",
-          position: "relative",
-        }}
-      >
-        {rowVirtualizer.getVirtualItems().map((virtualRow) => (
-          <GameRow
-            key={virtualRow.index}
-            index={virtualRow.index}
-            game={games.get(virtualRow.index)}
-            setGames={setGames}
-            setPage={setPage}
-            deleteGame={deleteGame}
-            activePage={activePage}
-            path={path}
-            total={total}
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: virtualRow.size,
-              transform: `translateY(${virtualRow.start}px)`,
-            }}
+    <Stack gap="xs" h="100%">
+      {total > 10 && (
+        <Group gap="xs" px="xs">
+          <TextInput
+            placeholder={t("common.search")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.currentTarget.value)}
+            leftSection={<IconSearch size={16} />}
+            rightSection={
+              searchQuery && (
+                <ActionIcon size="xs" variant="transparent" onClick={() => setSearchQuery("")}>
+                  <IconX size={14} />
+                </ActionIcon>
+              )
+            }
+            flex={1}
+            size="xs"
           />
-        ))}
-      </Box>
-    </ScrollArea>
+          {searchQuery && (
+            <Badge size="sm" variant="light">
+              {filteredIndices.length} / {total}
+            </Badge>
+          )}
+        </Group>
+      )}
+
+      <ScrollArea viewportRef={parentRef} flex={1} h="350px" scrollbars="y">
+        <Box
+          style={{
+            height: rowVirtualizer.getTotalSize(),
+            width: "100%",
+            position: "relative",
+          }}
+        >
+          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+            const actualIndex = filteredIndices[virtualRow.index];
+            return (
+              <GameRow
+                key={actualIndex}
+                index={actualIndex}
+                game={games.get(actualIndex)}
+                setGames={setGames}
+                setPage={setPage}
+                deleteGame={deleteGame}
+                activePage={activePage}
+                path={path}
+                total={total}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: virtualRow.size,
+                  transform: `translateY(${virtualRow.start}px)`,
+                }}
+              />
+            );
+          })}
+        </Box>
+      </ScrollArea>
+    </Stack>
   );
 }
 
@@ -145,49 +199,63 @@ function GameRow({
     <Group
       style={style}
       justify="space-between"
-      pr="xl"
+      align="center"
+      pr="md"
       className={cx(classes.row, {
         [classes.active]: index === activePage,
       })}
     >
-      <Text
-        fz="sm"
-        truncate
-        maw={600}
+      <Group
+        gap="xs"
         onClick={() => {
           setPage(index);
         }}
         flex={1}
+        style={{ cursor: "pointer", minWidth: 0 }}
       >
-        {t("units.count", { count: index + 1 })}. {game}
-      </Text>
+        <Badge
+          size="sm"
+          variant={index === activePage ? "filled" : "light"}
+          color={index === activePage ? "blue" : "gray"}
+        >
+          {t("units.count", { count: index + 1 })}
+        </Badge>
+        <Text
+          fz="sm"
+          truncate
+          flex={1}
+          style={{
+            fontWeight: index === activePage ? 600 : 400,
+          }}
+        >
+          {game || "..."}
+        </Text>
+      </Group>
       {deleteGame && (
-        <Group>
-          <ActionIcon
-            onClick={() => {
-              modals.openConfirmModal({
-                title: t("features.files.game.delete.title"),
-                withCloseButton: false,
-                children: (
-                  <>
-                    <Text>{t("features.files.game.delete.desc")}</Text>
-                    <Text>{t("common.cannotUndo")}</Text>
-                  </>
-                ),
-                labels: { confirm: t("common.remove"), cancel: t("common.cancel") },
-                confirmProps: { color: "red" },
-                onConfirm: () => {
-                  deleteGame(index);
-                },
-              });
-            }}
-            variant="outline"
-            color="red"
-            size="1rem"
-          >
-            <IconX />
-          </ActionIcon>
-        </Group>
+        <ActionIcon
+          onClick={() => {
+            modals.openConfirmModal({
+              title: t("features.files.game.delete.title"),
+              withCloseButton: false,
+              children: (
+                <>
+                  <Text>{t("features.files.game.delete.desc")}</Text>
+                  <Text>{t("common.cannotUndo")}</Text>
+                </>
+              ),
+              labels: { confirm: t("common.remove"), cancel: t("common.cancel") },
+              confirmProps: { color: "red" },
+              onConfirm: () => {
+                deleteGame(index);
+              },
+            });
+          }}
+          variant="subtle"
+          color="red"
+          size="sm"
+        >
+          <IconX size={16} />
+        </ActionIcon>
       )}
     </Group>
   );

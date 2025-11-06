@@ -22,7 +22,7 @@ import { useTranslation } from "react-i18next";
 import { formatDate } from "ts-fsrs";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/TreeStateContext";
-import { buildFromTree, getCardForReview, getStats, updateCardPerformance } from "@/features/files/components/opening";
+import { buildFromTree, getCardForReview, getStats, updateCardPerformance } from "@/features/files/utils/opening";
 import {
   currentInvisibleAtom,
   currentPracticeTabAtom,

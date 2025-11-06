@@ -29,12 +29,12 @@ import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import { query_games } from "@/utils/db";
 import { formatDateToPGN, parseDate } from "@/utils/format";
 import { createTab } from "@/utils/tabs";
-import { DatabaseViewStateContext } from "./DatabaseViewStateContext";
-import GameCard from "./GameCard";
+import { DatabaseViewStateContext } from "../DatabaseViewStateContext";
+import GameCard from "../drawers/GameCard";
+import { PlayerSearchInput } from "../PlayerSearchInput";
+import { SideInput } from "../SideInput";
+import * as classes from "../styles.css";
 import GridLayout from "./GridLayout";
-import { PlayerSearchInput } from "./PlayerSearchInput";
-import { SideInput } from "./SideInput";
-import * as classes from "./styles.css";
 
 function GameTable() {
   const store = useContext(DatabaseViewStateContext);

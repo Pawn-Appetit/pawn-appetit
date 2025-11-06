@@ -16,7 +16,7 @@ import type { DatabaseViewStore } from "@/state/store/database";
 import { getTournamentGames } from "@/utils/db";
 import { parseDate } from "@/utils/format";
 import { createTab } from "@/utils/tabs";
-import { DatabaseViewStateContext } from "./DatabaseViewStateContext";
+import { DatabaseViewStateContext } from "../DatabaseViewStateContext";
 
 const gamePoints = (game: NormalizedGame, player: string) => {
   if (game.white === player) {

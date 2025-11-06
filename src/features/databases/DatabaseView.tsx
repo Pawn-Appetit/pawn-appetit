@@ -2,11 +2,11 @@ import { ActionIcon, Box, Group, Stack, Tabs, Title } from "@mantine/core";
 import { IconArrowBackUp, IconChess, IconTrophy, IconUser } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import GameTable from "@/features/databases/components/GameTable";
-import PlayerTable from "@/features/databases/components/PlayerTable";
+import GameTable from "@/features/databases/components/views/GameTable";
+import PlayerTable from "@/features/databases/components/views/PlayerTable";
 import { activeDatabaseViewStore, type DatabaseViewStore, useActiveDatabaseViewStore } from "@/state/store/database";
 import { DatabaseViewStateContext } from "./components/DatabaseViewStateContext";
-import TournamentTable from "./components/TournamentTable";
+import TournamentTable from "./components/views/TournamentTable";
 
 function DatabaseView() {
   const database = useActiveDatabaseViewStore((s) => s.database);

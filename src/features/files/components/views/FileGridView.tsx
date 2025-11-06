@@ -1,5 +1,5 @@
 import { Badge, Box, Group, SimpleGrid, Stack, Text } from "@mantine/core";
-import { IconTarget } from "@tabler/icons-react";
+import { IconBook, IconChess, IconFileText, IconTarget, IconTrophy } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import Fuse from "fuse.js";
 import { useAtom, useSetAtom } from "jotai";
@@ -8,15 +8,31 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { commands } from "@/bindings";
 import GenericCard from "@/components/GenericCard";
+import * as classes from "@/components/GenericCard/styles.css";
+import type { Directory, FileMetadata } from "@/features/files/utils/file";
+import { FILE_TYPE_LABELS } from "@/features/files/utils/file";
+import { getStats } from "@/features/files/utils/opening";
 import { activeTabAtom, deckAtomFamily, tabsAtom } from "@/state/atoms";
 import { createTab } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
-import type { Directory, FileMetadata } from "./file";
-import { FILE_TYPE_LABELS } from "./file";
-import { getStats } from "./opening";
 
 function flattenFiles(files: (FileMetadata | Directory)[]): FileMetadata[] {
   return files.flatMap((f) => (f.type === "directory" ? flattenFiles(f.children) : [f]));
+}
+
+function getFileTypeIcon(fileType: string) {
+  switch (fileType) {
+    case "repertoire":
+      return <IconBook size="1.5rem" />;
+    case "game":
+      return <IconChess size="1.5rem" />;
+    case "tournament":
+      return <IconTrophy size="1.5rem" />;
+    case "puzzle":
+      return <IconTarget size="1.5rem" />;
+    default:
+      return <IconFileText size="1.5rem" />;
+  }
 }
 
 export default function FileGridView({
@@ -57,7 +73,6 @@ export default function FileGridView({
     filteredFiles = filteredFiles.filter((f) => f.metadata.type === filter);
   }
 
-  // Sort by last modified by default
   filteredFiles = [...filteredFiles].sort((a, b) => b.lastModified - a.lastModified);
 
   if (isLoading) {
@@ -124,35 +139,32 @@ function FileCard({
   };
 
   const content: ReactNode = (
-    <Stack gap="xs">
-      <Group gap="xs" wrap="nowrap" justify="space-between">
-        <Text fw="bold" lineClamp={1} size="md">
-          {file.name}
-        </Text>
-        {file.metadata.type === "repertoire" && <DuePositions file={file.path} />}
-      </Group>
-
-      <Badge size="xs" variant="light" style={{ alignSelf: "flex-start" }}>
-        {t(FILE_TYPE_LABELS[file.metadata.type])}
-      </Badge>
-
-      <Stack gap="xs">
-        <Group justify="space-between">
-          <Text size="sm" c="dimmed">
-            {t("common.games.other", { count: file.numGames })}
+    <Group wrap="nowrap" miw={0} gap="sm" align="start">
+      <Box mt="xs">{getFileTypeIcon(file.metadata.type)}</Box>
+      <Box miw={0}>
+        <Stack gap="xs">
+          <Text fw={600} size="md" lineClamp={1}>
+            {file.name}
           </Text>
-          <Text size="sm" fw="bold">
-            {file.numGames}
+          <Group gap="xs">
+            <Badge size="xs" variant="light">
+              {t(FILE_TYPE_LABELS[file.metadata.type])}
+            </Badge>
+            <Badge size="xs" variant="filled" color="blue">
+              {file.numGames === 1 && t("common.games.one", { count: file.numGames || 0 })}
+              {file.numGames > 1 && t("common.games.other", { count: file.numGames || 0 })}
+            </Badge>
+            {file.metadata.type === "repertoire" && <DuePositions file={file.path} />}
+          </Group>
+          <Text size="xs" c="dimmed">
+            {t("formatters.dateTimeFormat", {
+              date: new Date(file.lastModified * 1000),
+              interpolation: { escapeValue: false },
+            })}
           </Text>
-        </Group>
-        <Text size="xs" c="dimmed">
-          {t("formatters.dateTimeFormat", {
-            date: new Date(file.lastModified * 1000),
-            interpolation: { escapeValue: false },
-          })}
-        </Text>
-      </Stack>
-    </Stack>
+        </Stack>
+      </Box>
+    </Group>
   );
 
   return (

@@ -4,12 +4,11 @@ import { z } from "zod";
 import { commands } from "@/bindings";
 import { unwrap } from "@/utils/unwrap";
 
-const fileTypeSchema = z.enum(["all", "repertoire", "game", "tournament", "puzzle", "other"]);
+const fileTypeSchema = z.enum(["repertoire", "game", "tournament", "puzzle", "other"]);
 
 export type FileType = z.infer<typeof fileTypeSchema>;
 
 export const FILE_TYPE_LABELS: Record<FileType, string> = {
-  all: "features.files.fileType.all",
   game: "features.files.fileType.game",
   repertoire: "features.files.fileType.repertoire",
   tournament: "features.files.fileType.tournament",

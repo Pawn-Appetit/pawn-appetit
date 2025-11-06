@@ -11,7 +11,7 @@ import { z } from "zod";
 import type { BestMoves, GoMode } from "@/bindings";
 import type { LocalOptions } from "@/components/panels/database/DatabasePanel";
 import type { OpponentSettings } from "@/features/boards/components/BoardGame";
-import { type Position, positionSchema } from "@/features/files/components/opening";
+import { type Position, positionSchema } from "@/features/files/utils/opening";
 import { positionFromFen, swapMove } from "@/utils/chessops";
 import type { SuccessDatabaseInfo } from "@/utils/db";
 import { type Engine, type EngineSettings, engineSchema } from "@/utils/engines";

@@ -1,25 +1,27 @@
-import { Accordion, Alert, Paper, ScrollArea, Stack } from "@mantine/core";
-import { useAtom, useAtomValue } from "jotai";
+import { Alert, ScrollArea, SimpleGrid, Stack, Text } from "@mantine/core";
+import { IconMoodEmpty } from "@tabler/icons-react";
+import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 import type { DatabaseInfo } from "@/bindings";
-import { AccountCard } from "@/features/accounts/components/AccountCard";
+import type { SortState } from "@/components/GenericHeader";
 import { sessionsAtom } from "@/state/atoms";
 import { getChessComAccount, getStats } from "@/utils/chess.com/api";
 import { getLichessAccount } from "@/utils/lichess/api";
 import type { Session } from "@/utils/session";
+import { AccountCard } from "../AccountCard";
 
 function AccountCards({
   databases,
   setDatabases,
   query = "",
-  sortBy = "name",
+  sortBy = { field: "name", direction: "asc" },
 }: {
   databases: DatabaseInfo[];
   setDatabases: React.Dispatch<React.SetStateAction<DatabaseInfo[]>>;
   query?: string;
-  sortBy?: "name" | "elo";
+  sortBy?: SortState;
 }) {
-  const sessions = useAtomValue(sessionsAtom);
+  const [sessions, setSessions] = useAtom(sessionsAtom);
   const playerNames = Array.from(
     new Set(
       sessions
@@ -67,10 +69,15 @@ function AccountCards({
       return name.toLowerCase().includes(q) || usernames.includes(q);
     })
     .sort((a, b) => {
-      if (sortBy === "name") return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
-      const ra = bestRatingForPlayer(a.sessions);
-      const rb = bestRatingForPlayer(b.sessions);
-      return rb - ra;
+      let comparison = 0;
+      if (sortBy.field === "name") {
+        comparison = a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+      } else if (sortBy.field === "elo") {
+        const ra = bestRatingForPlayer(a.sessions);
+        const rb = bestRatingForPlayer(b.sessions);
+        comparison = ra - rb;
+      }
+      return sortBy.direction === "asc" ? comparison : -comparison;
     });
 
   const [mainAccount, setMainAccount] = useState<string | null>(null);
@@ -88,66 +95,35 @@ function AccountCards({
 
   return (
     <ScrollArea offsetScrollbars>
-      <Stack>
-        {filteredAndSorted.length === 0 ? (
-          <Alert title="No accounts found" color="gray" variant="light">
-            Try adjusting your search or add a new account.
+      {filteredAndSorted.length === 0 ? (
+        <Stack align="center" justify="center" py="xl" gap="md">
+          <IconMoodEmpty size={48} stroke={1.5} style={{ opacity: 0.5 }} />
+          <Alert variant="light" color="gray" title="No accounts found" radius="md">
+            <Text size="sm">Try adjusting your search or add a new account to get started.</Text>
           </Alert>
-        ) : (
-          filteredAndSorted.map(({ name, sessions }) => (
-            <PlayerSession
-              key={name}
-              name={name}
-              sessions={sessions}
-              databases={databases}
-              setDatabases={setDatabases}
-              isMain={mainAccount === name}
-              setMain={() => setMainAccount(name)}
-            />
-          ))
-        )}
-      </Stack>
+        </Stack>
+      ) : (
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }} spacing="md" verticalSpacing="md">
+          {filteredAndSorted.map(({ name, sessions }) =>
+            sessions.map((session, i) => (
+              <LichessOrChessCom
+                key={
+                  session.lichess?.account.id ??
+                  (session.chessCom ? `chesscom:${session.chessCom.username}` : `session:${i}`)
+                }
+                name={name}
+                session={session}
+                databases={databases}
+                setDatabases={setDatabases}
+                setSessions={setSessions}
+                isMain={mainAccount === name}
+                setMain={() => setMainAccount(name)}
+              />
+            )),
+          )}
+        </SimpleGrid>
+      )}
     </ScrollArea>
-  );
-}
-
-function PlayerSession({
-  name,
-  sessions,
-  databases,
-  setDatabases,
-  isMain,
-  setMain,
-}: {
-  name: string;
-  sessions: Session[];
-  databases: DatabaseInfo[];
-  setDatabases: React.Dispatch<React.SetStateAction<DatabaseInfo[]>>;
-  isMain?: boolean;
-  setMain?: () => void;
-}) {
-  const [, setSessions] = useAtom(sessionsAtom);
-
-  return (
-    <Paper withBorder>
-      <Accordion multiple chevronSize={14} chevronPosition="left">
-        {sessions.map((session, i) => (
-          <LichessOrChessCom
-            key={
-              session.lichess?.account.id ??
-              (session.chessCom ? `chesscom:${session.chessCom.username}` : `session:${i}`)
-            }
-            name={name}
-            session={session}
-            databases={databases}
-            setDatabases={setDatabases}
-            setSessions={setSessions}
-            isMain={isMain}
-            setMain={setMain}
-          />
-        ))}
-      </Accordion>
-    </Paper>
   );
 }
 
@@ -184,6 +160,12 @@ function LichessOrChessCom({
             value: perf.rating,
             label: speed,
             diff: perf.prog,
+          });
+        } else {
+          stats.push({
+            value: 0,
+            label: speed,
+            diff: 0,
           });
         }
       }

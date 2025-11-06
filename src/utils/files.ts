@@ -5,7 +5,7 @@ import { exists, mkdir, writeTextFile } from "@tauri-apps/plugin-fs";
 import { platform } from "@tauri-apps/plugin-os";
 import { defaultGame, makePgn } from "chessops/pgn";
 import { commands } from "@/bindings";
-import type { FileMetadata } from "@/features/files/components/file";
+import type { FileMetadata } from "@/features/files/utils/file";
 import { unwrap } from "@/utils/unwrap";
 import { parsePGN } from "./chess";
 import { createTab, type Tab } from "./tabs";

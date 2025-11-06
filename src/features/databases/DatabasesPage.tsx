@@ -3,7 +3,6 @@ import {
   Badge,
   Box,
   Button,
-  Center,
   Chip,
   Divider,
   Drawer,
@@ -11,7 +10,6 @@ import {
   Loader,
   Paper,
   ScrollArea,
-  SegmentedControl,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -19,22 +17,11 @@ import {
   Text,
   Textarea,
   TextInput,
-  Title,
   Tooltip,
 } from "@mantine/core";
 import { useDebouncedValue, useToggle } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
-import {
-  IconArrowRight,
-  IconArrowsSort,
-  IconDatabase,
-  IconGrid3x3,
-  IconList,
-  IconPlus,
-  IconPuzzle,
-  IconSearch,
-  IconStar,
-} from "@tabler/icons-react";
+import { IconArrowRight, IconDatabase, IconPlus, IconPuzzle, IconStar } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { listen } from "@tauri-apps/api/event";
@@ -47,16 +34,16 @@ import { useTranslation } from "react-i18next";
 import type { DatabaseInfo, PuzzleDatabaseInfo } from "@/bindings";
 import { commands } from "@/bindings";
 import GenericCard from "@/components/GenericCard";
-import * as classes from "@/components/GenericCard.css";
-import OpenFolderButton from "@/components/OpenFolderButton";
-import { processEntriesRecursively } from "@/features/files/components/file";
+import * as classes from "@/components/GenericCard/styles.css";
+import GenericHeader, { type SortState } from "@/components/GenericHeader";
+import { processEntriesRecursively } from "@/features/files/utils/file";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { referenceDbAtom } from "@/state/atoms";
 import { useActiveDatabaseViewStore } from "@/state/store/database";
 import { getDatabases, type SuccessDatabaseInfo } from "@/utils/db";
 import { getPuzzleDatabases } from "@/utils/puzzles";
 import { unwrap } from "@/utils/unwrap";
-import AddDatabase from "./components/AddDatabase";
+import AddDatabase from "./components/modals/AddDatabase";
 import { PlayerSearchInput } from "./components/PlayerSearchInput";
 
 type Progress = {
@@ -103,7 +90,6 @@ function isPuzzleDatabase(db: UnifiedDatabase): db is UnifiedDatabase & {
 type DatabaseCategory = "all" | "games" | "puzzles";
 
 const CATEGORY_OPTIONS = [
-  { labelKey: "common.all", value: "all" as const },
   { labelKey: "features.databases.category.games", value: "games" as const },
   { labelKey: "features.databases.category.puzzles", value: "puzzles" as const },
 ] as const;
@@ -136,7 +122,7 @@ export default function DatabasesPage() {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [sortBy, setSortBy] = useState<"name" | "games">("name");
+  const [sortBy, setSortBy] = useState<SortState>({ field: "name", direction: "asc" });
   const [category, setCategory] = useState<DatabaseCategory>("all");
   const [convertLoading, setConvertLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
@@ -219,14 +205,6 @@ export default function DatabasesPage() {
     return filterAndSortDatabases(unifiedDatabases, category, query, sortBy, t);
   }, [unifiedDatabases, category, query, sortBy, t]);
 
-  const handleCategoryChange = useCallback((newCategory: DatabaseCategory) => {
-    setCategory(newCategory);
-  }, []);
-
-  const handleSortToggle = useCallback(() => {
-    setSortBy((current) => (current === "name" ? "games" : "name"));
-  }, []);
-
   const handleDatabaseDoubleClick = useCallback(
     (database: UnifiedDatabase) => {
       if (!isSuccessDatabase(database) || isPuzzleDatabase(database)) return;
@@ -255,20 +233,63 @@ export default function DatabasesPage() {
     }
   }, [files]);
 
+  const sortOptions = [
+    { value: "name", label: t("common.name", "Name") },
+    { value: "games", label: t("features.databases.card.games", "Games") },
+  ];
+
   return (
     <>
-      <Header />
+      <GenericHeader
+        title={t("features.databases.title")}
+        folder="db"
+        searchPlaceholder="Search databases"
+        query={query}
+        setQuery={setQuery}
+        sortOptions={sortOptions}
+        currentSort={sortBy}
+        onSortChange={setSortBy}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        pageKey="databases"
+        filters={
+          <>
+            <Group>
+              {CATEGORY_OPTIONS.map((option) => (
+                <Chip
+                  key={option.value}
+                  variant="outline"
+                  onChange={() => {
+                    setCategory(option.value === category ? "all" : option.value);
+                  }}
+                  checked={option.value === category}
+                >
+                  {t(option.labelKey)}
+                </Chip>
+              ))}
+            </Group>
+
+            {progress && convertLoading && (
+              <Group align="center" justify="space-between" maw={200}>
+                <Text fz="xs">{progress.total} games</Text>
+                <Text fz="xs">{(progress.total / progress.elapsed).toFixed(1)} games/s</Text>
+              </Group>
+            )}
+          </>
+        }
+        actions={
+          <Button
+            onClick={() => setOpen(true)}
+            loading={convertLoading}
+            size="xs"
+            leftSection={<IconPlus size="1rem" />}
+          >
+            {t("common.addNew")}
+          </Button>
+        }
+      />
       <Box px="md" pb="md">
         <DatabaseList
-          query={query}
-          onQueryChange={setQuery}
-          sortBy={sortBy}
-          onSortToggle={handleSortToggle}
-          category={category}
-          onCategoryChange={handleCategoryChange}
-          onAddNew={() => setOpen(true)}
-          convertLoading={convertLoading}
-          progress={progress}
           isLoading={isLoading}
           databases={filteredDatabases}
           selectedDatabase={selectedDatabase}
@@ -276,7 +297,6 @@ export default function DatabasesPage() {
           onDatabaseDoubleClick={handleDatabaseDoubleClick}
           referenceDatabase={referenceDatabase}
           viewMode={viewMode}
-          onViewModeChange={setViewMode}
         />
         <Drawer
           opened={selectedDatabase !== null}
@@ -316,27 +336,7 @@ export default function DatabasesPage() {
   );
 }
 
-function Header() {
-  const { t } = useTranslation();
-
-  return (
-    <Group align="center" p="md">
-      <Title>{t("features.databases.title")}</Title>
-      <OpenFolderButton base="AppDir" folder="db" />
-    </Group>
-  );
-}
-
 interface DatabaseListProps {
-  query: string;
-  onQueryChange: (query: string) => void;
-  sortBy: "name" | "games";
-  onSortToggle: () => void;
-  category: DatabaseCategory;
-  onCategoryChange: (category: DatabaseCategory) => void;
-  onAddNew: () => void;
-  convertLoading: boolean;
-  progress: Progress | null;
   isLoading: boolean;
   databases: UnifiedDatabase[];
   selectedDatabase: UnifiedDatabase | null;
@@ -344,19 +344,9 @@ interface DatabaseListProps {
   onDatabaseDoubleClick: (database: UnifiedDatabase) => void;
   referenceDatabase: string | null;
   viewMode: "grid" | "table";
-  onViewModeChange: (mode: "grid" | "table") => void;
 }
 
 function DatabaseList({
-  query,
-  onQueryChange,
-  sortBy,
-  onSortToggle,
-  category,
-  onCategoryChange,
-  onAddNew,
-  convertLoading,
-  progress,
   isLoading,
   databases,
   selectedDatabase,
@@ -364,24 +354,9 @@ function DatabaseList({
   onDatabaseDoubleClick,
   referenceDatabase,
   viewMode,
-  onViewModeChange,
 }: DatabaseListProps) {
   return (
     <Stack>
-      <DatabaseControls
-        query={query}
-        onQueryChange={onQueryChange}
-        sortBy={sortBy}
-        onSortToggle={onSortToggle}
-        category={category}
-        onCategoryChange={onCategoryChange}
-        onAddNew={onAddNew}
-        convertLoading={convertLoading}
-        progress={progress}
-        viewMode={viewMode}
-        onViewModeChange={onViewModeChange}
-      />
-
       <ScrollArea h="calc(100vh - 240px)" offsetScrollbars aria-busy={isLoading} aria-live="polite">
         {viewMode === "grid" ? (
           <DatabaseGrid
@@ -403,110 +378,6 @@ function DatabaseList({
           />
         )}
       </ScrollArea>
-    </Stack>
-  );
-}
-
-interface DatabaseControlsProps {
-  query: string;
-  onQueryChange: (query: string) => void;
-  sortBy: "name" | "games";
-  onSortToggle: () => void;
-  category: DatabaseCategory;
-  onCategoryChange: (category: DatabaseCategory) => void;
-  onAddNew: () => void;
-  convertLoading: boolean;
-  progress: Progress | null;
-  viewMode: "grid" | "table";
-  onViewModeChange: (mode: "grid" | "table") => void;
-}
-
-function DatabaseControls({
-  query,
-  onQueryChange,
-  sortBy,
-  onSortToggle,
-  category,
-  onCategoryChange,
-  onAddNew,
-  convertLoading,
-  progress,
-  viewMode,
-  onViewModeChange,
-}: DatabaseControlsProps) {
-  const { t } = useTranslation();
-
-  const sortLabel = sortBy === "name" ? "Name" : category === "puzzles" ? "Puzzles" : "Games";
-
-  return (
-    <Stack>
-      <Group wrap="wrap" gap="xs" justify="space-between">
-        <Group>
-          <TextInput
-            aria-label="Search databases"
-            placeholder="Search databases..."
-            leftSection={<IconSearch size="1rem" />}
-            value={query}
-            onChange={(e) => onQueryChange(e.currentTarget.value)}
-            w={{ base: "100%", sm: 260 }}
-          />
-          <Button
-            variant="default"
-            leftSection={<IconArrowsSort size="1rem" />}
-            onClick={onSortToggle}
-            aria-label={`Sort by ${sortBy === "name" ? "games" : "name"}`}
-          >
-            Sort: {sortLabel}
-          </Button>
-          <SegmentedControl
-            value={viewMode}
-            onChange={(v) => onViewModeChange(v as "grid" | "table")}
-            data={[
-              {
-                value: "grid",
-                label: (
-                  <Center style={{ gap: 10 }}>
-                    <IconGrid3x3 size="1rem" />
-                    <span>Grid</span>
-                  </Center>
-                ),
-              },
-              {
-                value: "table",
-                label: (
-                  <Center style={{ gap: 10 }}>
-                    <IconList size="1rem" />
-                    <span>Table</span>
-                  </Center>
-                ),
-              },
-            ]}
-          />
-        </Group>
-        <Button onClick={onAddNew} loading={convertLoading} size="xs" leftSection={<IconPlus size="1rem" />} mr="sm">
-          {t("common.addNew")}
-        </Button>
-      </Group>
-
-      <Group>
-        {CATEGORY_OPTIONS.map((option) => (
-          <Chip
-            key={option.value}
-            variant="outline"
-            onChange={() => onCategoryChange(option.value)}
-            checked={option.value === category}
-          >
-            {t(option.labelKey)}
-          </Chip>
-        ))}
-      </Group>
-
-      {progress && convertLoading && (
-        <Group align="center" justify="space-between" maw={200}>
-          <Text fz="xs">{progress.total} games</Text>
-          <Text fz="xs">{(progress.total / progress.elapsed).toFixed(1)} games/s</Text>
-        </Group>
-      )}
     </Stack>
   );
 }
@@ -1219,7 +1090,7 @@ function filterAndSortDatabases(
   databases: UnifiedDatabase[],
   category: DatabaseCategory,
   query: string,
-  sortBy: "name" | "games",
+  sortBy: SortState,
   // biome-ignore lint/suspicious/noExplicitAny: Translation function type
   _t: any,
 ): UnifiedDatabase[] {
@@ -1246,14 +1117,19 @@ function filterAndSortDatabases(
   }
 
   return filtered.sort((a, b) => {
-    if (sortBy === "name") {
+    let comparison = 0;
+
+    if (sortBy.field === "name") {
       const an = isSuccessDatabase(a) ? a.title.toLowerCase() : a.file.toLowerCase();
       const bn = isSuccessDatabase(b) ? b.title.toLowerCase() : b.file.toLowerCase();
-      return an.localeCompare(bn);
+      comparison = an.localeCompare(bn);
+    } else if (sortBy.field === "games") {
+      const ag = isSuccessDatabase(a) ? a.game_count : -1;
+      const bg = isSuccessDatabase(b) ? b.game_count : -1;
+      comparison = ag - bg;
     }
-    const ag = isSuccessDatabase(a) ? a.game_count : -1;
-    const bg = isSuccessDatabase(b) ? b.game_count : -1;
-    return bg - ag;
+
+    return sortBy.direction === "asc" ? comparison : -comparison;
   });
 }
 

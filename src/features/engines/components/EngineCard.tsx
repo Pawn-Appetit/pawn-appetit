@@ -3,7 +3,7 @@ import { IconCloud, IconCpu } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { memo } from "react";
 import { commands } from "@/bindings";
-import * as classes from "@/components/GenericCard.css";
+import * as classes from "@/components/GenericCard/styles.css";
 import LocalImage from "@/components/LocalImage";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import type { Engine } from "@/utils/engines";

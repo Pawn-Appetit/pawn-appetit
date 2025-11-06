@@ -1,7 +1,7 @@
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { loadDirectories } from "@/App";
 import { commands, type PuzzleDatabaseInfo } from "@/bindings";
-import type { FileInfoMetadata, FileMetadata } from "@/features/files/components/file";
+import type { FileInfoMetadata, FileMetadata } from "@/features/files/utils/file";
 import { logger } from "./logger";
 import { unwrap } from "./unwrap";
 
@@ -57,7 +57,7 @@ async function getDatabasesFromDatabasesSection(): Promise<PuzzleDatabaseInfo[]>
 async function getFilesFromFilesSection(): Promise<PuzzleDatabaseInfo[]> {
   const { readDir } = await import("@tauri-apps/plugin-fs");
   const { BaseDirectory } = await import("@tauri-apps/plugin-fs");
-  const { processEntriesRecursively } = await import("@/features/files/components/file");
+  const { processEntriesRecursively } = await import("@/features/files/utils/file");
 
   let localPuzzles: PuzzleDatabaseInfo[] = [];
 

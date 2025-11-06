@@ -64,24 +64,24 @@ function GamePreview({
       {showOpening && <OpeningName />}
       {!layout.gameNotationUnderBoard ? (
         <Group align="start" grow style={{ overflow: "hidden", height: "100%" }}>
-          <Stack ref={boardRef} style={boardStyle} gap="xs">
+          <Stack ref={boardRef} style={boardStyle} gap="xs" flex={1}>
             <PreviewBoard />
             <MoveControls readOnly />
           </Stack>
           {!hideControls && (
-            <Stack style={{ height }} gap="xs">
+            <Stack style={{ height }} gap="xs" flex={1}>
               <GameNotation />
             </Stack>
           )}
         </Group>
       ) : (
         <Stack style={{ overflow: "hidden", height: "100%" }}>
-          <Stack ref={boardRef} style={boardStyle} gap="xs">
+          <Stack ref={boardRef} style={boardStyle} gap="xs" flex={1}>
             <PreviewBoard />
             <MoveControls readOnly />
           </Stack>
           {!hideControls && (
-            <Stack gap="xs">
+            <Stack gap="xs" flex={1}>
               <GameNotation />
             </Stack>
           )}

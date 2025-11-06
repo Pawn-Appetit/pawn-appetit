@@ -1,25 +1,18 @@
-import { Button, Center, Chip, Drawer, Group, Input, SegmentedControl, Stack, Text, Title } from "@mantine/core";
+import { Button, Center, Chip, Drawer, Stack, Text } from "@mantine/core";
 import { useToggle } from "@mantine/hooks";
-import { modals } from "@mantine/modals";
-import { IconGridDots, IconList, IconPlus, IconSearch, IconX } from "@tabler/icons-react";
+import { IconPlus } from "@tabler/icons-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLoaderData } from "@tanstack/react-router";
-import { readDir, remove } from "@tauri-apps/plugin-fs";
+import { readDir } from "@tauri-apps/plugin-fs";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import OpenFolderButton from "@/components/OpenFolderButton";
+import GenericHeader, { type SortState } from "@/components/GenericHeader";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
-import DirectoryTable from "./components/DirectoryTable";
-import FileCard from "./components/FileCard";
-import FileGridView from "./components/FileGridView";
-import {
-  type Directory,
-  FILE_TYPES,
-  type FileMetadata,
-  type FileType,
-  processEntriesRecursively,
-} from "./components/file";
-import { CreateModal, EditModal } from "./components/Modals";
+import FileCard from "./components/drawers/FileCard";
+import { CreateModal, EditModal } from "./components/modals/Modals";
+import DirectoryTable from "./components/views/DirectoryTable";
+import FileGridView from "./components/views/FileGridView";
+import { type Directory, FILE_TYPES, type FileMetadata, type FileType, processEntriesRecursively } from "./utils/file";
 
 const useFileDirectory = (dir: string) => {
   const { data, error, isLoading, refetch } = useQuery({
@@ -63,8 +56,9 @@ function FilesPage() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<FileMetadata | null>(null);
   const [games, setGames] = useState<Map<number, string>>(new Map());
-  const [filter, setFilter] = useState<FileType>("all");
+  const [filter, setFilter] = useState<FileType | "all">("all");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [sortBy, setSortBy] = useState<SortState>({ field: "name", direction: "asc" });
 
   const [createModal, toggleCreateModal] = useToggle();
   const [editModal, toggleEditModal] = useToggle();
@@ -73,105 +67,46 @@ function FilesPage() {
     setGames(new Map());
   }, []);
 
+  const sortOptions = [
+    { value: "name", label: t("common.name", "Name") },
+    { value: "games", label: t("features.databases.card.games", "Games") },
+  ];
+
   return (
     <>
-      <Group align="baseline" p="md">
-        <Title>{t("features.files.title")}</Title>
-        <OpenFolderButton folder={documentDir} />
-      </Group>
-
+      <GenericHeader
+        title={t("features.files.title")}
+        folder={documentDir}
+        searchPlaceholder={t("features.files.search")}
+        query={search}
+        setQuery={setSearch}
+        sortOptions={sortOptions}
+        currentSort={sortBy}
+        onSortChange={setSortBy}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        pageKey="files"
+        filters={FILE_TYPES.map((item) => (
+          <Chip
+            variant="outline"
+            key={item.value}
+            onChange={(v) => setFilter((filter) => (v ? item.value : filter === item.value ? "all" : filter))}
+            checked={filter === item.value}
+          >
+            {t(item.labelKey)}
+          </Chip>
+        ))}
+        actions={
+          <Button
+            size={isMobile ? "sm" : "xs"}
+            leftSection={<IconPlus size="1rem" />}
+            onClick={() => toggleCreateModal()}
+          >
+            {t("common.create")}
+          </Button>
+        }
+      />
       <Stack px="md" pb="md">
-        <Group wrap="wrap" gap="xs" justify="space-between">
-          <Group wrap={isMobile ? "wrap" : "nowrap"}>
-            <Input
-              leftSection={<IconSearch size="1rem" />}
-              placeholder={t("features.files.search")}
-              value={search}
-              onChange={(e) => setSearch(e.currentTarget.value)}
-              w={{ base: "100%", sm: 260 }}
-            />
-            <SegmentedControl
-              value={viewMode}
-              onChange={(v) => setViewMode(v as "grid" | "table")}
-              data={[
-                {
-                  value: "grid",
-                  label: (
-                    <Center style={{ gap: 10 }}>
-                      <IconGridDots size="1rem" />
-                      <span>{t("common.grid")}</span>
-                    </Center>
-                  ),
-                },
-                {
-                  value: "table",
-                  label: (
-                    <Center style={{ gap: 10 }}>
-                      <IconList size="1rem" />
-                      <span>{t("common.table")}</span>
-                    </Center>
-                  ),
-                },
-              ]}
-            />
-          </Group>
-          <Group wrap={isMobile ? "wrap" : "nowrap"}>
-            <Button
-              size={isMobile ? "sm" : "xs"}
-              leftSection={<IconPlus size="1rem" />}
-              onClick={() => toggleCreateModal()}
-            >
-              {t("common.create")}
-            </Button>
-            <Button
-              size={isMobile ? "sm" : "xs"}
-              color="red"
-              disabled={!selected}
-              leftSection={<IconX size="1rem" />}
-              onClick={() => {
-                modals.openConfirmModal({
-                  title: t("features.files.delete.title"),
-                  withCloseButton: false,
-                  children: (
-                    <>
-                      <Text>
-                        {t("features.files.delete.message", {
-                          fileName: selected?.name,
-                        })}
-                      </Text>
-                      <Text>{t("common.cannotUndo")}</Text>
-                    </>
-                  ),
-                  labels: { confirm: t("common.remove"), cancel: t("common.cancel") },
-                  confirmProps: { color: "red" },
-                  onConfirm: async () => {
-                    if (selected) {
-                      await remove(selected.path);
-                      await remove(selected.path.replace(".pgn", ".info"));
-                      mutate(files?.filter((file) => file.name !== selected.name));
-                    }
-                    setSelected(null);
-                  },
-                });
-              }}
-            >
-              {t("common.delete")}
-            </Button>
-          </Group>
-        </Group>
-        <Group wrap={isMobile ? "wrap" : "nowrap"}>
-          {FILE_TYPES.map((item) => (
-            <Chip
-              variant="outline"
-              key={item.value}
-              onChange={(v) => setFilter((filter) => (v ? item.value : filter === item.value ? "all" : filter))}
-              checked={filter === item.value}
-            >
-              {t(item.labelKey)}
-            </Chip>
-          ))}
-        </Group>
-
         {viewMode === "table" ? (
           <DirectoryTable
             files={files}
@@ -204,7 +139,15 @@ function FilesPage() {
         overlayProps={{ backgroundOpacity: 0.5, blur: 4 }}
       >
         {selected ? (
-          <FileCard selected={selected} games={games} setGames={setGames} toggleEditModal={toggleEditModal} />
+          <FileCard
+            selected={selected}
+            games={games}
+            setGames={setGames}
+            toggleEditModal={toggleEditModal}
+            mutate={mutate}
+            setSelected={setSelected}
+            files={files}
+          />
         ) : (
           <Center h="100%">
             <Text>{t("features.files.noFileSelected")}</Text>

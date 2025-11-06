@@ -59,6 +59,9 @@
     "loading": "Loading...",
     "grid": "Grid",
     "table": "Table",
+    "sort": "Sort",
+    "sortDirection": "Sort Direction",
+    "view": "View",
     "continue": "Continue",
     "review": "Review",
     "noGameSelected": "No game selected",
@@ -286,7 +289,11 @@
       "downloadGames": "Download games",
       "removeAccount": "Remove account",
       "downloaded": "Downloaded",
-      "gamesCount": "{{count}} games"
+      "gamesCount": "{{count}} games",
+      "editName": "Edit name",
+      "lastUpdate": "Last update",
+      "saveChanges": "Save changes",
+      "cancelEdit": "Cancel edit"
     }
   },
   "practice": {
@@ -744,7 +751,7 @@
       "continue": "Continue"
     },
     "engines": {
-      "title": "Your Engines",
+      "title": "Engines",
       "searchPlaceholder": "Search engines...",
       "noEnginesFound": "No engines found",
       "noEnginesFoundMessage": "Try adjusting your search or add a new engine.",
@@ -780,7 +787,7 @@
       }
     },
     "databases": {
-      "title": "Your Databases",
+      "title": "Databases",
       "card": {
         "games": "Games",
         "players": "Players",

@@ -9,10 +9,10 @@ import type { Player, PlayerSort } from "@/bindings";
 import { useLanguageChangeListener } from "@/hooks/useLanguageChangeListener";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { query_players } from "@/utils/db";
-import { DatabaseViewStateContext } from "./DatabaseViewStateContext";
+import { DatabaseViewStateContext } from "../DatabaseViewStateContext";
+import PlayerCard from "../drawers/PlayerCard";
+import * as classes from "../styles.css";
 import GridLayout from "./GridLayout";
-import PlayerCard from "./PlayerCard";
-import * as classes from "./styles.css";
 
 function PlayerTable() {
   const store = useContext(DatabaseViewStateContext)!;

@@ -7,7 +7,7 @@ import { FilenameInput } from "@/features/files/components/FilenameInput";
 import { FileTypeSelector } from "@/features/files/components/FileTypeSelector";
 import { PgnSourceInput, type PgnTarget, resolvePgnTarget } from "@/features/files/components/PgnSourceInput";
 import { createFile } from "@/utils/files";
-import type { Directory, FileMetadata, FileType } from "./file";
+import type { Directory, FileMetadata, FileType } from "../../utils/file";
 
 export function CreateModal({
   opened,
@@ -33,7 +33,7 @@ export function CreateModal({
     const resolvedPgnTarget = await resolvePgnTarget(pgnTarget);
     const newFile = await createFile({
       filename,
-      filetype: filetype as Exclude<FileType, "all">,
+      filetype,
       pgn: resolvedPgnTarget.content,
       dir: documentDir,
     });

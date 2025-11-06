@@ -1,15 +1,4 @@
-import {
-  ActionIcon,
-  Badge,
-  Group,
-  Image,
-  Paper,
-  ScrollArea,
-  Stack,
-  Table,
-  Text,
-  Tooltip,
-} from "@mantine/core";
+import { ActionIcon, Badge, Group, Image, Paper, ScrollArea, Stack, Table, Text, Tooltip } from "@mantine/core";
 import {
   IconCheck,
   IconCircle,
@@ -23,21 +12,26 @@ import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { DatabaseInfo } from "@/bindings";
+import type { SortState } from "@/components/GenericHeader";
 import { sessionsAtom } from "@/state/atoms";
 import { getChessComAccount, getStats } from "@/utils/chess.com/api";
 import { capitalize, parseDate } from "@/utils/format";
 import { getLichessAccount } from "@/utils/lichess/api";
 import type { Session } from "@/utils/session";
-import LichessLogo from "./LichessLogo";
+import LichessLogo from "../LichessLogo";
 
 interface AccountsTableViewProps {
   databases: DatabaseInfo[];
   setDatabases: React.Dispatch<React.SetStateAction<DatabaseInfo[]>>;
   query?: string;
-  sortBy?: "name" | "elo";
+  sortBy?: SortState;
 }
 
-function AccountsTableView({ databases, query = "", sortBy = "name" }: AccountsTableViewProps) {
+function AccountsTableView({
+  databases,
+  query = "",
+  sortBy = { field: "name", direction: "asc" },
+}: AccountsTableViewProps) {
   const { t } = useTranslation();
   const sessions = useAtomValue(sessionsAtom);
   const [, setSessions] = useAtom(sessionsAtom);
@@ -99,10 +93,15 @@ function AccountsTableView({ databases, query = "", sortBy = "name" }: AccountsT
       return name.toLowerCase().includes(q) || usernames.includes(q);
     })
     .sort((a, b) => {
-      if (sortBy === "name") return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
-      const ra = a.sessions.map(bestRatingForSession).reduce((max, v) => (v > max ? v : max), -1);
-      const rb = b.sessions.map(bestRatingForSession).reduce((max, v) => (v > max ? v : max), -1);
-      return rb - ra;
+      let comparison = 0;
+      if (sortBy.field === "name") {
+        comparison = a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+      } else if (sortBy.field === "elo") {
+        const ra = a.sessions.map(bestRatingForSession).reduce((max, v) => (v > max ? v : max), -1);
+        const rb = b.sessions.map(bestRatingForSession).reduce((max, v) => (v > max ? v : max), -1);
+        comparison = ra - rb;
+      }
+      return sortBy.direction === "asc" ? comparison : -comparison;
     });
 
   const rows = filteredAndSorted.flatMap(({ name, sessions: playerSessions }) =>
@@ -111,7 +110,7 @@ function AccountsTableView({ databases, query = "", sortBy = "name" }: AccountsT
       const username = session.lichess?.username ?? session.chessCom?.username ?? "";
       const database = databases.find((db) => db.filename === `${username}_${type}.db3`) ?? null;
       const downloadedGames = database?.type === "success" ? database.game_count : 0;
-      
+
       let totalGames = 0;
       const stats = [];
 
@@ -286,12 +285,7 @@ function AccountsTableView({ databases, query = "", sortBy = "name" }: AccountsT
                       >
                         <IconCheck size="1rem" />
                       </ActionIcon>
-                      <ActionIcon
-                        size="xs"
-                        variant="subtle"
-                        color="red"
-                        onClick={() => setEditingAccount(null)}
-                      >
+                      <ActionIcon size="xs" variant="subtle" color="red" onClick={() => setEditingAccount(null)}>
                         <IconX size="1rem" />
                       </ActionIcon>
                     </Group>

@@ -30,7 +30,7 @@ import GoModeInput from "@/components/GoModeInput";
 import LocalImage from "@/components/LocalImage";
 import { enginesAtom } from "@/state/atoms";
 import { type LocalEngine, requiredEngineSettings } from "@/utils/engines";
-import { JSONModal } from "./JSONModal";
+import { JSONModal } from "../modals/JSONModal";
 
 interface EngineSettingsProps {
   selected: number;

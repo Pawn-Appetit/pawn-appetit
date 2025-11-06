@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type { SortState } from "@/components/GenericHeader";
 import type { Engine } from "@/utils/engines";
 
 export const createEngineSearchText = (engine: Engine): string => {
@@ -10,16 +11,19 @@ export const createEngineSearchText = (engine: Engine): string => {
   return parts.join(" ").toLowerCase();
 };
 
-export const sortEnginesByName = (a: Engine, b: Engine): number =>
-  a.name.toLowerCase().localeCompare(b.name.toLowerCase());
-
-export const sortEnginesByElo = (a: Engine, b: Engine): number => {
-  const eloA = a.type === "local" ? (a.elo ?? -1) : -1;
-  const eloB = b.type === "local" ? (b.elo ?? -1) : -1;
-  return eloB - eloA;
+export const sortEnginesByName = (a: Engine, b: Engine, direction: "asc" | "desc"): number => {
+  const comparison = a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+  return direction === "asc" ? comparison : -comparison;
 };
 
-export const useEngineFiltering = (engines: Engine[], query: string, sortBy: "name" | "elo") => {
+export const sortEnginesByElo = (a: Engine, b: Engine, direction: "asc" | "desc"): number => {
+  const eloA = a.type === "local" ? (a.elo ?? -1) : -1;
+  const eloB = b.type === "local" ? (b.elo ?? -1) : -1;
+  const comparison = eloA - eloB;
+  return direction === "asc" ? comparison : -comparison;
+};
+
+export const useEngineFiltering = (engines: Engine[], query: string, sortBy: SortState) => {
   return useMemo<number[]>(() => {
     const trimmedQuery = query.trim();
 
@@ -29,7 +33,9 @@ export const useEngineFiltering = (engines: Engine[], query: string, sortBy: "na
         .sort((a, b) => {
           const ea = engines[a];
           const eb = engines[b];
-          return sortBy === "name" ? sortEnginesByName(ea, eb) : sortEnginesByElo(ea, eb);
+          return sortBy.field === "name"
+            ? sortEnginesByName(ea, eb, sortBy.direction)
+            : sortEnginesByElo(ea, eb, sortBy.direction);
         });
 
       return result;
@@ -49,7 +55,9 @@ export const useEngineFiltering = (engines: Engine[], query: string, sortBy: "na
     const result = filteredIndices.sort((a, b) => {
       const ea = engines[a];
       const eb = engines[b];
-      return sortBy === "name" ? sortEnginesByName(ea, eb) : sortEnginesByElo(ea, eb);
+      return sortBy.field === "name"
+        ? sortEnginesByName(ea, eb, sortBy.direction)
+        : sortEnginesByElo(ea, eb, sortBy.direction);
     });
 
     return result;

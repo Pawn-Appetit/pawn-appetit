@@ -9,13 +9,13 @@ import { match } from "ts-pattern";
 import GenericCard from "@/components/GenericCard";
 import { FilenameInput } from "@/features/files/components/FilenameInput";
 import { FileTypeSelector } from "@/features/files/components/FileTypeSelector";
-import type { FileType } from "@/features/files/components/file";
 import {
   PgnSourceInput,
   type PgnTarget,
   type ResolvedPgnTarget,
   resolvePgnTarget,
 } from "@/features/files/components/PgnSourceInput";
+import type { FileType } from "@/features/files/utils/file";
 import { activeTabAtom, currentTabAtom, tabsAtom } from "@/state/atoms";
 import { parsePGN } from "@/utils/chess";
 import { getChesscomGame } from "@/utils/chess.com/api";
@@ -103,7 +103,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
         if (save) {
           const newFile = await createFile({
             filename,
-            filetype: filetype as Exclude<FileType, "all">,
+            filetype,
             pgn: resolvedTarget.content,
             dir: documentDir,
           });
@@ -174,7 +174,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
               const finalFileName = `${filename}_${baseFileName}`;
               const newFile = await createFile({
                 filename: finalFileName,
-                filetype: filetype as Exclude<FileType, "all">,
+                filetype,
                 pgn: singleFileTarget.content,
                 dir: documentDir,
               });
@@ -230,7 +230,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
       if (save) {
         const newFile = await createFile({
           filename,
-          filetype: filetype as Exclude<FileType, "all">,
+          filetype,
           pgn: resolvedTarget.content,
           dir: documentDir,
         });

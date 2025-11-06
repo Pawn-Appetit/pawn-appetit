@@ -1,6 +1,6 @@
 import { Drawer } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
-import Databases from "./Databases";
+import Databases from "../Databases";
 
 interface DatabaseDrawerProps {
   opened: boolean;

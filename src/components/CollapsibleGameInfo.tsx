@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import type { Outcome } from "@/bindings";
 import { ContentEditable } from "@/components/ContentEditable";
-import FideInfo from "@/features/databases/components/FideInfo";
+import FideInfo from "@/features/databases/components/drawers/FideInfo";
 import { formatDateToPGN, parseDate } from "@/utils/format";
 import type { GameHeaders } from "@/utils/treeReducer";
 import * as classes from "./GameInfo.css";

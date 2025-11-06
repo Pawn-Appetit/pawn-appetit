@@ -1,12 +1,13 @@
 import {
-  Accordion,
   ActionIcon,
+  Badge,
   Box,
   Card,
   Group,
   Image,
   Loader,
   Progress,
+  rem,
   SimpleGrid,
   Stack,
   Text,
@@ -39,9 +40,7 @@ import { capitalize, parseDate } from "@/utils/format";
 import { downloadLichess } from "@/utils/lichess/api";
 import type { Session } from "@/utils/session";
 import { unwrap } from "@/utils/unwrap";
-import moduleClasses from "./AccountCard.module.css";
 import LichessLogo from "./LichessLogo";
-import * as classes from "./styles.css";
 
 interface AccountCardProps {
   name: string;
@@ -84,42 +83,46 @@ export function AccountCard({
   const { layout } = useResponsiveLayout();
   const isMobile = layout.accounts.layoutType === "mobile";
   const items = stats.map((stat) => {
-    let color = "gray.5";
     let DiffIcon: React.FC<IconProps> = IconArrowRight;
+    let badgeColor: string | undefined;
+
     if (stat.diff) {
       const sign = Math.sign(stat.diff);
       if (sign === 1) {
         DiffIcon = IconArrowUpRight;
-        color = "green";
+        badgeColor = "teal";
       } else {
         DiffIcon = IconArrowDownRight;
-        color = "red";
+        badgeColor = "red";
       }
     }
+
     return (
-      <Card key={stat.label} withBorder p="xs">
-        <Group align="start" justify="space-between">
-          <Stack gap="5px">
-            <Text size="xs" c="dimmed">
+      <Card key={stat.label} withBorder p="sm" radius="md">
+        <Stack gap={rem(8)}>
+          <Group justify="space-between" align="center" wrap="nowrap">
+            <Text size="xs" c="dimmed" tt="uppercase" fw={600} lh={1}>
               {capitalize(stat.label)}
             </Text>
-            <Group gap="5px" align="baseline">
-              <Text fw="bold" fz="sm">
-                {stat.value}
-              </Text>
-              {stat.diff && (
-                <Text c={color} size="xs" fw={500} className={classes.diff}>
-                  <span>{stat.diff}</span>
-                </Text>
-              )}
-            </Group>
-          </Stack>
-          {stat.diff && (
-            <Box c={color}>
-              <DiffIcon size="1rem" stroke={1.5} />
-            </Box>
-          )}
-        </Group>
+            {stat.diff && (
+              <Badge
+                size="sm"
+                variant="light"
+                color={badgeColor}
+                leftSection={<DiffIcon style={{ width: rem(12), height: rem(12) }} />}
+                styles={{
+                  root: { paddingLeft: rem(6) },
+                  section: { marginRight: rem(4) },
+                }}
+              >
+                {Math.abs(stat.diff)}
+              </Badge>
+            )}
+          </Group>
+          <Text fw={700} size="xl" lh={1} {...(!stat.value && { c: "dimmed", size: "md" })}>
+            {stat.value || "N/A"}
+          </Text>
+        </Stack>
       </Card>
     );
   });
@@ -137,10 +140,7 @@ export function AccountCard({
     const dbPath = await resolve(
       await appDataDir(),
       "db",
-      `${filepath
-        .split(/(\\|\/)/g)
-        .pop()!
-        .replace(".pgn", ".db3")}`,
+      `${filepath.split(/(\\|\/)/g).pop() ?? "unknown"}.db3`.replace(".pgn", ".db3"),
     );
     unwrap(await commands.convertPgn(filepath, dbPath, timestamp ? timestamp / 1000 : null, filename, null));
     events.downloadProgress.emit({
@@ -180,7 +180,8 @@ export function AccountCard({
         skipCount: false,
       },
     });
-    if (games.count! > 0 && games.data[0].date && games.data[0].time) {
+    const count = games.count ?? 0;
+    if (count > 0 && games.data[0].date && games.data[0].time) {
       const [year, month, day] = games.data[0].date.split(".").map(Number);
       const [hour, minute, second] = games.data[0].time.split(":").map(Number);
       const d = Date.UTC(year, month - 1, day, hour, minute, second);
@@ -190,159 +191,232 @@ export function AccountCard({
   }
 
   return (
-    <Accordion.Item value={type + title} className={moduleClasses.accordionItem}>
-      <Group justify="space-between" wrap="nowrap" pos="relative" pr="sm" className={classes.accordion}>
-        <Group w="100%">
-          <Accordion.Control flex={1}>
-            <Group wrap="nowrap">
-              <Box>
-                {type === "lichess" ? <LichessLogo /> : <Image w="30px" h="30px" src="/chesscom.png" alt="chess.com" />}
+    <Card
+      withBorder
+      shadow="sm"
+      radius="md"
+      p="lg"
+      pos="relative"
+      style={(theme) => ({
+        transition: "box-shadow 150ms ease, transform 150ms ease",
+        "&:hover": {
+          boxShadow: theme.shadows.md,
+          transform: "translateY(-2px)",
+        },
+      })}
+    >
+      {loading && (
+        <Progress
+          pos="absolute"
+          top={0}
+          left={0}
+          w="100%"
+          value={progress || 100}
+          animated
+          size="xs"
+          radius={0}
+          styles={{
+            root: { borderTopLeftRadius: "var(--mantine-radius-md)", borderTopRightRadius: "var(--mantine-radius-md)" },
+          }}
+        />
+      )}
+
+      <Stack gap="md">
+        <Card.Section inheritPadding py="sm" withBorder>
+          <Group justify="space-between" wrap="nowrap">
+            <Group gap="sm">
+              <Box
+                style={{
+                  width: rem(40),
+                  height: rem(40),
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {type === "lichess" ? (
+                  <LichessLogo />
+                ) : (
+                  <Image w={rem(32)} h={rem(32)} src="/chesscom.png" alt="chess.com" />
+                )}
               </Box>
-              <Stack gap="5px">
+              <Stack gap={2}>
                 {edit ? (
                   <TextInput
                     variant="unstyled"
-                    fw="bold"
                     value={text}
                     onChange={(e) => setText(e.currentTarget.value)}
+                    size="md"
                     styles={{
                       input: {
-                        fontSize: "1.1rem",
-                        textDecoration: "underline",
+                        fontSize: rem(18),
+                        fontWeight: 700,
+                        padding: 0,
+                        height: "auto",
                       },
                     }}
                     autoFocus
                   />
                 ) : (
-                  <Text size="md" fw="bold">
+                  <Text size="lg" fw={700} lh={1.2}>
                     {name}
                   </Text>
                 )}
-                <Group>
-                  <Text size="xs" fw="bold" c="dimmed">
-                    {title}
-                  </Text>
-                </Group>
-                <Group wrap="nowrap">
-                  <Group gap="3px">
-                    <Text size="xs" fw="bold" c="dimmed">
-                      {total}
-                    </Text>
-                    <Text size="xs" c="dimmed">
-                      Games
-                    </Text>
-                  </Group>
-
-                  <Group gap="3px">
-                    <Tooltip label={t("accounts.accountCard.gamesCount", { count: downloadedGames })}>
-                      <Text size="xs" fw="bold" c="dimmed">
-                        {percentage === "0" ? "0" : `${percentage}%`}
-                      </Text>
-                    </Tooltip>
-                    <Text size="xs" c="dimmed">
-                      {t("accounts.accountCard.downloaded")}
-                    </Text>
-                  </Group>
-                </Group>
+                <Text size="sm" c="dimmed" fw={500} lh={1.2}>
+                  @{title}
+                </Text>
               </Stack>
             </Group>
-          </Accordion.Control>
-          <Group gap="xs" className={moduleClasses.accordionActions}>
+
             <Tooltip
               label={isMain ? t("accounts.accountCard.mainAccount") : t("accounts.accountCard.setAsMainAccount")}
+              position="left"
             >
               <ActionIcon
-                size="sm"
+                size="lg"
+                variant={isMain ? "light" : "subtle"}
+                color={isMain ? "blue" : "gray"}
                 onClick={setMain}
                 aria-label={isMain ? t("accounts.accountCard.mainAccount") : t("accounts.accountCard.setAsMainAccount")}
+                radius="xl"
               >
-                {isMain ? <IconCircleCheck /> : <IconCircle />}
-              </ActionIcon>
-            </Tooltip>
-            {edit ? (
-              <ActionIcon
-                size="sm"
-                onClick={() => {
-                  setEdit(false);
-                  setSessions((prev) =>
-                    prev.map((s) => {
-                      if (type === "lichess" && s.lichess?.username === title) {
-                        return {
-                          ...s,
-                          player: text,
-                        };
-                      } else if (type === "chesscom" && s.chessCom?.username === title) {
-                        return {
-                          ...s,
-                          player: text,
-                        };
-                      } else {
-                        return { ...s };
-                      }
-                    }),
-                  );
-                }}
-              >
-                <IconCheck />
-              </ActionIcon>
-            ) : (
-              <ActionIcon
-                size="sm"
-                onClick={() => {
-                  setEdit(true);
-                }}
-              >
-                <IconEdit />
-              </ActionIcon>
-            )}
-            <Tooltip label={t("accounts.accountCard.updateStats")}>
-              <ActionIcon onClick={() => reload()}>
-                <IconRefresh size="1rem" />
-              </ActionIcon>
-            </Tooltip>
-            <Tooltip label={t("accounts.accountCard.downloadGames")}>
-              <ActionIcon
-                disabled={loading}
-                onClick={async () => {
-                  setLoading(true);
-                  const lastGameDate = database ? await getLastGameDate({ database }) : null;
-                  if (type === "lichess") {
-                    await downloadLichess(title, lastGameDate, total - downloadedGames, setProgress, token);
-                  } else {
-                    await downloadChessCom(title, lastGameDate);
-                  }
-                  const p = await resolve(await appDataDir(), "db", `${title}_${type}.pgn`);
-                  try {
-                    await convert(p, lastGameDate);
-                  } catch (e) {
-                    console.error(e);
-                  }
-                  setLoading(false);
-                }}
-              >
-                {loading ? <Loader size="1rem" /> : <IconDownload size="1rem" />}
-              </ActionIcon>
-            </Tooltip>
-            <Tooltip label={t("accounts.accountCard.removeAccount")}>
-              <ActionIcon onClick={() => logout()}>
-                <IconX size="1rem" />
+                {isMain ? (
+                  <IconCircleCheck style={{ width: rem(20), height: rem(20) }} />
+                ) : (
+                  <IconCircle style={{ width: rem(20), height: rem(20) }} />
+                )}
               </ActionIcon>
             </Tooltip>
           </Group>
+        </Card.Section>
+
+        <SimpleGrid cols={isMobile ? 1 : 2} spacing="xs">
+          {items}
+        </SimpleGrid>
+
+        <Stack gap="xs">
+          <Group align="center" justify="space-between" wrap="nowrap">
+            <Text size="sm" fw={600}>
+              {t("accounts.accountCard.gamesCount", { count: total })}
+            </Text>
+            <Group gap={4}>
+              <Text size="sm" fw={600} c={percentage === "0" ? "dimmed" : "blue"}>
+                {percentage === "0" ? "0" : `${percentage}%`}
+              </Text>
+              <Text size="sm" c="dimmed">
+                {t("accounts.accountCard.downloaded")}
+              </Text>
+            </Group>
+          </Group>
+          <Progress.Root size="sm" radius="xl">
+            <Tooltip label={t("accounts.accountCard.gamesCount", { count: downloadedGames })} position="top" withArrow>
+              <Progress.Section
+                value={Number(percentage)}
+                color={percentage === "100.00" ? "teal" : "blue"}
+                animated={loading}
+              />
+            </Tooltip>
+          </Progress.Root>
+        </Stack>
+
+        <Group gap="xs" justify="space-between" wrap="nowrap">
+          <Text size="xs" c="dimmed" style={{ flex: 1 }}>
+            {`${t("accounts.accountCard.lastUpdate")}: ${t("formatters.dateFormat", {
+              date: parseDate(updatedAt),
+              interpolation: { escapeValue: false },
+            })}`}
+          </Text>
+
+          <Group gap={4} wrap="nowrap">
+            {edit ? (
+              <>
+                <Tooltip label={t("accounts.accountCard.saveChanges")} position="top">
+                  <ActionIcon
+                    size="md"
+                    variant="light"
+                    color="teal"
+                    onClick={() => {
+                      setEdit(false);
+                      setSessions((prev) =>
+                        prev.map((s) => {
+                          if (type === "lichess" && s.lichess?.username === title) {
+                            return { ...s, player: text };
+                          } else if (type === "chesscom" && s.chessCom?.username === title) {
+                            return { ...s, player: text };
+                          }
+                          return s;
+                        }),
+                      );
+                    }}
+                    radius="md"
+                  >
+                    <IconCheck style={{ width: rem(16), height: rem(16) }} />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label={t("accounts.accountCard.cancelEdit")} position="top">
+                  <ActionIcon
+                    size="md"
+                    variant="subtle"
+                    color="gray"
+                    onClick={() => {
+                      setEdit(false);
+                      setText(name);
+                    }}
+                    radius="md"
+                  >
+                    <IconX style={{ width: rem(16), height: rem(16) }} />
+                  </ActionIcon>
+                </Tooltip>
+              </>
+            ) : (
+              <>
+                <Tooltip label={t("accounts.accountCard.editName")} position="top">
+                  <ActionIcon size="md" variant="subtle" color="gray" onClick={() => setEdit(true)} radius="md">
+                    <IconEdit style={{ width: rem(16), height: rem(16) }} />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label={t("accounts.accountCard.updateStats")} position="top">
+                  <ActionIcon size="md" variant="subtle" color="blue" onClick={() => reload()} radius="md">
+                    <IconRefresh style={{ width: rem(16), height: rem(16) }} />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label={t("accounts.accountCard.downloadGames")} position="top">
+                  <ActionIcon
+                    size="md"
+                    variant="subtle"
+                    color="green"
+                    disabled={loading}
+                    onClick={async () => {
+                      setLoading(true);
+                      const lastGameDate = database ? await getLastGameDate({ database }) : null;
+                      if (type === "lichess") {
+                        await downloadLichess(title, lastGameDate, total - downloadedGames, setProgress, token);
+                      } else {
+                        await downloadChessCom(title, lastGameDate);
+                      }
+                      const p = await resolve(await appDataDir(), "db", `${title}_${type}.pgn`);
+                      try {
+                        await convert(p, lastGameDate);
+                      } catch (e) {
+                        console.error(e);
+                      }
+                      setLoading(false);
+                    }}
+                    radius="md"
+                  >
+                    {loading ? <Loader size={16} /> : <IconDownload style={{ width: rem(16), height: rem(16) }} />}
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label={t("accounts.accountCard.removeAccount")} position="top">
+                  <ActionIcon size="md" variant="subtle" color="red" onClick={() => logout()} radius="md">
+                    <IconX style={{ width: rem(16), height: rem(16) }} />
+                  </ActionIcon>
+                </Tooltip>
+              </>
+            )}
+          </Group>
         </Group>
-
-        {loading && <Progress pos="absolute" bottom={0} left={0} w="100%" value={progress || 100} animated size="xs" />}
-      </Group>
-
-      <Accordion.Panel px="0" py="md">
-        <SimpleGrid cols={isMobile ? 1 : 2}>{items}</SimpleGrid>
-        <Text mt="xs" size="xs" c="dimmed" ta="right">
-          {`Last update: ${t("formatters.dateFormat", {
-            date: parseDate(updatedAt),
-            interpolation: { escapeValue: false },
-          })}`}
-        </Text>
-      </Accordion.Panel>
-    </Accordion.Item>
+      </Stack>
+    </Card>
   );
 }

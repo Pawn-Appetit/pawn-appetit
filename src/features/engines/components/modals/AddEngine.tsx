@@ -26,7 +26,7 @@ import { enginesAtom } from "@/state/atoms";
 import { type LocalEngine, type RemoteEngine, requiredEngineSettings, useDefaultEngines } from "@/utils/engines";
 import { usePlatform } from "@/utils/files";
 import { unwrap } from "@/utils/unwrap";
-import EngineForm from "./EngineForm";
+import EngineForm from "../EngineForm";
 
 function AddEngine({ opened, setOpened }: { opened: boolean; setOpened: (opened: boolean) => void }) {
   const { t } = useTranslation();

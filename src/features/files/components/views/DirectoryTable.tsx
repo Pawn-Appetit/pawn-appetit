@@ -12,14 +12,14 @@ import { DataTable, type DataTableSortStatus } from "mantine-datatable";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { commands } from "@/bindings";
+import type { Directory, FileMetadata } from "@/features/files/utils/file";
+import { FILE_TYPE_LABELS } from "@/features/files/utils/file";
+import { getStats } from "@/features/files/utils/opening";
 import { useLanguageChangeListener } from "@/hooks/useLanguageChangeListener";
 import { activeTabAtom, deckAtomFamily, tabsAtom } from "@/state/atoms";
 import { createTab } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
 import * as classes from "./DirectoryTable.css";
-import type { Directory, FileMetadata } from "./file";
-import { FILE_TYPE_LABELS } from "./file";
-import { getStats } from "./opening";
 
 function flattenFiles(files: (FileMetadata | Directory)[]): (FileMetadata | Directory)[] {
   return files.flatMap((f) => (f.type === "directory" ? flattenFiles(f.children) : [f]));

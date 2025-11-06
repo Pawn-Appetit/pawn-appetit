@@ -273,12 +273,10 @@ export function getStats(stats: ChessComStats) {
     { key: "chess_rapid", label: "Rapid" },
     { key: "chess_daily", label: "Daily" },
   ] as const;
-  return types
-    .map(({ key, label }) => {
-      const perf = stats[key as keyof ChessComStats];
-      return perf ? { value: perf.last.rating, label } : null;
-    })
-    .filter(Boolean) as {
+  return types.map(({ key, label }) => {
+    const perf = stats[key as keyof ChessComStats];
+    return perf ? { value: perf.last.rating, label } : { value: 0, label };
+  }) as {
     value: number;
     label: string;
   }[];

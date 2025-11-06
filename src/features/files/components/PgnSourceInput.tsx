@@ -3,7 +3,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { commands } from "@/bindings/generated";
-import type { FileMetadata } from "@/features/files/components/file";
+import type { FileMetadata } from "@/features/files/utils/file";
 import { createTempImportFile, getFileNameWithoutExtension } from "@/utils/files";
 import { unwrap } from "@/utils/unwrap";
 

@@ -22,7 +22,7 @@ import MoveControls from "@/components/MoveControls";
 import { arrowColors } from "@/components/panels/analysis/BestMoves";
 import ShowMaterial from "@/components/ShowMaterial";
 import { TreeStateContext } from "@/components/TreeStateContext";
-import { updateCardPerformance } from "@/features/files/components/opening";
+import { updateCardPerformance } from "@/features/files/utils/opening";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import {
   autoPromoteAtom,

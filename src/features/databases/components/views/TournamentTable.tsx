@@ -9,10 +9,10 @@ import { commands, type Event, type TournamentSort } from "@/bindings";
 import { useLanguageChangeListener } from "@/hooks/useLanguageChangeListener";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { unwrap } from "@/utils/unwrap";
-import { DatabaseViewStateContext } from "./DatabaseViewStateContext";
+import { DatabaseViewStateContext } from "../DatabaseViewStateContext";
+import TournamentCard from "../drawers/TournamentCard";
+import * as classes from "../styles.css";
 import GridLayout from "./GridLayout";
-import * as classes from "./styles.css";
-import TournamentCard from "./TournamentCard";
 
 function TournamentTable() {
   const store = useContext(DatabaseViewStateContext)!;
