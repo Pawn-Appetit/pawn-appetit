@@ -1,4 +1,4 @@
-import { Alert, ScrollArea, SimpleGrid, Stack, Text } from "@mantine/core";
+import { Alert, ScrollArea, SimpleGrid, Skeleton, Stack, Text } from "@mantine/core";
 import { IconMoodEmpty } from "@tabler/icons-react";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
@@ -15,11 +15,13 @@ function AccountCards({
   setDatabases,
   query = "",
   sortBy = { field: "name", direction: "asc" },
+  isLoading = false,
 }: {
   databases: DatabaseInfo[];
   setDatabases: React.Dispatch<React.SetStateAction<DatabaseInfo[]>>;
   query?: string;
   sortBy?: SortState;
+  isLoading?: boolean;
 }) {
   const [sessions, setSessions] = useAtom(sessionsAtom);
   const playerNames = Array.from(
@@ -92,6 +94,19 @@ function AccountCards({
       localStorage.setItem("mainAccount", mainAccount);
     }
   }, [mainAccount]);
+
+  if (isLoading) {
+    return (
+      <ScrollArea offsetScrollbars>
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }} spacing="md" verticalSpacing="md">
+          <Skeleton h="12rem" />
+          <Skeleton h="12rem" />
+          <Skeleton h="12rem" />
+          <Skeleton h="12rem" />
+        </SimpleGrid>
+      </ScrollArea>
+    );
+  }
 
   return (
     <ScrollArea offsetScrollbars>

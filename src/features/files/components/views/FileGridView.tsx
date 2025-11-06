@@ -1,4 +1,4 @@
-import { Badge, Box, Group, SimpleGrid, Stack, Text } from "@mantine/core";
+import { Badge, Box, Group, SimpleGrid, Skeleton, Stack, Text } from "@mantine/core";
 import { IconBook, IconChess, IconFileText, IconTarget, IconTrophy } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import Fuse from "fuse.js";
@@ -8,7 +8,6 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { commands } from "@/bindings";
 import GenericCard from "@/components/GenericCard";
-import * as classes from "@/components/GenericCard/styles.css";
 import type { Directory, FileMetadata } from "@/features/files/utils/file";
 import { FILE_TYPE_LABELS } from "@/features/files/utils/file";
 import { getStats } from "@/features/files/utils/opening";
@@ -76,10 +75,25 @@ export default function FileGridView({
   filteredFiles = [...filteredFiles].sort((a, b) => b.lastModified - a.lastModified);
 
   if (isLoading) {
+    const isMobile = typeof gridCols === "number" ? gridCols === 1 : gridCols.base === 1;
+
+    if (isMobile) {
+      return (
+        <Stack gap="md">
+          <Skeleton h="8rem" />
+          <Skeleton h="8rem" />
+          <Skeleton h="8rem" />
+        </Stack>
+      );
+    }
+
     return (
-      <Box p="md">
-        <Text c="dimmed">{t("common.loading")}</Text>
-      </Box>
+      <SimpleGrid cols={gridCols} spacing={{ base: "md", md: "sm" }}>
+        <Skeleton h="8rem" />
+        <Skeleton h="8rem" />
+        <Skeleton h="8rem" />
+        <Skeleton h="8rem" />
+      </SimpleGrid>
     );
   }
 

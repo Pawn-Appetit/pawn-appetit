@@ -1,4 +1,4 @@
-import { SimpleGrid } from "@mantine/core";
+import { SimpleGrid, Skeleton, Stack } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 import GenericCard from "@/components/GenericCard";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
@@ -10,14 +10,36 @@ interface EnginesGridProps {
   filteredIndices: number[];
   selected: number | undefined;
   setSelected: (v: number | null) => void;
+  isLoading?: boolean;
 }
 
-export function EnginesGrid({ engines, filteredIndices, selected, setSelected }: EnginesGridProps) {
+export function EnginesGrid({ engines, filteredIndices, selected, setSelected, isLoading }: EnginesGridProps) {
   const { t } = useTranslation();
   const { layout } = useResponsiveLayout();
 
   const isMobile = layout.engines.layoutType === "mobile";
   const gridCols = isMobile ? 1 : { base: 1, md: 4 };
+
+  if (isLoading) {
+    if (isMobile) {
+      return (
+        <Stack gap="md">
+          <Skeleton h="8rem" />
+          <Skeleton h="8rem" />
+          <Skeleton h="8rem" />
+        </Stack>
+      );
+    }
+
+    return (
+      <SimpleGrid cols={gridCols} spacing={{ base: "md", md: "sm" }}>
+        <Skeleton h="8rem" />
+        <Skeleton h="8rem" />
+        <Skeleton h="8rem" />
+        <Skeleton h="8rem" />
+      </SimpleGrid>
+    );
+  }
 
   return (
     <SimpleGrid cols={gridCols} spacing={{ base: "md", md: "sm" }}>

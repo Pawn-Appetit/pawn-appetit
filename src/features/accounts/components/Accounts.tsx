@@ -19,12 +19,14 @@ function Accounts({
   view,
   query,
   sortBy,
+  isLoading = false,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
   view: "grid" | "table";
   query: string;
   sortBy: SortState;
+  isLoading?: boolean;
 }) {
   const [, setSessions] = useAtom(sessionsAtom);
   const isListening = useRef(false);
@@ -120,9 +122,9 @@ function Accounts({
   return (
     <>
       {view === "grid" ? (
-        <AccountCards databases={databases} setDatabases={setDatabases} query={query} sortBy={sortBy} />
+        <AccountCards databases={databases} setDatabases={setDatabases} query={query} sortBy={sortBy} isLoading={isLoading} />
       ) : (
-        <AccountsTableView databases={databases} setDatabases={setDatabases} query={query} sortBy={sortBy} />
+        <AccountsTableView databases={databases} setDatabases={setDatabases} query={query} sortBy={sortBy} isLoading={isLoading} />
       )}
       <AccountModal open={open} setOpen={setOpen} addLichess={addLichess} addChessCom={addChessCom} />
     </>

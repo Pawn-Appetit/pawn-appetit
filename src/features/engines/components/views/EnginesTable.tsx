@@ -1,4 +1,4 @@
-import { Badge, Group, Table, Text } from "@mantine/core";
+import { Badge, Group, Skeleton, Stack, Table, Text } from "@mantine/core";
 import { IconCloud, IconCpu } from "@tabler/icons-react";
 import LocalImage from "@/components/LocalImage";
 import type { Engine } from "@/utils/engines";
@@ -8,9 +8,20 @@ interface EnginesTableProps {
   filteredIndices: number[];
   selected: number | undefined;
   setSelected: (v: number | null) => void;
+  isLoading?: boolean;
 }
 
-export function EnginesTable({ engines, filteredIndices, selected, setSelected }: EnginesTableProps) {
+export function EnginesTable({ engines, filteredIndices, selected, setSelected, isLoading }: EnginesTableProps) {
+  if (isLoading) {
+    return (
+      <Stack gap="md">
+        <Skeleton h="3rem" />
+        <Skeleton h="3rem" />
+        <Skeleton h="3rem" />
+      </Stack>
+    );
+  }
+
   return (
     <Table highlightOnHover striped>
       <Table.Thead>

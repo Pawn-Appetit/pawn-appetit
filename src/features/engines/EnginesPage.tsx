@@ -26,6 +26,7 @@ export default function EnginesPage() {
   const [debouncedQuery] = useDebouncedValue(query, 300);
   const [sortBy, setSortBy] = useState<SortState>({ field: "name", direction: "asc" });
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [isLoading, setIsLoading] = useState(true);
 
   const { selected } = Route.useSearch();
   const navigate = useNavigate();
@@ -39,6 +40,11 @@ export default function EnginesPage() {
   const selectedEngine = selected !== undefined ? engines[selected] : null;
 
   const filteredIndices = useEngineFiltering(engines, debouncedQuery, sortBy);
+
+  useState(() => {
+    const timer = setTimeout(() => setIsLoading(false), 100);
+    return () => clearTimeout(timer);
+  });
 
   const sortOptions = [
     { value: "name", label: t("common.name", "Name") },
@@ -67,7 +73,7 @@ export default function EnginesPage() {
       />
       <Stack px="md" pb="md">
         <ScrollArea h="calc(100vh - 190px)" offsetScrollbars aria-live="polite">
-          {filteredIndices.length === 0 ? (
+          {filteredIndices.length === 0 && !isLoading ? (
             <Alert title={t("features.engines.noEnginesFound")} color="gray" variant="light">
               {t("features.engines.noEnginesFoundMessage")}
             </Alert>
@@ -77,6 +83,7 @@ export default function EnginesPage() {
               filteredIndices={filteredIndices}
               selected={selected}
               setSelected={setSelected}
+              isLoading={isLoading}
             />
           ) : (
             <EnginesTable
@@ -84,6 +91,7 @@ export default function EnginesPage() {
               filteredIndices={filteredIndices}
               selected={selected}
               setSelected={setSelected}
+              isLoading={isLoading}
             />
           )}
         </ScrollArea>

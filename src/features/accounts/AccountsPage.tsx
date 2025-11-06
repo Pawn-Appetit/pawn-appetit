@@ -14,6 +14,12 @@ function AccountsPage() {
   const [sortBy, setSortBy] = useState<SortState>({ field: "name", direction: "asc" });
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [openModal, setOpenModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useState(() => {
+    const timer = setTimeout(() => setIsLoading(false), 100);
+    return () => clearTimeout(timer);
+  });
 
   const sortOptions = [
     { value: "name", label: t("common.name", "Name") },
@@ -46,7 +52,7 @@ function AccountsPage() {
       />
 
       <Stack flex={1} style={{ overflow: "hidden" }} px="md" pb="md">
-        <Accounts open={openModal} setOpen={setOpenModal} view={viewMode} query={query} sortBy={sortBy} />
+        <Accounts open={openModal} setOpen={setOpenModal} view={viewMode} query={query} sortBy={sortBy} isLoading={isLoading} />
       </Stack>
 
       <DatabaseDrawer opened={opened} onClose={close} />

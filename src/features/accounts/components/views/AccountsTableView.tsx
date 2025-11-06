@@ -1,4 +1,4 @@
-import { ActionIcon, Badge, Group, Image, Paper, ScrollArea, Stack, Table, Text, Tooltip } from "@mantine/core";
+import { ActionIcon, Badge, Group, Image, Paper, ScrollArea, Skeleton, Stack, Table, Text, Tooltip } from "@mantine/core";
 import {
   IconCheck,
   IconCircle,
@@ -25,12 +25,14 @@ interface AccountsTableViewProps {
   setDatabases: React.Dispatch<React.SetStateAction<DatabaseInfo[]>>;
   query?: string;
   sortBy?: SortState;
+  isLoading?: boolean;
 }
 
 function AccountsTableView({
   databases,
   query = "",
   sortBy = { field: "name", direction: "asc" },
+  isLoading = false,
 }: AccountsTableViewProps) {
   const { t } = useTranslation();
   const sessions = useAtomValue(sessionsAtom);
@@ -225,6 +227,20 @@ function AccountsTableView({
       }),
     );
     setEditingAccount(null);
+  }
+
+  if (isLoading) {
+    return (
+      <Paper withBorder>
+        <ScrollArea>
+          <Stack gap="md">
+            <Skeleton h="3rem" />
+            <Skeleton h="3rem" />
+            <Skeleton h="3rem" />
+          </Stack>
+        </ScrollArea>
+      </Paper>
+    );
   }
 
   return (
