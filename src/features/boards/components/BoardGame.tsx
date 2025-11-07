@@ -485,7 +485,7 @@ function BoardGame() {
       const currentTurn = pos.turn;
       const player = currentTurn === "white" ? players.white : players.black;
 
-      if (player.type === "engine" && player.engine) {
+      if (player.type === "engine" && player.engine) {        
         commands.getBestMoves(
           currentTurn,
           player.engine.path,
@@ -511,7 +511,7 @@ function BoardGame() {
         );
       }
     }
-  }, [gameState, pos, players, headers.result, activeTab, root.fen, moves, whiteTime, blackTime]);
+  }, [gameState, pos, players, headers.result, activeTab, root.fen, moves]);
 
   useEffect(() => {
     const unlisten = events.bestMovesPayload.listen(({ payload }) => {
