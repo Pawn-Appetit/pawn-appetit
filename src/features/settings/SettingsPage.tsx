@@ -722,13 +722,6 @@ export default function Page() {
         tab: "directories",
         component: <TelemetrySettings className={classes.item} />,
       },
-      {
-        id: "about",
-        title: t("settings.about"),
-        description: t("settings.aboutDesc"),
-        tab: "directories",
-        component: <AboutModal />,
-      },
     ],
     [
       t,
