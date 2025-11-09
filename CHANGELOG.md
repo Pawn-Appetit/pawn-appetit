@@ -1,5 +1,40 @@
 # Pawn Appétit Changelog
 
+## [0.9.0]
+
+### Added
+
+- Default file naming support in `saveToFile`
+- `getDocumentDir` utility for improved document directory handling
+- Extended logging in engine analysis for better debugging and diagnostics
+- Updated keybinding for **TOGGLE_HELP** to use `mod+?` for consistency
+- Loading states and skeleton placeholders for **Accounts** and **Engines** pages for smoother UX
+
+### Changed
+
+- Replaced **SWR** with **@tanstack/react-query** for modernized data fetching and caching
+- Refactored **Dashboard**, **Files**, **Engines**, and **Databases** pages into modular components
+- Improved overall UX in **Accounts**, **Engines**, **Databases**, and **Files** interfaces
+- Enhanced performance by optimizing CSS preloading and piece set management
+- Updated `chessground` dependency to `@lichess-org/chessground`
+- Updated dependencies across both frontend and Rust backend
+
+### Fixed
+
+- Fixed theme ID duplication and incorrect translation key issues
+- Updated color palettes for **retroGaming** and **vintage** themes
+- Fixed chart rendering issues in Accounts overview and rating panels
+- Fixed Lichess games download reliability
+- Improved error handling for invalid PGN moves
+- Fixed redundant checks and dependency cleanup in **Board** component
+- Removed outdated “About” section from **Settings** menu
+- Improved `EvalBar` rendering consistency
+
+### Developer Notes
+
+* Significant internal restructuring to improve maintainability and performance
+* Cleaner module boundaries and enhanced logging for debugging
+
 ## [0.8.0]
 
 ### Added
