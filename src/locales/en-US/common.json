@@ -509,6 +509,10 @@
       "settings": "Settings",
       "keyboardShortcuts": "Keyboard Shortcuts"
     },
+    "shortcuts": {
+      "title": "Keyboard Shortcuts",
+      "helpTitle": "Show keyboard shortcuts help"
+    },
     "dashboard": {
       "welcome": {
         "firstOpen": "Welcome to Pawn Appétit!",
@@ -570,6 +574,9 @@
     },
     "tabs": {
       "newTab": "New Tab",
+      "limitReached": "Maximum Tabs Reached",
+      "limitReachedDesc": "You can have up to {{max}} tabs open at once. Please close some tabs before opening new ones.",
+      "maxTabsReached": "Maximum of {{max}} tabs reached",
       "playChess": {
         "title": "Play a game",
         "desc": "Challenge an engine or a friend",

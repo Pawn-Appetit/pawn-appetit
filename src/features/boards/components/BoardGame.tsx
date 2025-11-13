@@ -51,8 +51,8 @@ import {
   activeTabAtom,
   currentGameStateAtom,
   currentPlayersAtom,
-  enginesAtom,
   type GameState,
+  loadableEnginesAtom,
   tabsAtom,
 } from "@/state/atoms";
 import { getMainLine } from "@/utils/chess";
@@ -76,12 +76,13 @@ type ColorChoice = "white" | "random" | "black";
 interface EnginesSelectProps {
   engine: LocalEngine | null;
   setEngine: (engine: LocalEngine | null) => void;
+  engines: LocalEngine[];
+  enginesState: string;
 }
 
-function EnginesSelect({ engine, setEngine }: EnginesSelectProps) {
+function EnginesSelect({ engine, setEngine, engines = [], enginesState }: EnginesSelectProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const engines = useAtomValue(enginesAtom).filter((e): e is LocalEngine => e.type === "local");
 
   useEffect(() => {
     if (engines.length > 0 && engine === null) {
@@ -89,7 +90,7 @@ function EnginesSelect({ engine, setEngine }: EnginesSelectProps) {
     }
   }, [engine, engines, setEngine]);
 
-  if (engines.length === 0) {
+  if (enginesState !== "loading" && engines.length === 0) {
     return (
       <Stack gap="md">
         <Alert icon={<IconAlertCircle size={16} />} title={t("game.noEnginesAvailable")} color="orange" variant="light">
@@ -102,11 +103,14 @@ function EnginesSelect({ engine, setEngine }: EnginesSelectProps) {
     );
   }
 
-  const engineOptions = useMemo(() => engines.map((engine) => ({ label: engine.name, value: engine.path })), [engines]);
+  const engineOptions = useMemo(
+    () => engines?.map((engine) => ({ label: engine.name, value: engine.path })),
+    [engines],
+  );
 
   const handleEngineChange = useCallback(
     (path: string | null) => {
-      setEngine(engines.find((engine) => engine.path === path) ?? null);
+      setEngine(engines?.find((engine) => engine.path === path) ?? null);
     },
     [engines, setEngine],
   );
@@ -142,11 +146,19 @@ interface OpponentFormProps {
   opponent: OpponentSettings;
   setOpponent: Dispatch<SetStateAction<OpponentSettings>>;
   setOtherOpponent: Dispatch<SetStateAction<OpponentSettings>>;
+  engines: LocalEngine[];
+  enginesState: string;
 }
 
-function OpponentForm({ sameTimeControl, opponent, setOpponent, setOtherOpponent }: OpponentFormProps) {
+function OpponentForm({
+  sameTimeControl,
+  opponent,
+  setOpponent,
+  setOtherOpponent,
+  engines = [],
+  enginesState,
+}: OpponentFormProps) {
   const { t } = useTranslation();
-  const engines = useAtomValue(enginesAtom).filter((e): e is LocalEngine => e.type === "local");
 
   const updateType = useCallback(
     (type: "engine" | "human") => {
@@ -250,7 +262,7 @@ function OpponentForm({ sameTimeControl, opponent, setOpponent, setOtherOpponent
               <Center style={{ gap: 10 }}>
                 <IconCpu size={16} />
                 <span>{t("common.engine")}</span>
-                {engines.length === 0 && (
+                {enginesState !== "loading" && engines.length === 0 && (
                   <ThemeIcon size="xs" color="orange" variant="light">
                     <IconAlertCircle size={10} />
                   </ThemeIcon>
@@ -281,6 +293,8 @@ function OpponentForm({ sameTimeControl, opponent, setOpponent, setOtherOpponent
               engine,
             }))
           }
+          engines={engines}
+          enginesState={enginesState}
         />
       )}
 
@@ -449,7 +463,13 @@ function BoardGame() {
   const boardRef = useRef(null);
   const [gameState, setGameState] = useAtom(currentGameStateAtom);
   const [players, setPlayers] = useAtom(currentPlayersAtom);
-  const engines = useAtomValue(enginesAtom).filter((e): e is LocalEngine => e.type === "local");
+
+  const loadableEngines = useAtomValue(loadableEnginesAtom);
+  const enginesState = loadableEngines.state;
+
+  const engines = useMemo(() => {
+    return enginesState === "hasData" ? loadableEngines.data.filter((e): e is LocalEngine => e.type === "local") : [];
+  }, [loadableEngines, enginesState]);
 
   const [whiteTime, setWhiteTime] = useState<number | null>(null);
   const [blackTime, setBlackTime] = useState<number | null>(null);
@@ -485,7 +505,7 @@ function BoardGame() {
       const currentTurn = pos.turn;
       const player = currentTurn === "white" ? players.white : players.black;
 
-      if (player.type === "engine" && player.engine) {        
+      if (player.type === "engine" && player.engine) {
         commands.getBestMoves(
           currentTurn,
           player.engine.path,
@@ -749,6 +769,8 @@ function BoardGame() {
                           opponent={player1Settings}
                           setOpponent={setPlayer1Settings}
                           setOtherOpponent={setPlayer2Settings}
+                          engines={engines}
+                          enginesState={enginesState}
                         />
                         <Divider orientation="vertical" />
                         <OpponentForm
@@ -756,6 +778,8 @@ function BoardGame() {
                           opponent={player2Settings}
                           setOpponent={setPlayer2Settings}
                           setOtherOpponent={setPlayer1Settings}
+                          engines={engines}
+                          enginesState={enginesState}
                         />
                       </Group>
                     </Box>

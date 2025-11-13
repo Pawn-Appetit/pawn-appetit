@@ -44,7 +44,7 @@ export const enginesAtom = atomWithStorage<Engine[]>(
   createAsyncZodStorage(zodArray(engineSchema), fileStorage),
 );
 
-const loadableEnginesAtom = loadable(enginesAtom);
+export const loadableEnginesAtom = loadable(enginesAtom);
 
 // Tabs
 export const tabsAtom = atomWithStorage<Tab[]>("tabs", [], createZodStorage(z.array(tabSchema), sessionStorage));

@@ -1,191 +1,79 @@
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
-import { ActionIcon, Box, ScrollArea, Tabs, Text } from "@mantine/core";
-import { useHotkeys } from "@mantine/hooks";
-import { modals } from "@mantine/modals";
+import { ActionIcon, Box, Group, ScrollArea, Tabs } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
-import { useLoaderData } from "@tanstack/react-router";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { type JSX, useCallback, useContext, useEffect } from "react";
+import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Mosaic, type MosaicNode } from "react-mosaic-component";
 import { match } from "ts-pattern";
-import { commands } from "@/bindings";
 
-import { activeTabAtom, currentTabAtom, tabsAtom } from "@/state/atoms";
-import { keyMapAtom } from "@/state/keybindings";
-import { createTab, genID, saveToFile, type Tab } from "@/utils/tabs";
-import { unwrap } from "@/utils/unwrap";
+import { createTab, type Tab } from "@/utils/tabs";
 import * as classes from "./BoardsPage.css";
 import { BoardTab } from "./components/BoardTab";
 
 import "react-mosaic-component/react-mosaic-component.css";
 import "@/styles/react-mosaic.css";
-import { TreeStateContext, TreeStateProvider } from "@/components/TreeStateContext";
+import { TreeStateProvider } from "@/components/TreeStateContext";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import BoardAnalysis from "./components/BoardAnalysis";
 import BoardGame from "./components/BoardGame";
 import NewTab from "./components/NewTab";
 import Puzzles from "./components/puzzles/Puzzles";
 import ReportProgressSubscriber from "./components/ReportProgressSubscriber";
+import {
+  CUSTOM_EVENTS,
+  constrainSplitPercentage,
+  createFullLayout,
+  DEFAULT_MOSAIC_LAYOUT,
+  DROPPABLE_IDS,
+  MAX_TABS,
+  MOSAIC_PANE_CONSTRAINTS,
+  REPORT_ID_PREFIX,
+  SCROLL_AREA_CONFIG,
+  STORAGE_KEYS,
+  type ViewId,
+} from "./constants";
+import { useTabManagement } from "./hooks/useTabManagement";
+
+const fullLayout = createFullLayout();
 
 export default function BoardsPage() {
   const { t } = useTranslation();
+  const {
+    tabs,
+    activeTab,
+    setActiveTab,
+    setTabs,
+    closeTab,
+    renameTab,
+    duplicateTab,
+    canCreateNewTab,
+    showTabLimitNotification,
+  } = useTabManagement();
 
-  const [tabs, setTabs] = useAtom(tabsAtom);
-  const [activeTab, setActiveTab] = useAtom(activeTabAtom);
-  const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
-  const store = useContext(TreeStateContext)!;
-  const { documentDir } = useLoaderData({ from: "/boards" });
-
-  useEffect(() => {
-    if (tabs.length === 0) {
-      createTab({
-        tab: { name: t("features.tabs.newTab"), type: "new" },
-        setTabs,
-        setActiveTab,
-      });
+  const handleCreateTab = useCallback(() => {
+    if (!canCreateNewTab()) {
+      showTabLimitNotification();
+      return;
     }
-  }, [tabs, setActiveTab, setTabs]);
 
-  const closeTab = useCallback(
-    async (value: string | null, forced?: boolean) => {
-      if (value !== null) {
-        const closedTab = tabs.find((tab) => tab.value === value);
-        const tabState = JSON.parse(sessionStorage.getItem(value) || "{}");
-        if (tabState && closedTab?.source && tabState.state.dirty && !forced) {
-          modals.openConfirmModal({
-            title: t("common.unsavedChanges.title"),
-            withCloseButton: false,
-            children: <Text>{t("common.unsavedChanges.desc")}</Text>,
-            labels: {
-              confirm: t("common.unsavedChanges.saveAndClose"),
-              cancel: t("common.unsavedChanges.closeWithoutSaving"),
-            },
-            onConfirm: async () => {
-              saveToFile({
-                dir: documentDir,
-                setCurrentTab,
-                tab: currentTab,
-                store,
-              });
-              closeTab(activeTab, true);
-            },
-            onCancel: () => {
-              closeTab(activeTab, true);
-            },
-          });
-          return;
-        }
-        if (value === activeTab) {
-          const index = tabs.findIndex((tab) => tab.value === value);
-          if (tabs.length > 1) {
-            if (index === tabs.length - 1) {
-              setActiveTab(tabs[index - 1].value);
-            } else {
-              setActiveTab(tabs[index + 1].value);
-            }
-          } else {
-            setActiveTab(null);
-          }
-        }
-        setTabs((prev) => prev.filter((tab) => tab.value !== value));
-        unwrap(await commands.killEngines(value));
-      }
-    },
-    [tabs, activeTab, setTabs, setActiveTab],
-  );
-
-  function selectTab(index: number) {
-    setActiveTab(tabs[Math.min(index, tabs.length - 1)].value);
-  }
-
-  function cycleTabs(reverse = false) {
-    const index = tabs.findIndex((tab) => tab.value === activeTab);
-    if (reverse) {
-      if (index === 0) {
-        setActiveTab(tabs[tabs.length - 1].value);
-      } else {
-        setActiveTab(tabs[index - 1].value);
-      }
-    } else {
-      if (index === tabs.length - 1) {
-        setActiveTab(tabs[0].value);
-      } else {
-        setActiveTab(tabs[index + 1].value);
-      }
-    }
-  }
-
-  const renameTab = useCallback(
-    (value: string, name: string) => {
-      setTabs((prev) =>
-        prev.map((tab) => {
-          if (tab.value === value) {
-            return { ...tab, name };
-          }
-          return tab;
-        }),
-      );
-    },
-    [setTabs],
-  );
-
-  const duplicateTab = useCallback(
-    (value: string) => {
-      const id = genID();
-      const tab = tabs.find((tab) => tab.value === value);
-      if (sessionStorage.getItem(value)) {
-        sessionStorage.setItem(id, sessionStorage.getItem(value) || "");
-      }
-
-      if (tab) {
-        setTabs((prev) => [
-          ...prev,
-          {
-            name: tab.name,
-            value: id,
-            type: tab.type,
-          },
-        ]);
-        setActiveTab(id);
-      }
-    },
-    [tabs, setTabs, setActiveTab],
-  );
-
-  const keyMap = useAtomValue(keyMapAtom);
-  useHotkeys([
-    [keyMap.CLOSE_BOARD_TAB.keys, () => closeTab(activeTab)],
-    [keyMap.CYCLE_BOARD_TABS.keys, () => cycleTabs()],
-    [keyMap.REVERSE_CYCLE_BOARD_TABS.keys, () => cycleTabs(true)],
-    [keyMap.BOARD_TAB_ONE.keys, () => selectTab(0)],
-    [keyMap.BOARD_TAB_TWO.keys, () => selectTab(1)],
-    [keyMap.BOARD_TAB_THREE.keys, () => selectTab(2)],
-    [keyMap.BOARD_TAB_FOUR.keys, () => selectTab(3)],
-    [keyMap.BOARD_TAB_FIVE.keys, () => selectTab(4)],
-    [keyMap.BOARD_TAB_SIX.keys, () => selectTab(5)],
-    [keyMap.BOARD_TAB_SEVEN.keys, () => selectTab(6)],
-    [keyMap.BOARD_TAB_EIGHT.keys, () => selectTab(7)],
-    [keyMap.BOARD_TAB_LAST.keys, () => selectTab(tabs.length - 1)],
-    [keyMap.DUPLICATE_TAB.keys, () => activeTab && duplicateTab(activeTab)],
-    [
-      keyMap.NEW_GAME.keys,
-      () =>
-        createTab({
-          tab: { name: "Play", type: "play" },
-          setTabs,
-          setActiveTab,
-        }),
-    ],
-  ]);
+    createTab({
+      tab: {
+        name: t("features.tabs.newTab"),
+        type: "new",
+      },
+      setTabs,
+      setActiveTab,
+    });
+  }, [canCreateNewTab, showTabLimitNotification, t, setTabs, setActiveTab]);
 
   return (
     <DragDropContext
       onDragEnd={({ destination, source }) => {
         if (!destination) return;
 
-        if (source.droppableId === "droppable" && destination.droppableId === "droppable") {
+        if (source.droppableId === DROPPABLE_IDS.TABS && destination.droppableId === DROPPABLE_IDS.TABS) {
           setTabs((prev) => {
             const result = Array.from(prev);
             const [removed] = result.splice(source.index, 1);
@@ -194,8 +82,8 @@ export default function BoardsPage() {
           });
         }
 
-        if (source.droppableId === "engines-droppable" && destination.droppableId === "engines-droppable") {
-          const event = new CustomEvent("engineReorder", {
+        if (source.droppableId === DROPPABLE_IDS.ENGINES && destination.droppableId === DROPPABLE_IDS.ENGINES) {
+          const event = new CustomEvent(CUSTOM_EVENTS.ENGINE_REORDER, {
             detail: { source, destination },
           });
           window.dispatchEvent(event);
@@ -214,8 +102,8 @@ export default function BoardsPage() {
         }}
       >
         <Box p="md">
-          <ScrollArea scrollbarSize={8} scrollbars="x">
-            <Droppable droppableId="droppable" direction="horizontal">
+          <ScrollArea scrollbarSize={SCROLL_AREA_CONFIG.SCROLLBAR_SIZE} scrollbars="x">
+            <Droppable droppableId={DROPPABLE_IDS.TABS} direction="horizontal">
               {(provided) => (
                 <div ref={provided.innerRef} {...provided.droppableProps} style={{ display: "flex" }}>
                   {tabs.map((tab, i) => (
@@ -235,25 +123,24 @@ export default function BoardsPage() {
                     </Draggable>
                   ))}
                   {provided.placeholder}
-                  <ActionIcon
-                    variant="default"
-                    onClick={() =>
-                      createTab({
-                        tab: {
-                          name: t("features.tabs.newTab"),
-                          type: "new",
-                        },
-                        setTabs,
-                        setActiveTab,
-                      })
-                    }
-                    size="lg"
-                    classNames={{
-                      root: classes.newTab,
-                    }}
-                  >
-                    <IconPlus />
-                  </ActionIcon>
+                  <Group gap="xs" wrap="nowrap">
+                    <ActionIcon
+                      variant="default"
+                      onClick={handleCreateTab}
+                      disabled={!canCreateNewTab()}
+                      size="lg"
+                      classNames={{
+                        root: classes.newTab,
+                      }}
+                      title={
+                        !canCreateNewTab()
+                          ? t("features.tabs.maxTabsReached", { max: MAX_TABS })
+                          : t("features.tabs.newTab")
+                      }
+                    >
+                      <IconPlus />
+                    </ActionIcon>
+                  </Group>
                 </div>
               )}
             </Droppable>
@@ -269,61 +156,47 @@ export default function BoardsPage() {
   );
 }
 
-type ViewId = "left" | "topRight" | "bottomRight";
-
-const fullLayout: { [viewId: string]: JSX.Element } = {
-  // biome-ignore lint/correctness/useUniqueElementIds: <explanation>
-  left: <div id="left" />,
-  // biome-ignore lint/correctness/useUniqueElementIds: <explanation>
-  topRight: <div id="topRight" />,
-  // biome-ignore lint/correctness/useUniqueElementIds: <explanation>
-  bottomRight: <div id="bottomRight" />,
-};
-
 interface WindowsState {
   currentNode: MosaicNode<ViewId> | null;
 }
 
-const windowsStateAtom = atomWithStorage<WindowsState>("windowsState", {
-  currentNode: {
-    direction: "row",
-    first: "left",
-    second: {
-      direction: "column",
-      first: "topRight",
-      second: "bottomRight",
-      splitPercentage: 55,
-    },
-  },
+const windowsStateAtom = atomWithStorage<WindowsState>(STORAGE_KEYS.WINDOWS_STATE, {
+  currentNode: DEFAULT_MOSAIC_LAYOUT,
 });
 
-function TabSwitch({ tab }: { tab: Tab }) {
+const TabSwitch = function TabSwitch({ tab }: { tab: Tab }) {
   const [windowsState, setWindowsState] = useAtom(windowsStateAtom);
 
   const { layout } = useResponsiveLayout();
   const isMobileLayout = layout.chessBoard.layoutType === "mobile";
 
-  const resizeOptions = {
-    minimumPaneSizePercentage: 20,
-    maximumPaneSizePercentage: 50,
-  };
+  const resizeOptions = useMemo(
+    () => ({
+      minimumPaneSizePercentage: MOSAIC_PANE_CONSTRAINTS.MINIMUM_PERCENTAGE,
+      maximumPaneSizePercentage: MOSAIC_PANE_CONSTRAINTS.MAXIMUM_PERCENTAGE,
+    }),
+    [],
+  );
 
-  const handleMosaicChange = (currentNode: MosaicNode<ViewId> | null) => {
-    if (currentNode && typeof currentNode === "object" && "direction" in currentNode) {
-      if (currentNode.direction === "row") {
-        const splitPercentage = currentNode.splitPercentage || 50;
-        const constrainedPercentage = Math.max(20, Math.min(50, splitPercentage));
+  const handleMosaicChange = useCallback(
+    (currentNode: MosaicNode<ViewId> | null) => {
+      if (currentNode && typeof currentNode === "object" && "direction" in currentNode) {
+        if (currentNode.direction === "row") {
+          const constrainedPercentage = constrainSplitPercentage(currentNode.splitPercentage);
 
-        if (splitPercentage !== constrainedPercentage) {
-          currentNode = {
-            ...currentNode,
-            splitPercentage: constrainedPercentage,
-          };
+          if (currentNode.splitPercentage !== constrainedPercentage) {
+            currentNode = {
+              ...currentNode,
+              splitPercentage: constrainedPercentage,
+            };
+          }
         }
       }
-    }
-    setWindowsState({ currentNode });
-  };
+
+      setWindowsState({ currentNode });
+    },
+    [setWindowsState],
+  );  
 
   return match(tab.type)
     .with("new", () => <NewTab id={tab.value} />)
@@ -350,7 +223,7 @@ function TabSwitch({ tab }: { tab: Tab }) {
             resize={resizeOptions}
           />
         )}
-        <ReportProgressSubscriber id={`report_${tab.value}`} />
+        <ReportProgressSubscriber id={`${REPORT_ID_PREFIX}${tab.value}`} />
         <BoardAnalysis />
       </TreeStateProvider>
     ))
@@ -366,4 +239,4 @@ function TabSwitch({ tab }: { tab: Tab }) {
       </TreeStateProvider>
     ))
     .exhaustive();
-}
+};
