@@ -13,7 +13,7 @@ import {
   currentThreatAtom,
   engineMovesFamily,
   engineProgressFamily,
-  enginesAtom,
+  loadableEnginesAtom,
   tabEngineSettingsFamily,
 } from "@/state/atoms";
 import { getVariationLine } from "@/utils/chess";
@@ -24,7 +24,7 @@ import { getBestMoves as lichessGetBestMoves } from "@/utils/lichess/api";
 import { useThrottledEffect } from "@/utils/misc";
 
 function EvalListener() {
-  const [engines] = useAtom(enginesAtom);
+  const loadableEngines = useAtomValue(loadableEnginesAtom);
   const threat = useAtomValue(currentThreatAtom);
   const store = useContext(TreeStateContext)!;
   const is960 = useStore(store, (s) => s.headers.variant === "Chess960");
@@ -65,20 +65,24 @@ function EvalListener() {
     [fen, moves, threat, finalFen],
   );
 
-  return engines.map((e) => (
-    <EngineListener
-      key={e.name}
-      engine={e}
-      isGameOver={isGameOver}
-      finalFen={finalFen || ""}
-      searchingFen={searchingFen}
-      searchingMoves={searchingMoves}
-      fen={fen}
-      moves={moves}
-      threat={threat}
-      chess960={is960}
-    />
-  ));
+  if (loadableEngines.state === "hasData") {
+    return loadableEngines?.data?.map((e) => (
+      <EngineListener
+        key={e.name}
+        engine={e}
+        isGameOver={isGameOver}
+        finalFen={finalFen || ""}
+        searchingFen={searchingFen}
+        searchingMoves={searchingMoves}
+        fen={fen}
+        moves={moves}
+        threat={threat}
+        chess960={is960}
+      />
+    ));
+  }
+
+  return null;
 }
 
 function EngineListener({
