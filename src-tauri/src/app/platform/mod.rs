@@ -7,14 +7,11 @@ pub mod desktop;
 pub mod mobile;
 pub mod shared;
 
-/// Platform-specific splashscreen handling
 #[tauri::command]
 #[specta::specta]
-pub async fn close_splashscreen(window: Window) -> Result<(), String> {
+pub async fn screen_capture(window: Window) -> Result<(), String> {
     #[cfg(desktop)]
-    {
-        log::info!("close_splashscreen command called");
-    
+    {    
         let main_window = window
             .get_webview_window("main")
             .ok_or_else(|| {
@@ -22,8 +19,6 @@ pub async fn close_splashscreen(window: Window) -> Result<(), String> {
                 log::error!("{}", error_msg);
                 String::from(error_msg)
             })?;
-
-        let splash_window = window.get_webview_window("splashscreen");
 
         log::info!("Showing main window");
 
@@ -35,23 +30,9 @@ pub async fn close_splashscreen(window: Window) -> Result<(), String> {
                 error_msg
             })?;
 
-        tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-
-        log::info!("Bringing main window to front");
         if let Err(e) = main_window.set_focus() {
             log::warn!("Failed to focus main window: {}", e);
         }
-
-        if let Some(splash) = splash_window {
-            log::info!("Closing splash screen");
-            if let Err(e) = splash.close() {
-                log::warn!("Failed to close splash window: {}", e);
-            }
-        } else {
-            log::warn!("Splash window not found - may have already been closed");
-        }
-
-        log::info!("Window transition completed successfully");
     }
 
     #[cfg(mobile)]

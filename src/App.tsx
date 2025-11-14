@@ -237,9 +237,7 @@ function useAppInitialization() {
       info("Console logging attached successfully");
 
       await handleCommandLineFile();
-
-      info("Closing splash screen");
-      await commands.closeSplashscreen();
+      await commands.screenCapture();
 
       setInitState("initialized");
       info("React app initialization completed successfully");
@@ -252,9 +250,9 @@ function useAppInitialization() {
       setInitState("error");
 
       try {
-        await commands.closeSplashscreen();
-      } catch (splashError) {
-        error(`Failed to close splash screen after error: ${splashError}`);
+        await commands.screenCapture();
+      } catch (_error) {
+        error(`Failed to capture screen after error: ${_error}`);
       }
 
       return detachConsole;

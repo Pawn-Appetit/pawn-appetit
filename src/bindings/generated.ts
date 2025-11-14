@@ -5,12 +5,9 @@
 
 
 export const commands = {
-/**
- * Platform-specific splashscreen handling
- */
-async closeSplashscreen() : Promise<Result<null, string>> {
+async screenCapture() : Promise<Result<null, string>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("close_splashscreen") };
+    return { status: "ok", data: await TAURI_INVOKE("screen_capture") };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };

@@ -96,7 +96,7 @@ pub struct AppState {
 pub async fn run() {
     let specta_builder = tauri_specta::Builder::new()
         .commands(tauri_specta::collect_commands!(
-            app::platform::close_splashscreen,
+            app::platform::screen_capture,
             find_fide_player,
             get_best_moves,
             analyze_game,
