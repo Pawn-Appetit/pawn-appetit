@@ -2,6 +2,7 @@ import { AppShell } from "@mantine/core";
 import { type HotkeyItem, useHotkeys } from "@mantine/hooks";
 import { ModalsProvider, modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
+import { spotlight } from "@mantine/spotlight";
 import { useQuery } from "@tanstack/react-query";
 import { createRootRouteWithContext, Outlet, useNavigate } from "@tanstack/react-router";
 import { Menu, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
@@ -451,8 +452,87 @@ function RootLayout() {
     });
   }, [t]);
 
+  const handleCloseTab = useCallback(() => {
+    setTabs((prevTabs) => {
+      const activeIndex = prevTabs.findIndex((tab) => tab.value === prevTabs.find((t) => t.value)?.value);
+      if (activeIndex !== -1) {
+        const newTabs = prevTabs.filter((_, i) => i !== activeIndex);
+        if (newTabs.length > 0) {
+          const newActiveIndex = Math.min(activeIndex, newTabs.length - 1);
+          setActiveTab(newTabs[newActiveIndex].value);
+        } else {
+          setActiveTab(null);
+        }
+        return newTabs;
+      }
+      return prevTabs;
+    });
+  }, [setTabs, setActiveTab]);
+
+  const handleCloseAllTabs = useCallback(() => {
+    setTabs([]);
+    setActiveTab(null);
+  }, [setTabs, setActiveTab]);
+
+  const handleMinimizeWindow = useCallback(async () => {
+    try {
+      const webviewWindow = getCurrentWebviewWindow();
+      await webviewWindow.minimize();
+    } catch (error) {
+      console.error("Failed to minimize window:", error);
+    }
+  }, []);
+
+  const handleToggleMaximize = useCallback(async () => {
+    try {
+      const webviewWindow = getCurrentWebviewWindow();
+      await webviewWindow.toggleMaximize();
+    } catch (error) {
+      console.error("Failed to toggle maximize:", error);
+    }
+  }, []);
+
+  const handleToggleFullScreen = useCallback(async () => {
+    try {
+      const webviewWindow = getCurrentWebviewWindow();
+      const isFullscreen = await webviewWindow.isFullscreen();
+      await webviewWindow.setFullscreen(!isFullscreen);
+    } catch (error) {
+      console.error("Failed to toggle fullscreen:", error);
+    }
+  }, []);
+
   const menuActions: MenuGroup[] = useMemo(
     () => [
+      {
+        label: t("features.menu.pawnAppetit"),
+        options: [
+          {
+            label: t("features.menu.about"),
+            id: "about",
+            action: handleAbout,
+          },
+          { label: "divider" },
+          {
+            label: t("features.menu.checkUpdate"),
+            id: "check_for_updates",
+            action: checkForUpdates,
+          },
+          { label: "divider" },
+          {
+            label: t("features.menu.settings"),
+            id: "settings",
+            action: () => navigate({ to: "/settings" }),
+          },
+          { label: "divider" },
+          {
+            label: t("features.menu.quit"),
+            id: "quit",
+            shortcut: formatHotkeyDisplay(keyMap.EXIT_APP.keys),
+            action: () => exit(0),
+          },
+        ],
+      },
       {
         label: t("features.menu.file"),
         options: [
@@ -463,16 +543,90 @@ function RootLayout() {
             action: createNewTab,
           },
           {
+            label: t("features.menu.newPlayBoard"),
+            id: "new_play_board",
+            shortcut: formatHotkeyDisplay(keyMap.PLAY_BOARD.keys),
+            action: () => {
+              navigate({ to: "/boards" });
+              createTab({
+                tab: { name: "Play", type: "play" },
+                setTabs,
+                setActiveTab,
+              });
+            },
+          },
+          {
+            label: t("features.menu.newAnalysisBoard"),
+            id: "new_analysis_board",
+            shortcut: formatHotkeyDisplay(keyMap.ANALYZE_BOARD.keys),
+            action: () => {
+              navigate({ to: "/boards" });
+              createTab({
+                tab: { name: t("features.tabs.analysisBoard.title"), type: "analysis" },
+                setTabs,
+                setActiveTab,
+              });
+            },
+          },
+          { label: "divider" },
+          {
             label: t("features.menu.openFile"),
             id: "open_file",
             shortcut: formatHotkeyDisplay(keyMap.OPEN_FILE.keys),
             action: openNewFile,
           },
           {
-            label: t("features.menu.exit"),
-            id: "exit",
-            shortcut: formatHotkeyDisplay(keyMap.EXIT_APP.keys),
-            action: () => exit(0),
+            label: t("features.menu.importPgn"),
+            id: "import_pgn",
+            shortcut: formatHotkeyDisplay(keyMap.IMPORT_BOARD.keys),
+            action: () => {
+              navigate({ to: "/boards" });
+              modals.openContextModal({
+                modal: "importModal",
+                innerProps: {},
+              });
+            },
+          },
+        ],
+      },
+      {
+        label: t("features.menu.edit"),
+        options: [
+          {
+            label: t("features.menu.undo"),
+            id: "undo",
+            action: () => {
+              document.execCommand("undo");
+            },
+          },
+          {
+            label: t("features.menu.redo"),
+            id: "redo",
+            action: () => {
+              document.execCommand("redo");
+            },
+          },
+          { label: "divider" },
+          {
+            label: t("features.menu.cut"),
+            id: "cut",
+            action: handleCut,
+          },
+          {
+            label: t("features.menu.copy"),
+            id: "copy",
+            action: handleCopy,
+          },
+          {
+            label: t("features.menu.paste"),
+            id: "paste",
+            action: handlePaste,
+          },
+          { label: "divider" },
+          {
+            label: t("features.menu.selectAll"),
+            id: "select_all",
+            action: handleSelectAll,
           },
         ],
       },
@@ -480,16 +634,121 @@ function RootLayout() {
         label: t("features.menu.view"),
         options: [
           {
+            label: t("features.menu.commandPalette"),
+            id: "command_palette",
+            shortcut: formatHotkeyDisplay(keyMap.SPOTLIGHT_SEARCH.keys),
+            action: () => spotlight.open(),
+          },
+          { label: "divider" },
+          {
             label: t("features.menu.reload"),
             id: "reload",
             shortcut: formatHotkeyDisplay(keyMap.APP_RELOAD.keys),
             action: () => location.reload(),
+          },
+          {
+            label: t("features.menu.forceReload"),
+            id: "force_reload",
+            action: () => location.reload(),
+          },
+        ],
+      },
+      {
+        label: t("features.menu.go"),
+        options: [
+          {
+            label: t("features.menu.goToDashboard"),
+            id: "go_dashboard",
+            action: () => navigate({ to: "/" }),
+          },
+          {
+            label: t("features.menu.goToBoards"),
+            id: "go_boards",
+            action: () => navigate({ to: "/boards" }),
+          },
+          {
+            label: t("features.menu.goToAccounts"),
+            id: "go_accounts",
+            action: () => navigate({ to: "/accounts" }),
+          },
+          {
+            label: t("features.menu.goToFiles"),
+            id: "go_files",
+            action: () => navigate({ to: "/files" }),
+          },
+          {
+            label: t("features.menu.goToDatabases"),
+            id: "go_databases",
+            action: () => navigate({ to: "/databases" }),
+          },
+          {
+            label: t("features.menu.goToEngines"),
+            id: "go_engines",
+            action: () => navigate({ to: "/engines" }),
+          },
+          {
+            label: t("features.menu.goToLearn"),
+            id: "go_learn",
+            action: () => navigate({ to: "/learn" }),
+          },
+          { label: "divider" },
+          {
+            label: t("features.menu.goToSettings"),
+            id: "go_settings",
+            action: () => navigate({ to: "/settings" }),
+          },
+          {
+            label: t("features.menu.goToKeyboardShortcuts"),
+            id: "go_keyboard_shortcuts",
+            shortcut: formatHotkeyDisplay(keyMap.SHOW_KEYBINDINGS.keys),
+            action: () => navigate({ to: "/settings/keyboard-shortcuts" }),
+          },
+        ],
+      },
+      {
+        label: t("features.menu.window"),
+        options: [
+          {
+            label: t("features.menu.minimize"),
+            id: "minimize",
+            action: handleMinimizeWindow,
+          },
+          {
+            label: t("features.menu.zoom"),
+            id: "zoom",
+            action: handleToggleMaximize,
+          },
+          { label: "divider" },
+          {
+            label: t("features.menu.closeTab"),
+            id: "close_tab",
+            action: handleCloseTab,
+          },
+          {
+            label: t("features.menu.closeAllTabs"),
+            id: "close_all_tabs",
+            action: handleCloseAllTabs,
           },
         ],
       },
       {
         label: t("features.menu.help"),
         options: [
+          {
+            label: t("features.menu.documentation"),
+            id: "documentation",
+            action: async () => {
+              await openPath("https://pawnappetit.com/docs");
+            },
+          },
+          {
+            label: t("features.menu.reportIssue"),
+            id: "report_issue",
+            action: async () => {
+              await openPath("https://github.com/Pawn-Appetit/pawn-appetit/issues/new");
+            },
+          },
+          { label: "divider" },
           {
             label: t("features.menu.clearSavedData"),
             id: "clear_saved_data",
@@ -500,21 +759,31 @@ function RootLayout() {
             id: "logs",
             action: handleOpenLogs,
           },
-          { label: "divider" },
-          {
-            label: t("features.menu.checkUpdate"),
-            id: "check_for_updates",
-            action: checkForUpdates,
-          },
-          {
-            label: t("features.menu.about"),
-            id: "about",
-            action: handleAbout,
-          },
         ],
       },
     ],
-    [t, keyMap, createNewTab, openNewFile, handleClearData, handleOpenLogs, checkForUpdates, handleAbout],
+    [
+      t,
+      keyMap,
+      createNewTab,
+      openNewFile,
+      handleClearData,
+      handleOpenLogs,
+      checkForUpdates,
+      handleAbout,
+      navigate,
+      setTabs,
+      setActiveTab,
+      handleCut,
+      handleCopy,
+      handlePaste,
+      handleSelectAll,
+      handleCloseTab,
+      handleCloseAllTabs,
+      handleMinimizeWindow,
+      handleToggleMaximize,
+      handleToggleFullScreen,
+    ],
   );
 
   const { data: menu, error: menuError } = useQuery({
