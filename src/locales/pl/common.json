@@ -2,6 +2,31 @@
   "common": {
     "on": "WŁĄCZONE",
     "off": "WYŁĄCZONE",
+    "or": "Lub",
+    "clickToSelectPGN": "Kliknij, aby zaznaczyć plik PGN",
+    "clickToSelectMultiplePGN": "Kliknij, aby zaznaczyć wiele plików PGN",
+    "multipleFiles": "Wiele plików",
+    "unsavedChanges": {
+      "title": "Niezapisane zmiany",
+      "desc": "Zmiany nie zostały zapisane. Czy chcesz je zapisać zamin zamkniesz program?",
+      "saveAndClose": "Zapisz i zamknij"
+    }
+    "grid": "Siatka",
+    "table": "Tabela",
+    "loading": "Ładowanie...",
+    "continue": "Kontynuuj",
+    "review": "Przegląd",
+    "noGameSelected": "Nie zaznaczono żadnej gry",
+    "importMore": "Importuj wiele",
+    "close": "Zamknij",
+    "import": "Importuj",
+    "convert": "Konwertuj",
+    "copy": "Kopiuj",
+    "update": "Aktualizacja",
+    "reload": "Odśwież",
+    "reloadFile": "Odśwież plik",
+    "namePlaceholder": "Nazwa",
+    "details": "Właściwości",
     "name": "Nazwa",
     "description": "Opis",
     "version": "Wersja",
@@ -28,6 +53,7 @@
     "requireName": "Nazwa jest wymagana",
     "requirePath": "Ścieżka jest wymagana",
     "pgnFile": "Plik PGN",
+    "pgnFiles": "Pliki PGN",
     "pgnGame": "Gra PGN",
     "size": "Rozmiar",
     "generalSettings": "Ustawienia ogólne",
@@ -47,6 +73,48 @@
     "engine": "Silnik"
   },
   "chess": {
+    "random": "Losowy",
+    "any": "Dowolny",
+    "player": "Gracz",
+    "opponent": "Przeciwnik",
+    "outcome": {
+      "outcome": "Wynik",
+      "selectOutcome": "Wybierz wynik",
+      "draw": "Remis",
+      "whiteWins": "Białe wygrywają",
+      "blackWins": "Czarne wygrywają",
+      "unknown": "Nieznany"
+    }
+    "opening": {
+      "emptyBoard": "Pusta szachownica",
+      "startingPosition": "Pozycja startu"
+    }
+    "fen": {
+      "start": "Start",
+      "empty": "Pusty",
+      "whiteToMove": "Ruch białych",
+      "blackToMove": "Ruch czarnych"
+    }
+    "pieceChars": {
+      "k": "K",
+      "q": "H",
+      "r": "W",
+      "b": "G",
+      "n": "S"
+    }
+    "errors": {
+      "emptyBoard": "Pusta szachownica",
+      "invalidKings": "Niepoprawna ilość królów",
+      "oppositeCheck": "Szach przeciwnika",
+      "pawnsOnBackrank": "Pionki na ostatniej linii",
+      "invalidBoard": "Niepoprawna szachownica",
+      "invalidCastlingRights": "Brak prawa do roszady",
+      "invalidEpSquare": "Niepoprawne pole do bicia w przelocie",
+      "invalidFen": "Niepoprawny FEN",
+      "invalidFullmoves": "Niepoprawny numer pełnego ruchu",
+      "invalidHaldmoves": "Niepoprawny numer połowy ruchu",
+      "invalidTurn": "Błędna tura"
+    }
     "checkmate": "Szach-mat",
     "stalemate": "Patt",
     "white": "Białe",
