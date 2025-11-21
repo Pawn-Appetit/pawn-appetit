@@ -915,7 +915,10 @@
       "previewBoard": "Preview Board",
       "previewBoardDesc": "Show a preview of the board when hovering over a move in the engine analysis",
       "scrollThroughMoves": "Scroll Through Moves",
-      "scrollThroughMovesDesc": "Enable or disable scrolling through moves on the chessboard"
+      "scrollThroughMovesDesc": "Enable or disable scrolling through moves on the chessboard",
+      "coordinatesNone": "No",
+      "coordinatesInside": "Inside the board",
+      "coordinatesAll": "All squares on the board"
     },
     "inputs": {
       "title": "Inputs",

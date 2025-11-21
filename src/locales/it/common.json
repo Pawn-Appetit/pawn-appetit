@@ -643,7 +643,10 @@
       "previewBoard": "Anteprima della Scacchiera",
       "previewBoardDesc": "Mostra un'anteprima della scacchiera quando si passa con il mouse su una mossa nell'analisi del motore",
       "scrollThroughMoves": "Scorri tra le Mosse",
-      "scrollThroughMovesDesc": "Abilita o disabilita lo scorrimento tra le mosse sulla scacchiera"
+      "scrollThroughMovesDesc": "Abilita o disabilita lo scorrimento tra le mosse sulla scacchiera",
+      "coordinatesNone": "No",
+      "coordinatesInside": "Dentro la scacchiera",
+      "coordinatesAll": "Su tutte le case della scacchiera"
     },
     "inputs": {
       "title": "Input",
