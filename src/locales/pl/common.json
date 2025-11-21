@@ -10,7 +10,7 @@
       "title": "Niezapisane zmiany",
       "desc": "Zmiany nie zostały zapisane. Czy chcesz je zapisać zamin zamkniesz program?",
       "saveAndClose": "Zapisz i zamknij"
-    }
+    },
     "grid": "Siatka",
     "table": "Tabela",
     "loading": "Ładowanie...",
@@ -84,24 +84,24 @@
       "whiteWins": "Białe wygrywają",
       "blackWins": "Czarne wygrywają",
       "unknown": "Nieznany"
-    }
+    },
     "opening": {
       "emptyBoard": "Pusta szachownica",
       "startingPosition": "Pozycja startu"
-    }
+    },
     "fen": {
       "start": "Start",
       "empty": "Pusty",
       "whiteToMove": "Ruch białych",
       "blackToMove": "Ruch czarnych"
-    }
+    },
     "pieceChars": {
       "k": "K",
       "q": "H",
       "r": "W",
       "b": "G",
       "n": "S"
-    }
+    },
     "errors": {
       "emptyBoard": "Pusta szachownica",
       "invalidKings": "Niepoprawna ilość królów",
@@ -114,7 +114,7 @@
       "invalidFullmoves": "Niepoprawny numer pełnego ruchu",
       "invalidHaldmoves": "Niepoprawny numer połowy ruchu",
       "invalidTurn": "Błędna tura"
-    }
+    },
     "checkmate": "Szach-mat",
     "stalemate": "Patt",
     "white": "Białe",
