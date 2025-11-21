@@ -81,7 +81,13 @@ function hasMultipleChildrenUntilPosition(node: TreeNode, remainingPath: number[
   return hasMultipleChildrenUntilPosition(nextNode, remainingPath.slice(1));
 }
 
-function GameNotation({ topBar }: { topBar?: boolean }) {
+function GameNotation({
+  topBar,
+  initialVariationState = "mainline",
+}: {
+  topBar?: boolean;
+  initialVariationState?: VariationState;
+}) {
   const store = useContext(TreeStateContext);
   if (!store) {
     throw new Error("GameNotation must be used within a TreeStateProvider");
@@ -94,10 +100,10 @@ function GameNotation({ topBar }: { topBar?: boolean }) {
   const viewport = useRef<HTMLDivElement>(null);
 
   const [invisibleValue, setInvisible] = useAtom(currentInvisibleAtom);
-  const [variationState, toggleVariationState] = useToggle(["mainline", "variations", "repertoire"]) as [
-    VariationState,
-    () => void,
-  ];
+  const [variationState, toggleVariationState] = useToggle([
+    initialVariationState,
+    ...["mainline", "variations", "repertoire"].filter((v) => v !== initialVariationState),
+  ]) as [VariationState, () => void];
   const [showComments, toggleComments] = useToggle([true, false]);
 
   const invisible = topBar && invisibleValue;

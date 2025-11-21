@@ -219,7 +219,7 @@ function Puzzles({ id }: { id: string }) {
             </ScrollArea>
           </Paper>
           <Stack flex={1} gap="xs">
-            <GameNotation />
+            <GameNotation initialVariationState="variations" />
             <MoveControls readOnly />
           </Stack>
         </Stack>
