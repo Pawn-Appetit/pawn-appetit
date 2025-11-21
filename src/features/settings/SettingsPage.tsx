@@ -71,6 +71,7 @@ export default function Page() {
 
   const [moveMethod, setMoveMethod] = useAtom(moveMethodAtom);
   const [moveNotationType, setMoveNotationType] = useAtom(moveNotationTypeAtom);
+  const [coordinatesMode, setCoordinatesMode] = useAtom(showCoordinatesAtom);
   const [dateFormatMode, setDateFormatMode] = useState(localStorage.getItem("dateFormatMode") || "intl");
 
   const handleDateFormatModeChange = useCallback(
@@ -128,6 +129,15 @@ export default function Page() {
       { label: t("settings.drag"), value: "drag" },
       { label: t("settings.click"), value: "select" },
       { label: t("settings.both"), value: "both" },
+    ],
+    [t],
+  );
+
+  const coordinatesModeData = useMemo(
+    () => [
+      { label: t("settings.board.coordinatesNone"), value: "none" },
+      { label: t("settings.board.coordinatesInside"), value: "inside" },
+      { label: t("settings.board.coordinatesAll"), value: "all" },
     ],
     [t],
   );
@@ -295,7 +305,12 @@ export default function Page() {
                 {t("settings.board.coordinatesDesc")}
               </Text>
             </div>
-            <SettingsSwitch atom={showCoordinatesAtom} />
+            <Select
+              data={coordinatesModeData}
+              allowDeselect={false}
+              value={coordinatesMode}
+              onChange={(val) => setCoordinatesMode(val as "none" | "inside" | "all")}
+            />
           </Group>
         ),
       },
@@ -743,6 +758,8 @@ export default function Page() {
       languages,
       moveNotationData,
       waysToMoveData,
+      coordinatesMode,
+      coordinatesModeData,
       titleBarData,
     ],
   );

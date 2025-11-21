@@ -580,7 +580,8 @@ function Board({
               orientation={orientation}
               fen={currentNode.fen}
               animation={{ enabled: !editingMode }}
-              coordinates={showCoordinates}
+              coordinates={showCoordinates !== "none"}
+              coordinatesOnSquares={showCoordinates === "all"}
               movable={{
                 free: editingMode,
                 color: movableColor,
