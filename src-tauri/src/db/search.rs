@@ -21,7 +21,7 @@ use crate::{
     db::{
         get_db_or_create, get_pawn_home, models::*,
         pgn::{get_material_count, MaterialCount},
-        normalize_games, schema::*, ConnectionOptions,
+        normalize_games, schema::*, ConnectionOptions, GameSort, SortDirection,
     },
     error::Error,
     AppState,
@@ -551,8 +551,8 @@ pub async fn search_position(
 
                     // Check if game contains the target position
                     if let Ok(Some(next_move)) = get_move_after_match(moves, fen, &position_query) {
-                        // Save matching game ID (limit to 50 games)
-                        if acc.matched_ids.len() < 50 {
+                        // Save matching game ID (collect at least 100 games, but allow more)
+                        if acc.matched_ids.len() < 1000 {
                             acc.matched_ids.push(*id);
                         }
                         
@@ -594,7 +594,7 @@ pub async fn search_position(
                     
                     // Merge matched IDs (keep within limit)
                     for id in acc2.matched_ids {
-                        if acc1.matched_ids.len() < 50 {
+                        if acc1.matched_ids.len() < 1000 {
                             acc1.matched_ids.push(id);
                         }
                     }
@@ -799,22 +799,98 @@ pub async fn search_position(
     let openings: Vec<PositionStats> = position_stats.into_values().collect();
 
     // Load full game details for matched games
-    let normalized_games = if !matched_game_ids.is_empty() {
+    let mut normalized_games = if !matched_game_ids.is_empty() {
         let db = &mut get_db_or_create(&state, file.to_str().unwrap(), ConnectionOptions::default())?;
         
         let (white_players, black_players) = diesel::alias!(players as white, players as black);
-        let detailed_games: Vec<(Game, Player, Player, Event, Site)> = games::table
+        let mut query_builder = games::table
             .inner_join(white_players.on(games::white_id.eq(white_players.field(players::id))))
             .inner_join(black_players.on(games::black_id.eq(black_players.field(players::id))))
             .inner_join(events::table.on(games::event_id.eq(events::id)))
             .inner_join(sites::table.on(games::site_id.eq(sites::id)))
             .filter(games::id.eq_any(&matched_game_ids))
-            .load(db)?;
-            
+            .into_boxed();
+        
+        // Apply sorting from query options (except AverageElo which we'll handle in Rust)
+        let query_options = query.options.as_ref();
+        if let Some(options) = query_options {
+            query_builder = match options.sort {
+                GameSort::Id => match options.direction {
+                    SortDirection::Asc => query_builder.order(games::id.asc()),
+                    SortDirection::Desc => query_builder.order(games::id.desc()),
+                },
+                GameSort::Date => match options.direction {
+                    SortDirection::Asc => query_builder.order((games::date.asc(), games::time.asc())),
+                    SortDirection::Desc => query_builder.order((games::date.desc(), games::time.desc())),
+                },
+                GameSort::WhiteElo => match options.direction {
+                    SortDirection::Asc => query_builder.order(games::white_elo.asc()),
+                    SortDirection::Desc => query_builder.order(games::white_elo.desc()),
+                },
+                GameSort::BlackElo => match options.direction {
+                    SortDirection::Asc => query_builder.order(games::black_elo.asc()),
+                    SortDirection::Desc => query_builder.order(games::black_elo.desc()),
+                },
+                GameSort::PlyCount => match options.direction {
+                    SortDirection::Asc => query_builder.order(games::ply_count.asc()),
+                    SortDirection::Desc => query_builder.order(games::ply_count.desc()),
+                },
+                GameSort::AverageElo => {
+                    // AverageElo will be sorted in Rust after calculating
+                    query_builder
+                },
+            };
+        }
+        
+        let detailed_games: Vec<(Game, Player, Player, Event, Site)> = query_builder.load(db)?;
         normalize_games(detailed_games)?
     } else {
         Vec::new()
     };
+    
+    // Sort by average ELO if needed (calculated in Rust)
+    let query_options = query.options.as_ref();
+    let should_sort_by_avg_elo = query_options
+        .map(|opt| matches!(opt.sort, GameSort::AverageElo))
+        .unwrap_or(true); // Default to AverageElo if no options provided
+    
+    let sort_direction = query_options
+        .and_then(|opt| Some(opt.direction.clone()))
+        .unwrap_or(SortDirection::Desc); // Default to Desc if no options provided
+    
+    if should_sort_by_avg_elo {
+        normalized_games.sort_by(|a, b| {
+            // Calculate average ELO: (white_elo + black_elo) / 2, rounded
+            // If only one ELO is available, use that one
+            // If neither is available, treat as 0 for sorting purposes
+            let a_avg = match (a.white_elo, a.black_elo) {
+                (Some(white), Some(black)) => {
+                    // Round the average (same as Math.round in TypeScript)
+                    let sum = white + black;
+                    Some((sum + 1) / 2) // This is equivalent to rounding for integers
+                },
+                (Some(elo), None) | (None, Some(elo)) => Some(elo),
+                (None, None) => None,
+            };
+            let b_avg = match (b.white_elo, b.black_elo) {
+                (Some(white), Some(black)) => {
+                    let sum = white + black;
+                    Some((sum + 1) / 2)
+                },
+                (Some(elo), None) | (None, Some(elo)) => Some(elo),
+                (None, None) => None,
+            };
+            
+            // For sorting, treat None as 0 (lowest priority)
+            let a_val = a_avg.unwrap_or(0);
+            let b_val = b_avg.unwrap_or(0);
+            
+            match sort_direction {
+                SortDirection::Asc => a_val.cmp(&b_val),
+                SortDirection::Desc => b_val.cmp(&a_val), // Descending: higher ELO first
+            }
+        });
+    }
 
     // Cache results (unless caching is disabled for debugging)
     let result = (openings.clone(), normalized_games.clone());

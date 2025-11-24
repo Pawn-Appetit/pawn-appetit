@@ -459,6 +459,8 @@ pub enum GameSort {
     WhiteElo,
     #[serde(rename = "blackElo")]
     BlackElo,
+    #[serde(rename = "averageElo")]
+    AverageElo,
     #[serde(rename = "ply_count")]
     PlyCount,
 }
@@ -717,6 +719,10 @@ pub async fn get_games(
             SortDirection::Asc => sql_query.order(games::black_elo.asc()),
             SortDirection::Desc => sql_query.order(games::black_elo.desc()),
         },
+        GameSort::AverageElo => {
+            // AverageElo will be sorted in Rust after calculating
+            sql_query
+        },
         GameSort::PlyCount => match query_options.direction {
             SortDirection::Asc => sql_query.order(games::ply_count.asc()),
             SortDirection::Desc => sql_query.order(games::ply_count.desc()),
@@ -732,7 +738,42 @@ pub async fn get_games(
     }
 
     let games: Vec<(Game, Player, Player, Event, Site)> = sql_query.load(db)?;
-    let normalized_games = normalize_games(games)?;
+    let mut normalized_games = normalize_games(games)?;
+    
+    // Sort by average ELO if needed (calculated in Rust)
+    if matches!(query_options.sort, GameSort::AverageElo) {
+        normalized_games.sort_by(|a, b| {
+            // Calculate average ELO: (white_elo + black_elo) / 2, rounded
+            // If only one ELO is available, use that one
+            // If neither is available, treat as 0 for sorting purposes
+            let a_avg = match (a.white_elo, a.black_elo) {
+                (Some(white), Some(black)) => {
+                    // Round the average (same as Math.round in TypeScript)
+                    let sum = white + black;
+                    Some((sum + 1) / 2) // This is equivalent to rounding for integers
+                },
+                (Some(elo), None) | (None, Some(elo)) => Some(elo),
+                (None, None) => None,
+            };
+            let b_avg = match (b.white_elo, b.black_elo) {
+                (Some(white), Some(black)) => {
+                    let sum = white + black;
+                    Some((sum + 1) / 2)
+                },
+                (Some(elo), None) | (None, Some(elo)) => Some(elo),
+                (None, None) => None,
+            };
+            
+            // For sorting, treat None as 0 (lowest priority)
+            let a_val = a_avg.unwrap_or(0);
+            let b_val = b_avg.unwrap_or(0);
+            
+            match query_options.direction {
+                SortDirection::Asc => a_val.cmp(&b_val),
+                SortDirection::Desc => b_val.cmp(&a_val), // Descending: higher ELO first
+            }
+        });
+    }
 
     Ok(QueryResponse {
         data: normalized_games,

@@ -628,7 +628,7 @@ export type FidePlayer = { fideid: number; name: string; country: string; sex: s
 export type FileMetadata = { last_modified: bigint; size: bigint; is_dir: boolean; is_readonly: boolean }
 export type GameOutcome = "Won" | "Drawn" | "Lost"
 export type GameQueryJs = { options?: QueryOptions<GameSort> | null; player1?: number | null; player2?: number | null; tournament_id?: number | null; start_date?: string | null; end_date?: string | null; range1?: [number, number] | null; range2?: [number, number] | null; sides?: Sides | null; outcome?: string | null; position?: PositionQueryJs | null; wanted_result?: string | null }
-export type GameSort = "id" | "date" | "whiteElo" | "blackElo" | "ply_count"
+export type GameSort = "id" | "date" | "whiteElo" | "blackElo" | "averageElo" | "ply_count"
 /**
  * Engine search mode (depth, time, nodes, etc).
  */
