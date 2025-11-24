@@ -41,6 +41,8 @@ export type LocalOptions = {
   start_date?: string;
   end_date?: string;
   result: "any" | "whitewon" | "draw" | "blackwon";
+  sort?: "id" | "date" | "whiteElo" | "blackElo" | "averageElo" | "ply_count";
+  direction?: "asc" | "desc";
 };
 
 function sortOpenings(openings: Opening[]) {

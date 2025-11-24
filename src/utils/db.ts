@@ -210,6 +210,11 @@ export async function searchPosition(options: LocalOptions, tab: string) {
       start_date: options.start_date,
       end_date: options.end_date,
       wanted_result: options.result,
+      options: {
+        skipCount: true,
+        sort: (options.sort || "averageElo") as "id" | "date" | "whiteElo" | "blackElo" | "averageElo" | "ply_count",
+        direction: (options.direction || "desc") as "asc" | "desc",
+      },
     },
     tab,
   );
