@@ -408,11 +408,21 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
       set(
         produce((state) => {
           state.dirty = true;
-          state.headers = headers;
-          if (headers.fen && headers.fen !== state.root.fen) {
+          // Only update headers metadata, don't reset tree if it has moves
+          // This prevents losing game history when headers are updated
+          const hasMoves = state.root.children.length > 0;
+          
+          // Only reset tree if:
+          // 1. The FEN is different AND
+          // 2. There are no moves in the tree (fresh start)
+          // This allows updating headers without losing game history
+          if (headers.fen && headers.fen !== state.root.fen && !hasMoves) {
             state.root = defaultTree(headers.fen).root;
             state.position = [];
           }
+          
+          // Always update headers metadata
+          state.headers = { ...state.headers, ...headers };
         }),
       ),
     setResult: (result) =>

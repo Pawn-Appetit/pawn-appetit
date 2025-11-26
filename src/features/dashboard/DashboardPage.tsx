@@ -258,7 +258,8 @@ export default function DashboardPage() {
             difficulty: "All",
             onClick: () => {
               const headers = createLocalGameHeaders(last);
-              const pgn = createPGNFromMoves(last.moves, last.result);
+              // Use saved PGN if available, otherwise reconstruct from moves with initial FEN
+              const pgn = last.pgn || createPGNFromMoves(last.moves, last.result, last.initialFen);
 
               createTab({
                 tab: {
@@ -505,7 +506,8 @@ export default function DashboardPage() {
             onRefreshLichess={() => setLastLichessUpdate(Date.now())}
             onAnalyzeLocalGame={(game) => {
               const headers = createLocalGameHeaders(game);
-              const pgn = createPGNFromMoves(game.moves, game.result);
+              // Use saved PGN if available, otherwise reconstruct from moves with initial FEN
+              const pgn = game.pgn || createPGNFromMoves(game.moves, game.result, game.initialFen);
               createTab({
                 tab: {
                   name: `${headers.white} - ${headers.black}`,

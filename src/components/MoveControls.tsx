@@ -6,6 +6,7 @@ import {
   IconChevronsLeft,
   IconChevronsRight,
   IconPlayerPlay,
+  IconPlayerStop,
 } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { memo, useContext } from "react";
@@ -38,6 +39,7 @@ interface MoveControlsProps {
   currentTabSourceType?: string;
   // Start Game props for play tabs
   startGame?: () => void;
+  endGame?: () => void;
   gameState?: "settingUp" | "playing" | "gameOver";
   startGameDisabled?: boolean;
 }
@@ -63,6 +65,7 @@ function MoveControls({
   currentTabSourceType,
   // Start Game props
   startGame,
+  endGame,
   gameState,
   startGameDisabled,
 }: MoveControlsProps) {
@@ -113,9 +116,14 @@ function MoveControls({
       >
         <IconChevronLeft />
       </ActionIcon>
-      {currentTabType === "play" && startGame && (
-        <ActionIcon variant="default" size="lg" onClick={startGame} disabled={startGameDisabled}>
-          <IconPlayerPlay />
+      {currentTabType === "play" && (startGame || endGame) && (
+        <ActionIcon
+          variant="default"
+          size="lg"
+          onClick={gameState === "playing" ? endGame : startGame}
+          disabled={gameState === "playing" ? false : startGameDisabled}
+        >
+          {gameState === "playing" ? <IconPlayerStop /> : <IconPlayerPlay />}
         </ActionIcon>
       )}
       <ActionIcon
