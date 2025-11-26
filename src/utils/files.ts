@@ -95,6 +95,7 @@ export async function createFile({
     type: filetype,
     tags: [],
   };
+  await mkdir(dir, { recursive: true });
   await writeTextFile(file, pgn || makePgn(defaultGame()));
   await writeTextFile(file.replace(".pgn", ".info"), JSON.stringify(metadata));
 
