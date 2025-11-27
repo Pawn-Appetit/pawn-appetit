@@ -1,5 +1,6 @@
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { getGameStats, parsePGN } from "@/utils/chess";
 
 export interface GameRecord {
   id: string;
@@ -112,5 +113,75 @@ export async function clearAllGames(): Promise<void> {
     } catch {
       // ignore
     }
+  }
+}
+
+export async function updateGameRecord(gameId: string, updates: Partial<GameRecord>): Promise<void> {
+  const dir = await appDataDir();
+  const file = await resolve(dir, FILENAME);
+  let records: GameRecord[] = [];
+  try {
+    const text = await readTextFile(file);
+    records = JSON.parse(text);
+  } catch {
+    // file may not exist yet
+    return;
+  }
+  
+  const index = records.findIndex((r) => r.id === gameId);
+  if (index !== -1) {
+    records[index] = { ...records[index], ...updates };
+    await writeTextFile(file, JSON.stringify(records));
+    if (typeof window !== "undefined") {
+      try {
+        window.dispatchEvent(new Event("games:updated"));
+      } catch {
+        // ignore
+      }
+    }
+  }
+}
+
+export interface GameStats {
+  accuracy: number;
+  acpl: number; // Average Centipawns Loss
+}
+
+/**
+ * Calculate accuracy and ACPL for a game record from its PGN.
+ * Returns null if PGN is not available or doesn't contain evaluations.
+ */
+export async function calculateGameStats(game: GameRecord): Promise<GameStats | null> {
+  if (!game.pgn) {
+    return null;
+  }
+
+  try {
+    // Parse the PGN to get the game tree with evaluations
+    const tree = await parsePGN(game.pgn, game.initialFen);
+    
+    // Calculate stats using the same function used in the analysis panel
+    const stats = getGameStats(tree.root);
+    
+    // Determine which color the user played
+    const isUserWhite = game.white.type === "human";
+    const userColor = isUserWhite ? "white" : "black";
+    
+    // Get stats for the user's color
+    const accuracy = userColor === "white" ? stats.whiteAccuracy : stats.blackAccuracy;
+    const acpl = userColor === "white" ? stats.whiteCPL : stats.blackCPL;
+    
+    // Return null if no evaluations were found (accuracy and ACPL would be 0)
+    if (accuracy === 0 && acpl === 0) {
+      return null;
+    }
+    
+    return {
+      accuracy,
+      acpl,
+    };
+  } catch {
+    // If parsing fails, return null
+    return null;
   }
 }

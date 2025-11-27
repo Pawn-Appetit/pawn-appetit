@@ -1,6 +1,8 @@
 import { Avatar, Badge, Button, Group, ScrollArea, Table, Text } from "@mantine/core";
 import { useTranslation } from "react-i18next";
+import { useEffect, useMemo, useState } from "react";
 import type { GameRecord } from "@/utils/gameRecords";
+import { calculateGameStats, type GameStats } from "@/utils/gameRecords";
 
 interface LocalGamesTabProps {
   games: GameRecord[];
@@ -9,6 +11,25 @@ interface LocalGamesTabProps {
 
 export function LocalGamesTab({ games, onAnalyzeGame }: LocalGamesTabProps) {
   const { t } = useTranslation();
+  const [gameStats, setGameStats] = useState<Map<string, GameStats>>(new Map());
+
+  // Calculate stats for all games
+  useEffect(() => {
+    const calculateStats = async () => {
+      const statsMap = new Map<string, GameStats>();
+      await Promise.all(
+        games.map(async (game) => {
+          const stats = await calculateGameStats(game);
+          if (stats) {
+            statsMap.set(game.id, stats);
+          }
+        }),
+      );
+      setGameStats(statsMap);
+    };
+
+    calculateStats();
+  }, [games]);
 
   return (
     <ScrollArea h={{ base: 200, sm: 220, md: 240, lg: 260 }} type="auto">
@@ -19,6 +40,7 @@ export function LocalGamesTab({ games, onAnalyzeGame }: LocalGamesTabProps) {
             <Table.Th>Color</Table.Th>
             <Table.Th>Result</Table.Th>
             <Table.Th>Accuracy</Table.Th>
+            <Table.Th>ACPL</Table.Th>
             <Table.Th>Moves</Table.Th>
             <Table.Th>Date</Table.Th>
             <Table.Th></Table.Th>
@@ -39,6 +61,9 @@ export function LocalGamesTab({ games, onAnalyzeGame }: LocalGamesTabProps) {
             } else {
               dateStr = `${Math.floor(diffMs / (24 * 60 * 60 * 1000))}d ago`;
             }
+            
+            const stats = gameStats.get(g.id);
+            
             return (
               <Table.Tr key={g.id}>
                 <Table.Td>
@@ -58,9 +83,26 @@ export function LocalGamesTab({ games, onAnalyzeGame }: LocalGamesTabProps) {
                   </Badge>
                 </Table.Td>
                 <Table.Td>
-                  <Text size="xs" c="dimmed">
-                    -
-                  </Text>
+                  {stats ? (
+                    <Text size="xs" fw={500}>
+                      {stats.accuracy.toFixed(1)}%
+                    </Text>
+                  ) : (
+                    <Text size="xs" c="dimmed">
+                      -
+                    </Text>
+                  )}
+                </Table.Td>
+                <Table.Td>
+                  {stats ? (
+                    <Text size="xs" fw={500}>
+                      {stats.acpl.toFixed(1)}
+                    </Text>
+                  ) : (
+                    <Text size="xs" c="dimmed">
+                      -
+                    </Text>
+                  )}
                 </Table.Td>
                 <Table.Td>{g.moves.length}</Table.Td>
                 <Table.Td c="dimmed">{dateStr}</Table.Td>

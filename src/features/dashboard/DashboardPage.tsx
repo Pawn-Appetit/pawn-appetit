@@ -517,6 +517,11 @@ export default function DashboardPage() {
                 setActiveTab,
                 pgn,
                 headers,
+              }).then((tabId) => {
+                // Store the gameId in sessionStorage so we can update it when analysis completes
+                if (tabId && typeof window !== "undefined") {
+                  sessionStorage.setItem(`${tabId}_localGameId`, game.id);
+                }
               });
               navigate({ to: "/boards" });
             }}
