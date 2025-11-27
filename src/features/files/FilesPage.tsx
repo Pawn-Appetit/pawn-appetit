@@ -155,15 +155,13 @@ function FilesPage() {
         )}
       </Drawer>
 
-      {files && (
-        <CreateModal
-          opened={createModal}
-          setOpened={toggleCreateModal}
-          files={files}
-          setFiles={mutate}
-          setSelected={setSelected}
-        />
-      )}
+      <CreateModal
+        opened={createModal}
+        setOpened={toggleCreateModal}
+        files={files || []}
+        setFiles={mutate}
+        setSelected={setSelected}
+      />
       {selected && files && (
         <EditModal
           key={selected.name}
