@@ -1,7 +1,7 @@
 import { Result } from "@badrap/result";
 import { useQuery } from "@tanstack/react-query";
 import { BaseDirectory, basename, extname, resolve, tempDir } from "@tauri-apps/api/path";
-import { exists, mkdir, writeTextFile } from "@tauri-apps/plugin-fs";
+import { exists, mkdir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { platform } from "@tauri-apps/plugin-os";
 import { defaultGame, makePgn } from "chessops/pgn";
 import { commands } from "@/bindings";
@@ -39,11 +39,25 @@ export async function openFile(
 
   const fileName = await getFileNameWithoutExtension(file);
 
+  // Read the file metadata from .info file to get the correct file type
+  const metadataPath = file.replace(".pgn", ".info");
+  let fileType: "game" | "repertoire" | "tournament" | "puzzle" | "variants" | "other" = "game";
+  if (await exists(metadataPath)) {
+    try {
+      const metadata = JSON.parse(await readTextFile(metadataPath));
+      if (metadata.type) {
+        fileType = metadata.type;
+      }
+    } catch {
+      // If parsing fails, use default type
+    }
+  }
+
   const fileInfo: FileMetadata = {
     type: "file",
     metadata: {
       tags: [],
-      type: "game",
+      type: fileType,
     },
     name: fileName,
     path: file,
@@ -52,6 +66,8 @@ export async function openFile(
   };
 
   // Parse only the first game for session storage
+  // For variants files, parse as normal PGN (with variations) but display in variants view
+  // Don't use isVariantsMode for parsing - that's only for special PGNs where all sequences are variations
   const firstGameTree = await parsePGN(games[0]);
 
   const tabId = await createTab({
@@ -83,7 +99,7 @@ export async function createFile({
   dir,
 }: {
   filename: string;
-  filetype: "game" | "repertoire" | "tournament" | "puzzle" | "other";
+  filetype: "game" | "repertoire" | "tournament" | "puzzle" | "variants" | "other";
   pgn?: string;
   dir: string;
 }): Promise<Result<FileMetadata>> {

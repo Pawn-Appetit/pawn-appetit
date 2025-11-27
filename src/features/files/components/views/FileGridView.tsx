@@ -1,5 +1,5 @@
 import { Badge, Box, Group, SimpleGrid, Skeleton, Stack, Text } from "@mantine/core";
-import { IconBook, IconChess, IconFileText, IconTarget, IconTrophy } from "@tabler/icons-react";
+import { IconArrowsSplit, IconBook, IconChess, IconFileText, IconTarget, IconTrophy } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import Fuse from "fuse.js";
 import { useAtom, useSetAtom } from "jotai";
@@ -29,6 +29,8 @@ function getFileTypeIcon(fileType: string) {
       return <IconTrophy size="1.5rem" />;
     case "puzzle":
       return <IconTarget size="1.5rem" />;
+    case "variants":
+      return <IconArrowsSplit size="1.5rem" />;
     default:
       return <IconFileText size="1.5rem" />;
   }

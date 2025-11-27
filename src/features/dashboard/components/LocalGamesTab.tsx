@@ -13,22 +13,54 @@ export function LocalGamesTab({ games, onAnalyzeGame }: LocalGamesTabProps) {
   const { t } = useTranslation();
   const [gameStats, setGameStats] = useState<Map<string, GameStats>>(new Map());
 
-  // Calculate stats for all games
+  // Calculate stats for all games (lazy, non-blocking)
   useEffect(() => {
+    if (games.length === 0) return;
+    
+    let cancelled = false;
+    
     const calculateStats = async () => {
       const statsMap = new Map<string, GameStats>();
-      await Promise.all(
-        games.map(async (game) => {
+      
+      // Process games with small delays to avoid blocking the UI
+      for (const game of games) {
+        if (cancelled) break;
+        
+        try {
           const stats = await calculateGameStats(game);
-          if (stats) {
+          if (stats && !cancelled) {
             statsMap.set(game.id, stats);
+            // Update state incrementally
+            setGameStats(new Map(statsMap));
           }
-        }),
-      );
-      setGameStats(statsMap);
+        } catch {
+          // Silently skip games that fail to parse
+        }
+        
+        // Small delay to yield to the UI thread
+        if (!cancelled) {
+          await new Promise((resolve) => setTimeout(resolve, 10));
+        }
+      }
+      
+      if (!cancelled) {
+        setGameStats(statsMap);
+      }
     };
 
-    calculateStats();
+    // Delay initial calculation to avoid blocking initial render
+    const timeoutId = setTimeout(() => {
+      if (!cancelled) {
+        calculateStats().catch(() => {
+          // Silently handle any errors
+        });
+      }
+    }, 100);
+    
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
   }, [games]);
 
   return (

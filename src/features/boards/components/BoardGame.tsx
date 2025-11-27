@@ -26,6 +26,7 @@ import {
   IconCpu,
   IconPlayerStop,
   IconPlus,
+  IconPuzzle,
   IconUser,
   IconZoomCheck,
 } from "@tabler/icons-react";
@@ -50,6 +51,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
+import { notifications } from "@mantine/notifications";
+import { save } from "@tauri-apps/plugin-dialog";
 import { commands, events, type GoMode, type Outcome } from "@/bindings";
 import GameInfo from "@/components/GameInfo";
 import MoveControls from "@/components/MoveControls";
@@ -65,13 +68,16 @@ import {
   loadableEnginesAtom,
   tabsAtom,
 } from "@/state/atoms";
-import { getLastMainlinePosition, getMainLine, getPGN, getVariationLine } from "@/utils/chess";
+import { getLastMainlinePosition, getMainLine, getPGN, getVariationLine, getMoveText } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import type { TimeControlField } from "@/utils/clock";
+import { getDocumentDir } from "@/utils/documentDir";
+import { formatDateToPGN } from "@/utils/format";
 import type { LocalEngine } from "@/utils/engines";
+import { createFile } from "@/utils/files";
 import { saveGameRecord, type GameRecord } from "@/utils/gameRecords";
 import { createTab } from "@/utils/tabs";
-import { type GameHeaders, treeIteratorMainLine } from "@/utils/treeReducer";
+import { type GameHeaders, type TreeNode, treeIteratorMainLine } from "@/utils/treeReducer";
 import GameNotationWrapper from "./GameNotationWrapper";
 import ResponsiveBoard from "./ResponsiveBoard";
 
@@ -1276,6 +1282,160 @@ function BoardGame() {
     [player1Settings.timeControl],
   );
 
+  // Check if we're coming from a variants file
+  const isFromVariants = activeTabData?.source?.type === "file" && activeTabData?.source?.metadata?.type === "variants";
+  
+  // Get board orientation (default to white if not set)
+  const boardOrientation = headers.orientation || "white";
+  
+  // Generate puzzles from variants
+  const generatePuzzles = useCallback(async () => {
+    try {
+      // Get document directory
+      const documentDir = await getDocumentDir();
+      
+      // Open save dialog
+      const filePath = await save({
+        defaultPath: `${documentDir}/puzzles-${formatDateToPGN(new Date())}.pgn`,
+        filters: [
+          {
+            name: "PGN",
+            extensions: ["pgn"],
+          },
+        ],
+      });
+      
+      if (!filePath) return;
+      
+      // Get filename without extension
+      const fileName = filePath.replace(/\.pgn$/, "").split(/[/\\]/).pop() || `puzzles-${formatDateToPGN(new Date())}`;
+      
+      // Generate puzzles from the current tree
+      // Each puzzle is based on a position where there are multiple variations (next moves)
+      const puzzles: string[] = [];
+      
+      // Function to recursively find positions with variations
+      const findPuzzlePositions = (node: TreeNode, depth = 0): void => {
+        // Only consider positions where it's the turn of the puzzle color
+        const [pos] = positionFromFen(node.fen);
+        if (!pos) return;
+        
+        const currentTurn = pos.turn;
+        const puzzleColor = boardOrientation === "white" ? "white" : "black";
+        
+        // If this position has multiple children (variations) and it's the puzzle color's turn
+        if (node.children.length > 1 && currentTurn === puzzleColor) {
+          // Create a puzzle from this position
+          // Take the first variation as the solution (or any variation)
+          const solutionVariation = node.children[0];
+          
+          // Get the solution moves (just the next move, or up to 2 moves if needed)
+          let solutionMoves = "";
+          if (solutionVariation.san) {
+            solutionMoves = getMoveText(solutionVariation, {
+              glyphs: false,
+              comments: false,
+              extraMarkups: false,
+              isFirst: false,
+            }).trim();
+            
+            // If there's a continuation, add it
+            if (solutionVariation.children.length > 0 && solutionVariation.children[0].san) {
+              const nextMove = getMoveText(solutionVariation.children[0], {
+                glyphs: false,
+                comments: false,
+                extraMarkups: false,
+                isFirst: false,
+              }).trim();
+              solutionMoves += " " + nextMove;
+            }
+          }
+          
+          // Create puzzle PGN
+          let puzzlePGN = `[FEN "${node.fen}"]\n`;
+          puzzlePGN += `[Solution "${solutionMoves}"]\n`;
+          puzzlePGN += `\n${solutionMoves}\n\n`;
+          
+          puzzles.push(puzzlePGN);
+        }
+        
+        // Recursively check children (limit depth to avoid too many puzzles)
+        if (depth < 10) {
+          for (const child of node.children) {
+            findPuzzlePositions(child, depth + 1);
+          }
+        }
+      };
+      
+      // Start from root
+      findPuzzlePositions(root);
+      
+      // If no puzzles found from variations, create puzzles from positions with at least one move
+      if (puzzles.length === 0) {
+        // Create puzzles from all positions where it's the puzzle color's turn
+        const createPuzzlesFromPositions = (node: TreeNode, depth = 0): void => {
+          const [pos] = positionFromFen(node.fen);
+          if (!pos) return;
+          
+          const currentTurn = pos.turn;
+          const puzzleColor = boardOrientation === "white" ? "white" : "black";
+          
+          // If it's the puzzle color's turn and there's at least one move
+          if (currentTurn === puzzleColor && node.children.length > 0) {
+            const solutionVariation = node.children[0];
+            
+            if (solutionVariation.san) {
+              const solutionMoves = getMoveText(solutionVariation, {
+                glyphs: false,
+                comments: false,
+                extraMarkups: false,
+                isFirst: false,
+              }).trim();
+              
+              let puzzlePGN = `[FEN "${node.fen}"]\n`;
+              puzzlePGN += `[Solution "${solutionMoves}"]\n`;
+              puzzlePGN += `\n${solutionMoves}\n\n`;
+              
+              puzzles.push(puzzlePGN);
+            }
+          }
+          
+          // Recursively check children
+          if (depth < 10) {
+            for (const child of node.children) {
+              createPuzzlesFromPositions(child, depth + 1);
+            }
+          }
+        };
+        
+        createPuzzlesFromPositions(root);
+      }
+      
+      // Combine all puzzles into a single PGN string
+      const puzzlesPGN = puzzles.join("");
+      
+      // Create the file with puzzle type
+      await createFile({
+        filename: fileName,
+        filetype: "puzzle",
+        pgn: puzzlesPGN,
+        dir: documentDir,
+      });
+      
+      notifications.show({
+        title: t("common.save"),
+        message: t("common.puzzlesGeneratedSuccessfully"),
+        color: "green",
+      });
+    } catch (error) {
+      notifications.show({
+        title: t("common.error"),
+        message: t("common.failedToGeneratePuzzles"),
+        color: "red",
+      });
+    }
+  }, [root, boardOrientation, t]);
+
   const onePlayerIsEngine =
     (players.white.type === "engine" || players.black.type === "engine") && players.white.type !== players.black.type;
 
@@ -1484,14 +1644,26 @@ function BoardGame() {
         </>
       )}
       <GameNotationWrapper topBar>
+        <Stack gap="xs">
         <MoveControls
           readOnly
           currentTabType="play"
           startGame={startGame}
-          endGame={endGame}
+            endGame={endGame}
           gameState={gameState}
           startGameDisabled={startGameDisabled}
         />
+          {isFromVariants && (
+            <Button
+              leftSection={<IconPuzzle size={18} />}
+              onClick={generatePuzzles}
+              variant="light"
+              fullWidth
+            >
+              {t("common.generatePuzzles")}
+            </Button>
+          )}
+        </Stack>
       </GameNotationWrapper>
     </>
   );
