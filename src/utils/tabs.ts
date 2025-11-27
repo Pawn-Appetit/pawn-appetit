@@ -69,8 +69,38 @@ export async function createTab({
 
   if (pgn !== undefined) {
     const tree = await parsePGN(pgn, headers?.fen);
+    // If headers are provided, only merge them if the parsed PGN headers are incomplete
+    // This preserves complete headers from saved PGNs (like game.pgn) while allowing
+    // updates for PGNs that were reconstructed from moves
     if (headers) {
-      tree.headers = headers;
+      const parsedHeaders = tree.headers;
+      // Check if parsed headers are complete (not just default values)
+      const hasCompleteHeaders = 
+        parsedHeaders.event && parsedHeaders.event !== "?" &&
+        parsedHeaders.site && parsedHeaders.site !== "?" &&
+        parsedHeaders.white && parsedHeaders.white !== "?" &&
+        parsedHeaders.black && parsedHeaders.black !== "?";
+      
+      if (hasCompleteHeaders) {
+        // PGN has complete headers, preserve them (especially FEN which is the initial position)
+        // Only update fields that are explicitly provided and missing in parsed headers
+        tree.headers = {
+          ...parsedHeaders,
+          // Preserve FEN from parsed headers (it's the initial FEN from PGN)
+          fen: parsedHeaders.fen,
+          // Only override if provided and missing in parsed headers
+          time_control: parsedHeaders.time_control || headers.time_control,
+          variant: parsedHeaders.variant || headers.variant,
+        };
+      } else {
+        // PGN headers are incomplete, merge with provided headers
+        // But always preserve FEN from parsed headers if it exists
+        tree.headers = {
+          ...parsedHeaders,
+          ...headers,
+          fen: parsedHeaders.fen || headers.fen,
+        };
+      }
       if (position) {
         tree.position = position;
       }

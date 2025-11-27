@@ -19,12 +19,22 @@ import {
   TextInput,
   ThemeIcon,
 } from "@mantine/core";
-import { IconAlertCircle, IconArrowsExchange, IconCpu, IconPlus, IconUser, IconZoomCheck } from "@tabler/icons-react";
+import {
+  IconAlertCircle,
+  IconArrowsExchange,
+  IconCheck,
+  IconCpu,
+  IconPlayerStop,
+  IconPlus,
+  IconUser,
+  IconZoomCheck,
+} from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { parseUci } from "chessops";
+import { makeSan, parseSan } from "chessops/san";
 import { INITIAL_FEN } from "chessops/fen";
 import equal from "fast-deep-equal";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   type ChangeEvent,
   type Dispatch,
@@ -55,11 +65,12 @@ import {
   loadableEnginesAtom,
   tabsAtom,
 } from "@/state/atoms";
-import { getMainLine } from "@/utils/chess";
+import { getLastMainlinePosition, getMainLine, getPGN, getVariationLine } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import type { TimeControlField } from "@/utils/clock";
 import type { LocalEngine } from "@/utils/engines";
-import { saveGameRecord } from "@/utils/gameRecords";
+import { saveGameRecord, type GameRecord } from "@/utils/gameRecords";
+import { createTab } from "@/utils/tabs";
 import { type GameHeaders, treeIteratorMainLine } from "@/utils/treeReducer";
 import GameNotationWrapper from "./GameNotationWrapper";
 import ResponsiveBoard from "./ResponsiveBoard";
@@ -93,7 +104,12 @@ function EnginesSelect({ engine, setEngine, engines = [], enginesState }: Engine
   if (enginesState !== "loading" && engines.length === 0) {
     return (
       <Stack gap="md">
-        <Alert icon={<IconAlertCircle size={16} />} title={t("game.noEnginesAvailable")} color="orange" variant="light">
+        <Alert
+          icon={<IconAlertCircle size={16} />}
+          title={t("game.noEnginesAvailable")}
+          color="orange"
+          variant="light"
+        >
           <Text size="sm">{t("game.noEnginesAvailableDesc")}</Text>
         </Alert>
         <Button variant="outline" size="sm" onClick={() => navigate({ to: "/engines" })}>
@@ -362,12 +378,48 @@ function useClockTimer(
 ) {
   const [intervalId, setIntervalId] = useState<ReturnType<typeof setInterval> | null>(null);
 
+  // Track previous turn to detect turn changes
+  const prevTurnRef = useRef<"white" | "black" | null>(null);
+  const incrementAppliedRef = useRef<string>("");
+  const whiteTimeRef = useRef(whiteTime);
+  const blackTimeRef = useRef(blackTime);
+
+  // Keep refs in sync with state
   useEffect(() => {
+    whiteTimeRef.current = whiteTime;
+    blackTimeRef.current = blackTime;
+  }, [whiteTime, blackTime]);
+
+  // Clear interval and apply increment when turn changes
+  useEffect(() => {
+    if (gameState === "playing" && pos?.turn) {
+      const currentTurn = pos.turn;
+      const prevTurn = prevTurnRef.current;
+      const turnKey = `${prevTurn}-${currentTurn}-${pos.fullmoves}`;
+
+      // If turn changed, clear interval and apply increment
+      if (prevTurn !== null && prevTurn !== currentTurn && incrementAppliedRef.current !== turnKey) {
+        // Clear existing interval
     if (intervalId) {
       clearInterval(intervalId);
       setIntervalId(null);
     }
-  }, [pos?.turn]);
+
+        // Apply increment to the player who just moved (previous turn)
+        // Use refs to avoid dependency on whiteTime/blackTime
+        if (prevTurn === "white" && whiteTimeRef.current !== null && pos.fullmoves > 1) {
+          setWhiteTime((prev) => (prev ?? 0) + (players.white.timeControl?.increment ?? 0));
+        } else if (prevTurn === "black" && blackTimeRef.current !== null) {
+          setBlackTime((prev) => (prev ?? 0) + (players.black.timeControl?.increment ?? 0));
+        }
+
+        incrementAppliedRef.current = turnKey;
+      }
+
+      // Update previous turn
+      prevTurnRef.current = currentTurn;
+    }
+  }, [gameState, pos?.turn, pos?.fullmoves, intervalId, players, setWhiteTime, setBlackTime]);
 
   useEffect(() => {
     if (gameState === "playing") {
@@ -388,37 +440,102 @@ function useClockTimer(
     }
   }, [gameState, intervalId]);
 
+  // Start timer for current turn
   useEffect(() => {
-    if (gameState === "playing" && !intervalId) {
+    if (gameState === "playing" && pos && !intervalId) {
       const decrementTime = () => {
-        if (pos?.turn === "white" && whiteTime !== null) {
-          setWhiteTime((prev) => prev! - CLOCK_UPDATE_INTERVAL);
-        } else if (pos?.turn === "black" && blackTime !== null) {
-          setBlackTime((prev) => prev! - CLOCK_UPDATE_INTERVAL);
+        if (pos.turn === "white" && whiteTime !== null) {
+          setWhiteTime((prev) => {
+            const current = prev ?? 0;
+            return current > 0 ? current - CLOCK_UPDATE_INTERVAL : 0;
+          });
+        } else if (pos.turn === "black" && blackTime !== null) {
+          setBlackTime((prev) => {
+            const current = prev ?? 0;
+            return current > 0 ? current - CLOCK_UPDATE_INTERVAL : 0;
+          });
         }
       };
-
-      if (pos?.turn === "black" && whiteTime !== null) {
-        setWhiteTime((prev) => prev! + (players.white.timeControl?.increment ?? 0));
-      }
-      if (pos?.turn === "white" && blackTime !== null && pos?.fullmoves !== 1) {
-        setBlackTime((prev) => prev! + (players.black.timeControl?.increment ?? 0));
-      }
 
       const id = setInterval(decrementTime, CLOCK_UPDATE_INTERVAL);
       setIntervalId(id);
     }
-  }, [gameState, intervalId, pos?.turn, pos?.fullmoves, whiteTime, blackTime, players, setWhiteTime, setBlackTime]);
+  }, [gameState, intervalId, pos?.turn, setWhiteTime, setBlackTime, pos]);
 }
 
 function BoardGame() {
   const activeTab = useAtomValue(activeTabAtom);
   const { t } = useTranslation();
 
-  const [inputColor, setInputColor] = useState<ColorChoice>("white");
+  // Load saved game settings from localStorage
+  const loadGameSettings = useCallback(() => {
+    try {
+      const saved = localStorage.getItem("boardGameSettings");
+      if (saved) {
+        const settings = JSON.parse(saved);
+        return {
+          inputColor: settings.inputColor || "white",
+          sameTimeControl: settings.sameTimeControl ?? true,
+          customFen: settings.customFen || "",
+          player1Settings: settings.player1Settings || {
+            type: "human",
+            name: "Player",
+            timeControl: DEFAULT_TIME_CONTROL,
+          },
+          player2Settings: settings.player2Settings || {
+            type: "human",
+            name: "Player",
+            timeControl: DEFAULT_TIME_CONTROL,
+          },
+        };
+      }
+    } catch (e) {
+      // Failed to load game settings
+    }
+    return {
+      inputColor: "white" as ColorChoice,
+      sameTimeControl: true,
+      customFen: "",
+      player1Settings: {
+        type: "human" as const,
+        name: "Player",
+        timeControl: DEFAULT_TIME_CONTROL,
+      },
+      player2Settings: {
+        type: "human" as const,
+        name: "Player",
+        timeControl: DEFAULT_TIME_CONTROL,
+      },
+    };
+  }, []);
+
+  // Save game settings to localStorage
+  const saveGameSettings = useCallback(
+    (settings: {
+      inputColor: ColorChoice;
+      sameTimeControl: boolean;
+      customFen: string;
+      player1Settings: OpponentSettings;
+      player2Settings: OpponentSettings;
+    }) => {
+      try {
+        localStorage.setItem("boardGameSettings", JSON.stringify(settings));
+      } catch (e) {
+        // Failed to save game settings
+      }
+    },
+    [],
+  );
+
+  const savedSettings = loadGameSettings();
+  const [inputColor, setInputColor] = useState<ColorChoice>(savedSettings.inputColor);
   const [viewPawnStructure, setViewPawnStructure] = useState(false);
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
-  const [sameTimeControl, setSameTimeControl] = useState(true);
+  const [sameTimeControl, setSameTimeControl] = useState(savedSettings.sameTimeControl);
+  const [customFen, setCustomFen] = useState<string>(savedSettings.customFen);
+  const [fenError, setFenError] = useState<string | null>(null);
+  const [isApplyingFen, setIsApplyingFen] = useState(false);
+  const fenInputRef = useRef<HTMLInputElement>(null);
 
   const cycleColor = useCallback(() => {
     setInputColor((prev) =>
@@ -430,16 +547,58 @@ function BoardGame() {
     );
   }, []);
 
-  const [player1Settings, setPlayer1Settings] = useState<OpponentSettings>({
-    type: "human",
-    name: "Player",
-    timeControl: DEFAULT_TIME_CONTROL,
-  });
-  const [player2Settings, setPlayer2Settings] = useState<OpponentSettings>({
-    type: "human",
-    name: "Player",
-    timeControl: DEFAULT_TIME_CONTROL,
-  });
+  const validateFen = useCallback(
+    (fen: string) => {
+      if (!fen.trim()) {
+        setFenError(null);
+        return true;
+      }
+      const [pos, err] = positionFromFen(fen);
+      if (err || !pos) {
+        setFenError(t("game.invalidFen") || "Invalid FEN position");
+        return false;
+      }
+      setFenError(null);
+      return true;
+    },
+    [t],
+  );
+
+  const [player1Settings, setPlayer1Settings] = useState<OpponentSettings>(savedSettings.player1Settings);
+  const [player2Settings, setPlayer2Settings] = useState<OpponentSettings>(savedSettings.player2Settings);
+
+  // Save settings with debounce (excluding when manually applying FEN)
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  useEffect(() => {
+    // Skip auto-save when manually applying FEN to avoid conflicts
+    if (isApplyingFen) {
+      return;
+    }
+    
+    // Clear any pending save
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    saveTimeoutRef.current = setTimeout(() => {
+      saveGameSettings({
+        inputColor,
+        sameTimeControl,
+        customFen,
+        player1Settings,
+        player2Settings,
+      });
+      saveTimeoutRef.current = null;
+    }, 300);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = null;
+      }
+    };
+  }, [inputColor, sameTimeControl, customFen, player1Settings, player2Settings, saveGameSettings, isApplyingFen]);
 
   const getPlayers = useCallback(() => {
     let white = inputColor === "white" ? player1Settings : player2Settings;
@@ -460,6 +619,7 @@ function BoardGame() {
   const appendMove = useStore(store, (s) => s.appendMove);
 
   const [tabs, setTabs] = useAtom(tabsAtom);
+  const setActiveTab = useSetAtom(activeTabAtom);
   const boardRef = useRef(null);
   const [gameState, setGameState] = useAtom(currentGameStateAtom);
   const [players, setPlayers] = useAtom(currentPlayersAtom);
@@ -473,15 +633,18 @@ function BoardGame() {
 
   const [whiteTime, setWhiteTime] = useState<number | null>(null);
   const [blackTime, setBlackTime] = useState<number | null>(null);
+  const engineRequestRef = useRef<string | null>(null);
 
   const changeToAnalysisMode = useCallback(() => {
     setTabs((prev) => prev.map((tab) => (tab.value === activeTab ? { ...tab, type: "analysis" } : tab)));
   }, [activeTab, setTabs]);
 
-  const mainLine = Array.from(treeIteratorMainLine(root));
-  const lastNode = mainLine[mainLine.length - 1].node;
+  const mainLine = useMemo(() => Array.from(treeIteratorMainLine(root)), [root]);
+  const lastNode = useMemo(() => mainLine[mainLine.length - 1].node, [mainLine]);
   const moves = useMemo(() => getMainLine(root, headers.variant === "Chess960"), [root, headers.variant]);
 
+  // Use root and position to ensure pos updates when moves are made
+  const position = useStore(store, (s) => s.position);
   const [pos, error] = useMemo(() => positionFromFen(lastNode.fen), [lastNode.fen]);
 
   const activeTabData = tabs?.find((tab) => tab.value === activeTab);
@@ -501,15 +664,35 @@ function BoardGame() {
   }, [pos, setGameState]);
 
   useEffect(() => {
+    // Only request engine moves when game is actively playing
     if (pos && gameState === "playing" && headers.result === "*") {
       const currentTurn = pos.turn;
       const player = currentTurn === "white" ? players.white : players.black;
 
       if (player.type === "engine" && player.engine) {
+        const engine = player.engine;
+        const tabKey = activeTab + currentTurn;
+        
+        // Create a unique key for this request to prevent duplicate calls
+        // Include engine path to ensure uniqueness per engine instance
+        const requestKey = `${tabKey}-${engine.path}-${root.fen}-${moves.join(",")}`;
+        
+        // Skip if we're already processing this exact request
+        if (engineRequestRef.current === requestKey) {
+          return;
+        }
+
+        // Mark this request as in progress BEFORE making the call
+        // This prevents multiple calls from creating duplicate engines
+        engineRequestRef.current = requestKey;
+        
+        // Let the Rust code handle engine reuse/creation
+        // The Rust manager checks if an engine exists and reuses it if options match
+        // If options don't match, it stops and reconfigures the existing engine
         commands.getBestMoves(
           currentTurn,
-          player.engine.path,
-          activeTab + currentTurn,
+          engine.path,
+          tabKey,
           player.timeControl
             ? {
                 t: "PlayersTime",
@@ -524,25 +707,59 @@ function BoardGame() {
           {
             fen: root.fen,
             moves: moves,
-            extraOptions: (player.engine.settings || [])
+            extraOptions: (engine.settings || [])
               .filter((s) => s.name !== "MultiPV")
               .map((s) => ({ ...s, value: s.value?.toString() ?? "" })),
           },
-        );
+        ).catch(() => {
+          // Clear the ref on error so we can retry
+          engineRequestRef.current = null;
+        });
+      } else {
+        // Clear ref if it's not an engine turn
+        engineRequestRef.current = null;
       }
+    } else if (gameState !== "playing" && activeTab) {
+      // Kill engines when game is not playing to prevent multiple instances
+      // But only if we're not transitioning to playing (handled by startGame)
+      engineRequestRef.current = null;
     }
-  }, [gameState, pos, players, headers.result, activeTab, root.fen, moves]);
+  }, [gameState, pos, players, headers.result, activeTab, root.fen, moves, whiteTime, blackTime]);
+
+  // Store current moves and root.fen in refs to avoid recreating listener
+  const movesRef = useRef<string[]>(moves);
+  const rootFenRef = useRef<string>(root.fen);
+  useEffect(() => {
+    movesRef.current = moves;
+    rootFenRef.current = root.fen;
+  }, [moves, root.fen]);
 
   useEffect(() => {
     const unlisten = events.bestMovesPayload.listen(({ payload }) => {
+      // Only process moves when game is actively playing
+      if (gameState !== "playing" || !activeTab || !pos) {
+        return;
+      }
+      
+      // Clear the engine request ref when we receive any response for this tab/turn
+      // This allows new requests even if the payload doesn't match exactly
+      if (payload.tab === activeTab + pos.turn) {
+        engineRequestRef.current = null;
+      }
+      
       const ev = payload.bestLines;
+      // CRITICAL: The payload.fen is the INITIAL FEN (root.fen) that was sent to getBestMoves
+      // The backend sends proc.options.fen which is root.fen, not the final FEN after moves
+      // So we must compare with root.fen, not lastNode.fen
+      // The moves array in the payload should match the current moves array
+      // Using refs to avoid recreating the listener on every change
       if (
         payload.progress === 100 &&
-        payload.engine === pos?.turn &&
+        payload.engine === pos.turn &&
         payload.tab === activeTab + pos.turn &&
-        payload.fen === root.fen &&
-        equal(payload.moves, moves) &&
-        !pos?.isEnd()
+        payload.fen === rootFenRef.current && // Backend sends root.fen in payload, not final FEN
+        equal(payload.moves, movesRef.current) && // Use ref to avoid listener recreation
+        !pos.isEnd()
       ) {
         appendMove({
           payload: parseUci(ev[0].uciMoves[0])!,
@@ -553,7 +770,7 @@ function BoardGame() {
     return () => {
       unlisten.then((f) => f());
     };
-  }, [activeTab, appendMove, pos, root.fen, moves, whiteTime, blackTime]);
+  }, [gameState, activeTab, appendMove, pos, whiteTime, blackTime]);
 
   const movable = useMemo(() => {
     if (players.white.type === "human" && players.black.type === "human") return "turn";
@@ -566,30 +783,92 @@ function BoardGame() {
 
   useEffect(() => {
     if (gameState === "gameOver" && headers.result && headers.result !== "*") {
-      const record = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        white: {
-          type: players.white.type,
-          name: players.white.type === "human" ? players.white.name : players.white.engine?.name,
-          engine: players.white.type === "engine" ? players.white.engine?.path : undefined,
-        },
-        black: {
-          type: players.black.type,
-          name: players.black.type === "human" ? players.black.name : players.black.engine?.name,
-          engine: players.black.type === "engine" ? players.black.engine?.path : undefined,
-        },
-        result: headers.result,
-        timeControl: headers.time_control || `${headers.white_time_control || ""},${headers.black_time_control || ""}`,
-        timestamp: Date.now(),
-        moves: getMainLine(root, headers.variant === "Chess960"),
-        variant: headers.variant ?? undefined,
-        fen: lastNode.fen,
-      };
-      saveGameRecord(record);
+      saveGameSettings({
+        inputColor,
+        sameTimeControl,
+        customFen,
+        player1Settings,
+        player2Settings,
+      });
     }
-  }, [gameState, headers, players, root, lastNode.fen]);
+  }, [
+    gameState,
+    headers,
+    inputColor,
+    sameTimeControl,
+    customFen,
+    player1Settings,
+    player2Settings,
+    saveGameSettings,
+  ]);
+
+  /**
+   * Applies a specific FEN (string) to the tree, updates headers and saves settings.
+   * Returns true if applied, false if the FEN was invalid.
+   */
+  const applyFenString = useCallback(
+    (fenRaw: string): boolean => {
+      const fenToUse = fenRaw.trim() || INITIAL_FEN;
+      if (!validateFen(fenToUse)) {
+        return false;
+      }
+
+      // Mark that we're manually applying FEN to skip auto-save
+      setIsApplyingFen(true);
+
+      // Save settings FIRST with the new FEN to prevent conflicts
+      saveGameSettings({
+        inputColor,
+        sameTimeControl,
+        customFen: fenToUse,
+        player1Settings,
+        player2Settings,
+      });
+
+      // Update input state
+      setCustomFen(fenToUse);
+      
+      // Update board immediately - setFen updates the root tree directly
+      // This triggers the board to re-render with the new position
+      // NOTE: setFen will reset the tree, so only call it when we want to start fresh
+      setFen(fenToUse);
+      
+      // Update headers - but DON'T pass fen here as setFen already updated the root
+      // Passing fen here could cause setHeaders to reset the tree again if the logic changes
+      // We update fen in headers separately to track the initial FEN
+      setHeaders({ ...headers, fen: fenToUse, result: "*" });
+
+      // Reset the flag after a short delay to allow the state to settle
+      setTimeout(() => {
+        setIsApplyingFen(false);
+      }, 100);
+
+      return true;
+    },
+    [headers, inputColor, sameTimeControl, player1Settings, player2Settings, setFen, setHeaders, validateFen, saveGameSettings],
+  );
+
+  const applyFen = useCallback(() => {
+    // Read value directly from input to handle paste events correctly
+    const inputValue = fenInputRef.current?.value || customFen;
+    applyFenString(inputValue);
+  }, [applyFenString, customFen]);
 
   const startGame = useCallback(() => {
+    // Clear any pending engine requests first
+    engineRequestRef.current = null;
+
+    // Kill any existing engines to start fresh (but don't wait)
+    if (activeTab) {
+      // Kill engines asynchronously without blocking
+      Promise.all([
+        commands.killEngines(activeTab + "white").catch(() => {}),
+        commands.killEngines(activeTab + "black").catch(() => {}),
+        commands.killEngines(activeTab).catch(() => {}),
+      ]).catch(() => {});
+    }
+
+    // Set game state to playing immediately
     setGameState("playing");
 
     const newPlayers = getPlayers();
@@ -638,7 +917,16 @@ function BoardGame() {
       }
     }
 
-    setHeaders({ ...headers, ...newHeaders, fen: root.fen });
+    const fenToUse = customFen.trim() || INITIAL_FEN;
+    if (!applyFenString(fenToUse)) {
+      return; // no empezar partida si FEN inválido
+    }
+
+    // IMPORTANT: Only update headers metadata, NOT the fen field
+    // The tree and headers.fen were already updated by applyFenString
+    // Passing fen here could cause setHeaders to reset the tree if there's a race condition
+    // We update all other headers but preserve the fen that was set by applyFenString
+    setHeaders({ ...headers, ...newHeaders });
 
     setTabs((prev) =>
       prev.map((tab) => {
@@ -649,15 +937,329 @@ function BoardGame() {
         return tab.value === activeTab ? { ...tab, name: `${whiteName} vs. ${blackName}` } : tab;
       }),
     );
-  }, [activeTab, getPlayers, headers, root.fen, sameTimeControl, setGameState, setHeaders, setPlayers, setTabs]);
+  }, [
+    activeTab,
+    customFen,
+    getPlayers,
+    headers,
+    applyFenString,
+    sameTimeControl,
+    setGameState,
+    setHeaders,
+    setPlayers,
+    setTabs,
+  ]);
 
   const handleNewGame = useCallback(() => {
+    // Cancel any pending debounced save
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+    
+    // Save current settings immediately before resetting
+    saveGameSettings({
+      inputColor,
+      sameTimeControl,
+      customFen,
+      player1Settings,
+      player2Settings,
+    });
+
     setGameState("settingUp");
     setWhiteTime(null);
     setBlackTime(null);
+    setFenError(null);
+
+    // Load saved settings after a brief delay to ensure save completed
+    setTimeout(() => {
+      const saved = loadGameSettings();
+
+      setInputColor(saved.inputColor);
+      setSameTimeControl(saved.sameTimeControl);
+      setCustomFen(saved.customFen);
+      setPlayer1Settings(saved.player1Settings);
+      setPlayer2Settings(saved.player2Settings);
+
+      const fenToUse = saved.customFen.trim() || INITIAL_FEN;
+      const [p, err] = positionFromFen(fenToUse);
+
+      if (!err && p) {
+        setFen(fenToUse);
+        setHeaders({ ...headers, fen: fenToUse, result: "*" });
+      } else {
     setFen(INITIAL_FEN);
-    setHeaders({ ...headers, result: "*" });
-  }, [headers, setFen, setGameState, setHeaders]);
+        setHeaders({ ...headers, fen: INITIAL_FEN, result: "*" });
+        if (saved.customFen.trim()) {
+          setFenError(t("game.invalidFen") || "Invalid FEN position");
+        }
+      }
+    }, 50);
+  }, [
+    headers,
+    inputColor,
+    loadGameSettings,
+    player1Settings,
+    player2Settings,
+    sameTimeControl,
+    customFen,
+    saveGameSettings,
+    setFen,
+    setGameState,
+    setHeaders,
+    t,
+  ]);
+
+  const endGame = useCallback(async () => {
+    // First, change game state to stop any ongoing engine requests
+    setGameState("settingUp");
+    
+    // Stop all engines immediately - kill ALL instances comprehensively
+    if (activeTab) {
+      try {
+        // Strategy 1: Kill all engines that start with the activeTab (Rust uses starts_with)
+        // This should catch most instances
+        await commands.killEngines(activeTab);
+        
+        // Strategy 2: Explicitly kill engines for known tab variants
+        await Promise.all([
+          commands.killEngines(activeTab + "white").catch(() => {}),
+          commands.killEngines(activeTab + "black").catch(() => {}),
+        ]);
+        
+        // Strategy 3: Kill engines individually by path for each known engine
+        // This ensures we kill specific engine instances that might not match the pattern
+        if (engines.length > 0) {
+          const killPromises = engines.flatMap((engine) => [
+            commands.killEngine(engine.path, activeTab + "white").catch(() => {}),
+            commands.killEngine(engine.path, activeTab + "black").catch(() => {}),
+            commands.killEngine(engine.path, activeTab).catch(() => {}),
+          ]);
+          await Promise.all(killPromises);
+        }
+        
+        // Strategy 4: Also kill engines for players that might be engines
+        const currentPlayers = getPlayers();
+        if (currentPlayers.white.type === "engine" && currentPlayers.white.engine) {
+          await Promise.all([
+            commands.killEngine(currentPlayers.white.engine.path, activeTab + "white").catch(() => {}),
+            commands.killEngine(currentPlayers.white.engine.path, activeTab).catch(() => {}),
+          ]);
+        }
+        if (currentPlayers.black.type === "engine" && currentPlayers.black.engine) {
+          await Promise.all([
+            commands.killEngine(currentPlayers.black.engine.path, activeTab + "black").catch(() => {}),
+            commands.killEngine(currentPlayers.black.engine.path, activeTab).catch(() => {}),
+          ]);
+        }
+      } catch (e) {
+        // Failed to kill engines
+      }
+    }
+
+    // Save the game record before resetting
+    // Only save if there are moves in the game
+    let savedPgn = ""; // Store PGN for use in creating analysis tab
+    
+    // CRITICAL: Check if we actually have moves to save
+    const hasMoves = root.children.length > 0;
+    
+    if (hasMoves) {
+      // Get the initial FEN from headers (set when game started)
+      // This is more reliable than root.fen which may change if user navigates back
+      const initialFen = headers.fen || root.fen;
+      
+      // CRITICAL: We need to traverse from the actual root, not from current position
+      // The root should have the initial FEN, and all moves should be in root.children[0] chain
+      
+      // Extract all SAN moves from the main line by traversing root.children[0] recursively
+      const sanMoves: string[] = [];
+      let currentNode = root;
+      let moveCount = 0;
+      const MAX_MOVES = 500; // Safety limit to prevent infinite loops
+      
+      // Iterate through the main line manually to ensure we get all moves
+      while (currentNode.children.length > 0 && moveCount < MAX_MOVES) {
+        const child = currentNode.children[0]; // Always take the first child (main line)
+        
+        // Each node in the main line should have a SAN move
+        if (child.san) {
+          sanMoves.push(child.san);
+          moveCount++;
+        } else if (child.move) {
+          // If a node doesn't have SAN, try to generate it from the move
+          const [pos, posError] = positionFromFen(currentNode.fen);
+          if (pos && !posError) {
+            try {
+              const san = makeSan(pos, child.move);
+              if (san && san !== "--") {
+                sanMoves.push(san);
+                moveCount++;
+              } else {
+                // Don't break - continue to next move
+                moveCount++;
+              }
+            } catch (e) {
+              // Don't break - continue to next move
+              moveCount++;
+            }
+          } else {
+            // Don't break - continue to next move
+            moveCount++;
+          }
+        } else {
+          // If node has neither SAN nor move, we've reached the end
+          break;
+        }
+        
+        currentNode = child;
+      }
+      
+      // Get the last node for final FEN
+      const mainLine = Array.from(treeIteratorMainLine(root));
+      const lastNode = mainLine[mainLine.length - 1].node;
+      
+      // Use current result or "*" if game was stopped early
+      const gameResult = headers.result && headers.result !== "*" ? headers.result : "*";
+      
+      // Build PGN headers
+      let pgn = `[Event "${headers.event || "Local Game"}"]\n`;
+      pgn += `[Site "${headers.site || "Pawn Appetit"}"]\n`;
+      pgn += `[Date "${headers.date || new Date().toISOString().split("T")[0].replace(/-/g, ".")}"]\n`;
+      pgn += `[Round "${headers.round || "?"}"]\n`;
+      pgn += `[White "${headers.white || "?"}"]\n`;
+      pgn += `[Black "${headers.black || "?"}"]\n`;
+      pgn += `[Result "${gameResult}"]\n`;
+      if (headers.time_control) {
+        pgn += `[TimeControl "${headers.time_control}"]\n`;
+      }
+      if (headers.variant) {
+        pgn += `[Variant "${headers.variant}"]\n`;
+      }
+      // Always include initial FEN if it's different from standard starting position
+      // Use headers.fen which was set when the game started
+      if (initialFen !== INITIAL_FEN) {
+        pgn += `[SetUp "1"]\n`;
+        pgn += `[FEN "${initialFen}"]\n`;
+      }
+      pgn += "\n";
+      
+      // Format moves in PGN format (pair white and black moves)
+      if (sanMoves.length > 0) {
+        const movePairs: string[] = [];
+        for (let i = 0; i < sanMoves.length; i += 2) {
+          const moveNumber = Math.floor(i / 2) + 1;
+          const whiteMove = sanMoves[i];
+          const blackMove = sanMoves[i + 1];
+          
+          if (blackMove) {
+            movePairs.push(`${moveNumber}. ${whiteMove} ${blackMove}`);
+          } else {
+            movePairs.push(`${moveNumber}. ${whiteMove}`);
+          }
+        }
+        pgn += movePairs.join(" ") + " " + gameResult;
+      } else {
+        pgn += gameResult;
+      }
+      
+      // Ensure PGN is not empty and has moves
+      if (!pgn || pgn.trim().length === 0) {
+        // PGN is empty, skipping save
+      } else if (sanMoves.length === 0) {
+        // PGN has no moves - still save the PGN even without moves
+      } else {
+        // Store PGN for use in creating analysis tab
+        savedPgn = pgn.trim();
+      }
+    }
+
+    // Create new tab with the game (without focusing it)
+    // Use the manually constructed PGN we already built above to ensure consistency
+    if (savedPgn && root.children.length > 0) {
+      const currentActiveTab = activeTab;
+      
+      // Create the tab first
+      const newTabId = await createTab({
+        tab: {
+          name: `${headers.white || "?"} vs ${headers.black || "?"}`,
+          type: "analysis",
+        },
+        setTabs,
+        setActiveTab,
+        pgn: savedPgn,
+        headers,
+      });
+      
+      // Restore focus to current tab
+      setActiveTab(currentActiveTab);
+      
+      // Get the PGN and FEN initial from the newly created tab
+      // The tab stores its state in sessionStorage with the tab ID
+      try {
+        const tabStateJson = sessionStorage.getItem(newTabId);
+        if (tabStateJson) {
+          const tabState = JSON.parse(tabStateJson);
+          if (tabState?.state) {
+            const treeState = tabState.state;
+            
+            // Get PGN from the tree state using getPGN
+            const tabPgn = getPGN(treeState.root, {
+              headers: treeState.headers,
+              comments: true,
+              extraMarkups: true,
+              glyphs: true,
+              variations: true,
+            });
+            
+            // Get initial FEN from the tree state root
+            const tabInitialFen = treeState.root?.fen || treeState.headers?.fen;
+            
+            // Get the last node for final FEN
+            const mainLine = Array.from(treeIteratorMainLine(treeState.root));
+            const lastNode = mainLine[mainLine.length - 1].node;
+            
+            // Get UCI moves for the moves array (for backward compatibility)
+            const uciMoves = getMainLine(treeState.root, treeState.headers?.variant === "Chess960");
+            
+            // Use current result or "*" if game was stopped early
+            const gameResult = treeState.headers?.result && treeState.headers.result !== "*" ? treeState.headers.result : "*";
+            
+            // Save the game record with PGN and initial FEN from the tab
+            const record: GameRecord = {
+              id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+              white: {
+                type: players.white.type,
+                name: players.white.type === "human" ? players.white.name : players.white.engine?.name,
+                engine: players.white.type === "engine" ? players.white.engine?.path : undefined,
+              },
+              black: {
+                type: players.black.type,
+                name: players.black.type === "human" ? players.black.name : players.black.engine?.name,
+                engine: players.black.type === "engine" ? players.black.engine?.path : undefined,
+              },
+              result: gameResult,
+              timeControl: treeState.headers?.time_control || `${treeState.headers?.white_time_control || ""},${treeState.headers?.black_time_control || ""}`,
+              timestamp: Date.now(),
+              moves: uciMoves, // UCI moves for backward compatibility
+              variant: treeState.headers?.variant ?? undefined,
+              fen: lastNode.fen, // Final FEN position
+              initialFen: tabInitialFen !== INITIAL_FEN ? tabInitialFen : undefined, // Initial FEN from tab
+              pgn: tabPgn, // Full PGN from tab
+            };
+            
+            // Save the game record
+            await saveGameRecord(record);
+          }
+        }
+      } catch (e) {
+        // Failed to get data from tab, skip saving
+      }
+    }
+
+    // Reset to new game
+    handleNewGame();
+  }, [activeTab, root, headers, players, setTabs, setActiveTab, setGameState, handleNewGame, engines, getPlayers]);
 
   const handleSameTimeControlChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -790,6 +1392,75 @@ function BoardGame() {
                         onChange={handleSameTimeControlChange}
                       />
                     </Group>
+                    <Divider label={t("game.startingPosition")} />
+                    <Stack gap="md">
+                      <InputWrapper 
+                        label={t("game.fen")} 
+                        error={fenError} 
+                        description={t("game.fenDescription")}
+                        styles={{
+                          label: {
+                            marginBottom: "0.25rem",
+                          },
+                          description: {
+                            marginTop: "0.25rem",
+                            marginBottom: "0.5rem",
+                          },
+                        }}
+                      >
+                        <Group gap="xs" wrap="nowrap" align="flex-end">
+                          <TextInput
+                            ref={fenInputRef}
+                            style={{ flex: 1 }}
+                            placeholder={INITIAL_FEN}
+                            value={customFen}
+                            radius="md"
+                            size="sm"
+                            variant="filled"
+                            onChange={(e) => {
+                              const newFen = e.target.value;
+                              setCustomFen(newFen);
+                              if (newFen.trim()) {
+                                validateFen(newFen);
+                              } else {
+                                setFenError(null);
+                              }
+                            }}
+                            onPaste={(e) => {
+                              // Ensure state is updated immediately on paste
+                              const pastedValue = e.clipboardData.getData("text");
+                              setTimeout(() => {
+                                setCustomFen(pastedValue);
+                                if (pastedValue.trim()) {
+                                  validateFen(pastedValue);
+                                } else {
+                                  setFenError(null);
+                                }
+                              }, 0);
+                            }}
+                            error={!!fenError}
+                            styles={{
+                              input: {
+                                fontFamily: "monospace",
+                                fontSize: "0.85rem",
+                                whiteSpace: "nowrap",
+                                overflowX: "auto",
+                              },
+                            }}
+                          />
+                          <ActionIcon
+                            variant="light"
+                            color="blue"
+                            onClick={applyFen}
+                            disabled={!!fenError || (!customFen.trim() && root.fen === INITIAL_FEN)}
+                            title={t("game.applyFen")}
+                            size="lg"
+                          >
+                            <IconCheck size={18} />
+                          </ActionIcon>
+                        </Group>
+                      </InputWrapper>
+                    </Stack>
                   </Stack>
                 </ScrollArea>
               )}
@@ -800,10 +1471,10 @@ function BoardGame() {
                   </Box>
                   <Group grow>
                     <Button onClick={handleNewGame} leftSection={<IconPlus />}>
-                      New Game
+                      {t("keybindings.newGame")}
                     </Button>
                     <Button variant="default" onClick={changeToAnalysisMode} leftSection={<IconZoomCheck />}>
-                      Analyze
+                      {t("keybindings.analyzePosition")}
                     </Button>
                   </Group>
                 </Stack>
@@ -817,6 +1488,7 @@ function BoardGame() {
           readOnly
           currentTabType="play"
           startGame={startGame}
+          endGame={endGame}
           gameState={gameState}
           startGameDisabled={startGameDisabled}
         />

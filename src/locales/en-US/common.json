@@ -208,7 +208,13 @@
     "noEnginesAvailableDesc": "No chess engines are currently installed or detected on your system. To play against an engine, you'll need to install one first.",
     "installEngine": "Install Engine",
     "selectEngine": "Select engine",
-    "openingFor": "opening for"
+    "openingFor": "opening for",
+    "startingPosition": "Starting Position",
+    "fen": "FEN Position",
+    "fenDescription": "Enter a FEN position or leave empty for standard starting position",
+    "applyFen": "Apply FEN",
+    "resetFen": "Reset to initial position",
+    "invalidFen": "Invalid FEN position"
   },
   "databases": {
     "selectDatabasePrompt": "Select a database",
