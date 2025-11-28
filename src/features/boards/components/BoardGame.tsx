@@ -574,7 +574,7 @@ function BoardGame() {
   const [player2Settings, setPlayer2Settings] = useState<OpponentSettings>(savedSettings.player2Settings);
 
   // Save settings with debounce (excluding when manually applying FEN)
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<any | null>(null);
   
   useEffect(() => {
     // Skip auto-save when manually applying FEN to avoid conflicts
