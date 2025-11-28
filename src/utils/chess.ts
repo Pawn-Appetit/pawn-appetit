@@ -256,49 +256,76 @@ export function getPGN(
       extraMarkups,
     })}`;
   }
-  const variationsPGN = variations
-    ? tree.children.slice(1).map(
-        (variation) =>
-          `${getMoveText(variation, {
-            glyphs,
-            comments,
-            extraMarkups,
-            isFirst: true,
-          })} ${getPGN(variation, {
-            headers: null,
-            glyphs,
-            comments,
-            variations,
-            extraMarkups,
-            root: false,
-            path: null,
-          })}`,
-      )
-    : [];
   if (tree.children.length > 0) {
-    const child = tree.children[path ? path[0] : 0];
-    pgn += getMoveText(child, {
+    const mainChild = tree.children[path ? path[0] : 0];
+    
+    // Add the move text for the main line child
+    pgn += getMoveText(mainChild, {
       glyphs: glyphs,
       comments,
       extraMarkups,
       isFirst: root,
     });
-  }
-  if (!path) {
-    for (const variation of variationsPGN) {
-      pgn += ` (${variation}) `;
+    
+    // Add variations right after the current move, before continuing with the main line
+    // Variations are stored as siblings of the main line child
+    if (variations && !path && tree.children.length > 1) {
+      const variationsPGN = tree.children.slice(1).map(
+        (variation) => {
+          // For variations, we need to manually process the variation node
+          // because getPGN with root=false expects children to exist
+          let variationPGN = "";
+          if (variation.san) {
+            variationPGN += getMoveText(variation, {
+              glyphs,
+              comments,
+              extraMarkups,
+              isFirst: true,
+            });
+          }
+          // Then process the children recursively
+          if (variation.children.length > 0) {
+            variationPGN += getPGN(variation, {
+              headers: null,
+              glyphs,
+              comments,
+              variations,
+              extraMarkups,
+              root: false,
+              path: null,
+            });
+          }
+          return variationPGN.trim();
+        },
+      );
+      for (const variation of variationsPGN) {
+        if (variation) {
+          pgn += ` (${variation}) `;
+        }
+      }
     }
-  }
-
-  if (tree.children.length > 0) {
-    pgn += getPGN(tree.children[path ? path[0] : 0], {
-      headers: null,
+    
+    // Continue with the main line after variations
+    // Process mainChild's children, but also check if mainChild itself has variations
+    if (mainChild.children.length > 0) {
+      pgn += getPGN(mainChild, {
+        headers: null,
+        glyphs,
+        comments,
+        variations,
+        extraMarkups,
+        root: false,
+        path: path ? path.slice(1) : null,
+      });
+    }
+  } else if (!root && tree.san) {
+    // If this is a leaf node (no children) and we're not at root,
+    // we still need to output the move text
+    pgn += getMoveText(tree, {
       glyphs,
       comments,
-      variations,
       extraMarkups,
-      root: false,
-      path: path ? path.slice(1) : null,
+      isFirst: false,
     });
   }
   if (root && headers) {
@@ -350,10 +377,13 @@ export async function getOpening(root: TreeNode, position: number[]): Promise<st
   return res.data;
 }
 
-function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0): TreeState {
+function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0, isVariantsMode = false): TreeState {
   const tree = defaultTree(fen);
   let root = tree.root;
   let prevNode = root;
+  // Keep track of the parent node where variations should be added
+  // This is the node before the current move, updated after each move
+  let variationParentNode = root;
   root.halfMoves = halfMoves;
   const setup = parseFen(fen).unwrap();
 
@@ -361,6 +391,92 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
     root.halfMoves += 1;
   }
 
+  // In variants mode, collect all move sequences as variations (no main line)
+  if (isVariantsMode) {
+    // Collect all move sequences (separated by variations or end of tokens)
+    const sequences: Token[][] = [];
+    let currentSequence: Token[] = [];
+    
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      
+      if (token.type === "ParenOpen") {
+        // If we have a sequence collected, save it as a variation
+        if (currentSequence.length > 0) {
+          sequences.push([...currentSequence]);
+          currentSequence = [];
+        }
+        // Collect the variation tokens (including nested variations)
+        const variation: Token[] = [token]; // Include the opening paren
+        let subvariations = 0;
+        i++;
+        while (i < tokens.length && (subvariations > 0 || tokens[i].type !== "ParenClose")) {
+          if (tokens[i].type === "ParenOpen") {
+            subvariations++;
+          } else if (tokens[i].type === "ParenClose") {
+            subvariations--;
+          }
+          variation.push(tokens[i]);
+          i++;
+        }
+        // Include the closing paren if we found it
+        if (i < tokens.length && tokens[i].type === "ParenClose") {
+          variation.push(tokens[i]);
+        }
+        // Add the variation as a sequence
+        if (variation.length > 0) {
+          sequences.push(variation);
+        }
+      } else if (token.type === "ParenClose") {
+        // Should not happen here in normal flow, but handle it
+        if (currentSequence.length > 0) {
+          sequences.push([...currentSequence]);
+          currentSequence = [];
+        }
+      } else if (token.type === "Outcome") {
+        // End of game, save current sequence if any
+        if (currentSequence.length > 0) {
+          sequences.push([...currentSequence]);
+          currentSequence = [];
+        }
+        break;
+      } else {
+        // Add token to current sequence (moves, comments, nags, etc.)
+        currentSequence.push(token);
+      }
+    }
+    
+    // Save last sequence if any (this is the "main line" which should also be a variation)
+    if (currentSequence.length > 0) {
+      sequences.push([...currentSequence]);
+    }
+    
+    // Parse each sequence as a separate variation (no main line)
+    // All sequences are treated equally as variations
+    for (const sequence of sequences) {
+      // Check if this sequence starts with a paren (it's already a variation)
+      const isVariation = sequence.length > 0 && sequence[0].type === "ParenOpen";
+      
+      if (isVariation) {
+        // Parse as a variation (remove outer parens and parse)
+        const variationTokens = sequence.slice(1, -1); // Remove opening and closing parens
+        const newTree = innerParsePGN(variationTokens, root.fen, root.halfMoves, false);
+        if (newTree.root.children.length > 0) {
+          root.children.push(newTree.root.children[0]);
+        }
+      } else {
+        // Parse as a regular sequence (will become a variation)
+        const newTree = innerParsePGN(sequence, root.fen, root.halfMoves, false);
+        if (newTree.root.children.length > 0) {
+          root.children.push(newTree.root.children[0]);
+        }
+      }
+    }
+    
+    return tree;
+  }
+
+  // Normal parsing mode (maintains main line and variations)
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
 
@@ -414,9 +530,11 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
         variation.push(tokens[i]);
         i++;
       }
-      const newTree = innerParsePGN(variation, prevNode.fen, root.halfMoves - 1);
+      // Parse variation normally to maintain nested variations
+      // Variations should be added to the variation parent node (the node before the current move)
+      const newTree = innerParsePGN(variation, variationParentNode.fen, root.halfMoves - 1, isVariantsMode);
       if (newTree.root.children.length > 0) {
-        prevNode.children.push(newTree.root.children[0]);
+        variationParentNode.children.push(newTree.root.children[0]);
       }
     } else if (token.type === "ParenClose") {
     } else if (token.type === "Nag") {
@@ -444,16 +562,20 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
       });
       root.children.push(newTree);
 
+      // Update variation parent node before updating root
+      // This ensures variations are added to the correct parent
+      variationParentNode = root;
       prevNode = root;
       root = newTree;
     } else if (token.type === "Outcome") {
       break;
     }
   }
+  
   return tree;
 }
 
-export async function parsePGN(pgn: string, initialFen?: string): Promise<TreeState> {
+export async function parsePGN(pgn: string, initialFen?: string, isVariantsMode = false): Promise<TreeState> {
   const tokens = unwrap(await commands.lexPgn(pgn));
 
   const headers = getPgnHeaders(tokens);
@@ -461,7 +583,7 @@ export async function parsePGN(pgn: string, initialFen?: string): Promise<TreeSt
 
   const [pos] = positionFromFen(fen);
 
-  const tree = innerParsePGN(tokens, initialFen?.trim() || headers.fen.trim(), pos?.turn === "black" ? 1 : 0);
+  const tree = innerParsePGN(tokens, initialFen?.trim() || headers.fen.trim(), pos?.turn === "black" ? 1 : 0, isVariantsMode);
   tree.headers = headers;
   tree.position = headers.start ?? [];
   return tree;

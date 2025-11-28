@@ -76,7 +76,12 @@
     "reload": "Reload",
     "reloadFile": "Reload file",
     "namePlaceholder": "Name",
-    "details": "Details"
+    "details": "Details",
+    "fileSavedSuccessfully": "File saved successfully",
+    "failedToSaveFile": "Failed to save file",
+    "puzzlesGeneratedSuccessfully": "{{count}} puzzles generated successfully",
+    "failedToGeneratePuzzles": "Failed to generate puzzles",
+    "generatePuzzles": "Generate Puzzles"
   },
   "chess": {
     "checkmate": "Checkmate",
@@ -883,6 +888,7 @@
         "repertoire": "Repertoire",
         "tournament": "Tournament",
         "puzzle": "Puzzle",
+        "variants": "Variants",
         "other": "Other",
         "folder": "Folder"
       },

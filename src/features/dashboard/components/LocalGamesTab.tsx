@@ -1,6 +1,8 @@
 import { Avatar, Badge, Button, Group, ScrollArea, Table, Text } from "@mantine/core";
 import { useTranslation } from "react-i18next";
+import { useEffect, useMemo, useState } from "react";
 import type { GameRecord } from "@/utils/gameRecords";
+import { calculateGameStats, type GameStats } from "@/utils/gameRecords";
 
 interface LocalGamesTabProps {
   games: GameRecord[];
@@ -9,6 +11,57 @@ interface LocalGamesTabProps {
 
 export function LocalGamesTab({ games, onAnalyzeGame }: LocalGamesTabProps) {
   const { t } = useTranslation();
+  const [gameStats, setGameStats] = useState<Map<string, GameStats>>(new Map());
+
+  // Calculate stats for all games (lazy, non-blocking)
+  useEffect(() => {
+    if (games.length === 0) return;
+    
+    let cancelled = false;
+    
+    const calculateStats = async () => {
+      const statsMap = new Map<string, GameStats>();
+      
+      // Process games with small delays to avoid blocking the UI
+      for (const game of games) {
+        if (cancelled) break;
+        
+        try {
+          const stats = await calculateGameStats(game);
+          if (stats && !cancelled) {
+            statsMap.set(game.id, stats);
+            // Update state incrementally
+            setGameStats(new Map(statsMap));
+          }
+        } catch {
+          // Silently skip games that fail to parse
+        }
+        
+        // Small delay to yield to the UI thread
+        if (!cancelled) {
+          await new Promise((resolve) => setTimeout(resolve, 10));
+        }
+      }
+      
+      if (!cancelled) {
+        setGameStats(statsMap);
+      }
+    };
+
+    // Delay initial calculation to avoid blocking initial render
+    const timeoutId = setTimeout(() => {
+      if (!cancelled) {
+        calculateStats().catch(() => {
+          // Silently handle any errors
+        });
+      }
+    }, 100);
+    
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
+  }, [games]);
 
   return (
     <ScrollArea h={{ base: 200, sm: 220, md: 240, lg: 260 }} type="auto">
@@ -19,6 +72,7 @@ export function LocalGamesTab({ games, onAnalyzeGame }: LocalGamesTabProps) {
             <Table.Th>Color</Table.Th>
             <Table.Th>Result</Table.Th>
             <Table.Th>Accuracy</Table.Th>
+            <Table.Th>ACPL</Table.Th>
             <Table.Th>Moves</Table.Th>
             <Table.Th>Date</Table.Th>
             <Table.Th></Table.Th>
@@ -39,6 +93,9 @@ export function LocalGamesTab({ games, onAnalyzeGame }: LocalGamesTabProps) {
             } else {
               dateStr = `${Math.floor(diffMs / (24 * 60 * 60 * 1000))}d ago`;
             }
+            
+            const stats = gameStats.get(g.id);
+            
             return (
               <Table.Tr key={g.id}>
                 <Table.Td>
@@ -58,9 +115,26 @@ export function LocalGamesTab({ games, onAnalyzeGame }: LocalGamesTabProps) {
                   </Badge>
                 </Table.Td>
                 <Table.Td>
-                  <Text size="xs" c="dimmed">
-                    -
-                  </Text>
+                  {stats ? (
+                    <Text size="xs" fw={500}>
+                      {stats.accuracy.toFixed(1)}%
+                    </Text>
+                  ) : (
+                    <Text size="xs" c="dimmed">
+                      -
+                    </Text>
+                  )}
+                </Table.Td>
+                <Table.Td>
+                  {stats ? (
+                    <Text size="xs" fw={500}>
+                      {stats.acpl.toFixed(1)}
+                    </Text>
+                  ) : (
+                    <Text size="xs" c="dimmed">
+                      -
+                    </Text>
+                  )}
                 </Table.Td>
                 <Table.Td>{g.moves.length}</Table.Td>
                 <Table.Td c="dimmed">{dateStr}</Table.Td>

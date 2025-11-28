@@ -18,6 +18,7 @@ import { TreeStateProvider } from "@/components/TreeStateContext";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import BoardAnalysis from "./components/BoardAnalysis";
 import BoardGame from "./components/BoardGame";
+import BoardVariants from "./components/BoardVariants";
 import NewTab from "./components/NewTab";
 import Puzzles from "./components/puzzles/Puzzles";
 import ReportProgressSubscriber from "./components/ReportProgressSubscriber";
@@ -213,20 +214,29 @@ const TabSwitch = function TabSwitch({ tab }: { tab: Tab }) {
         <BoardGame />
       </TreeStateProvider>
     ))
-    .with("analysis", () => (
-      <TreeStateProvider id={tab.value}>
-        {!isMobileLayout && (
-          <Mosaic<ViewId>
-            renderTile={(id) => fullLayout[id]}
-            value={windowsState.currentNode}
-            onChange={handleMosaicChange}
-            resize={resizeOptions}
-          />
-        )}
-        <ReportProgressSubscriber id={`${REPORT_ID_PREFIX}${tab.value}`} />
-        <BoardAnalysis />
-      </TreeStateProvider>
-    ))
+    .with("analysis", () => {
+      // Check if this is a variants file type
+      const isVariantsFile = tab.source?.type === "file" && tab.source.metadata?.type === "variants";
+      
+      return (
+        <TreeStateProvider id={tab.value}>
+          {!isMobileLayout && (
+            <Mosaic<ViewId>
+              renderTile={(id) => fullLayout[id]}
+              value={windowsState.currentNode}
+              onChange={handleMosaicChange}
+              resize={resizeOptions}
+            />
+          )}
+          {!isVariantsFile && <ReportProgressSubscriber id={`${REPORT_ID_PREFIX}${tab.value}`} />}
+          {isVariantsFile ? (
+            <BoardVariants />
+          ) : (
+            <BoardAnalysis />
+          )}
+        </TreeStateProvider>
+      );
+    })
     .with("puzzles", () => (
       <TreeStateProvider id={tab.value}>
         <Mosaic<ViewId>

@@ -4,7 +4,7 @@ import { IconZoomCheck } from "@tabler/icons-react";
 import cx from "clsx";
 import equal from "fast-deep-equal";
 import { useAtomValue } from "jotai";
-import React, { memo, Suspense, useContext, useMemo } from "react";
+import React, { memo, Suspense, useContext, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import EvalChart from "@/components/EvalChart";
@@ -12,7 +12,8 @@ import ProgressButton from "@/components/ProgressButtonWithOutState";
 import { TreeStateContext } from "@/components/TreeStateContext";
 import { activeTabAtom } from "@/state/atoms";
 import { ANNOTATION_INFO, isBasicAnnotation } from "@/utils/annotation";
-import { getGameStats, getMainLine } from "@/utils/chess";
+import { getGameStats, getMainLine, getPGN } from "@/utils/chess";
+import { updateGameRecord } from "@/utils/gameRecords";
 import { label } from "./AnalysisPanel.css";
 import ReportModal from "./ReportModal";
 
@@ -33,6 +34,42 @@ function ReportPanel() {
   const [reportingMode, toggleReportingMode] = useToggle();
 
   const stats = useMemo(() => getGameStats(root), [root]);
+  
+  // Track if we've already saved the PGN for this analysis completion
+  const hasSavedPgnRef = useRef(false);
+
+  // When analysis completes, save the PGN with evaluations if this is a local game
+  useEffect(() => {
+    if (isCompleted && !hasSavedPgnRef.current && activeTab) {
+      hasSavedPgnRef.current = true;
+      
+      // Check if this tab is associated with a local game
+      const localGameId = typeof window !== "undefined" 
+        ? sessionStorage.getItem(`${activeTab}_localGameId`)
+        : null;
+      
+      if (localGameId) {
+        // Generate PGN with all evaluations and annotations
+        const pgnWithEvals = getPGN(root, {
+          headers,
+          comments: true,
+          extraMarkups: true, // This includes [%eval ...] annotations
+          glyphs: true,
+          variations: true,
+        });
+        
+        // Update the GameRecord with the new PGN that includes evaluations
+        updateGameRecord(localGameId, { pgn: pgnWithEvals }).catch(() => {
+          // Silently fail if update fails
+        });
+      }
+    }
+    
+    // Reset the flag when analysis starts again
+    if (inProgress) {
+      hasSavedPgnRef.current = false;
+    }
+  }, [isCompleted, inProgress, activeTab, root, headers]);
 
   return (
     <ScrollArea offsetScrollbars>
