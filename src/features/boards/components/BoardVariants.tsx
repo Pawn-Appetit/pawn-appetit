@@ -63,7 +63,7 @@ function BoardVariants() {
   const promoteVariation = useStore(store, (s) => s.promoteVariation);
   const deleteMove = useStore(store, (s) => s.deleteMove);
 
-  const saveFile = useCallback(async () => {
+  const saveFile = useCallback(async (showNotification = true) => {
     try {
       if (
         currentTab?.source != null &&
@@ -74,12 +74,14 @@ function BoardVariants() {
         await saveTab(currentTab, store);
         // Mark as saved in the store
         setStoreSave();
-        // Show success notification
-        notifications.show({
-          title: t("common.save"),
-          message: t("common.fileSavedSuccessfully"),
-          color: "green",
-        });
+        // Show success notification only if requested
+        if (showNotification) {
+          notifications.show({
+            title: t("common.save"),
+            message: t("common.fileSavedSuccessfully"),
+            color: "green",
+          });
+        }
       } else {
         // Save to a new file
         await saveToFile({
@@ -88,13 +90,16 @@ function BoardVariants() {
           tab: currentTab,
           store,
         });
-        notifications.show({
-          title: t("common.save"),
-          message: t("common.fileSavedSuccessfully"),
-          color: "green",
-        });
+        if (showNotification) {
+          notifications.show({
+            title: t("common.save"),
+            message: t("common.fileSavedSuccessfully"),
+            color: "green",
+          });
+        }
       }
     } catch (error) {
+      // Always show error notifications
       notifications.show({
         title: t("common.error"),
         message: t("common.failedToSaveFile"),
@@ -286,7 +291,8 @@ function BoardVariants() {
 
   useEffect(() => {
     if (currentTab?.source?.type === "file" && autoSave && dirty) {
-      saveFile();
+      // Auto-save without showing notifications
+      saveFile(false);
     }
   }, [currentTab?.source, saveFile, autoSave, dirty]);
 
