@@ -61,7 +61,7 @@ export function getPuzzleStats(options?: { days?: number; target?: number }) {
     const key = dateKey(addDays(new Date(), -i));
     const solved = (solves[key] ?? 0) > 0;
     if (solved) currentStreak++;
-    else break;
+    else if (i > 0) break;
   }
 
   const history: { day: string; solved: number }[] = [];
