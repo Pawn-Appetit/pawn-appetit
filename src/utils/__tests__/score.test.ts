@@ -52,42 +52,47 @@ test("should annotate as ??", () => {
 
 test("should annotate as ?", () => {
   // Need to provide prevMoves with a clearly better alternative (at least 100cp better)
-  // For ?, we need to lose >200cp from a good position (prevCP > 100) OR >10% win chance
+  // For ?, we need: hasBetterAlternativeFlag && (winChanceDiff > 10 || (prevCP - nextCP > 200 && prevCP > 100))
+  // Important: To avoid ??, we need: winChanceDiff <= 20 AND prevCP - nextCP <= 400
   // Important: The move parameter should NOT match the best move to avoid "Best" annotation
   const betterAlternative = [
     {
       depth: 1,
       multipv: 1,
       nodes: 1,
-      score: { value: { type: "cp", value: 250 }, wdl: null }, // 250cp better than -50
+      score: { value: { type: "cp", value: 0 }, wdl: null }, // 0cp is better than -250cp (100cp+ difference)
       nps: 1000,
       sanMoves: ["e4"], // Best move is e4
       uciMoves: ["e2e4"],
     },
   ];
-  // prevCP = 200, nextCP = -50, difference = 250cp > 200cp, and prevCP > 100
+  // prevCP = 200, nextCP = 0, difference = 200cp
+  // But we need > 200, so use nextCP = -1 to get 201cp difference
+  // This should give winChanceDiff around 10-12%, avoiding ?? (which needs > 20%)
   // move = "d4" (not "e4"), so isBestMove = false, avoiding "Best" and "!?"
-  expect(getAnnotation(null, { type: "cp", value: 200 }, { type: "cp", value: -50 }, "white", betterAlternative, false, "d4")).toBe("?");
-  expect(getAnnotation(null, { type: "cp", value: -200 }, { type: "cp", value: 50 }, "black", betterAlternative, false, "d5")).toBe("?");
+  expect(getAnnotation(null, { type: "cp", value: 200 }, { type: "cp", value: -1 }, "white", betterAlternative, false, "d4")).toBe("?");
+  expect(getAnnotation(null, { type: "cp", value: -200 }, { type: "cp", value: 1 }, "black", betterAlternative, false, "d5")).toBe("?");
 });
 
 test("should annotate as ?!", () => {
   // Need to provide prevMoves with a clearly better alternative (at least 100cp better)
-  // For ?!, we need to lose >100cp from an equal or better position (prevCP >= 0)
-  // Note: The condition is >100, not >=100, so we need at least 101cp difference
+  // For ?!, we need: hasBetterAlternativeFlag && (winChanceDiff > 5 || (prevCP - nextCP > 100 && prevCP >= 0))
+  // Important: To avoid ?, we need: winChanceDiff <= 10 AND (prevCP - nextCP <= 200 OR prevCP <= 100)
   // Important: The move parameter should NOT match the best move to avoid "Best" annotation
   const betterAlternative = [
     {
       depth: 1,
       multipv: 1,
       nodes: 1,
-      score: { value: { type: "cp", value: 150 }, wdl: null }, // 150cp better than -101
+      score: { value: { type: "cp", value: 0 }, wdl: null }, // 0cp is better than -110cp (100cp+ difference)
       nps: 1000,
       sanMoves: ["e4"], // Best move is e4
       uciMoves: ["e2e4"],
     },
   ];
   // prevCP = 0, nextCP = -101, difference = 101cp > 100cp, and prevCP >= 0
+  // Using -101 to keep the difference just above 100cp to avoid ? (which needs > 200cp or prevCP > 100)
+  // This should give winChanceDiff around 5-7%, avoiding ? (which needs > 10%)
   // move = "d4" (not "e4"), so isBestMove = false, avoiding "Best" and "!?"
   expect(getAnnotation(null, { type: "cp", value: 0 }, { type: "cp", value: -101 }, "white", betterAlternative, false, "d4")).toBe("?!");
   expect(getAnnotation(null, { type: "cp", value: 0 }, { type: "cp", value: 101 }, "black", betterAlternative, false, "d5")).toBe("?!");
