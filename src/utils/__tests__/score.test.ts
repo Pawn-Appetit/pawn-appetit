@@ -31,18 +31,66 @@ test("should calculate the cp loss correctly", () => {
 });
 
 test("should annotate as ??", () => {
-  expect(getAnnotation(null, null, { type: "cp", value: -500 }, "white", [])).toBe("??");
-  expect(getAnnotation(null, null, { type: "cp", value: 500 }, "black", [])).toBe("??");
+  // Need to provide prevMoves with a clearly better alternative (at least 100cp better)
+  // For ??, we need to lose >400cp from a reasonable position (prevCP > 0)
+  const betterAlternative = [
+    {
+      depth: 1,
+      multipv: 1,
+      nodes: 1,
+      score: { value: { type: "cp", value: 100 }, wdl: null }, // 100cp better than -500
+      nps: 1000,
+      sanMoves: ["e4"],
+      uciMoves: ["e2e4"],
+    },
+  ];
+  // prevCP = 0, nextCP = -500, difference = 500cp > 400cp, and prevCP > 0 is false, so need winChanceDiff > 20
+  // Actually, let's use a position where prevCP > 0
+  expect(getAnnotation(null, { type: "cp", value: 100 }, { type: "cp", value: -400 }, "white", betterAlternative)).toBe("??");
+  expect(getAnnotation(null, { type: "cp", value: -100 }, { type: "cp", value: 400 }, "black", betterAlternative)).toBe("??");
 });
 
 test("should annotate as ?", () => {
-  expect(getAnnotation(null, null, { type: "cp", value: -200 }, "white", [])).toBe("?");
-  expect(getAnnotation(null, null, { type: "cp", value: 200 }, "black", [])).toBe("?");
+  // Need to provide prevMoves with a clearly better alternative (at least 100cp better)
+  // For ?, we need to lose >200cp from a good position (prevCP > 100) OR >10% win chance
+  // Important: The move parameter should NOT match the best move to avoid "Best" annotation
+  const betterAlternative = [
+    {
+      depth: 1,
+      multipv: 1,
+      nodes: 1,
+      score: { value: { type: "cp", value: 250 }, wdl: null }, // 250cp better than -50
+      nps: 1000,
+      sanMoves: ["e4"], // Best move is e4
+      uciMoves: ["e2e4"],
+    },
+  ];
+  // prevCP = 200, nextCP = -50, difference = 250cp > 200cp, and prevCP > 100
+  // move = "d4" (not "e4"), so isBestMove = false, avoiding "Best" and "!?"
+  expect(getAnnotation(null, { type: "cp", value: 200 }, { type: "cp", value: -50 }, "white", betterAlternative, false, "d4")).toBe("?");
+  expect(getAnnotation(null, { type: "cp", value: -200 }, { type: "cp", value: 50 }, "black", betterAlternative, false, "d5")).toBe("?");
 });
 
 test("should annotate as ?!", () => {
-  expect(getAnnotation(null, null, { type: "cp", value: -100 }, "white", [])).toBe("?!");
-  expect(getAnnotation(null, null, { type: "cp", value: 100 }, "black", [])).toBe("?!");
+  // Need to provide prevMoves with a clearly better alternative (at least 100cp better)
+  // For ?!, we need to lose >100cp from an equal or better position (prevCP >= 0)
+  // Note: The condition is >100, not >=100, so we need at least 101cp difference
+  // Important: The move parameter should NOT match the best move to avoid "Best" annotation
+  const betterAlternative = [
+    {
+      depth: 1,
+      multipv: 1,
+      nodes: 1,
+      score: { value: { type: "cp", value: 150 }, wdl: null }, // 150cp better than -101
+      nps: 1000,
+      sanMoves: ["e4"], // Best move is e4
+      uciMoves: ["e2e4"],
+    },
+  ];
+  // prevCP = 0, nextCP = -101, difference = 101cp > 100cp, and prevCP >= 0
+  // move = "d4" (not "e4"), so isBestMove = false, avoiding "Best" and "!?"
+  expect(getAnnotation(null, { type: "cp", value: 0 }, { type: "cp", value: -101 }, "white", betterAlternative, false, "d4")).toBe("?!");
+  expect(getAnnotation(null, { type: "cp", value: 0 }, { type: "cp", value: 101 }, "black", betterAlternative, false, "d5")).toBe("?!");
 });
 
 test("should not annotate", () => {
