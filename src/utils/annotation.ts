@@ -17,15 +17,7 @@ export type Annotation =
   | "∓"
   | "-+"
   | "N"
-  | "↑↑"
-  | "↑"
-  | "→"
-  | "⇆"
-  | "=∞"
-  | "⊕"
-  | "∆"
-  | "□"
-  | "⨀";
+  | "Best";
 
 export const NAG_INFO = new Map<string, Annotation>([
   ["$1", "!"],
@@ -34,7 +26,7 @@ export const NAG_INFO = new Map<string, Annotation>([
   ["$4", "??"],
   ["$5", "!?"],
   ["$6", "?!"],
-  ["$7", "□"],
+  ["$8", "Best"], // Best move (engine's best move, different from "!" which is good/great)
   ["$10", "="],
   ["$13", "∞"],
   ["$14", "⩲"],
@@ -43,21 +35,6 @@ export const NAG_INFO = new Map<string, Annotation>([
   ["$17", "∓"],
   ["$18", "+-"],
   ["$19", "-+"],
-  ["$22", "⨀"],
-  ["$23", "⨀"],
-  ["$32", "↑↑"],
-  ["$33", "↑↑"],
-  ["$36", "↑"],
-  ["$37", "↑"],
-  ["$40", "→"],
-  ["$41", "→"],
-  ["$44", "=∞"],
-  ["$45", "=∞"],
-  ["$132", "⇆"],
-  ["$133", "⇆"],
-  ["$138", "⊕"],
-  ["$139", "⊕"],
-  ["$140", "∆"],
   ["$146", "N"],
 ]);
 
@@ -72,7 +49,7 @@ type AnnotationInfo = {
 export const ANNOTATION_INFO: Record<Annotation, AnnotationInfo> = {
   "": { name: "None", translationKey: "none", color: "gray", nag: 0 },
   "!!": { group: "basic", name: "brilliant", translationKey: "brilliant", color: "cyan", nag: 3 },
-  "!": { group: "basic", name: "good", translationKey: "good", color: "teal", nag: 1 },
+  "!": { group: "basic", name: "great", translationKey: "great", color: "blue", nag: 1 },
   "!?": { group: "basic", name: "interesting", translationKey: "interesting", color: "lime", nag: 5 },
   "?!": { group: "basic", name: "dubious", translationKey: "dubious", color: "yellow", nag: 6 },
   "?": { group: "basic", name: "mistake", translationKey: "mistake", color: "orange", nag: 2 },
@@ -126,21 +103,35 @@ export const ANNOTATION_INFO: Record<Annotation, AnnotationInfo> = {
     nag: 19,
   },
   N: { name: "Novelty", translationKey: "novelty", nag: 146 },
-  "↑↑": { name: "Development", translationKey: "development", nag: 32 },
-  "↑": { name: "Initiative", translationKey: "initiative", nag: 36 },
-  "→": { name: "Attack", translationKey: "attack", nag: 40 },
-  "⇆": { name: "Counterplay", translationKey: "counterplay", nag: 132 },
-  "=∞": {
-    name: "With compensation",
-    translationKey: "withCompensation",
-    nag: 44,
-  },
-  "⊕": { name: "Time Trouble", translationKey: "timeTrouble", nag: 138 },
-  "∆": { name: "With the idea", translationKey: "withIdea", nag: 140 },
-  "□": { name: "Only move", translationKey: "onlyMove", nag: 7 },
-  "⨀": { name: "Zugzwang", translationKey: "zugzwang", nag: 22 },
+  Best: { group: "basic", name: "Best", translationKey: "best", color: "green", nag: 8 },
 };
 
-export function isBasicAnnotation(annotation: string): annotation is "!" | "!!" | "?" | "??" | "!?" | "?!" {
-  return ["!", "!!", "?", "??", "!?", "?!"].includes(annotation);
+export function isBasicAnnotation(annotation: string): annotation is "!" | "!!" | "?" | "??" | "!?" | "?!" | "Best" {
+  return ["!", "!!", "?", "??", "!?", "?!", "Best"].includes(annotation);
 }
+
+/**
+ * Central color map for move quality annotations in the analysis report.
+ * These colors are used for visual display of annotations in the UI.
+ */
+export const annotationColors: Record<Annotation, string> = {
+  "!!": "#06B6D4", // Brilliant - cyan
+  "!": "#3B82F6", // Great / Good / Unique - blue
+  "Best": "#22C55E", // Best - green
+  "!?": "#A855F7", // Interesting - purple
+  "?!": "#FACC15", // Dubious - yellow
+  "?": "#FB923C", // Mistake - orange
+  "??": "#EF4444", // Blunder - red
+  "": "#6B7280", // Neutral / no annotation - gray
+  // Advantage annotations (keep existing colors or use neutral)
+  "+-": "#6B7280",
+  "±": "#6B7280",
+  "⩲": "#6B7280",
+  "=": "#6B7280",
+  "∞": "#6B7280",
+  "⩱": "#6B7280",
+  "∓": "#6B7280",
+  "-+": "#6B7280",
+  // Other annotations
+  "N": "#6B7280",
+};

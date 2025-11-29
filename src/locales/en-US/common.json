@@ -101,7 +101,9 @@
     "annotate": {
       "none": "None",
       "brilliant": "Brilliant",
+      "great": "Great",
       "good": "Good",
+      "best": "Best",
       "interesting": "Interesting",
       "dubious": "Dubious",
       "mistake": "Mistake",

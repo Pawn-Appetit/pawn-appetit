@@ -76,7 +76,9 @@
     "annotate": {
       "none": "Ninguno",
       "brilliant": "Brillante",
+      "great": "Excelente",
       "good": "Bueno",
+      "best": "Mejor",
       "interesting": "Interesante",
       "dubious": "Dudoso",
       "mistake": "Error",

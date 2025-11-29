@@ -100,17 +100,34 @@ async function getGameArchives(player: string) {
   return (await response.json()) as Archive;
 }
 
-export async function fetchLastChessComGames(player: string): Promise<ChessComGame[]> {
+export async function fetchLastChessComGames(
+  player: string,
+  showErrorNotification: boolean = false,
+): Promise<ChessComGame[]> {
   try {
     const archives = await getGameArchives(player);
     if (archives.archives.length === 0) {
+      // User has no archives - this is expected, don't show error
       return [];
     }
     const lastArchiveUrl = archives.archives[archives.archives.length - 1];
     const response = await fetch(lastArchiveUrl, { headers, method: "GET" });
 
     if (!response.ok) {
+      // Don't show notification for 404 (user not found) or 403 (forbidden) - these are expected
+      if (response.status === 404 || response.status === 403) {
+        return [];
+      }
       error(`Failed to fetch games from ${lastArchiveUrl}: ${response.status}`);
+      // Only show notification if explicitly requested
+      if (showErrorNotification) {
+        notifications.show({
+          title: "Fetch Error",
+          message: `Could not fetch recent games for ${player}.`,
+          color: "red",
+          icon: <IconX />,
+        });
+      }
       return [];
     }
 
@@ -118,18 +135,30 @@ export async function fetchLastChessComGames(player: string): Promise<ChessComGa
 
     if (!gamesData.success) {
       error(`Invalid game data from ${lastArchiveUrl}: ${gamesData.error}`);
+      // Only show notification if explicitly requested
+      if (showErrorNotification) {
+        notifications.show({
+          title: "Fetch Error",
+          message: `Could not fetch recent games for ${player}.`,
+          color: "red",
+          icon: <IconX />,
+        });
+      }
       return [];
     }
 
     return gamesData.data.games.sort((a, b) => b.end_time - a.end_time);
   } catch (e) {
     error(`Error fetching last chess.com games for ${player}: ${e}`);
-    notifications.show({
-      title: "Fetch Error",
-      message: `Could not fetch recent games for ${player}.`,
-      color: "red",
-      icon: <IconX />,
-    });
+    // Only show notification if explicitly requested
+    if (showErrorNotification) {
+      notifications.show({
+        title: "Fetch Error",
+        message: `Could not fetch recent games for ${player}.`,
+        color: "red",
+        icon: <IconX />,
+      });
+    }
     return [];
   }
 }

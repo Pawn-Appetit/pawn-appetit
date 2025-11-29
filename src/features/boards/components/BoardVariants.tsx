@@ -110,7 +110,7 @@ function BoardVariants() {
 
   // Get board orientation (default to white if not set)
   const boardOrientation = headers.orientation || "white";
-  
+
   // Generate puzzles from variants
   const generatePuzzles = useCallback(async () => {
     try {
@@ -124,139 +124,87 @@ function BoardVariants() {
           },
         ],
       });
-      
+
       if (!filePath) return;
-      
+
       // Get filename without extension
       const fileName = filePath.replace(/\.pgn$/, "").split(/[/\\]/).pop() || `puzzles-${formatDateToPGN(new Date())}`;
-      
+
       // Generate puzzles from the current tree
       // Each variation at each position becomes a puzzle
       const puzzles: string[] = [];
       let puzzleCounter = 0; // Counter for puzzle numbering
-      
+
       // Get the puzzle color based on board orientation
       const puzzleColor = boardOrientation === "white" ? "white" : "black";
-      
+
       // Get current date for puzzle headers
       const currentDate = formatDateToPGN(new Date());
-      
+
       // Function to recursively find all positions with variations and generate puzzles
       // We traverse the tree and only generate puzzles at positions where there are actual variations
-      const generatePuzzlesFromNode = (node: TreeNode, depth = 0): void => {
-        // First, check if this node has multiple children (variations)
-        // We need at least 2 children to have a puzzle (one main line + at least one variation)
-        if (node.children.length >= 2) {
-          // This node has variations - generate puzzles here
-          // Get the position to determine whose turn it is
-          const [pos] = positionFromFen(node.fen);
-          if (pos) {
-            const currentTurn = pos.turn;
-            
-            // Generate puzzles when it's the puzzle color's turn
-            if (currentTurn === puzzleColor) {
-              // Generate puzzles for all children (all are variations at this branching point)
-              for (const child of node.children) {
-                if (!child.san) continue;
-                
-                puzzleCounter++;
-                
-                // Get the solution move with move number using getMoveText
-                const solutionMoveText = getMoveText(child, {
-                  glyphs: false,
-                  comments: false,
-                  extraMarkups: false,
-                  isFirst: true,
-                }).trim();
-                
-                // Extract just the move number and SAN (e.g., "5. Nb3" from "5. Nb3 ")
-                const solutionMove = solutionMoveText.trim();
-                
-                // Create puzzle PGN with full headers
-                let puzzlePGN = `[Event "Mini puzzle ${puzzleCounter}"]\n`;
-                puzzlePGN += `[Site "Local"]\n`;
-                puzzlePGN += `[Date "${currentDate}"]\n`;
-                puzzlePGN += `[Round "-"]\n`;
-                puzzlePGN += `[White "Puzzle"]\n`;
-                puzzlePGN += `[Black "?"]\n`;
-                puzzlePGN += `[Result "*"]\n`;
-                puzzlePGN += `[SetUp "1"]\n`;
-                puzzlePGN += `[FEN "${node.fen}"]\n`;
-                puzzlePGN += `[Solution "${solutionMove}"]\n`;
-                puzzlePGN += `\n${solutionMove} *\n\n`;
-                
-                puzzles.push(puzzlePGN);
-              }
-            } else {
-              // If it's the opponent's turn, check if any child leads to a position where puzzle color plays
-              // This handles cases like: after 4. Nxd4 (black's turn), variations 4... Qb6 and 4... Nc6 lead to white's turn
-              for (const child of node.children) {
-                if (!child.san) continue;
-                
-                // Check if the child leads to a position where puzzle color plays
-                const [childPos] = positionFromFen(child.fen);
-                if (!childPos) continue;
-                
-                const childTurn = childPos.turn;
-                
-                // If after the child move it's the puzzle color's turn, create a puzzle
-                if (childTurn === puzzleColor && child.children.length > 0) {
-                  const nextMove = child.children[0];
-                  if (!nextMove.san) continue;
-                  
-                  puzzleCounter++;
-                  
-                  // Get the solution move with move number using getMoveText
-                  const solutionMoveText = getMoveText(nextMove, {
-                    glyphs: false,
-                    comments: false,
-                    extraMarkups: false,
-                    isFirst: true,
-                  }).trim();
-                  
-                  // Extract just the move number and SAN (e.g., "5. Be3" from "5. Be3 ")
-                  const solutionMove = solutionMoveText.trim();
-                  
-                  // Create puzzle PGN with full headers
-                  let puzzlePGN = `[Event "Mini puzzle ${puzzleCounter}"]\n`;
-                  puzzlePGN += `[Site "Local"]\n`;
-                  puzzlePGN += `[Date "${currentDate}"]\n`;
-                  puzzlePGN += `[Round "-"]\n`;
-                  puzzlePGN += `[White "Puzzle"]\n`;
-                  puzzlePGN += `[Black "?"]\n`;
-                  puzzlePGN += `[Result "*"]\n`;
-                  puzzlePGN += `[SetUp "1"]\n`;
-                  puzzlePGN += `[FEN "${child.fen}"]\n`;
-                  puzzlePGN += `[Solution "${solutionMove}"]\n`;
-                  puzzlePGN += `\n${solutionMove} *\n\n`;
-                  
-                  puzzles.push(puzzlePGN);
-                }
-              }
-            }
+      const MAX_DEPTH = 80; // súbelo si quieres recorrer líneas más largas
+
+      const generatePuzzlesFromNode = (
+        node: TreeNode,
+        depth = 0,
+        puzzlePhaseStarted = false
+      ): void => {
+        if (depth > MAX_DEPTH) return;
+
+        const [pos] = positionFromFen(node.fen);
+        if (!pos) return;
+
+        // 1) Detectar el inicio: primera posición con variantes
+        if (!puzzlePhaseStarted && node.children.length >= 2) {
+          puzzlePhaseStarted = true;
+        }
+
+        // 2) Si ya estamos en la fase de puzzles y es turno del color del puzzle,
+        //    generamos un puzzle por cada jugada disponible desde esta posición.
+        if (puzzlePhaseStarted && pos.turn === puzzleColor && node.children.length > 0) {
+          for (const child of node.children) {
+            if (!child.san) continue;
+
+            puzzleCounter++;
+
+            const solutionMoveText = getMoveText(child, {
+              glyphs: false,
+              comments: false,
+              extraMarkups: false,
+              isFirst: true,
+            }).trim();
+
+            const solutionMove = solutionMoveText.trim();
+
+            let puzzlePGN = `[Event "Mini puzzle ${puzzleCounter}"]\n`;
+            puzzlePGN += `[Site "Local"]\n`;
+            puzzlePGN += `[Date "${currentDate}"]\n`;
+            puzzlePGN += `[Round "-"]\n`;
+            puzzlePGN += `[White "Puzzle"]\n`;
+            puzzlePGN += `[Black "?"]\n`;
+            puzzlePGN += `[Result "*"]\n`;
+            puzzlePGN += `[SetUp "1"]\n`;
+            puzzlePGN += `[FEN "${node.fen}"]\n`; // posición antes de la jugada del puzzle
+            puzzlePGN += `[Solution "${solutionMove}"]\n`;
+            puzzlePGN += `\n${solutionMove} *\n\n`;
+
+            puzzles.push(puzzlePGN);
           }
         }
-        
-        // Continue recursively through the tree to find more positions with variations
-        // Limit depth to avoid too many puzzles
-        if (depth < 20) {
-          // Process main line (first child) to continue searching
-          if (node.children.length > 0) {
-            generatePuzzlesFromNode(node.children[0], depth + 1);
-          }
-          // Process variations (remaining children) to find more puzzle positions
-          for (let i = 1; i < node.children.length; i++) {
-            generatePuzzlesFromNode(node.children[i], depth + 1);
-          }
+
+        // 3) Seguir recorriendo el árbol
+        for (const child of node.children) {
+          generatePuzzlesFromNode(child, depth + 1, puzzlePhaseStarted);
         }
       };
-      
+
       // Start from root - this will process all positions in the tree
       generatePuzzlesFromNode(root);
-      
+
       // Combine all puzzles into a single PGN string
       const puzzlesPGN = puzzles.join("");
-      
+
       // Create the file with puzzle type
       await createFile({
         filename: fileName,
@@ -264,7 +212,7 @@ function BoardVariants() {
         pgn: puzzlesPGN,
         dir: documentDir,
       });
-      
+
       notifications.show({
         title: t("common.save"),
         message: t("common.puzzlesGeneratedSuccessfully", { count: puzzles.length }),

@@ -37,6 +37,10 @@ interface GamesHistoryCardProps {
   onAnalyzeLocalGame: (game: GameRecord) => void;
   onAnalyzeChessComGame: (game: ChessComGame) => void;
   onAnalyzeLichessGame: (game: LichessGame) => void;
+  onAnalyzeAllLocal?: () => void;
+  onAnalyzeAllChessCom?: () => void;
+  onAnalyzeAllLichess?: () => void;
+  onDeleteLocalGame?: (gameId: string) => void;
 }
 
 export function GamesHistoryCard({
@@ -56,6 +60,10 @@ export function GamesHistoryCard({
   onAnalyzeLocalGame,
   onAnalyzeChessComGame,
   onAnalyzeLichessGame,
+  onAnalyzeAllLocal,
+  onAnalyzeAllChessCom,
+  onAnalyzeAllLichess,
+  onDeleteLocalGame,
 }: GamesHistoryCardProps) {
   return (
     <Card withBorder p="lg" radius="md" h="100%">
@@ -103,7 +111,12 @@ export function GamesHistoryCard({
         </Group>
 
         <Tabs.Panel value="local" pt="xs">
-          <LocalGamesTab games={localGames} onAnalyzeGame={onAnalyzeLocalGame} />
+          <LocalGamesTab
+            games={localGames}
+            onAnalyzeGame={onAnalyzeLocalGame}
+            onAnalyzeAll={onAnalyzeAllLocal}
+            onDeleteGame={onDeleteLocalGame}
+          />
         </Tabs.Panel>
 
         <Tabs.Panel value="chesscom" pt="xs">
@@ -111,6 +124,7 @@ export function GamesHistoryCard({
             games={chessComGames}
             chessComUsernames={chessComUsernames}
             onAnalyzeGame={onAnalyzeChessComGame}
+            onAnalyzeAll={onAnalyzeAllChessCom}
           />
         </Tabs.Panel>
 
@@ -119,6 +133,7 @@ export function GamesHistoryCard({
             games={lichessGames}
             lichessUsernames={lichessUsernames}
             onAnalyzeGame={onAnalyzeLichessGame}
+            onAnalyzeAll={onAnalyzeAllLichess}
           />
         </Tabs.Panel>
       </Tabs>
