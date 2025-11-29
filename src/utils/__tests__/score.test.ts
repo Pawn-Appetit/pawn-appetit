@@ -61,7 +61,7 @@ test("should annotate as ?", () => {
       depth: 1,
       multipv: 1,
       nodes: 1,
-      score: { value: { type: "cp", value: 0 }, wdl: null }, // 0cp is better than -250cp (100cp+ difference)
+      score: { value: { type: "cp", value: 50 }, wdl: null }, // 50cp is better than -100cp (150cp difference, > 100cp)
       nps: 1000,
       sanMoves: ["e4"], // Best move is e4
       uciMoves: ["e2e4"],
@@ -72,7 +72,7 @@ test("should annotate as ?", () => {
   // 1. prevCP - nextCP = 300cp (between 200 and 400) to avoid ?? by CP difference
   // 2. winChanceDiff should be around 12-13% (between 10% and 20%) to avoid ?? by win chance
   // 3. nextCP = -100 (not > -100) to avoid !? (which requires nextCP > -100)
-  // 4. The difference between best (0cp) and played (-100cp) is exactly 100cp, which is the minimum for hasClearlyBetterAlternative
+  // 4. The difference between best (50cp) and played (-100cp) is 150cp, which is > 100cp for hasClearlyBetterAlternative
   // move = "d4" (not "e4"), so isBestMove = false, avoiding "Best" and "!?"
   expect(getAnnotation(null, { type: "cp", value: 200 }, { type: "cp", value: -100 }, "white", betterAlternative, false, "d4")).toBe("?");
   expect(getAnnotation(null, { type: "cp", value: -200 }, { type: "cp", value: 100 }, "black", betterAlternative, false, "d5")).toBe("?");

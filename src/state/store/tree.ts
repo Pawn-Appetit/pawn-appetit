@@ -709,9 +709,9 @@ export function addAnalysis(
   while (cur !== undefined) {
     // Only apply analysis if we have analysis data for this position
     if (i < analysis.length && analysis[i].best.length > 0) {
-      const [pos] = positionFromFen(cur.fen);
+    const [pos] = positionFromFen(cur.fen);
       if (pos && !pos.isEnd()) {
-        cur.score = analysis[i].best[0].score;
+      cur.score = analysis[i].best[0].score;
       if (analysis[i].novelty) {
         cur.annotations = [...new Set([...cur.annotations, "N" as const])];
       }
@@ -770,8 +770,8 @@ export function addAnalysis(
             // If all best moves match current move, use the first one anyway (it's still the best line)
             if (!bestMovesToUse && prevBestMoves[0].uciMoves.length > 0) {
               bestMovesToUse = prevBestMoves[0];
-            }
-          }
+      }
+    }
           
           if (bestMovesToUse && bestMovesToUse.uciMoves.length > 0) {
             // Get the parent node (the node before the current move)

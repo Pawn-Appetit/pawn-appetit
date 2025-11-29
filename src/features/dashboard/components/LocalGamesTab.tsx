@@ -140,18 +140,18 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
                       {stats.acpl.toFixed(1)}
                     </Text>
                   ) : (
-                    <Text size="xs" c="dimmed">
-                      -
-                    </Text>
+                  <Text size="xs" c="dimmed">
+                    -
+                  </Text>
                   )}
                 </Table.Td>
                 <Table.Td>{g.moves.length}</Table.Td>
                 <Table.Td c="dimmed">{dateStr}</Table.Td>
                 <Table.Td>
                   <Group gap="xs">
-                    <Button size="xs" variant="light" onClick={() => onAnalyzeGame(g)}>
-                      Analyze
-                    </Button>
+                  <Button size="xs" variant="light" onClick={() => onAnalyzeGame(g)}>
+                    Analyze
+                  </Button>
                     {onDeleteGame && (
                       <ActionIcon
                         size="sm"
