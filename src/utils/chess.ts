@@ -6,7 +6,7 @@ import { isPawns, parseComment } from "chessops/pgn";
 import { makeSan, parseSan } from "chessops/san";
 import { match } from "ts-pattern";
 import { commands, type Outcome, type Score, type Token } from "@/bindings";
-import { ANNOTATION_INFO, isBasicAnnotation, NAG_INFO } from "./annotation";
+import { ANNOTATION_INFO, isBasicAnnotation, NAG_INFO, type Annotation } from "./annotation";
 import { parseSanOrUci, positionFromFen } from "./chessops";
 import { harmonicMean, isPrefix, mean } from "./misc";
 import { formatScore, getAccuracy, getCPLoss, INITIAL_SCORE } from "./score";
@@ -63,9 +63,52 @@ export function getMoveText(
     }
     moveText += tree.san;
     if (opt.glyphs) {
+      // Only show ONE basic annotation (the most important one)
+      // This prevents multiple annotations from appearing like "!?!?!?"
+      let basicAnnotation: Annotation | null = null;
+      const otherAnnotations: Annotation[] = [];
+      
       for (const annotation of tree.annotations) {
         if (annotation === "") continue;
-        moveText += isBasicAnnotation(annotation) ? tree.annotations : ` $${ANNOTATION_INFO[annotation].nag}`;
+        const annotationInfo = ANNOTATION_INFO[annotation];
+        if (!annotationInfo) continue; // Skip if annotation is not in ANNOTATION_INFO
+        
+        if (isBasicAnnotation(annotation)) {
+          // Keep only the most important basic annotation
+          // Priority: ?? > ? > ?! > !? > ! > !! > Best
+          if (!basicAnnotation) {
+            basicAnnotation = annotation;
+          } else {
+            // Compare priorities - lower nag number = higher priority for basic annotations
+            const currentPriority = annotationInfo.nag;
+            const existingPriority = ANNOTATION_INFO[basicAnnotation]?.nag ?? 999;
+            if (currentPriority < existingPriority) {
+              basicAnnotation = annotation;
+            }
+          }
+        } else {
+          // Keep non-basic annotations
+          otherAnnotations.push(annotation);
+        }
+      }
+      
+      // Add the single basic annotation
+      if (basicAnnotation) {
+        // Best uses NAG $8, not "*" (which is reserved for game result)
+        // NAG $1 is already used for "!" (good/great)
+        if (basicAnnotation === "Best") {
+          moveText += " $8";
+        } else {
+          moveText += basicAnnotation;
+        }
+      }
+      
+      // Add non-basic annotations as NAGs
+      for (const annotation of otherAnnotations) {
+        const annotationInfo = ANNOTATION_INFO[annotation];
+        if (annotationInfo) {
+          moveText += ` $${annotationInfo.nag}`;
+        }
       }
     }
     moveText += " ";
@@ -269,33 +312,19 @@ export function getPGN(
     
     // Add variations right after the current move, before continuing with the main line
     // Variations are stored as siblings of the main line child
+    // Process variations if: variations are enabled AND we're not following a specific path AND there are variations
     if (variations && !path && tree.children.length > 1) {
       const variationsPGN = tree.children.slice(1).map(
         (variation) => {
-          // For variations, we need to manually process the variation node
-          // because getPGN with root=false expects children to exist
-          let variationPGN = "";
-          if (variation.san) {
-            variationPGN += getMoveText(variation, {
-              glyphs,
-              comments,
-              extraMarkups,
-              isFirst: true,
-            });
-          }
-          // Then process the children recursively
-          if (variation.children.length > 0) {
-            variationPGN += getPGN(variation, {
-              headers: null,
-              glyphs,
-              comments,
-              variations,
-              extraMarkups,
-              root: false,
-              path: null,
-            });
-          }
-          return variationPGN.trim();
+          // For variations, we need to process the entire variation tree recursively
+          // This includes the variation's move and all its children (which may include sub-variations)
+          return getVariationPGN(variation, {
+            glyphs,
+            comments,
+            extraMarkups,
+            variations,
+            isFirst: true,
+          });
         },
       );
       for (const variation of variationsPGN) {
@@ -306,7 +335,7 @@ export function getPGN(
     }
     
     // Continue with the main line after variations
-    // Process mainChild's children, but also check if mainChild itself has variations
+    // Process mainChild's children, which may include more moves and variations
     if (mainChild.children.length > 0) {
       pgn += getPGN(mainChild, {
         headers: null,
@@ -331,6 +360,88 @@ export function getPGN(
   if (root && headers) {
     pgn += ` ${headers.result}`;
   }
+  return pgn.trim();
+}
+
+/**
+ * Helper function to generate PGN for a variation (without headers)
+ * This processes a variation node and all its children recursively,
+ * including sub-variations
+ */
+function getVariationPGN(
+  node: TreeNode,
+  {
+    glyphs,
+    comments,
+    extraMarkups,
+    variations,
+    isFirst = false,
+  }: {
+    glyphs: boolean;
+    comments: boolean;
+    extraMarkups: boolean;
+    variations: boolean;
+    isFirst?: boolean;
+  },
+): string {
+  let pgn = "";
+  
+  // Add the move text for this variation node
+  if (node.san) {
+    pgn += getMoveText(node, {
+      glyphs,
+      comments,
+      extraMarkups,
+      isFirst,
+    });
+  }
+  
+  // Process the main line of this variation (first child)
+  if (node.children.length > 0) {
+    const mainChild = node.children[0];
+    
+    // Add sub-variations of this variation (siblings of the main child)
+    if (variations && node.children.length > 1) {
+      const subVariationsPGN = node.children.slice(1).map(
+        (subVariation) => {
+          return getVariationPGN(subVariation, {
+            glyphs,
+            comments,
+            extraMarkups,
+            variations,
+            isFirst: true,
+          });
+        },
+      );
+      for (const subVariation of subVariationsPGN) {
+        if (subVariation) {
+          pgn += ` (${subVariation}) `;
+        }
+      }
+    }
+    
+    // Continue with the main line of this variation
+    if (mainChild.children.length > 0) {
+      pgn += getPGN(mainChild, {
+        headers: null,
+        glyphs,
+        comments,
+        variations,
+        extraMarkups,
+        root: false,
+        path: null,
+      });
+    } else if (mainChild.san) {
+      // If mainChild has no children but has a move, output it
+      pgn += getMoveText(mainChild, {
+        glyphs,
+        comments,
+        extraMarkups,
+        isFirst: false,
+      });
+    }
+  }
+  
   return pgn.trim();
 }
 
@@ -532,22 +643,40 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
       }
       // Parse variation normally to maintain nested variations
       // Variations should be added to the variation parent node (the node before the current move)
-      const newTree = innerParsePGN(variation, variationParentNode.fen, root.halfMoves - 1, isVariantsMode);
+      // Use variationParentNode.halfMoves to ensure correct move numbering
+      // Use isVariantsMode=false to parse variations correctly (they should be added as siblings)
+      const variationHalfMoves = variationParentNode.halfMoves;
+      const newTree = innerParsePGN(variation, variationParentNode.fen, variationHalfMoves, false);
       if (newTree.root.children.length > 0) {
         variationParentNode.children.push(newTree.root.children[0]);
       }
     } else if (token.type === "ParenClose") {
     } else if (token.type === "Nag") {
-      root.annotations.push(NAG_INFO.get(token.value) || "");
-      root.annotations.sort((a, b) => {
-        return ANNOTATION_INFO[a].nag - ANNOTATION_INFO[b].nag;
-      });
+      const nagAnnotation = NAG_INFO.get(token.value) || "";
+      if (nagAnnotation && ANNOTATION_INFO[nagAnnotation]) {
+        // Remove all existing basic annotations before adding the new one
+        // This prevents multiple basic annotations from accumulating
+        const filteredAnnotations = root.annotations.filter((ann) => {
+          const annInfo = ANNOTATION_INFO[ann];
+          // Keep annotations that are not basic (group !== "basic")
+          return !annInfo || annInfo.group !== "basic";
+        });
+        root.annotations = [...filteredAnnotations, nagAnnotation];
+        root.annotations.sort((a, b) => {
+          const aInfo = ANNOTATION_INFO[a];
+          const bInfo = ANNOTATION_INFO[b];
+          if (!aInfo || !bInfo) return 0;
+          return aInfo.nag - bInfo.nag;
+        });
+      }
     } else if (token.type === "San") {
       const [pos, error] = positionFromFen(root.fen);
       if (error) {
         continue;
       }
-      const move = parseSan(pos, token.value);
+      // Parse the SAN (no longer support "*" as it's reserved for game result)
+      const sanValue = token.value;
+      const move = parseSan(pos, sanValue);
       if (!move) {
         continue;
       }
@@ -560,10 +689,12 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
         san,
         halfMoves: root.halfMoves + 1,
       });
+      
       root.children.push(newTree);
 
-      // Update variation parent node before updating root
-      // This ensures variations are added to the correct parent
+      // Update variation parent node BEFORE updating root
+      // Variations in PGN appear after a move but refer to the position BEFORE that move
+      // So variations should be added to the parent node (root) before we move to the new node
       variationParentNode = root;
       prevNode = root;
       root = newTree;
@@ -656,6 +787,7 @@ export function getGameStats(root: TreeNode) {
     "!!": 0,
     "!": 0,
     "!?": 0,
+    "Best": 0,
   };
 
   const blackAnnotations = {
@@ -665,6 +797,7 @@ export function getGameStats(root: TreeNode) {
     "!!": 0,
     "!": 0,
     "!?": 0,
+    "Best": 0,
   };
 
   if (root.children.length === 0) {

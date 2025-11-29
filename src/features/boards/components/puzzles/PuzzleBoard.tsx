@@ -12,6 +12,7 @@ import PromotionModal from "@/features/boards/components/PromotionModal";
 import { blindfoldAtom, showCoordinatesAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
 import { blindfold, chessboard } from "@/styles/Chessboard.css";
+import { uciNormalize } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import { logger } from "@/utils/logger";
 import { recordPuzzleSolved } from "@/utils/puzzleStreak";
@@ -59,10 +60,18 @@ function PuzzleBoard({
   const treeIter = treeIteratorMainLine(root);
   treeIter.next();
   let currentMove = 0;
-  if (puzzle) {
+  if (puzzle && initialPos) {
+    let iterPos = initialPos.clone();
     for (const { node } of treeIter) {
-      if (node.move && makeUci(node.move) === puzzle.moves[currentMove]) {
-        currentMove++;
+      if (node.move && currentMove < puzzle.moves.length) {
+        const normalizedMove = uciNormalize(iterPos, node.move, false);
+        const normalizedPuzzleMove = puzzle.moves[currentMove];
+        if (normalizedMove === normalizedPuzzleMove) {
+          iterPos.play(node.move);
+          currentMove++;
+        } else {
+          break;
+        }
       } else {
         break;
       }
@@ -89,20 +98,22 @@ function PuzzleBoard({
     if (!puzzle) return;
 
     const newPos = pos.clone();
-    const uci = makeUci(move);
+    const uci = uciNormalize(pos, move, false);
     newPos.play(move);
+
+    const expectedMove = puzzle.moves[currentMove];
 
     PUZZLE_DEBUG_LOGS &&
       logger.debug("Checking move:", {
         uci,
-        expectedMove: puzzle.moves[currentMove],
+        expectedMove,
         currentMove,
         totalMoves: puzzle.moves.length,
         isCheckmate: newPos.isCheckmate(),
-        isCorrect: puzzle.moves[currentMove] === uci || newPos.isCheckmate(),
+        isCorrect: expectedMove === uci || newPos.isCheckmate(),
       });
 
-    if (puzzle.moves[currentMove] === uci || newPos.isCheckmate()) {
+    if (expectedMove === uci || newPos.isCheckmate()) {
       if (currentMove === puzzle.moves.length - 1) {
         if (puzzle.completion === "incomplete") {
           changeCompletion("correct");

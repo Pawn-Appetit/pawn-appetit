@@ -5,7 +5,7 @@ import { useAtom } from "jotai";
 import { useCallback, useEffect, useState } from "react";
 import { commands, type PuzzleDatabaseInfo, type Token } from "@/bindings";
 import { puzzleRatingRangeAtom, selectedPuzzleDbAtom } from "@/state/atoms";
-import { getPgnHeaders } from "@/utils/chess";
+import { getPgnHeaders, uciNormalize } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import { logger } from "@/utils/logger";
 import { getPuzzleDatabases, PUZZLE_DEBUG_LOGS, type Puzzle } from "@/utils/puzzles";
@@ -204,7 +204,7 @@ export const usePuzzleDatabase = () => {
       .map((san) => {
         if (pos) {
           const move = parseSan(pos, san);
-          const uciMove = move ? makeUci(move) : null;
+          const uciMove = move ? uciNormalize(pos, move, false) : null;
           if (move) {
             pos.play(move);
           }

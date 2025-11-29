@@ -1,23 +1,34 @@
 import type { MantineColor } from "@mantine/core";
 import { Grid, Stack } from "@mantine/core";
 import { modals } from "@mantine/modals";
+import { notifications } from "@mantine/notifications";
 import { IconBolt, IconChess, IconClock, IconStopwatch } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
+import { appDataDir, resolve } from "@tauri-apps/api/path";
+import { mkdir, writeTextFile } from "@tauri-apps/plugin-fs";
 import { info } from "@tauri-apps/plugin-log";
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { commands, type GoMode } from "@/bindings";
 import { lessons } from "@/features/learn/constants/lessons";
 import { practices } from "@/features/learn/constants/practices";
-import { activeTabAtom, sessionsAtom, tabsAtom } from "@/state/atoms";
+import { activeTabAtom, enginesAtom, sessionsAtom, tabsAtom } from "@/state/atoms";
 import { useUserStatsStore } from "@/state/userStatsStore";
 import { type Achievement, getAchievements } from "@/utils/achievements";
 import { type ChessComGame, fetchLastChessComGames } from "@/utils/chess.com/api";
+import { parsePGN, getPGN, getMainLine } from "@/utils/chess";
+import { type TreeState } from "@/utils/treeReducer";
 import { type DailyGoal, getDailyGoals } from "@/utils/dailyGoals";
-import { type GameRecord, getRecentGames } from "@/utils/gameRecords";
+import { type GameRecord, getRecentGames, updateGameRecord, deleteGameRecord } from "@/utils/gameRecords";
+import { saveAnalyzedGame, getAllAnalyzedGames } from "@/utils/analyzedGames";
+import { createFile } from "@/utils/files";
 import { fetchLastLichessGames } from "@/utils/lichess/api";
 import { getPuzzleStats, getTodayPuzzleCount } from "@/utils/puzzleStreak";
 import { createTab, genID, type Tab } from "@/utils/tabs";
+import { unwrap } from "@/utils/unwrap";
+import type { LocalEngine } from "@/utils/engines";
+import { AnalyzeAllModal, type AnalyzeAllConfig } from "./components/AnalyzeAllModal";
 import { DailyGoalsCard } from "./components/DailyGoalsCard";
 import { GamesHistoryCard } from "./components/GamesHistoryCard";
 import { PuzzleStatsCard } from "./components/PuzzleStatsCard";
@@ -51,8 +62,14 @@ export default function DashboardPage() {
   const [_activeTab, setActiveTab] = useAtom(activeTabAtom);
 
   const sessions = useAtomValue(sessionsAtom);
+  const engines = useAtomValue(enginesAtom);
+  const localEngines = engines.filter((e): e is LocalEngine => e.type === "local");
+  const defaultEngine = localEngines.length > 0 ? localEngines[0] : null;
+
   const [mainAccountName, setMainAccountName] = useState<string | null>(null);
   const [activeGamesTab, setActiveGamesTab] = useState<string | null>("local");
+  const [analyzeAllModalOpened, setAnalyzeAllModalOpened] = useState(false);
+  const [analyzeAllGameType, setAnalyzeAllGameType] = useState<"local" | "chesscom" | "lichess" | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("mainAccount");
@@ -111,7 +128,21 @@ export default function DashboardPage() {
 
   const [recentGames, setRecentGames] = useState<GameRecord[]>([]);
   useEffect(() => {
-    getRecentGames(50).then(setRecentGames);
+    const loadGames = async () => {
+      const games = await getRecentGames(50);
+      setRecentGames(games);
+    };
+    loadGames();
+    
+    // Listen for games:updated event to refresh local games after analysis
+    const handleGamesUpdated = () => {
+      loadGames();
+    };
+    window.addEventListener("games:updated", handleGamesUpdated);
+    
+    return () => {
+      window.removeEventListener("games:updated", handleGamesUpdated);
+    };
   }, []);
 
   const [lastLichessUpdate, setLastLichessUpdate] = useState(Date.now());
@@ -139,12 +170,34 @@ export default function DashboardPage() {
         const gamesArrays = await Promise.all(allGamesPromises);
         const combinedGames = gamesArrays.flat();
         combinedGames.sort((a, b) => b.createdAt - a.createdAt);
-        setLichessGames(combinedGames.slice(0, 50));
+        const games = combinedGames.slice(0, 50);
+        
+        // Load analyzed PGNs from storage
+        const analyzedGames = await getAllAnalyzedGames();
+        // Create a new array to ensure React detects the change
+        const gamesWithAnalysis = games.map(game => {
+          if (analyzedGames[game.id]) {
+            return { ...game, pgn: analyzedGames[game.id] };
+          }
+          return game;
+        });
+        
+        setLichessGames(gamesWithAnalysis);
       } else {
         setLichessGames([]);
       }
     };
     fetchGames();
+    
+    // Listen for lichess:games:updated event to refresh Lichess games after analysis
+    const handleLichessGamesUpdated = () => {
+      fetchGames();
+    };
+    window.addEventListener("lichess:games:updated", handleLichessGamesUpdated);
+    
+    return () => {
+      window.removeEventListener("lichess:games:updated", handleLichessGamesUpdated);
+    };
   }, [lichessUsernames, selectedLichessUser, lastLichessUpdate]);
 
   const [lastChessComUpdate, setLastChessComUpdate] = useState(Date.now());
@@ -160,12 +213,34 @@ export default function DashboardPage() {
 
         const combinedGames = gamesArrays.flat();
         combinedGames.sort((a, b) => b.end_time - a.end_time);
-        setChessComGames(combinedGames.slice(0, 50));
+        const games = combinedGames.slice(0, 50);
+        
+        // Load analyzed PGNs from storage
+        const analyzedGames = await getAllAnalyzedGames();
+        // Create a new array to ensure React detects the change
+        const gamesWithAnalysis = games.map(game => {
+          if (analyzedGames[game.url]) {
+            return { ...game, pgn: analyzedGames[game.url] };
+          }
+          return game;
+        });
+        
+        setChessComGames(gamesWithAnalysis);
       } else {
         setChessComGames([]);
       }
     };
     fetchGames();
+    
+    // Listen for chesscom:games:updated event to refresh Chess.com games after analysis
+    const handleChessComGamesUpdated = () => {
+      fetchGames();
+    };
+    window.addEventListener("chesscom:games:updated", handleChessComGamesUpdated);
+    
+    return () => {
+      window.removeEventListener("chesscom:games:updated", handleChessComGamesUpdated);
+    };
   }, [chessComUsernames, selectedChessComUser, lastChessComUpdate]);
 
   const [puzzleStats, setPuzzleStats] = useState(() => getPuzzleStats());
@@ -494,6 +569,11 @@ export default function DashboardPage() {
             activeTab={activeGamesTab}
             onTabChange={setActiveGamesTab}
             localGames={recentGames}
+            onDeleteLocalGame={async (gameId: string) => {
+              await deleteGameRecord(gameId);
+              const updatedGames = await getRecentGames(50);
+              setRecentGames(updatedGames);
+            }}
             chessComGames={chessComGames}
             lichessGames={lichessGames}
             chessComUsernames={chessComUsernames}
@@ -537,6 +617,11 @@ export default function DashboardPage() {
                   setActiveTab,
                   pgn: game.pgn,
                   headers,
+                }).then((tabId) => {
+                  // Store the game URL in sessionStorage so we can save the analyzed PGN when analysis completes
+                  if (tabId && typeof window !== "undefined") {
+                    sessionStorage.setItem(`${tabId}_chessComGameUrl`, game.url);
+                  }
                 });
                 navigate({ to: "/boards" });
               }
@@ -553,9 +638,26 @@ export default function DashboardPage() {
                   setActiveTab,
                   pgn: game.pgn,
                   headers,
+                }).then((tabId) => {
+                  // Store the game ID in sessionStorage so we can save the analyzed PGN when analysis completes
+                  if (tabId && typeof window !== "undefined") {
+                    sessionStorage.setItem(`${tabId}_lichessGameId`, game.id);
+                  }
                 });
                 navigate({ to: "/boards" });
               }
+            }}
+            onAnalyzeAllLocal={() => {
+              setAnalyzeAllGameType("local");
+              setAnalyzeAllModalOpened(true);
+            }}
+            onAnalyzeAllChessCom={() => {
+              setAnalyzeAllGameType("chesscom");
+              setAnalyzeAllModalOpened(true);
+            }}
+            onAnalyzeAllLichess={() => {
+              setAnalyzeAllGameType("lichess");
+              setAnalyzeAllModalOpened(true);
             }}
           />
         </Grid.Col>
@@ -591,6 +693,309 @@ export default function DashboardPage() {
           <DailyGoalsCard goals={goals} achievements={achievements} currentStreak={puzzleStats.currentStreak} />
         </Grid.Col>
       </Grid>
+
+      <AnalyzeAllModal
+        opened={analyzeAllModalOpened}
+        onClose={() => {
+          setAnalyzeAllModalOpened(false);
+          setAnalyzeAllGameType(null);
+        }}
+        onAnalyze={async (config, onProgress, isCancelled) => {
+          if (!defaultEngine) {
+            notifications.show({
+              title: "No Engine Available",
+              message: "Please install an engine first in the Engines page.",
+              color: "red",
+            });
+            return;
+          }
+
+          const gamesToAnalyze =
+            analyzeAllGameType === "local"
+              ? recentGames.filter((g) => g.pgn || g.moves.length > 0)
+              : analyzeAllGameType === "chesscom"
+                ? chessComGames.filter((g) => g.pgn)
+                : analyzeAllGameType === "lichess"
+                  ? lichessGames.filter((g) => g.pgn)
+                  : [];
+
+          if (gamesToAnalyze.length === 0) {
+            notifications.show({
+              title: "No Games to Analyze",
+              message: "No games with PGN data available to analyze.",
+              color: "orange",
+            });
+            return;
+          }
+
+          const goMode: GoMode = { t: "Depth", c: config.depth };
+          const engineSettings = (defaultEngine.settings ?? []).map((s) => ({
+            ...s,
+            value: s.value?.toString() ?? "",
+          }));
+          
+          // Force Threads to 1 for batch analysis, regardless of engine configuration
+          const threadsSetting = engineSettings.find((s) => s.name.toLowerCase() === "threads");
+          if (threadsSetting) {
+            threadsSetting.value = "1";
+          } else {
+            // Add Threads setting if it doesn't exist
+            engineSettings.push({ name: "Threads", value: "1" });
+          }
+
+          // Create directory for analyzed games
+          const baseDir = await appDataDir();
+          const analyzedDir = await resolve(baseDir, "analyzed-games");
+          await mkdir(analyzedDir, { recursive: true });
+
+          const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+          const folderName = `${analyzedDir}/${analyzeAllGameType}-analyzed-${timestamp}`;
+          await mkdir(folderName, { recursive: true });
+
+          notifications.show({
+            title: "Analysis Started",
+            message: `Analyzing ${gamesToAnalyze.length} games...`,
+            color: "blue",
+          });
+
+          let successCount = 0;
+          let failCount = 0;
+          let currentAnalysisId: string | null = null;
+
+          for (let i = 0; i < gamesToAnalyze.length; i++) {
+            // Check if analysis was cancelled
+            if (isCancelled()) {
+              // Stop the current engine if it's running
+              if (currentAnalysisId && defaultEngine) {
+                try {
+                  await commands.stopEngine(defaultEngine.path, currentAnalysisId);
+                } catch {
+                  // Ignore errors when stopping
+                }
+              }
+              notifications.show({
+                title: "Analysis Cancelled",
+                message: `Analysis stopped. ${successCount} games analyzed successfully.`,
+                color: "yellow",
+              });
+              break;
+            }
+            onProgress(i, gamesToAnalyze.length);
+            const game = gamesToAnalyze[i];
+            try {
+              let tree: TreeState;
+              let moves: string[];
+              let initialFen: string;
+              let gameHeaders: ReturnType<typeof createLocalGameHeaders | typeof createChessComGameHeaders | typeof createLichessGameHeaders>;
+
+              if (analyzeAllGameType === "local") {
+                // For local games, use PGN if available, otherwise reconstruct from moves
+                const gameRecord = game as GameRecord;
+                const pgn = gameRecord.pgn || createPGNFromMoves(gameRecord.moves, gameRecord.result, gameRecord.initialFen);
+                tree = await parsePGN(pgn, gameRecord.initialFen);
+                moves = gameRecord.moves;
+                initialFen = gameRecord.initialFen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+                gameHeaders = createLocalGameHeaders(gameRecord);
+              } else {
+                // For Chess.com and Lichess games, parse PGN
+                const pgn = (game as ChessComGame | typeof lichessGames[0]).pgn!;
+                tree = await parsePGN(pgn);
+                // Extract UCI moves from the main line using getMainLine
+                const is960 = tree.headers?.variant === "Chess960";
+                moves = getMainLine(tree.root, is960);
+                initialFen = tree.headers?.fen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+                gameHeaders =
+                  analyzeAllGameType === "chesscom"
+                    ? createChessComGameHeaders(game as ChessComGame)
+                    : createLichessGameHeaders(game as typeof lichessGames[0]);
+              }
+
+              // Analyze the game
+              currentAnalysisId = `analyze_all_${analyzeAllGameType}_${i}_${Date.now()}`;
+              const analysisResult = await commands.analyzeGame(
+                currentAnalysisId,
+                defaultEngine.path,
+                goMode,
+                {
+                  annotateNovelties: false,
+                  fen: initialFen,
+                  referenceDb: null,
+                  reversed: false,
+                  moves,
+                },
+                engineSettings,
+              );
+
+              // Check again if cancelled after analysis
+              if (isCancelled()) {
+                if (currentAnalysisId && defaultEngine) {
+                  try {
+                    await commands.stopEngine(defaultEngine.path, currentAnalysisId);
+                  } catch {
+                    // Ignore errors when stopping
+                  }
+                }
+                break;
+              }
+
+              const analysis = unwrap(analysisResult);
+
+              // Use the same addAnalysis function from the store to ensure consistency
+              // This ensures the same logic is used for both individual and batch analysis
+              const { addAnalysis } = await import("@/state/store/tree");
+              
+              // Apply analysis using the same function used in individual analysis
+              // This ensures consistency and prevents PGN damage
+              addAnalysis(tree, analysis);
+
+              // Check if cancelled before saving
+              if (isCancelled()) {
+                if (currentAnalysisId && defaultEngine) {
+                  try {
+                    await commands.stopEngine(defaultEngine.path, currentAnalysisId);
+                  } catch {
+                    // Ignore errors when stopping
+                  }
+                }
+                notifications.show({
+                  title: "Analysis Cancelled",
+                  message: `Analysis stopped after ${successCount} games (${failCount} failed).`,
+                  color: "yellow",
+                });
+                break;
+              }
+
+              // Generate PGN with analysis
+              let analyzedPgn = getPGN(tree.root, {
+                headers: tree.headers,
+                comments: true,
+                extraMarkups: true,
+                glyphs: true,
+                variations: true,
+              });
+
+              // Validate and fix PGN before saving
+              if (!analyzedPgn || analyzedPgn.trim().length === 0) {
+                info(`Generated PGN is empty for game ${i + 1}, skipping save`);
+                failCount++;
+                continue;
+              }
+
+              // Ensure PGN has a result (required for valid PGN)
+              const hasResult = /\[Result\s+"[^"]+"\]/.test(analyzedPgn) || /\s+(1-0|0-1|1\/2-1\/2|\*)\s*$/.test(analyzedPgn);
+              if (!hasResult && tree.headers?.result) {
+                // If result is missing but we have it in headers, append it
+                analyzedPgn = analyzedPgn.trim() + ` ${tree.headers.result}`;
+              } else if (!hasResult) {
+                // If no result at all, use "*" (game in progress)
+                analyzedPgn = analyzedPgn.trim() + ` *`;
+              }
+
+              // Only save if analysis was not cancelled
+              if (!isCancelled()) {
+                // Save analyzed PGN to file
+                const fileName = `${gameHeaders.white}-${gameHeaders.black}-${i + 1}`.replace(/[<>:"/\\|?*]/g, "_");
+                const filePath = await resolve(folderName, `${fileName}.pgn`);
+
+                await writeTextFile(filePath, analyzedPgn);
+
+                // Update the game object with the analyzed PGN so stats can be recalculated
+                if (analyzeAllGameType === "local") {
+                  const gameRecord = game as GameRecord;
+                  // Update the game record with analyzed PGN
+                  await updateGameRecord(gameRecord.id, { pgn: analyzedPgn });
+                } else if (analyzeAllGameType === "chesscom") {
+                  const chessComGame = game as ChessComGame;
+                  chessComGame.pgn = analyzedPgn;
+                  // Persist the analyzed PGN
+                  await saveAnalyzedGame(chessComGame.url, analyzedPgn);
+                  // Update the games array to trigger re-render and stats recalculation
+                  setChessComGames((prev) => {
+                    const updated = [...prev];
+                    const index = updated.findIndex((g) => g.url === chessComGame.url);
+                    if (index >= 0) {
+                      updated[index] = { ...chessComGame };
+                    }
+                    return updated;
+                  });
+                } else if (analyzeAllGameType === "lichess") {
+                  const lichessGame = game as typeof lichessGames[0];
+                  lichessGame.pgn = analyzedPgn;
+                  // Persist the analyzed PGN
+                  await saveAnalyzedGame(lichessGame.id, analyzedPgn);
+                  // Update the games array to trigger re-render and stats recalculation
+                  setLichessGames((prev) => {
+                    const updated = [...prev];
+                    const index = updated.findIndex((g) => g.id === lichessGame.id);
+                    if (index >= 0) {
+                      updated[index] = { ...lichessGame };
+                    }
+                    return updated;
+                  });
+                }
+
+                successCount++;
+              }
+            } catch (error) {
+              info(`Failed to analyze game ${i + 1}: ${error}`);
+              failCount++;
+            }
+
+            // Check if cancelled before updating progress
+            if (isCancelled()) {
+              if (currentAnalysisId && defaultEngine) {
+                try {
+                  await commands.stopEngine(defaultEngine.path, currentAnalysisId);
+                } catch {
+                  // Ignore errors when stopping
+                }
+              }
+              notifications.show({
+                title: "Analysis Cancelled",
+                message: `Analysis stopped after ${successCount} games (${failCount} failed).`,
+                color: "yellow",
+              });
+              break;
+            }
+            
+            // Update progress in modal
+            onProgress(i + 1, gamesToAnalyze.length);
+            
+            // Update notifications less frequently
+            if ((i + 1) % 10 === 0 || i === gamesToAnalyze.length - 1) {
+              notifications.show({
+                title: "Analysis Progress",
+                message: `Analyzed ${i + 1}/${gamesToAnalyze.length} games (${successCount} success, ${failCount} failed)`,
+                color: "blue",
+              });
+            }
+          }
+
+          // Final progress update
+          onProgress(gamesToAnalyze.length, gamesToAnalyze.length);
+
+          // Refresh games to update stats
+          if (analyzeAllGameType === "local") {
+            const updatedGames = await getRecentGames(50);
+            setRecentGames(updatedGames);
+          }
+
+          notifications.show({
+            title: "Analysis Complete",
+            message: `Analyzed ${successCount} games successfully. Files saved to: ${folderName}`,
+            color: "green",
+          });
+        }}
+        gameCount={
+          analyzeAllGameType === "local"
+            ? recentGames.filter((g) => g.pgn || g.moves.length > 0).length
+            : analyzeAllGameType === "chesscom"
+              ? chessComGames.filter((g) => g.pgn).length
+              : analyzeAllGameType === "lichess"
+                ? lichessGames.filter((g) => g.pgn).length
+                : 0
+        }
+      />
     </Stack>
   );
 }

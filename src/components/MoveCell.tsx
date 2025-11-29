@@ -59,7 +59,9 @@ const MoveCell = forwardRef(function MoveCell(props: MoveCellProps, ref: Forward
     >
       {props.isStart && <IconFlag style={{ marginRight: 5 }} size="0.875rem" />}
       {t("formatters.moveNotation", { move: props.move })}
-      {props.annotations.join("")}
+      {props.annotations
+        .filter((ann) => ann !== "Best") // Don't show "Best" as text, only as color
+        .join("")}
     </Box>
   );
 });

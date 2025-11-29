@@ -466,6 +466,13 @@ test("should handle addAnalysis", () => {
     position: [0],
     root: {
       ...treeE4D5().root,
+      score: {
+        value: {
+          type: "cp",
+          value: 10,
+        },
+        wdl: null,
+      },
       children: [
         {
           ...treeE4D5().root.children[0],
@@ -476,15 +483,9 @@ test("should handle addAnalysis", () => {
             },
             wdl: null,
           },
+          annotations: ["Best"], // e4 is the best move from the initial position, so it gets "Best" annotation
         },
       ],
-      score: {
-        value: {
-          type: "cp",
-          value: 10,
-        },
-        wdl: null,
-      },
     },
   });
 });

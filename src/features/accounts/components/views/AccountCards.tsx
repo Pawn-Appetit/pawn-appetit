@@ -1,8 +1,11 @@
 import { Alert, ScrollArea, SimpleGrid, Skeleton, Stack, Text } from "@mantine/core";
 import { IconMoodEmpty } from "@tabler/icons-react";
+import { appDataDir, resolve } from "@tauri-apps/api/path";
+import { remove } from "@tauri-apps/plugin-fs";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 import type { DatabaseInfo } from "@/bindings";
+import { commands } from "@/bindings";
 import type { SortState } from "@/components/GenericHeader";
 import { sessionsAtom } from "@/state/atoms";
 import { getChessComAccount, getStats } from "@/utils/chess.com/api";
@@ -162,7 +165,22 @@ function LichessOrChessCom({
   if (session.lichess?.account) {
     const account = session.lichess.account;
     const lichessSession = session.lichess;
-    const totalGames = account.count?.all ?? 0;
+    let totalGames = account.count?.all ?? 0;
+    
+    // Try to find database with exact match first, then try case-insensitive match
+    let database = databases.find((db) => db.filename === `${account.username}_lichess.db3`) ?? null;
+    if (!database) {
+      database = databases.find(
+        (db) => db.filename.toLowerCase() === `${account.username}_lichess.db3`.toLowerCase(),
+      ) ?? null;
+    }
+    
+    // Ensure totalGames is at least equal to downloadedGames
+    // This handles cases where account.count.all is outdated, incorrect, or unavailable
+    // If we have downloaded games, the total should be at least equal to downloadedGames
+    if (database?.type === "success" && database.game_count > 0) {
+      totalGames = Math.max(totalGames, database.game_count);
+    }
 
     const stats = [];
     const speeds = ["bullet", "blitz", "rapid", "classical"] as const;
@@ -192,12 +210,44 @@ function LichessOrChessCom({
         name={name}
         token={lichessSession.accessToken}
         type="lichess"
-        database={databases.find((db) => db.filename === `${account.username}_lichess.db3`) ?? null}
+        database={database}
         title={account.username}
         updatedAt={session.updatedAt}
         total={totalGames}
         setSessions={setSessions}
-        logout={() => {
+        logout={async () => {
+          // Delete database file and PGN file for this account
+          const dbDir = await appDataDir();
+          const dbPath = await resolve(dbDir, "db", `${account.username}_lichess.db3`);
+          const pgnPath = await resolve(dbDir, "db", `${account.username}_lichess.pgn`);
+          
+          try {
+            // Delete database file if it exists
+            try {
+              await commands.deleteDatabase(dbPath);
+            } catch {
+              // Database file might not exist, ignore
+            }
+            
+            // Delete PGN file if it exists
+            try {
+              await remove(pgnPath);
+            } catch {
+              // PGN file might not exist, ignore
+            }
+            
+            // Delete analyzed games for this account
+            try {
+              const { removeAnalyzedGamesForAccount } = await import("@/utils/analyzedGames");
+              await removeAnalyzedGamesForAccount(account.username, "lichess");
+            } catch (error) {
+              console.error("Error deleting analyzed games:", error);
+            }
+          } catch (error) {
+            console.error("Error deleting account files:", error);
+          }
+          
+          // Remove session
           setSessions((sessions) => sessions.filter((s) => s.lichess?.account.id !== account.id));
         }}
         setDatabases={setDatabases}
@@ -237,7 +287,17 @@ function LichessOrChessCom({
       }
     }
 
-    const database = databases.find((db) => db.filename === `${session.chessCom?.username}_chesscom.db3`) ?? null;
+    // Try to find database with exact match first, then try case-insensitive match
+    let database = databases.find((db) => db.filename === `${session.chessCom?.username}_chesscom.db3`) ?? null;
+    if (!database) {
+      database = databases.find(
+        (db) => db.filename.toLowerCase() === `${session.chessCom?.username}_chesscom.db3`.toLowerCase(),
+      ) ?? null;
+    }
+    
+    // Ensure totalGames is at least equal to downloadedGames
+    // This handles cases where stats are outdated, incorrect, or unavailable
+    // If we have downloaded games, the total should be at least equal to downloadedGames
     if (database && database.type === "success") {
       totalGames = Math.max(totalGames, database.game_count ?? 0);
     }
@@ -252,7 +312,41 @@ function LichessOrChessCom({
         total={totalGames}
         stats={getStats(session.chessCom.stats)}
         setSessions={setSessions}
-        logout={() => {
+        logout={async () => {
+          if (!session.chessCom) return;
+          
+          // Delete database file and PGN file for this account
+          const dbDir = await appDataDir();
+          const dbPath = await resolve(dbDir, "db", `${session.chessCom.username}_chesscom.db3`);
+          const pgnPath = await resolve(dbDir, "db", `${session.chessCom.username}_chesscom.pgn`);
+          
+          try {
+            // Delete database file if it exists
+            try {
+              await commands.deleteDatabase(dbPath);
+            } catch {
+              // Database file might not exist, ignore
+            }
+            
+            // Delete PGN file if it exists
+            try {
+              await remove(pgnPath);
+            } catch {
+              // PGN file might not exist, ignore
+            }
+            
+            // Delete analyzed games for this account
+            try {
+              const { removeAnalyzedGamesForAccount } = await import("@/utils/analyzedGames");
+              await removeAnalyzedGamesForAccount(session.chessCom.username, "chesscom");
+            } catch (error) {
+              console.error("Error deleting analyzed games:", error);
+            }
+          } catch (error) {
+            console.error("Error deleting account files:", error);
+          }
+          
+          // Remove session
           setSessions((sessions) => sessions.filter((s) => s.chessCom?.username !== session.chessCom?.username));
         }}
         reload={async () => {

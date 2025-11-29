@@ -1,4 +1,5 @@
-import { Avatar, Badge, Button, Group, ScrollArea, Table, Text } from "@mantine/core";
+import { ActionIcon, Avatar, Badge, Button, Group, ScrollArea, Table, Text } from "@mantine/core";
+import { IconTrash } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import type { GameRecord } from "@/utils/gameRecords";
@@ -7,9 +8,11 @@ import { calculateGameStats, type GameStats } from "@/utils/gameRecords";
 interface LocalGamesTabProps {
   games: GameRecord[];
   onAnalyzeGame: (game: GameRecord) => void;
+  onAnalyzeAll?: () => void;
+  onDeleteGame?: (gameId: string) => void;
 }
 
-export function LocalGamesTab({ games, onAnalyzeGame }: LocalGamesTabProps) {
+export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame }: LocalGamesTabProps) {
   const { t } = useTranslation();
   const [gameStats, setGameStats] = useState<Map<string, GameStats>>(new Map());
 
@@ -75,7 +78,13 @@ export function LocalGamesTab({ games, onAnalyzeGame }: LocalGamesTabProps) {
             <Table.Th>ACPL</Table.Th>
             <Table.Th>Moves</Table.Th>
             <Table.Th>Date</Table.Th>
-            <Table.Th></Table.Th>
+            <Table.Th>
+              {onAnalyzeAll && (
+                <Button size="xs" variant="light" onClick={onAnalyzeAll}>
+                  Analyze All
+                </Button>
+              )}
+            </Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
@@ -131,17 +140,30 @@ export function LocalGamesTab({ games, onAnalyzeGame }: LocalGamesTabProps) {
                       {stats.acpl.toFixed(1)}
                     </Text>
                   ) : (
-                    <Text size="xs" c="dimmed">
-                      -
-                    </Text>
+                  <Text size="xs" c="dimmed">
+                    -
+                  </Text>
                   )}
                 </Table.Td>
                 <Table.Td>{g.moves.length}</Table.Td>
                 <Table.Td c="dimmed">{dateStr}</Table.Td>
                 <Table.Td>
+                  <Group gap="xs">
                   <Button size="xs" variant="light" onClick={() => onAnalyzeGame(g)}>
                     Analyze
                   </Button>
+                    {onDeleteGame && (
+                      <ActionIcon
+                        size="sm"
+                        variant="subtle"
+                        color="red"
+                        onClick={() => onDeleteGame(g.id)}
+                        title="Delete game"
+                      >
+                        <IconTrash size={16} />
+                      </ActionIcon>
+                    )}
+                  </Group>
                 </Table.Td>
               </Table.Tr>
             );

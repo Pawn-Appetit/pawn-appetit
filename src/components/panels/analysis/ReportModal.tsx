@@ -2,7 +2,7 @@ import { Button, Checkbox, Group, Modal, NumberInput, Select, Stack } from "@man
 import { useForm } from "@mantine/form";
 import { useAtom, useAtomValue } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { memo, useContext, useEffect } from "react";
+import { memo, useContext, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { commands, type GoMode } from "@/bindings";
@@ -26,6 +26,7 @@ function ReportModal({
   reportingMode,
   toggleReportingMode,
   setInProgress,
+  inProgress,
 }: {
   tab: string;
   initialFen: string;
@@ -34,6 +35,7 @@ function ReportModal({
   reportingMode: boolean;
   toggleReportingMode: () => void;
   setInProgress: (progress: boolean) => void;
+  inProgress: boolean;
 }) {
   const { t } = useTranslation();
 
@@ -44,6 +46,7 @@ function ReportModal({
   const addAnalysis = useStore(store, (s) => s.addAnalysis);
 
   const [reportSettings, setReportSettings] = useAtom(reportSettingsAtom);
+  const analysisEngineRef = useRef<{ engine: string; tab: string } | null>(null);
 
   const form = useForm({
     initialValues: reportSettings,
@@ -68,6 +71,18 @@ function ReportModal({
     form.setValues({ ...reportSettings, engine });
   }, [localEngines.length, reportSettings]);
 
+  const handleStop = async () => {
+    if (analysisEngineRef.current) {
+      try {
+        await commands.stopEngine(analysisEngineRef.current.engine, analysisEngineRef.current.tab);
+      } catch (error) {
+        console.error("Error stopping engine:", error);
+      }
+      analysisEngineRef.current = null;
+      setInProgress(false);
+    }
+  };
+
   function analyze() {
     setReportSettings(form.values);
     setInProgress(true);
@@ -82,9 +97,12 @@ function ReportModal({
       engineSettings.push({ name: "UCI_Chess960", value: "true" });
     }
 
+    const analysisId = `report_${tab}`;
+    analysisEngineRef.current = { engine: form.values.engine, tab: analysisId };
+
     commands
       .analyzeGame(
-        `report_${tab}`,
+        analysisId,
         form.values.engine,
         form.values.goMode,
         {
@@ -97,10 +115,18 @@ function ReportModal({
         engineSettings,
       )
       .then((analysis) => {
-        const analysisData = unwrap(analysis);
-        addAnalysis(analysisData);
+        if (analysisEngineRef.current) {
+          const analysisData = unwrap(analysis);
+          addAnalysis(analysisData);
+        }
       })
-      .finally(() => setInProgress(false));
+      .catch((error) => {
+        console.error("Analysis error:", error);
+      })
+      .finally(() => {
+        analysisEngineRef.current = null;
+        setInProgress(false);
+      });
   }
 
   return (
@@ -170,7 +196,13 @@ function ReportModal({
           />
 
           <Group justify="right">
-            <Button type="submit">{t("features.board.analysis.analyze")}</Button>
+            {inProgress ? (
+              <Button variant="filled" color="red" onClick={handleStop}>
+                {t("keybindings.stopEngine")}
+              </Button>
+            ) : (
+              <Button type="submit">{t("features.board.analysis.analyze")}</Button>
+            )}
           </Group>
         </Stack>
       </form>

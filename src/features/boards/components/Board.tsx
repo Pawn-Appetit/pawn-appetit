@@ -43,7 +43,7 @@ import {
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
 import { blindfold, chessboard } from "@/styles/Chessboard.css";
-import { ANNOTATION_INFO, isBasicAnnotation } from "@/utils/annotation";
+import { ANNOTATION_INFO, annotationColors, isBasicAnnotation } from "@/utils/annotation";
 import { getMaterialDiff, getVariationLine } from "@/utils/chess";
 import { chessopsError, forceEnPassant, positionFromFen } from "@/utils/chessops";
 import { getDocumentDir } from "@/utils/documentDir";
@@ -416,9 +416,10 @@ function Board({
   }, [practiceLock, editingMode, movable, turn]);
 
   const theme = useMantineTheme();
-  const color = ANNOTATION_INFO[currentNode.annotations[0]]?.color || "gray";
-  const lightColor = theme.colors[color][6];
-  const darkColor = theme.colors[color][8];
+  const annotationColor = annotationColors[currentNode.annotations[0]] || "#6B7280";
+  // Use the hex color directly for both light and dark variants
+  const lightColor = annotationColor;
+  const darkColor = annotationColor;
 
   const [enableBoardScroll] = useAtom(enableBoardScrollAtom);
   const [snapArrows] = useAtom(snapArrowsAtom);

@@ -231,7 +231,11 @@ export async function getLichessAccount({
   return response.json();
 }
 
-export async function fetchLastLichessGames(username: string, count: number = 5) {
+export async function fetchLastLichessGames(
+  username: string,
+  count: number = 5,
+  showErrorNotification: boolean = false,
+) {
   const url = `${baseURL}/games/user/${username}?max=${count}&pgnInJson=true&opening=true`;
   try {
     const response = await fetch(url, {
@@ -240,23 +244,40 @@ export async function fetchLastLichessGames(username: string, count: number = 5)
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch games: ${response.statusText}`);
+      // Don't show notification for 404 (user not found) or 403 (forbidden) - these are expected
+      if (response.status === 404 || response.status === 403) {
+        return [];
+      }
+      // Only throw for other errors if we should show notifications
+      if (showErrorNotification) {
+        throw new Error(`Failed to fetch games: ${response.statusText}`);
+      }
+      return [];
     }
 
     const text = await response.text();
+    // Handle empty response (user has no games)
+    if (!text.trim()) {
+      return [];
+    }
+
     const games = text
       .trim()
       .split("\n")
+      .filter((line) => line.trim()) // Filter out empty lines
       .map((line) => JSON.parse(line));
     return games;
   } catch (e) {
     error(`Error fetching last Lichess games for ${username}: ${e}`);
-    notifications.show({
-      title: "Fetch Error",
-      message: `Could not fetch recent games for ${username} from Lichess.`,
-      color: "red",
-      icon: <IconX />,
-    });
+    // Only show notification if explicitly requested
+    if (showErrorNotification) {
+      notifications.show({
+        title: "Fetch Error",
+        message: `Could not fetch recent games for ${username} from Lichess.`,
+        color: "red",
+        icon: <IconX />,
+      });
+    }
     return [];
   }
 }

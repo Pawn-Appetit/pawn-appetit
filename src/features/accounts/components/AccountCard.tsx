@@ -28,7 +28,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { appDataDir, resolve } from "@tauri-apps/api/path";
-import { info } from "@tauri-apps/plugin-log";
+import { error, info } from "@tauri-apps/plugin-log";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { DatabaseInfo } from "@/bindings";
@@ -137,12 +137,20 @@ export function AccountCard({
   async function convert(filepath: string, timestamp: number | null) {
     info(`converting ${filepath} ${timestamp}`);
     const filename = title + (type === "lichess" ? " Lichess" : " Chess.com");
-    const dbPath = await resolve(
-      await appDataDir(),
-      "db",
-      `${filepath.split(/(\\|\/)/g).pop() ?? "unknown"}.db3`.replace(".pgn", ".db3"),
-    );
-    unwrap(await commands.convertPgn(filepath, dbPath, timestamp ? timestamp / 1000 : null, filename, null));
+    // Ensure the database filename matches the expected format: ${title}_${type}.db3
+    // This is critical - the filename must match what we search for later
+    const expectedDbFilename = `${title}_${type}.db3`;
+    const dbPath = await resolve(await appDataDir(), "db", expectedDbFilename);
+    info(`Converting PGN to database: ${filepath} -> ${dbPath}`);
+    try {
+      unwrap(await commands.convertPgn(filepath, dbPath, timestamp ? timestamp / 1000 : null, filename, null));
+      info(`Conversion complete, database saved to: ${dbPath}`);
+      // Wait a bit to ensure the file is fully written and indexed
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    } catch (err) {
+      error(`Failed to convert PGN: ${err instanceof Error ? err.message : String(err)}`);
+      throw err;
+    }
     events.downloadProgress.emit({
       id: `${type}_${title}`,
       progress: 100,
@@ -150,13 +158,69 @@ export function AccountCard({
     });
   }
 
+  // Local state to track the current database, updated when databases list changes
+  const [currentDatabase, setCurrentDatabase] = useState<DatabaseInfo | null>(database);
+
+  // Update currentDatabase when database prop changes or when databases are refreshed
+  useEffect(() => {
+    const findDatabase = async () => {
+      const dbs = await getDatabases();
+      const found = dbs.find((db) => db.filename === `${title}_${type}.db3`) ?? null;
+      if (!found) {
+        // Try case-insensitive match
+        const foundCaseInsensitive = dbs.find(
+          (db) => db.filename.toLowerCase() === `${title}_${type}.db3`.toLowerCase(),
+        ) ?? null;
+        setCurrentDatabase(foundCaseInsensitive);
+      } else {
+        setCurrentDatabase(found);
+      }
+    };
+    findDatabase();
+  }, [database, type, title]);
+
   useEffect(() => {
     const unlisten = events.downloadProgress.listen(async (e) => {
       if (e.payload.id === `${type}_${title}`) {
         setProgress(e.payload.progress);
         if (e.payload.finished) {
           setLoading(false);
-          setDatabases(await getDatabases());
+          // Wait a bit more to ensure database is fully written and indexed
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          // Refresh databases list multiple times to ensure we get the latest data
+          let updatedDatabases = await getDatabases();
+          setDatabases(updatedDatabases);
+          
+          // Try to find the database, with retries if not found immediately
+          let found = updatedDatabases.find((db) => db.filename === `${title}_${type}.db3`) ?? null;
+          if (!found) {
+            // Try case-insensitive match
+            found = updatedDatabases.find(
+              (db) => db.filename.toLowerCase() === `${title}_${type}.db3`.toLowerCase(),
+            ) ?? null;
+          }
+          
+          // If still not found, retry after a short delay
+          if (!found) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            updatedDatabases = await getDatabases();
+            setDatabases(updatedDatabases);
+            found = updatedDatabases.find((db) => db.filename === `${title}_${type}.db3`) ?? null;
+            if (!found) {
+              found = updatedDatabases.find(
+                (db) => db.filename.toLowerCase() === `${title}_${type}.db3`.toLowerCase(),
+              ) ?? null;
+            }
+          }
+          
+          if (found && found.type === "success") {
+            info(`Found database after download: ${found.filename} with ${found.game_count} games`);
+            setCurrentDatabase(found);
+          } else {
+            info(`Database not found after download: ${title}_${type}.db3`);
+            // Log all available databases for debugging
+            info(`Available databases: ${updatedDatabases.map((db) => db.filename).join(", ")}`);
+          }
         } else {
           setLoading(true);
         }
@@ -167,11 +231,22 @@ export function AccountCard({
     };
   }, [setDatabases, type, title]);
 
-  const downloadedGames = database?.type === "success" ? database.game_count : 0;
-  const percentage = total === 0 || downloadedGames === 0 ? "0" : ((downloadedGames / total) * 100).toFixed(2);
+  // Use currentDatabase instead of database prop to ensure we have the latest data
+  const downloadedGames = currentDatabase?.type === "success" ? currentDatabase.game_count : 0;
+  // If total is 0 or less than downloadedGames, use downloadedGames as minimum total
+  // This handles cases where account.count.all might not be available or is outdated
+  // If we have downloaded games, the total should be at least equal to downloadedGames
+  const effectiveTotal =
+    total === 0 || (downloadedGames > 0 && total < downloadedGames) ? downloadedGames : total;
+  // Calculate percentage: if effectiveTotal is 0, return "0"; otherwise calculate normally
+  // Cap percentage at 100% to handle edge cases
+  const percentage =
+    effectiveTotal === 0
+      ? "0"
+      : Math.min(100, Math.max(0, (downloadedGames / effectiveTotal) * 100)).toFixed(2);
 
-  async function getLastGameDate({ database }: { database: DatabaseInfo }) {
-    const games = await query_games(database.file, {
+  async function getLastGameDate({ database: db }: { database: DatabaseInfo }) {
+    const games = await query_games(db.file, {
       options: {
         page: 1,
         pageSize: 1,
@@ -388,7 +463,7 @@ export function AccountCard({
                     disabled={loading}
                     onClick={async () => {
                       setLoading(true);
-                      const lastGameDate = database ? await getLastGameDate({ database }) : null;
+                      const lastGameDate = currentDatabase ? await getLastGameDate({ database: currentDatabase }) : null;
                       if (type === "lichess") {
                         await downloadLichess(title, lastGameDate, total - downloadedGames, setProgress, token);
                       } else {
