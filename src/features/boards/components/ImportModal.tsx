@@ -25,6 +25,7 @@ import { getLichessGame } from "@/utils/lichess/api";
 import { parseMultiplePgnGames } from "@/utils/pgnUtils";
 import { defaultTree, getGameName, type TreeState } from "@/utils/treeReducer";
 import { ImportSummary } from "./ImportSummary";
+import { basename } from "@tauri-apps/api/path";
 
 type ImportType = "PGN" | "Link" | "FEN";
 
@@ -153,7 +154,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
 
       for (const filePath of resolvedTarget.target) {
         try {
-          const fileName = filePath.split("/").pop() || filePath;
+          const fileName = await basename(filePath);
 
           const singleFileTarget = await resolvePgnTarget({ type: "file", target: filePath });
           const { trees, errors } = await parseGamesFromTarget(singleFileTarget);
@@ -206,7 +207,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
             allErrors.push(...singleFileTarget.errors);
           }
         } catch (error) {
-          const fileName = filePath.split("/").pop() || filePath;
+          const fileName = await basename(filePath);
           allErrors.push({
             file: fileName,
             error: error instanceof Error ? error.message : String(error),
