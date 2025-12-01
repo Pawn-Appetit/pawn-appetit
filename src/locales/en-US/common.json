@@ -1006,7 +1006,15 @@
       "previewBoard": "Preview Board",
       "previewBoardDesc": "Show a preview of the board when hovering over a move in the engine analysis",
       "scrollThroughMoves": "Scroll Through Moves",
-      "scrollThroughMovesDesc": "Enable or disable scrolling through moves on the chessboard"
+      "scrollThroughMovesDesc": "Enable or disable scrolling through moves on the chessboard",
+      "practiceAnimationSpeed": "Repertoire Practice Animation Speed",
+      "practiceAnimationSpeedDesc": "Control how fast moves are played when practicing repertoire positions",
+      "practiceAnimationDisabled": "Disabled",
+      "practiceAnimationVeryFast": "Very Fast",
+      "practiceAnimationFast": "Fast",
+      "practiceAnimationNormal": "Normal",
+      "practiceAnimationSlow": "Slow",
+      "practiceAnimationVerySlow": "Very Slow"
     },
     "inputs": {
       "title": "Inputs",

@@ -141,6 +141,15 @@ type TabMap<T> = Record<string, T>;
 
 export const minimumGamesAtom = atomWithStorage<number>("minimum-games", 5);
 
+// Practice/Repertoire Training
+
+export type PracticeAnimationSpeed = "disabled" | "very-fast" | "fast" | "normal" | "slow" | "very-slow";
+
+export const practiceAnimationSpeedAtom = atomWithStorage<PracticeAnimationSpeed>(
+  "practice-animation-speed",
+  "normal",
+);
+
 export const missingMovesAtom = atomWithStorage<TabMap<MissingMove[] | null>>(
   "missing-moves",
   {},

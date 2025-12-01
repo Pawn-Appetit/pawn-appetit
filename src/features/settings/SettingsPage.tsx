@@ -26,6 +26,8 @@ import {
   moveNotationTypeAtom,
   nativeBarAtom,
   percentageCoverageAtom,
+  practiceAnimationSpeedAtom,
+  type PracticeAnimationSpeed,
   previewBoardOnHoverAtom,
   showArrowsAtom,
   showConsecutiveArrowsAtom,
@@ -72,6 +74,7 @@ export default function Page() {
   const [moveMethod, setMoveMethod] = useAtom(moveMethodAtom);
   const [moveNotationType, setMoveNotationType] = useAtom(moveNotationTypeAtom);
   const [coordinatesMode, setCoordinatesMode] = useAtom(showCoordinatesAtom);
+  const [practiceAnimationSpeed, setPracticeAnimationSpeed] = useAtom(practiceAnimationSpeedAtom);
   const [dateFormatMode, setDateFormatMode] = useState(localStorage.getItem("dateFormatMode") || "intl");
 
   const handleDateFormatModeChange = useCallback(
@@ -138,6 +141,18 @@ export default function Page() {
       { label: t("settings.board.coordinatesNone"), value: "none" },
       { label: t("settings.board.coordinatesInside"), value: "inside" },
       { label: t("settings.board.coordinatesAll"), value: "all" },
+    ],
+    [t],
+  );
+
+  const practiceAnimationSpeedData = useMemo(
+    () => [
+      { label: t("settings.board.practiceAnimationDisabled"), value: "disabled" },
+      { label: t("settings.board.practiceAnimationVeryFast"), value: "very-fast" },
+      { label: t("settings.board.practiceAnimationFast"), value: "fast" },
+      { label: t("settings.board.practiceAnimationNormal"), value: "normal" },
+      { label: t("settings.board.practiceAnimationSlow"), value: "slow" },
+      { label: t("settings.board.practiceAnimationVerySlow"), value: "very-slow" },
     ],
     [t],
   );
@@ -362,6 +377,28 @@ export default function Page() {
               </Text>
             </div>
             <SettingsSwitch atom={enableBoardScrollAtom} />
+          </Group>
+        ),
+      },
+      {
+        id: "practice-animation-speed",
+        title: t("settings.board.practiceAnimationSpeed"),
+        description: t("settings.board.practiceAnimationSpeedDesc"),
+        tab: "board",
+        component: (
+          <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
+            <div>
+              <Text>{t("settings.board.practiceAnimationSpeed")}</Text>
+              <Text size="xs" c="dimmed">
+                {t("settings.board.practiceAnimationSpeedDesc")}
+              </Text>
+            </div>
+            <Select
+              data={practiceAnimationSpeedData}
+              allowDeselect={false}
+              value={practiceAnimationSpeed}
+              onChange={(val) => setPracticeAnimationSpeed(val as PracticeAnimationSpeed)}
+            />
           </Group>
         ),
       },
@@ -760,6 +797,9 @@ export default function Page() {
       waysToMoveData,
       coordinatesMode,
       coordinatesModeData,
+      practiceAnimationSpeed,
+      practiceAnimationSpeedData,
+      setPracticeAnimationSpeed,
       titleBarData,
     ],
   );
