@@ -17,7 +17,7 @@ import { modals } from "@mantine/modals";
 import { IconArrowRight } from "@tabler/icons-react";
 
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDate } from "ts-fsrs";
 import { useStore } from "zustand";
@@ -70,16 +70,17 @@ function PracticePanel() {
   const practiceAnimationSpeed = useAtomValue(practiceAnimationSpeedAtom);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // Cleanup animation interval on unmount
+  // Cleanup animation interval on unmount and when dependencies change
   useEffect(() => {
     return () => {
       if (animationIntervalRef.current !== null) {
         clearInterval(animationIntervalRef.current);
+        animationIntervalRef.current = null;
       }
     };
   }, []);
 
-  async function newPractice() {
+  const newPractice = useCallback(async () => {
     if (deck.positions.length === 0) return;
     const c = getCardForReview(deck.positions);
     if (!c) return;
@@ -132,7 +133,7 @@ function PracticePanel() {
 
         // Play sound for the move
         const node = getNodeAtPath(root, nextPosition);
-        if (node && node.san) {
+        if (node?.san) {
           const isCapture = node.san.includes("x");
           const isCheck = node.san.includes("+");
           playSound(isCapture, isCheck);
@@ -149,13 +150,15 @@ function PracticePanel() {
         setInvisible(true);
       }
     }, animationDelay);
-  }
+  }, [deck.positions, root, practiceAnimationSpeed, goToMove, setInvisible]);
 
+  // Auto-advance to next practice position after successful attempt
+  const lastLogEntry = deck.logs[deck.logs.length - 1];
   useEffect(() => {
-    if (deck.logs[deck.logs.length - 1]?.rating === 4) {
+    if (lastLogEntry?.rating === 4) {
       newPractice();
     }
-  }, [JSON.stringify(deck)]);
+  }, [lastLogEntry, newPractice]);
 
   const [positionsOpen, setPositionsOpen] = useToggle();
   const [logsOpen, setLogsOpen] = useToggle();
