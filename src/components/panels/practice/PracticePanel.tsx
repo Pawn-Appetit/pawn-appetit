@@ -17,7 +17,7 @@ import { modals } from "@mantine/modals";
 import { IconArrowRight } from "@tabler/icons-react";
 
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDate } from "ts-fsrs";
 import { useStore } from "zustand";
@@ -28,9 +28,11 @@ import {
   currentPracticeTabAtom,
   currentTabAtom,
   deckAtomFamily,
+  practiceAnimationSpeedAtom,
   type PracticeData,
 } from "@/state/atoms";
 import { findFen, getNodeAtPath } from "@/utils/treeReducer";
+import { playSound } from "@/utils/sound";
 import RepertoireInfo from "./RepertoireInfo";
 
 function PracticePanel() {
@@ -64,13 +66,89 @@ function PracticePanel() {
   const stats = getStats(deck.positions);
 
   const setInvisible = useSetAtom(currentInvisibleAtom);
+  const animationIntervalRef = useRef<number | null>(null);
+  const practiceAnimationSpeed = useAtomValue(practiceAnimationSpeedAtom);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  // Cleanup animation interval on unmount
+  useEffect(() => {
+    return () => {
+      if (animationIntervalRef.current !== null) {
+        clearInterval(animationIntervalRef.current);
+      }
+    };
+  }, []);
 
   async function newPractice() {
     if (deck.positions.length === 0) return;
     const c = getCardForReview(deck.positions);
     if (!c) return;
-    goToMove(findFen(c.fen, root));
-    setInvisible(true);
+
+    // Clear any existing animation
+    if (animationIntervalRef.current !== null) {
+      clearInterval(animationIntervalRef.current);
+      animationIntervalRef.current = null;
+    }
+
+    const targetPosition = findFen(c.fen, root);
+
+    // If animation is disabled, jump directly to the position without any animation
+    if (practiceAnimationSpeed === "disabled") {
+      goToMove(targetPosition);
+      setInvisible(true);
+      return;
+    }
+
+    // If target is at the initial position, just set invisible
+    if (targetPosition.length === 0) {
+      goToMove(targetPosition);
+      setInvisible(true);
+      return;
+    }
+
+    // Map speed setting to milliseconds
+    const speedToDelay: Record<string, number> = {
+      "very-fast": 150,
+      fast: 300,
+      normal: 500,
+      slow: 750,
+      "very-slow": 1000,
+    };
+
+    const animationDelay = speedToDelay[practiceAnimationSpeed] || 500;
+
+    // Always start from the initial board position (root)
+    goToMove([]);
+    setIsAnimating(true);
+
+    // Animate through each move with a delay, following the exact path
+    let currentStep = 0;
+
+    animationIntervalRef.current = window.setInterval(() => {
+      if (currentStep < targetPosition.length) {
+        // Build the path incrementally from the root
+        const nextPosition = targetPosition.slice(0, currentStep + 1);
+        goToMove(nextPosition);
+
+        // Play sound for the move
+        const node = getNodeAtPath(root, nextPosition);
+        if (node && node.san) {
+          const isCapture = node.san.includes("x");
+          const isCheck = node.san.includes("+");
+          playSound(isCapture, isCheck);
+        }
+
+        currentStep++;
+      } else {
+        // Finished animating, clear interval and set invisible
+        if (animationIntervalRef.current !== null) {
+          clearInterval(animationIntervalRef.current);
+          animationIntervalRef.current = null;
+        }
+        setIsAnimating(false);
+        setInvisible(true);
+      }
+    }, animationDelay);
   }
 
   useEffect(() => {
@@ -175,8 +253,22 @@ function PracticePanel() {
 
             <Group>
               <Button
-                variant={headers.orientation === "white" && fen.split(" ")[1] === "w" ? "default" : "filled"}
-                onClick={() => newPractice()}
+                variant={
+                  isAnimating
+                    ? "filled"
+                    : headers.orientation === "white" && fen.split(" ")[1] === "w"
+                      ? "default"
+                      : "filled"
+                }
+                onClick={() => {
+                  // Clear any ongoing animation before starting a new practice
+                  if (animationIntervalRef.current !== null) {
+                    clearInterval(animationIntervalRef.current);
+                    animationIntervalRef.current = null;
+                    setIsAnimating(false);
+                  }
+                  newPractice();
+                }}
                 disabled={stats.due === 0 && stats.unseen === 0}
               >
                 <u>N</u>ext
@@ -184,6 +276,12 @@ function PracticePanel() {
               <Button
                 variant="default"
                 onClick={() => {
+                  // Clear any ongoing animation
+                  if (animationIntervalRef.current !== null) {
+                    clearInterval(animationIntervalRef.current);
+                    animationIntervalRef.current = null;
+                    setIsAnimating(false);
+                  }
                   const currentIndex = deck.positions.findIndex((c) => c.fen === fen);
                   if (currentIndex === -1) return;
                   updateCardPerformance(setDeck, currentIndex, deck.positions[currentIndex].card, 2);
@@ -196,6 +294,12 @@ function PracticePanel() {
               <Button
                 variant="default"
                 onClick={() => {
+                  // Clear any ongoing animation when seeing the answer
+                  if (animationIntervalRef.current !== null) {
+                    clearInterval(animationIntervalRef.current);
+                    animationIntervalRef.current = null;
+                    setIsAnimating(false);
+                  }
                   setInvisible(false);
                   goToNext();
                 }}
