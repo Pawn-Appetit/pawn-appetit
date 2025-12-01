@@ -17,7 +17,7 @@ import { modals } from "@mantine/modals";
 import { IconArrowRight } from "@tabler/icons-react";
 
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDate } from "ts-fsrs";
 import { useStore } from "zustand";
@@ -68,6 +68,7 @@ function PracticePanel() {
   const setInvisible = useSetAtom(currentInvisibleAtom);
   const animationIntervalRef = useRef<number | null>(null);
   const practiceAnimationSpeed = useAtomValue(practiceAnimationSpeedAtom);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // Cleanup animation interval on unmount
   useEffect(() => {
@@ -118,6 +119,7 @@ function PracticePanel() {
 
     // Always start from the initial board position (root)
     goToMove([]);
+    setIsAnimating(true);
 
     // Animate through each move with a delay, following the exact path
     let currentStep = 0;
@@ -143,6 +145,7 @@ function PracticePanel() {
           clearInterval(animationIntervalRef.current);
           animationIntervalRef.current = null;
         }
+        setIsAnimating(false);
         setInvisible(true);
       }
     }, animationDelay);
@@ -250,12 +253,19 @@ function PracticePanel() {
 
             <Group>
               <Button
-                variant={headers.orientation === "white" && fen.split(" ")[1] === "w" ? "default" : "filled"}
+                variant={
+                  isAnimating
+                    ? "filled"
+                    : headers.orientation === "white" && fen.split(" ")[1] === "w"
+                      ? "default"
+                      : "filled"
+                }
                 onClick={() => {
                   // Clear any ongoing animation before starting a new practice
                   if (animationIntervalRef.current !== null) {
                     clearInterval(animationIntervalRef.current);
                     animationIntervalRef.current = null;
+                    setIsAnimating(false);
                   }
                   newPractice();
                 }}
@@ -270,6 +280,7 @@ function PracticePanel() {
                   if (animationIntervalRef.current !== null) {
                     clearInterval(animationIntervalRef.current);
                     animationIntervalRef.current = null;
+                    setIsAnimating(false);
                   }
                   const currentIndex = deck.positions.findIndex((c) => c.fen === fen);
                   if (currentIndex === -1) return;
@@ -287,6 +298,7 @@ function PracticePanel() {
                   if (animationIntervalRef.current !== null) {
                     clearInterval(animationIntervalRef.current);
                     animationIntervalRef.current = null;
+                    setIsAnimating(false);
                   }
                   setInvisible(false);
                   goToNext();
