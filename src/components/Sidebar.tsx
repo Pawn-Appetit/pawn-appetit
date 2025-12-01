@@ -8,16 +8,18 @@ import {
   IconKeyboard,
   IconLayoutDashboard,
   IconMenu2,
+  IconPuzzle,
   IconSchool,
   IconSettings,
   IconUsers,
 } from "@tabler/icons-react";
-import { Link, useMatchRoute } from "@tanstack/react-router";
+import { Link, useMatchRoute, useNavigate } from "@tanstack/react-router";
 import cx from "clsx";
 import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
-import { hideDashboardOnStartupAtom } from "@/state/atoms";
+import { activeTabAtom, hideDashboardOnStartupAtom, tabsAtom } from "@/state/atoms";
+import { createTab } from "@/utils/tabs";
 import * as classes from "./Sidebar.css";
 
 interface NavbarLinkProps {
@@ -44,6 +46,39 @@ function NavbarLink({ url, icon: Icon, label }: NavbarLinkProps) {
   );
 }
 
+function PuzzlesNavLink({ icon: Icon, label }: { icon: Icon; label: string }) {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const matchesRoute = useMatchRoute();
+  const { layout } = useResponsiveLayout();
+  const [, setTabs] = useAtom(tabsAtom);
+  const [, setActiveTab] = useAtom(activeTabAtom);
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    createTab({
+      tab: { name: t("features.tabs.puzzle.title"), type: "puzzles" },
+      setTabs,
+      setActiveTab,
+    });
+    navigate({ to: "/boards" });
+  };
+
+  return (
+    <Tooltip label={label} position={layout.sidebar.position === "footer" ? "top" : "right"}>
+      <a
+        href="/boards"
+        onClick={handleClick}
+        className={cx(classes.link, {
+          [classes.active]: matchesRoute({ to: "/boards", fuzzy: true }),
+        })}
+      >
+        <Icon size={layout.sidebar.position === "footer" ? "2.0rem" : "1.5rem"} stroke={1.5} />
+      </a>
+    </Tooltip>
+  );
+}
+
 export const linksdata = [
   { icon: IconLayoutDashboard, label: "dashboard", url: "/" },
   { icon: IconChess, label: "board", url: "/boards" },
@@ -55,13 +90,17 @@ export const linksdata = [
   },
   { icon: IconFiles, label: "files", url: "/files" },
   { icon: IconUsers, label: "accounts", url: "/accounts" },
+  { icon: IconPuzzle, label: "puzzles", url: null, isPuzzles: true },
   { icon: IconSchool, label: "learn", url: "/learn" },
 ];
 
 export function SideBar() {
+  const navigate = useNavigate();
   const matchesRoute = useMatchRoute();
   const { t } = useTranslation();
   const [hideDashboardOnStartup] = useAtom(hideDashboardOnStartupAtom);
+  const [, setTabs] = useAtom(tabsAtom);
+  const [, setActiveTab] = useAtom(activeTabAtom);
   const { layout } = useResponsiveLayout();
 
   const mainLinks = linksdata
@@ -69,7 +108,12 @@ export function SideBar() {
       if (hideDashboardOnStartup && link.url === "/") return false;
       return link;
     })
-    .map((link) => <NavbarLink {...link} label={t(`features.sidebar.${link.label}`)} key={link.label} />);
+    .map((link) => {
+      if ((link as any).isPuzzles) {
+        return <PuzzlesNavLink icon={link.icon} label={t(`features.sidebar.${link.label}`)} key={link.label} />;
+      }
+      return <NavbarLink {...link} label={t(`features.sidebar.${link.label}`)} key={link.label} />;
+    });
 
   if (layout.sidebar.position === "footer") {
     // Show only first 4 links on mobile
@@ -96,6 +140,28 @@ export function SideBar() {
             <Menu.Dropdown>
               {burgerMenuLinks.map((link) => {
                 const IconComponent = link.props.icon;
+                const isPuzzles = link.props.url === null || (link.key as string) === "puzzles";
+                if (isPuzzles) {
+                  return (
+                    <Menu.Item
+                      key={link.key}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        createTab({
+                          tab: { name: t("features.tabs.puzzle.title"), type: "puzzles" },
+                          setTabs,
+                          setActiveTab,
+                        });
+                        navigate({ to: "/boards" });
+                      }}
+                      leftSection={
+                        <IconComponent size={layout.sidebar.position === "footer" ? "2.0rem" : "1.2rem"} stroke={1.5} />
+                      }
+                    >
+                      {link.props.label}
+                    </Menu.Item>
+                  );
+                }
                 return (
                   <Menu.Item
                     key={link.key}
