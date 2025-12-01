@@ -8,10 +8,13 @@ import {
   IconRefresh,
   IconX,
 } from "@tabler/icons-react";
+import { appDataDir, resolve } from "@tauri-apps/api/path";
+import { remove } from "@tauri-apps/plugin-fs";
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { DatabaseInfo } from "@/bindings";
+import { commands } from "@/bindings";
 import type { SortState } from "@/components/GenericHeader";
 import { sessionsAtom } from "@/state/atoms";
 import { getChessComAccount, getStats } from "@/utils/chess.com/api";
@@ -110,7 +113,14 @@ function AccountsTableView({
     playerSessions.map((session) => {
       const type = session.lichess ? "lichess" : "chesscom";
       const username = session.lichess?.username ?? session.chessCom?.username ?? "";
-      const database = databases.find((db) => db.filename === `${username}_${type}.db3`) ?? null;
+      // Try to find database with exact match first, then try case-insensitive match
+      let database = databases.find((db) => db.filename === `${username}_${type}.db3`) ?? null;
+      if (!database) {
+        // Try case-insensitive match
+        database = databases.find(
+          (db) => db.filename.toLowerCase() === `${username}_${type}.db3`.toLowerCase(),
+        ) ?? null;
+      }
       const downloadedGames = database?.type === "success" ? database.game_count : 0;
 
       let totalGames = 0;
@@ -132,19 +142,36 @@ function AccountsTableView({
             }
           }
         }
+        // Ensure totalGames is at least equal to downloadedGames
+        // This handles cases where account.count.all is outdated, incorrect, or unavailable
+        // If we have downloaded games, the total should be at least equal to downloadedGames
+        if (downloadedGames > 0) {
+          totalGames = Math.max(totalGames, downloadedGames);
+        }
       } else if (session.chessCom?.stats) {
         for (const stat of Object.values(session.chessCom.stats)) {
           if (stat.record) {
             totalGames += stat.record.win + stat.record.loss + stat.record.draw;
           }
         }
+        // For Chess.com, ensure totalGames is at least equal to downloadedGames
+        // This prevents percentage > 100% when database has more games than reported in stats
         if (database && database.type === "success") {
-          totalGames = Math.max(totalGames, database.game_count ?? 0);
+          totalGames = Math.max(totalGames, downloadedGames, database.game_count ?? 0);
+        } else if (totalGames === 0 && downloadedGames > 0) {
+          // If no stats but we have downloaded games, use downloadedGames as minimum
+          totalGames = downloadedGames;
         }
         stats.push(...getStats(session.chessCom.stats));
+      } else if (downloadedGames > 0) {
+        // If we have downloaded games but no account/stats info, use downloadedGames as total
+        totalGames = downloadedGames;
       }
 
-      const percentage = totalGames === 0 || downloadedGames === 0 ? 0 : (downloadedGames / totalGames) * 100;
+      // Calculate percentage: if totalGames is 0, return 0; otherwise calculate normally
+      // Cap percentage at 100% to handle edge cases
+      const percentage =
+        totalGames === 0 ? 0 : Math.min(100, Math.max(0, (downloadedGames / totalGames) * 100));
 
       return {
         key: session.lichess?.account.id ?? `${type}:${username}`,
@@ -207,10 +234,78 @@ function AccountsTableView({
     }
   }
 
-  function handleRemove(session: Session) {
+  async function handleRemove(session: Session) {
     if (session.lichess) {
+      const username = session.lichess.username;
+      
+      // Delete database file and PGN file for this account
+      const dbDir = await appDataDir();
+      const dbPath = await resolve(dbDir, "db", `${username}_lichess.db3`);
+      const pgnPath = await resolve(dbDir, "db", `${username}_lichess.pgn`);
+      
+      try {
+        // Delete database file if it exists
+        try {
+          await commands.deleteDatabase(dbPath);
+        } catch {
+          // Database file might not exist, ignore
+        }
+        
+        // Delete PGN file if it exists
+        try {
+          await remove(pgnPath);
+        } catch {
+          // PGN file might not exist, ignore
+        }
+        
+        // Delete analyzed games for this account
+        try {
+          const { removeAnalyzedGamesForAccount } = await import("@/utils/analyzedGames");
+          await removeAnalyzedGamesForAccount(username, "lichess");
+        } catch (error) {
+          console.error("Error deleting analyzed games:", error);
+        }
+      } catch (error) {
+        console.error("Error deleting account files:", error);
+      }
+      
+      // Remove session
       setSessions((sessions) => sessions.filter((s) => s.lichess?.account.id !== session.lichess?.account.id));
     } else if (session.chessCom) {
+      const username = session.chessCom.username;
+      
+      // Delete database file and PGN file for this account
+      const dbDir = await appDataDir();
+      const dbPath = await resolve(dbDir, "db", `${username}_chesscom.db3`);
+      const pgnPath = await resolve(dbDir, "db", `${username}_chesscom.pgn`);
+      
+      try {
+        // Delete database file if it exists
+        try {
+          await commands.deleteDatabase(dbPath);
+        } catch {
+          // Database file might not exist, ignore
+        }
+        
+        // Delete PGN file if it exists
+        try {
+          await remove(pgnPath);
+        } catch {
+          // PGN file might not exist, ignore
+        }
+        
+        // Delete analyzed games for this account
+        try {
+          const { removeAnalyzedGamesForAccount } = await import("@/utils/analyzedGames");
+          await removeAnalyzedGamesForAccount(username, "chesscom");
+        } catch (error) {
+          console.error("Error deleting analyzed games:", error);
+        }
+      } catch (error) {
+        console.error("Error deleting account files:", error);
+      }
+      
+      // Remove session
       setSessions((sessions) => sessions.filter((s) => s.chessCom?.username !== session.chessCom?.username));
     }
   }

@@ -40,7 +40,7 @@ const showMoreSymbolsAtom = atom(false);
 
 const BASIC = ["!!", "!", "!?", "?!", "?", "??"] as const;
 const ADVANTAGE = ["+-", "±", "⩲", "=", "∞", "⩱", "∓", "-+"] as const;
-const EXTRA = ["N", "↑↑", "↑", "→", "⇆", "=∞", "⊕", "∆", "□", "⨀"] as const;
+const EXTRA = ["N"] as const;
 
 function AnnotationPanel() {
   const store = useContext(TreeStateContext)!;

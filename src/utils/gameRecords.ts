@@ -142,6 +142,29 @@ export async function updateGameRecord(gameId: string, updates: Partial<GameReco
   }
 }
 
+export async function deleteGameRecord(gameId: string): Promise<void> {
+  const dir = await appDataDir();
+  const file = await resolve(dir, FILENAME);
+  let records: GameRecord[] = [];
+  try {
+    const text = await readTextFile(file);
+    records = JSON.parse(text);
+  } catch {
+    // file may not exist yet
+    return;
+  }
+  
+  const filteredRecords = records.filter((r) => r.id !== gameId);
+  await writeTextFile(file, JSON.stringify(filteredRecords));
+  if (typeof window !== "undefined") {
+    try {
+      window.dispatchEvent(new Event("games:updated"));
+    } catch {
+      // ignore
+    }
+  }
+}
+
 export interface GameStats {
   accuracy: number;
   acpl: number; // Average Centipawns Loss
