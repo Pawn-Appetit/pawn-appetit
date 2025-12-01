@@ -57,14 +57,14 @@ importers:
         specifier: ^5.90.11
         version: 5.90.11(react@19.2.0)
       '@tanstack/react-router':
-        specifier: ^1.139.10
-        version: 1.139.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        specifier: ^1.139.12
+        version: 1.139.12(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/react-virtual':
         specifier: ^3.13.12
         version: 3.13.12(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tauri-apps/api':
-        specifier: ^2.9.0
-        version: 2.9.0
+        specifier: ^2.9.1
+        version: 2.9.1
       '@tauri-apps/plugin-cli':
         specifier: ^2.4.1
         version: 2.4.1
@@ -121,7 +121,7 @@ importers:
         version: 2.6.7
       '@vitejs/plugin-react-swc':
         specifier: ^4.2.2
-        version: 4.2.2(vite@7.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6))
+        version: 4.2.2(vite@7.2.6(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6))
       chessops:
         specifier: ^0.15.0
         version: 0.15.0
@@ -141,14 +141,14 @@ importers:
         specifier: ^7.1.0
         version: 7.1.0
       i18next:
-        specifier: ^25.6.3
-        version: 25.6.3(typescript@5.9.3)
+        specifier: ^25.7.0
+        version: 25.7.0(typescript@5.9.3)
       immer:
         specifier: ^11.0.1
         version: 11.0.1
       jotai:
-        specifier: ^2.15.1
-        version: 2.15.1(@babel/core@7.28.5)(@babel/template@7.27.2)(@types/react@19.2.7)(react@19.2.0)
+        specifier: ^2.15.2
+        version: 2.15.2(@babel/core@7.28.5)(@babel/template@7.27.2)(@types/react@19.2.7)(react@19.2.0)
       mantine-contextmenu:
         specifier: ^8.3.9
         version: 8.3.9(@mantine/core@8.3.9(@mantine/hooks@8.3.9(react@19.2.0))(@types/react@19.2.7)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@mantine/hooks@8.3.9(react@19.2.0))(clsx@2.1.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -172,7 +172,7 @@ importers:
         version: 4.5.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react-i18next:
         specifier: ^16.3.5
-        version: 16.3.5(i18next@25.6.3(typescript@5.9.3))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+        version: 16.3.5(i18next@25.7.0(typescript@5.9.3))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
       react-markdown:
         specifier: ^10.1.0
         version: 10.1.0(@types/react@19.2.7)(react@19.2.0)
@@ -198,14 +198,14 @@ importers:
         specifier: ^5.9.0
         version: 5.9.0
       vite:
-        specifier: ^7.2.4
-        version: 7.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
+        specifier: ^7.2.6
+        version: 7.2.6(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
       zod:
         specifier: ^4.1.13
         version: 4.1.13
       zustand:
-        specifier: ^5.0.8
-        version: 5.0.8(@types/react@19.2.7)(immer@11.0.1)(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0))
+        specifier: ^5.0.9
+        version: 5.0.9(@types/react@19.2.7)(immer@11.0.1)(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0))
     devDependencies:
       '@biomejs/biome':
         specifier: 2.3.8
@@ -217,11 +217,11 @@ importers:
         specifier: ^20.0.0
         version: 20.0.0
       '@tanstack/router-plugin':
-        specifier: ^1.139.10
-        version: 1.139.10(@tanstack/react-router@1.139.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite@7.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6))
+        specifier: ^1.139.12
+        version: 1.139.12(@tanstack/react-router@1.139.12(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite@7.2.6(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6))
       '@tauri-apps/cli':
-        specifier: 2.9.4
-        version: 2.9.4
+        specifier: 2.9.5
+        version: 2.9.5
       '@types/d3':
         specifier: ^7.4.3
         version: 7.4.3
@@ -242,7 +242,7 @@ importers:
         version: 1.17.5
       '@vanilla-extract/vite-plugin':
         specifier: ^5.1.3
-        version: 5.1.3(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)(vite@7.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6))
+        version: 5.1.3(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)(vite@7.2.6(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6))
       jsdom:
         specifier: ^27.2.0
         version: 27.2.0(postcss@8.5.6)
@@ -1086,8 +1086,8 @@ packages:
     peerDependencies:
       react: ^18 || ^19
 
-  '@tanstack/react-router@1.139.10':
-    resolution: {integrity: sha512-SVEH2n38XPtQSbW3BgKpK8G1GdLzbsmo3B/epfjuRk2XlYkSFjj7P8DIoHKOgkaCh3T0hKh/CEEj+D130YmGUw==}
+  '@tanstack/react-router@1.139.12':
+    resolution: {integrity: sha512-qrIxb8c6XXih6MERZKKwdnYg0OannsQLJ/s+4/wRqKqGCG+QmvAMvnmNP7bfYLgFKi+KsE27HqUkHaSpZSenwQ==}
     engines: {node: '>=12'}
     peerDependencies:
       react: '>=18.0.0 || >=19.0.0'
@@ -1105,20 +1105,20 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@tanstack/router-core@1.139.10':
-    resolution: {integrity: sha512-gougqlYumNOn98d2ZhyoRJTNT8RvFip97z6T2T3/JTPrErwOsKaIA2FwlkfLJmJY1JQtUuF38IREJdfQrTJiqg==}
+  '@tanstack/router-core@1.139.12':
+    resolution: {integrity: sha512-HCDi4fpnAFeDDogT0C61yd2nJn0FrIyFDhyHG3xJji8emdn8Ni4rfyrN4Av46xKkXTPUGdbsqih45+uuNtunew==}
     engines: {node: '>=12'}
 
-  '@tanstack/router-generator@1.139.10':
-    resolution: {integrity: sha512-Uo0xmz6w1Ayv1AMyWLsT0ngXmjB8yAKv5khOaci/ZxAZNyvz3t84jqI7XXlG9fwtDRdTF4G/qBmXlPEmPk6Wfg==}
+  '@tanstack/router-generator@1.139.12':
+    resolution: {integrity: sha512-HGs35aBml+2TVwoynsEc00/9Duw19GeT1fX+JzrY0TKNfMzq/nbjR+xxU8M1w3+gHqfKiITmW70XSZoWkXu9tw==}
     engines: {node: '>=12'}
 
-  '@tanstack/router-plugin@1.139.10':
-    resolution: {integrity: sha512-0c9wzBKuz2U1jO+oAszT6VRaQDWPLfCJuPeXX7MCisM0nV2LVaxdb/y9YaWSKJ7zlQ7pwFkh37KYqcJhPXug/A==}
+  '@tanstack/router-plugin@1.139.12':
+    resolution: {integrity: sha512-xX39CcU6GLMaahr6YGNQYRZOQsd1WefgCH99PtY0cxZr9VNAIpJMYPsQY8h/g8A4JI10rHI1tdKxZAvodWjZxw==}
     engines: {node: '>=12'}
     peerDependencies:
       '@rsbuild/core': '>=1.0.2'
-      '@tanstack/react-router': ^1.139.10
+      '@tanstack/react-router': ^1.139.12
       vite: '>=5.0.0 || >=6.0.0 || >=7.0.0'
       vite-plugin-solid: ^2.11.10
       webpack: '>=5.92.0'
@@ -1148,77 +1148,77 @@ packages:
     resolution: {integrity: sha512-9PImF1d1tovTUIpjFVa0W7Fwj/MHif7BaaczgJJfbv3sDt1Gh+oW9W9uCw9M3ndEJynnp5ZD/TTs0RGubH5ssg==}
     engines: {node: '>=12'}
 
-  '@tauri-apps/api@2.9.0':
-    resolution: {integrity: sha512-qD5tMjh7utwBk9/5PrTA/aGr3i5QaJ/Mlt7p8NilQ45WgbifUNPyKWsA63iQ8YfQq6R8ajMapU+/Q8nMcPRLNw==}
+  '@tauri-apps/api@2.9.1':
+    resolution: {integrity: sha512-IGlhP6EivjXHepbBic618GOmiWe4URJiIeZFlB7x3czM0yDHHYviH1Xvoiv4FefdkQtn6v7TuwWCRfOGdnVUGw==}
 
-  '@tauri-apps/cli-darwin-arm64@2.9.4':
-    resolution: {integrity: sha512-9rHkMVtbMhe0AliVbrGpzMahOBg3rwV46JYRELxR9SN6iu1dvPOaMaiC4cP6M/aD1424ziXnnMdYU06RAH8oIw==}
+  '@tauri-apps/cli-darwin-arm64@2.9.5':
+    resolution: {integrity: sha512-P5XDyCwq3VbWGAplyfP/bgmuUITVDcypxgZUyX45SM7HbU1Nrkk0cNK1HCOkuNBAVVbWen2GUNWah/AiupHHXg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
 
-  '@tauri-apps/cli-darwin-x64@2.9.4':
-    resolution: {integrity: sha512-VT9ymNuT06f5TLjCZW2hfSxbVtZDhORk7CDUDYiq5TiSYQdxkl8MVBy0CCFFcOk4QAkUmqmVUA9r3YZ/N/vPRQ==}
+  '@tauri-apps/cli-darwin-x64@2.9.5':
+    resolution: {integrity: sha512-JC9UfQ2ZKavx60dnNxsWztRF3oUH3dgPwN1WJ3/5RUy2aNwD/vXqvJAfNFZ4GWeQpoQ+PqJxduev0U4OMQonnA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
 
-  '@tauri-apps/cli-linux-arm-gnueabihf@2.9.4':
-    resolution: {integrity: sha512-tTWkEPig+2z3Rk0zqZYfjUYcgD+aSm72wdrIhdYobxbQZOBw0zfn50YtWv+av7bm0SHvv75f0l7JuwgZM1HFow==}
+  '@tauri-apps/cli-linux-arm-gnueabihf@2.9.5':
+    resolution: {integrity: sha512-iCQm2Uvx8AheghfG/QUv1y8Ga9yquJt6xJwH1uF0x5KfmJmwBi8pHBvB924dDi59PS84qTdIBeJejQT00QX3Iw==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
 
-  '@tauri-apps/cli-linux-arm64-gnu@2.9.4':
-    resolution: {integrity: sha512-ql6vJ611qoqRYHxkKPnb2vHa27U+YRKRmIpLMMBeZnfFtZ938eao7402AQCH1mO2+/8ioUhbpy9R/ZcLTXVmkg==}
+  '@tauri-apps/cli-linux-arm64-gnu@2.9.5':
+    resolution: {integrity: sha512-b6AW8Gr5nQOQIYH0TsUev7rEThGHIvsx192eElOmOz/dh33J4pninHK32laMj2hzHMJ27qmDq5vANL+wrFo9sg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  '@tauri-apps/cli-linux-arm64-musl@2.9.4':
-    resolution: {integrity: sha512-vg7yNn7ICTi6hRrcA/6ff2UpZQP7un3xe3SEld5QM0prgridbKAiXGaCKr3BnUBx/rGXegQlD/wiLcWdiiraSw==}
+  '@tauri-apps/cli-linux-arm64-musl@2.9.5':
+    resolution: {integrity: sha512-/gRBMnphS9E8riZ0LIbBhZ9Oy16A2rx/g3DGR0DcDBvUtkLfbL0lMu4s+sY85nkn9An15+cZ1ZK6d7AIqWahLA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  '@tauri-apps/cli-linux-riscv64-gnu@2.9.4':
-    resolution: {integrity: sha512-l8L+3VxNk6yv5T/Z/gv5ysngmIpsai40B9p6NQQyqYqxImqYX37pqREoEBl1YwG7szGnDibpWhidPrWKR59OJA==}
+  '@tauri-apps/cli-linux-riscv64-gnu@2.9.5':
+    resolution: {integrity: sha512-NOzjPF9YIBodjdkFcJmqINT0k3YDoR5ANM/jg6Z6s3Zmk8ScN6inI60jTxcfgfWyITiKsPy7GJyYou3Cm2XNzw==}
     engines: {node: '>= 10'}
     cpu: [riscv64]
     os: [linux]
 
-  '@tauri-apps/cli-linux-x64-gnu@2.9.4':
-    resolution: {integrity: sha512-PepPhCXc/xVvE3foykNho46OmCyx47E/aG676vKTVp+mqin5d+IBqDL6wDKiGNT5OTTxKEyNlCQ81Xs2BQhhqA==}
+  '@tauri-apps/cli-linux-x64-gnu@2.9.5':
+    resolution: {integrity: sha512-SfGbwgvTphM5y+J91NyU/psleMUlyyPkZyDCFg8WU1HX8DpKUT3Vwhb/W1xpUBGb56tJgGCO46FCVkr8w4Areg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  '@tauri-apps/cli-linux-x64-musl@2.9.4':
-    resolution: {integrity: sha512-zcd1QVffh5tZs1u1SCKUV/V7RRynebgYUNWHuV0FsIF1MjnULUChEXhAhug7usCDq4GZReMJOoXa6rukEozWIw==}
+  '@tauri-apps/cli-linux-x64-musl@2.9.5':
+    resolution: {integrity: sha512-ZfeoiASAOGDzyvN+TDAg8A1pCeS082h4uc0vZKvtWUN+9QBIMfz0yJwltAv+SN/afap6NS6DVkbPV3UVuI9V5A==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  '@tauri-apps/cli-win32-arm64-msvc@2.9.4':
-    resolution: {integrity: sha512-/7ZhnP6PY04bEob23q8MH/EoDISdmR1wuNm0k9d5HV7TDMd2GGCDa8dPXA4vJuglJKXIfXqxFmZ4L+J+MO42+w==}
+  '@tauri-apps/cli-win32-arm64-msvc@2.9.5':
+    resolution: {integrity: sha512-ulg7irow+ekjaK4inFHVq7m1KQebDSYNb17DFKV+h+x7qnLZymz2gHK7df2u4YyEjqvzwRd3AJpU3HNxRurSFQ==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
 
-  '@tauri-apps/cli-win32-ia32-msvc@2.9.4':
-    resolution: {integrity: sha512-1LmAfaC4Cq+3O1Ir1ksdhczhdtFSTIV51tbAGtbV/mr348O+M52A/xwCCXQank0OcdBxy5BctqkMtuZnQvA8uQ==}
+  '@tauri-apps/cli-win32-ia32-msvc@2.9.5':
+    resolution: {integrity: sha512-6lF0k/Qduhn1Z3IOXlp2ts8jNOMIX4cK4Fbk3axGeX7LMcVVbOSEAFwbTqS8BKZDFac0WRS8N1C96+Ms5LOS1Q==}
     engines: {node: '>= 10'}
     cpu: [ia32]
     os: [win32]
 
-  '@tauri-apps/cli-win32-x64-msvc@2.9.4':
-    resolution: {integrity: sha512-EdYd4c9wGvtPB95kqtEyY+bUR+k4kRw3IA30mAQ1jPH6z57AftT8q84qwv0RDp6kkEqOBKxeInKfqi4BESYuqg==}
+  '@tauri-apps/cli-win32-x64-msvc@2.9.5':
+    resolution: {integrity: sha512-Vg50U74x1A4b2iBVtDcAVPbI1XVuzSmwlduuBM1VewxtRaVj5GDzWnYtBcnuIk+VGzNApRDfDhraAXGaW2a/Gw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
 
-  '@tauri-apps/cli@2.9.4':
-    resolution: {integrity: sha512-pvylWC9QckrOS9ATWXIXcgu7g2hKK5xTL5ZQyZU/U0n9l88SEFGcWgLQNa8WZmd+wWIOWhkxOFcOl3i6ubDNNw==}
+  '@tauri-apps/cli@2.9.5':
+    resolution: {integrity: sha512-z88tX6O6kwTgMjYozhNGbehzQyBazgXejyH784CwSfBOWm06xFcogd0PY/jhcPsqzJF9kLRIkmlQy+cqdrioOQ==}
     engines: {node: '>= 10'}
     hasBin: true
 
@@ -2233,8 +2233,8 @@ packages:
     resolution: {integrity: sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw==}
     engines: {node: '>= 14'}
 
-  i18next@25.6.3:
-    resolution: {integrity: sha512-AEQvoPDljhp67a1+NsnG/Wb1Nh6YoSvtrmeEd24sfGn3uujCtXCF3cXpr7ulhMywKNFF7p3TX1u2j7y+caLOJg==}
+  i18next@25.7.0:
+    resolution: {integrity: sha512-cpUOqkVTQe3/uCVtpfpC3J1Ejn1y8KiVbqVEW4WW6Yr8wMYw+Wvb2/+lL4e1sM9AbzKTYXyYkn8zCRlTf5XTcA==}
     peerDependencies:
       typescript: ^5
     peerDependenciesMeta:
@@ -2333,8 +2333,8 @@ packages:
     resolution: {integrity: sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ==}
     hasBin: true
 
-  jotai@2.15.1:
-    resolution: {integrity: sha512-yHT1HAZ3ba2Q8wgaUQ+xfBzEtcS8ie687I8XVCBinfg4bNniyqLIN+utPXWKQE93LMF5fPbQSVRZqgpcN5yd6Q==}
+  jotai@2.15.2:
+    resolution: {integrity: sha512-El86CCfXNMEOytp20NPfppqGGmcp6H6kIA+tJHdmASEUURJCYW4fh8nTHEnB8rUXEFAY1pm8PdHPwnrcPGwdEg==}
     engines: {node: '>=12.20.0'}
     peerDependencies:
       '@babel/core': '>=7.0.0'
@@ -3323,8 +3323,8 @@ packages:
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
 
-  vite@7.2.4:
-    resolution: {integrity: sha512-NL8jTlbo0Tn4dUEXEsUg8KeyG/Lkmc4Fnzb8JXN/Ykm9G4HNImjtABMJgkQoVjOBN/j2WAwDTRytdqJbZsah7w==}
+  vite@7.2.6:
+    resolution: {integrity: sha512-tI2l/nFHC5rLh7+5+o7QjKjSR04ivXDF4jcgV0f/bTQ+OJiITy5S6gaynVsEM+7RqzufMnVbIon6Sr5x1SDYaQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -3487,8 +3487,8 @@ packages:
   zod@4.1.13:
     resolution: {integrity: sha512-AvvthqfqrAhNH9dnfmrfKzX5upOdjUVJYFqNSlkmGf64gRaTzlPwz99IHYnVs28qYAybvAlBV+H7pn0saFY4Ig==}
 
-  zustand@5.0.8:
-    resolution: {integrity: sha512-gyPKpIaxY9XcO2vSMrLbiER7QMAMGOQZVRdJ6Zi782jkbzZygq5GI9nG8g+sMgitRtndwaBSl7uiqC49o1SSiw==}
+  zustand@5.0.9:
+    resolution: {integrity: sha512-ALBtUj0AfjJt3uNRQoL1tL2tMvj6Gp/6e39dnfT6uzpelGru8v1tPOGBzayOWbPJvujM8JojDk3E1LxeFisBNg==}
     engines: {node: '>=12.20.0'}
     peerDependencies:
       '@types/react': '>=18.0.0'
@@ -4273,11 +4273,11 @@ snapshots:
       '@tanstack/query-core': 5.90.11
       react: 19.2.0
 
-  '@tanstack/react-router@1.139.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@tanstack/react-router@1.139.12(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@tanstack/history': 1.139.0
       '@tanstack/react-store': 0.8.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@tanstack/router-core': 1.139.10
+      '@tanstack/router-core': 1.139.12
       isbot: 5.1.31
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
@@ -4297,7 +4297,7 @@ snapshots:
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
 
-  '@tanstack/router-core@1.139.10':
+  '@tanstack/router-core@1.139.12':
     dependencies:
       '@tanstack/history': 1.139.0
       '@tanstack/store': 0.8.0
@@ -4307,9 +4307,9 @@ snapshots:
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
 
-  '@tanstack/router-generator@1.139.10':
+  '@tanstack/router-generator@1.139.12':
     dependencies:
-      '@tanstack/router-core': 1.139.10
+      '@tanstack/router-core': 1.139.12
       '@tanstack/router-utils': 1.139.0
       '@tanstack/virtual-file-routes': 1.139.0
       prettier: 3.6.2
@@ -4320,7 +4320,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/router-plugin@1.139.10(@tanstack/react-router@1.139.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite@7.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6))':
+  '@tanstack/router-plugin@1.139.12(@tanstack/react-router@1.139.12(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite@7.2.6(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6))':
     dependencies:
       '@babel/core': 7.28.5
       '@babel/plugin-syntax-jsx': 7.27.1(@babel/core@7.28.5)
@@ -4328,8 +4328,8 @@ snapshots:
       '@babel/template': 7.27.2
       '@babel/traverse': 7.28.5
       '@babel/types': 7.28.5
-      '@tanstack/router-core': 1.139.10
-      '@tanstack/router-generator': 1.139.10
+      '@tanstack/router-core': 1.139.12
+      '@tanstack/router-generator': 1.139.12
       '@tanstack/router-utils': 1.139.0
       '@tanstack/virtual-file-routes': 1.139.0
       babel-dead-code-elimination: 1.0.10
@@ -4337,8 +4337,8 @@ snapshots:
       unplugin: 2.3.10
       zod: 3.25.76
     optionalDependencies:
-      '@tanstack/react-router': 1.139.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      vite: 7.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
+      '@tanstack/react-router': 1.139.12(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      vite: 7.2.6(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
     transitivePeerDependencies:
       - supports-color
 
@@ -4361,98 +4361,98 @@ snapshots:
 
   '@tanstack/virtual-file-routes@1.139.0': {}
 
-  '@tauri-apps/api@2.9.0': {}
+  '@tauri-apps/api@2.9.1': {}
 
-  '@tauri-apps/cli-darwin-arm64@2.9.4':
+  '@tauri-apps/cli-darwin-arm64@2.9.5':
     optional: true
 
-  '@tauri-apps/cli-darwin-x64@2.9.4':
+  '@tauri-apps/cli-darwin-x64@2.9.5':
     optional: true
 
-  '@tauri-apps/cli-linux-arm-gnueabihf@2.9.4':
+  '@tauri-apps/cli-linux-arm-gnueabihf@2.9.5':
     optional: true
 
-  '@tauri-apps/cli-linux-arm64-gnu@2.9.4':
+  '@tauri-apps/cli-linux-arm64-gnu@2.9.5':
     optional: true
 
-  '@tauri-apps/cli-linux-arm64-musl@2.9.4':
+  '@tauri-apps/cli-linux-arm64-musl@2.9.5':
     optional: true
 
-  '@tauri-apps/cli-linux-riscv64-gnu@2.9.4':
+  '@tauri-apps/cli-linux-riscv64-gnu@2.9.5':
     optional: true
 
-  '@tauri-apps/cli-linux-x64-gnu@2.9.4':
+  '@tauri-apps/cli-linux-x64-gnu@2.9.5':
     optional: true
 
-  '@tauri-apps/cli-linux-x64-musl@2.9.4':
+  '@tauri-apps/cli-linux-x64-musl@2.9.5':
     optional: true
 
-  '@tauri-apps/cli-win32-arm64-msvc@2.9.4':
+  '@tauri-apps/cli-win32-arm64-msvc@2.9.5':
     optional: true
 
-  '@tauri-apps/cli-win32-ia32-msvc@2.9.4':
+  '@tauri-apps/cli-win32-ia32-msvc@2.9.5':
     optional: true
 
-  '@tauri-apps/cli-win32-x64-msvc@2.9.4':
+  '@tauri-apps/cli-win32-x64-msvc@2.9.5':
     optional: true
 
-  '@tauri-apps/cli@2.9.4':
+  '@tauri-apps/cli@2.9.5':
     optionalDependencies:
-      '@tauri-apps/cli-darwin-arm64': 2.9.4
-      '@tauri-apps/cli-darwin-x64': 2.9.4
-      '@tauri-apps/cli-linux-arm-gnueabihf': 2.9.4
-      '@tauri-apps/cli-linux-arm64-gnu': 2.9.4
-      '@tauri-apps/cli-linux-arm64-musl': 2.9.4
-      '@tauri-apps/cli-linux-riscv64-gnu': 2.9.4
-      '@tauri-apps/cli-linux-x64-gnu': 2.9.4
-      '@tauri-apps/cli-linux-x64-musl': 2.9.4
-      '@tauri-apps/cli-win32-arm64-msvc': 2.9.4
-      '@tauri-apps/cli-win32-ia32-msvc': 2.9.4
-      '@tauri-apps/cli-win32-x64-msvc': 2.9.4
+      '@tauri-apps/cli-darwin-arm64': 2.9.5
+      '@tauri-apps/cli-darwin-x64': 2.9.5
+      '@tauri-apps/cli-linux-arm-gnueabihf': 2.9.5
+      '@tauri-apps/cli-linux-arm64-gnu': 2.9.5
+      '@tauri-apps/cli-linux-arm64-musl': 2.9.5
+      '@tauri-apps/cli-linux-riscv64-gnu': 2.9.5
+      '@tauri-apps/cli-linux-x64-gnu': 2.9.5
+      '@tauri-apps/cli-linux-x64-musl': 2.9.5
+      '@tauri-apps/cli-win32-arm64-msvc': 2.9.5
+      '@tauri-apps/cli-win32-ia32-msvc': 2.9.5
+      '@tauri-apps/cli-win32-x64-msvc': 2.9.5
 
   '@tauri-apps/plugin-cli@2.4.1':
     dependencies:
-      '@tauri-apps/api': 2.9.0
+      '@tauri-apps/api': 2.9.1
 
   '@tauri-apps/plugin-dialog@2.4.2':
     dependencies:
-      '@tauri-apps/api': 2.9.0
+      '@tauri-apps/api': 2.9.1
 
   '@tauri-apps/plugin-fs@2.4.4':
     dependencies:
-      '@tauri-apps/api': 2.9.0
+      '@tauri-apps/api': 2.9.1
 
   '@tauri-apps/plugin-http@2.5.4':
     dependencies:
-      '@tauri-apps/api': 2.9.0
+      '@tauri-apps/api': 2.9.1
 
   '@tauri-apps/plugin-log@2.7.1':
     dependencies:
-      '@tauri-apps/api': 2.9.0
+      '@tauri-apps/api': 2.9.1
 
   '@tauri-apps/plugin-opener@2.5.2':
     dependencies:
-      '@tauri-apps/api': 2.9.0
+      '@tauri-apps/api': 2.9.1
 
   '@tauri-apps/plugin-os@2.3.2':
     dependencies:
-      '@tauri-apps/api': 2.9.0
+      '@tauri-apps/api': 2.9.1
 
   '@tauri-apps/plugin-process@2.3.1':
     dependencies:
-      '@tauri-apps/api': 2.9.0
+      '@tauri-apps/api': 2.9.1
 
   '@tauri-apps/plugin-shell@2.3.3':
     dependencies:
-      '@tauri-apps/api': 2.9.0
+      '@tauri-apps/api': 2.9.1
 
   '@tauri-apps/plugin-updater@2.9.0':
     dependencies:
-      '@tauri-apps/api': 2.9.0
+      '@tauri-apps/api': 2.9.1
 
   '@tauri-apps/plugin-window-state@2.4.1':
     dependencies:
-      '@tauri-apps/api': 2.9.0
+      '@tauri-apps/api': 2.9.1
 
   '@tiptap/core@3.11.1(@tiptap/pm@3.11.1)':
     dependencies:
@@ -4841,7 +4841,7 @@ snapshots:
     dependencies:
       '@vanilla-extract/css': 1.17.5
       '@vanilla-extract/integration': 8.0.6
-      vite: 7.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
+      vite: 7.2.6(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
       vite-node: 3.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
     transitivePeerDependencies:
       - '@types/node'
@@ -4893,11 +4893,11 @@ snapshots:
 
   '@vanilla-extract/private@1.0.9': {}
 
-  '@vanilla-extract/vite-plugin@5.1.3(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)(vite@7.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6))':
+  '@vanilla-extract/vite-plugin@5.1.3(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)(vite@7.2.6(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6))':
     dependencies:
       '@vanilla-extract/compiler': 0.3.3(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
       '@vanilla-extract/integration': 8.0.6
-      vite: 7.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
+      vite: 7.2.6(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
     transitivePeerDependencies:
       - '@types/node'
       - babel-plugin-macros
@@ -4913,11 +4913,11 @@ snapshots:
       - tsx
       - yaml
 
-  '@vitejs/plugin-react-swc@4.2.2(vite@7.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6))':
+  '@vitejs/plugin-react-swc@4.2.2(vite@7.2.6(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6))':
     dependencies:
       '@rolldown/pluginutils': 1.0.0-beta.47
       '@swc/core': 1.14.0
-      vite: 7.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
+      vite: 7.2.6(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
     transitivePeerDependencies:
       - '@swc/helpers'
 
@@ -4930,13 +4930,13 @@ snapshots:
       chai: 6.2.1
       tinyrainbow: 3.0.3
 
-  '@vitest/mocker@4.0.14(vite@7.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6))':
+  '@vitest/mocker@4.0.14(vite@7.2.6(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6))':
     dependencies:
       '@vitest/spy': 4.0.14
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
+      vite: 7.2.6(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
 
   '@vitest/pretty-format@4.0.14':
     dependencies:
@@ -5598,7 +5598,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  i18next@25.6.3(typescript@5.9.3):
+  i18next@25.7.0(typescript@5.9.3):
     dependencies:
       '@babel/runtime': 7.28.4
     optionalDependencies:
@@ -5670,7 +5670,7 @@ snapshots:
 
   jiti@2.6.1: {}
 
-  jotai@2.15.1(@babel/core@7.28.5)(@babel/template@7.27.2)(@types/react@19.2.7)(react@19.2.0):
+  jotai@2.15.2(@babel/core@7.28.5)(@babel/template@7.27.2)(@types/react@19.2.7)(react@19.2.0):
     optionalDependencies:
       '@babel/core': 7.28.5
       '@babel/template': 7.27.2
@@ -6444,11 +6444,11 @@ snapshots:
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
 
-  react-i18next@16.3.5(i18next@25.6.3(typescript@5.9.3))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3):
+  react-i18next@16.3.5(i18next@25.7.0(typescript@5.9.3))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3):
     dependencies:
       '@babel/runtime': 7.28.4
       html-parse-stringify: 3.0.1
-      i18next: 25.6.3(typescript@5.9.3)
+      i18next: 25.7.0(typescript@5.9.3)
       react: 19.2.0
       use-sync-external-store: 1.6.0(react@19.2.0)
     optionalDependencies:
@@ -6947,7 +6947,7 @@ snapshots:
       debug: 4.4.3
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-      vite: 7.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
+      vite: 7.2.6(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -6962,7 +6962,7 @@ snapshots:
       - tsx
       - yaml
 
-  vite@7.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6):
+  vite@7.2.6(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6):
     dependencies:
       esbuild: 0.25.11
       fdir: 6.5.0(picomatch@4.0.3)
@@ -6979,7 +6979,7 @@ snapshots:
   vitest@4.0.14(@types/node@24.9.2)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(tsx@4.20.6):
     dependencies:
       '@vitest/expect': 4.0.14
-      '@vitest/mocker': 4.0.14(vite@7.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6))
+      '@vitest/mocker': 4.0.14(vite@7.2.6(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6))
       '@vitest/pretty-format': 4.0.14
       '@vitest/runner': 4.0.14
       '@vitest/snapshot': 4.0.14
@@ -6996,7 +6996,7 @@ snapshots:
       tinyexec: 0.3.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vite: 7.2.4(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
+      vite: 7.2.6(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 24.9.2
@@ -7080,7 +7080,7 @@ snapshots:
 
   zod@4.1.13: {}
 
-  zustand@5.0.8(@types/react@19.2.7)(immer@11.0.1)(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0)):
+  zustand@5.0.9(@types/react@19.2.7)(immer@11.0.1)(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0)):
     optionalDependencies:
       '@types/react': 19.2.7
       immer: 11.0.1
