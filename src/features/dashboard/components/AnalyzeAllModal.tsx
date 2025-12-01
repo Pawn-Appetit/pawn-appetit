@@ -47,7 +47,7 @@ export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount }: Analy
     setIsAnalyzing(true);
     setProgress({ current: 0, total: gameCount });
     cancelledRef.current = false;
-    
+
     try {
       await onAnalyze(
         {
@@ -122,8 +122,8 @@ export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount }: Analy
             ) : (
               <>
                 <Button variant="subtle" onClick={onClose} disabled={isAnalyzing}>
-                Cancel
-              </Button>
+                  Cancel
+                </Button>
                 <Button type="submit" loading={isAnalyzing} disabled={isAnalyzing}>
                   Analyze
                 </Button>
@@ -135,4 +135,3 @@ export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount }: Analy
     </Modal>
   );
 }
-

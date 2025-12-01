@@ -59,7 +59,7 @@ export function createFullLayout(): { [viewId: string]: JSX.Element } {
 
 export function constrainSplitPercentage(splitPercentage?: number): number {
   const value = splitPercentage ?? MOSAIC_PANE_CONSTRAINTS.DEFAULT_SPLIT_PERCENTAGE;
-  
+
   return Math.max(
     MOSAIC_PANE_CONSTRAINTS.MINIMUM_PERCENTAGE,
     Math.min(MOSAIC_PANE_CONSTRAINTS.MAXIMUM_PERCENTAGE, value),

@@ -117,7 +117,7 @@ export function isBasicAnnotation(annotation: string): annotation is "!" | "!!" 
 export const annotationColors: Record<Annotation, string> = {
   "!!": "#06B6D4", // Brilliant - cyan
   "!": "#3B82F6", // Great / Good / Unique - blue
-  "Best": "#22C55E", // Best - green
+  Best: "#22C55E", // Best - green
   "!?": "#A855F7", // Interesting - purple
   "?!": "#FACC15", // Dubious - yellow
   "?": "#FB923C", // Mistake - orange
@@ -133,5 +133,5 @@ export const annotationColors: Record<Annotation, string> = {
   "∓": "#6B7280",
   "-+": "#6B7280",
   // Other annotations
-  "N": "#6B7280",
+  N: "#6B7280",
 };

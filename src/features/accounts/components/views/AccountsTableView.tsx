@@ -1,4 +1,16 @@
-import { ActionIcon, Badge, Group, Image, Paper, ScrollArea, Skeleton, Stack, Table, Text, Tooltip } from "@mantine/core";
+import {
+  ActionIcon,
+  Badge,
+  Group,
+  Image,
+  Paper,
+  ScrollArea,
+  Skeleton,
+  Stack,
+  Table,
+  Text,
+  Tooltip,
+} from "@mantine/core";
 import {
   IconCheck,
   IconCircle,
@@ -117,9 +129,8 @@ function AccountsTableView({
       let database = databases.find((db) => db.filename === `${username}_${type}.db3`) ?? null;
       if (!database) {
         // Try case-insensitive match
-        database = databases.find(
-          (db) => db.filename.toLowerCase() === `${username}_${type}.db3`.toLowerCase(),
-        ) ?? null;
+        database =
+          databases.find((db) => db.filename.toLowerCase() === `${username}_${type}.db3`.toLowerCase()) ?? null;
       }
       const downloadedGames = database?.type === "success" ? database.game_count : 0;
 
@@ -170,8 +181,7 @@ function AccountsTableView({
 
       // Calculate percentage: if totalGames is 0, return 0; otherwise calculate normally
       // Cap percentage at 100% to handle edge cases
-      const percentage =
-        totalGames === 0 ? 0 : Math.min(100, Math.max(0, (downloadedGames / totalGames) * 100));
+      const percentage = totalGames === 0 ? 0 : Math.min(100, Math.max(0, (downloadedGames / totalGames) * 100));
 
       return {
         key: session.lichess?.account.id ?? `${type}:${username}`,
@@ -237,12 +247,12 @@ function AccountsTableView({
   async function handleRemove(session: Session) {
     if (session.lichess) {
       const username = session.lichess.username;
-      
+
       // Delete database file and PGN file for this account
       const dbDir = await appDataDir();
       const dbPath = await resolve(dbDir, "db", `${username}_lichess.db3`);
       const pgnPath = await resolve(dbDir, "db", `${username}_lichess.pgn`);
-      
+
       try {
         // Delete database file if it exists
         try {
@@ -250,14 +260,14 @@ function AccountsTableView({
         } catch {
           // Database file might not exist, ignore
         }
-        
+
         // Delete PGN file if it exists
         try {
           await remove(pgnPath);
         } catch {
           // PGN file might not exist, ignore
         }
-        
+
         // Delete analyzed games for this account
         try {
           const { removeAnalyzedGamesForAccount } = await import("@/utils/analyzedGames");
@@ -268,17 +278,17 @@ function AccountsTableView({
       } catch (error) {
         console.error("Error deleting account files:", error);
       }
-      
+
       // Remove session
       setSessions((sessions) => sessions.filter((s) => s.lichess?.account.id !== session.lichess?.account.id));
     } else if (session.chessCom) {
       const username = session.chessCom.username;
-      
+
       // Delete database file and PGN file for this account
       const dbDir = await appDataDir();
       const dbPath = await resolve(dbDir, "db", `${username}_chesscom.db3`);
       const pgnPath = await resolve(dbDir, "db", `${username}_chesscom.pgn`);
-      
+
       try {
         // Delete database file if it exists
         try {
@@ -286,14 +296,14 @@ function AccountsTableView({
         } catch {
           // Database file might not exist, ignore
         }
-        
+
         // Delete PGN file if it exists
         try {
           await remove(pgnPath);
         } catch {
           // PGN file might not exist, ignore
         }
-        
+
         // Delete analyzed games for this account
         try {
           const { removeAnalyzedGamesForAccount } = await import("@/utils/analyzedGames");
@@ -304,7 +314,7 @@ function AccountsTableView({
       } catch (error) {
         console.error("Error deleting account files:", error);
       }
-      
+
       // Remove session
       setSessions((sessions) => sessions.filter((s) => s.chessCom?.username !== session.chessCom?.username));
     }

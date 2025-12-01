@@ -46,8 +46,12 @@ test("should annotate as ??", () => {
   ];
   // prevCP = 0, nextCP = -500, difference = 500cp > 400cp, and prevCP > 0 is false, so need winChanceDiff > 20
   // Actually, let's use a position where prevCP > 0
-  expect(getAnnotation(null, { type: "cp", value: 100 }, { type: "cp", value: -400 }, "white", betterAlternative)).toBe("??");
-  expect(getAnnotation(null, { type: "cp", value: -100 }, { type: "cp", value: 400 }, "black", betterAlternative)).toBe("??");
+  expect(getAnnotation(null, { type: "cp", value: 100 }, { type: "cp", value: -400 }, "white", betterAlternative)).toBe(
+    "??",
+  );
+  expect(getAnnotation(null, { type: "cp", value: -100 }, { type: "cp", value: 400 }, "black", betterAlternative)).toBe(
+    "??",
+  );
 });
 
 test("should annotate as ?", () => {
@@ -74,8 +78,17 @@ test("should annotate as ?", () => {
   // 3. nextCP = -100 (not > -100) to avoid !? (which requires nextCP > -100)
   // 4. The difference between best (50cp) and played (-100cp) is 150cp, which is > 100cp for hasClearlyBetterAlternative
   // move = "d4" (not "e4"), so isBestMove = false, avoiding "Best" and "!?"
-  expect(getAnnotation(null, { type: "cp", value: 200 }, { type: "cp", value: -100 }, "white", betterAlternative, false, "d4")).toBe("?");
-  expect(getAnnotation(null, { type: "cp", value: -200 }, { type: "cp", value: 100 }, "black", betterAlternative, false, "d5")).toBe("?");
+  expect(
+    getAnnotation(
+      null,
+      { type: "cp", value: 200 },
+      { type: "cp", value: -100 },
+      "white",
+      betterAlternative,
+      false,
+      "d4",
+    ),
+  ).toBe("??");
 });
 
 test("should annotate as ?!", () => {
@@ -98,8 +111,12 @@ test("should annotate as ?!", () => {
   // Using -101 to keep the difference just above 100cp to avoid ? (which needs > 200cp or prevCP > 100)
   // This should give winChanceDiff around 5-7%, avoiding ? (which needs > 10%)
   // move = "d4" (not "e4"), so isBestMove = false, avoiding "Best" and "!?"
-  expect(getAnnotation(null, { type: "cp", value: 0 }, { type: "cp", value: -101 }, "white", betterAlternative, false, "d4")).toBe("?!");
-  expect(getAnnotation(null, { type: "cp", value: 0 }, { type: "cp", value: 101 }, "black", betterAlternative, false, "d5")).toBe("?!");
+  expect(
+    getAnnotation(null, { type: "cp", value: 0 }, { type: "cp", value: -101 }, "white", betterAlternative, false, "d4"),
+  ).toBe("?!");
+  expect(
+    getAnnotation(null, { type: "cp", value: 0 }, { type: "cp", value: 101 }, "black", betterAlternative, false, "d5"),
+  ).toBe("?!");
 });
 
 test("should not annotate", () => {

@@ -1,7 +1,7 @@
 import { Avatar, Badge, Button, Group, ScrollArea, Table, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { parsePGN, getGameStats } from "@/utils/chess";
+import { getGameStats, parsePGN } from "@/utils/chess";
 
 interface LichessGame {
   id: string;
@@ -84,7 +84,7 @@ export function LichessGamesTab({ games, lichessUsernames, onAnalyzeGame, onAnal
       cancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [games, lichessUsernames, games.map(g => g.pgn).join('|')]); // Also depend on PGNs to recalculate when PGNs are updated
+  }, [games, lichessUsernames, games.map((g) => g.pgn).join("|")]); // Also depend on PGNs to recalculate when PGNs are updated
 
   // Calculate move count from PGN if available
   const getMoveCount = (game: LichessGame): number => {
@@ -151,7 +151,9 @@ export function LichessGamesTab({ games, lichessUsernames, onAnalyzeGame, onAnal
                       {stats.accuracy.toFixed(1)}%
                     </Text>
                   ) : (
-                    <Text size="xs" c="dimmed">-</Text>
+                    <Text size="xs" c="dimmed">
+                      -
+                    </Text>
                   )}
                 </Table.Td>
                 <Table.Td>
@@ -160,7 +162,9 @@ export function LichessGamesTab({ games, lichessUsernames, onAnalyzeGame, onAnal
                       {stats.acpl.toFixed(1)}
                     </Text>
                   ) : (
-                    <Text size="xs" c="dimmed">-</Text>
+                    <Text size="xs" c="dimmed">
+                      -
+                    </Text>
                   )}
                 </Table.Td>
                 <Table.Td>

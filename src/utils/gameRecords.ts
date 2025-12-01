@@ -53,31 +53,31 @@ export async function getRecentGames(limit = 20): Promise<GameRecord[]> {
   try {
     const text = await readTextFile(file);
     const records: GameRecord[] = JSON.parse(text);
-    
+
     // Filter out invalid/corrupted games
     const validRecords = records.filter((record) => {
       // Must have an id
       if (!record.id) return false;
-      
+
       // Must have valid player information
       if (!record.white || !record.black) return false;
       if (!record.white.type || !record.black.type) return false;
-      
+
       // Must have moves array (can be empty but must exist)
       if (!Array.isArray(record.moves)) return false;
-      
+
       // Must have a valid timestamp
       if (!record.timestamp || typeof record.timestamp !== "number") return false;
-      
+
       // Must have a result (can be "*" for unfinished games)
       if (!record.result || typeof record.result !== "string") return false;
-      
+
       // Must have a FEN
       if (!record.fen || typeof record.fen !== "string") return false;
-      
+
       return true;
     });
-    
+
     return validRecords.slice(0, limit);
   } catch {
     return [];
@@ -127,7 +127,7 @@ export async function updateGameRecord(gameId: string, updates: Partial<GameReco
     // file may not exist yet
     return;
   }
-  
+
   const index = records.findIndex((r) => r.id === gameId);
   if (index !== -1) {
     records[index] = { ...records[index], ...updates };
@@ -153,7 +153,7 @@ export async function deleteGameRecord(gameId: string): Promise<void> {
     // file may not exist yet
     return;
   }
-  
+
   const filteredRecords = records.filter((r) => r.id !== gameId);
   await writeTextFile(file, JSON.stringify(filteredRecords));
   if (typeof window !== "undefined") {
@@ -182,23 +182,23 @@ export async function calculateGameStats(game: GameRecord): Promise<GameStats | 
   try {
     // Parse the PGN to get the game tree with evaluations
     const tree = await parsePGN(game.pgn, game.initialFen);
-    
+
     // Calculate stats using the same function used in the analysis panel
     const stats = getGameStats(tree.root);
-    
+
     // Determine which color the user played
     const isUserWhite = game.white.type === "human";
     const userColor = isUserWhite ? "white" : "black";
-    
+
     // Get stats for the user's color
     const accuracy = userColor === "white" ? stats.whiteAccuracy : stats.blackAccuracy;
     const acpl = userColor === "white" ? stats.whiteCPL : stats.blackCPL;
-    
+
     // Return null if no evaluations were found (accuracy and ACPL would be 0)
     if (accuracy === 0 && acpl === 0) {
       return null;
     }
-    
+
     return {
       accuracy,
       acpl,

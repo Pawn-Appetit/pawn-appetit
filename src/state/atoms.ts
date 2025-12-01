@@ -145,10 +145,7 @@ export const minimumGamesAtom = atomWithStorage<number>("minimum-games", 5);
 
 export type PracticeAnimationSpeed = "disabled" | "very-fast" | "fast" | "normal" | "slow" | "very-slow";
 
-export const practiceAnimationSpeedAtom = atomWithStorage<PracticeAnimationSpeed>(
-  "practice-animation-speed",
-  "normal",
-);
+export const practiceAnimationSpeedAtom = atomWithStorage<PracticeAnimationSpeed>("practice-animation-speed", "normal");
 
 export const missingMovesAtom = atomWithStorage<TabMap<MissingMove[] | null>>(
   "missing-moves",

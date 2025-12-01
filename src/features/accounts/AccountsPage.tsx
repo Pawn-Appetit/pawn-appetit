@@ -52,7 +52,14 @@ function AccountsPage() {
       />
 
       <Stack flex={1} style={{ overflow: "hidden" }} px="md" pb="md">
-        <Accounts open={openModal} setOpen={setOpenModal} view={viewMode} query={query} sortBy={sortBy} isLoading={isLoading} />
+        <Accounts
+          open={openModal}
+          setOpen={setOpenModal}
+          view={viewMode}
+          query={query}
+          sortBy={sortBy}
+          isLoading={isLoading}
+        />
       </Stack>
 
       <DatabaseDrawer opened={opened} onClose={close} />

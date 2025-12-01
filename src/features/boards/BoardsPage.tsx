@@ -197,7 +197,7 @@ const TabSwitch = function TabSwitch({ tab }: { tab: Tab }) {
       setWindowsState({ currentNode });
     },
     [setWindowsState],
-  );  
+  );
 
   return match(tab.type)
     .with("new", () => <NewTab id={tab.value} />)
@@ -217,7 +217,7 @@ const TabSwitch = function TabSwitch({ tab }: { tab: Tab }) {
     .with("analysis", () => {
       // Check if this is a variants file type
       const isVariantsFile = tab.source?.type === "file" && tab.source.metadata?.type === "variants";
-      
+
       return (
         <TreeStateProvider id={tab.value}>
           {!isMobileLayout && (
@@ -229,11 +229,7 @@ const TabSwitch = function TabSwitch({ tab }: { tab: Tab }) {
             />
           )}
           {!isVariantsFile && <ReportProgressSubscriber id={`${REPORT_ID_PREFIX}${tab.value}`} />}
-          {isVariantsFile ? (
-            <BoardVariants />
-          ) : (
-            <BoardAnalysis />
-          )}
+          {isVariantsFile ? <BoardVariants /> : <BoardAnalysis />}
         </TreeStateProvider>
       );
     })

@@ -28,11 +28,11 @@ import {
   currentPracticeTabAtom,
   currentTabAtom,
   deckAtomFamily,
-  practiceAnimationSpeedAtom,
   type PracticeData,
+  practiceAnimationSpeedAtom,
 } from "@/state/atoms";
-import { findFen, getNodeAtPath } from "@/utils/treeReducer";
 import { playSound } from "@/utils/sound";
+import { findFen, getNodeAtPath } from "@/utils/treeReducer";
 import RepertoireInfo from "./RepertoireInfo";
 
 function PracticePanel() {

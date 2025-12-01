@@ -2,7 +2,7 @@ import { Box } from "@mantine/core";
 import { useId } from "@mantine/hooks";
 import type { Color, Square } from "chessops";
 import type { JSX } from "react";
-import { annotationColors, type Annotation } from "@/utils/annotation";
+import { type Annotation, annotationColors } from "@/utils/annotation";
 import { squareToCoordinates } from "@/utils/chessops";
 
 export default function AnnotationHint({

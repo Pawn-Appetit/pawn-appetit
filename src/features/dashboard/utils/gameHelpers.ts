@@ -20,10 +20,8 @@ export function createLocalGameHeaders(game: GameRecord): GameHeaders {
   // Use initialFen if available, otherwise fall back to standard starting position
   // The FEN header in PGN should always be the initial position, not the final position
   const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-  const fen = game.initialFen && game.initialFen !== INITIAL_FEN 
-    ? game.initialFen 
-    : INITIAL_FEN;
-  
+  const fen = game.initialFen && game.initialFen !== INITIAL_FEN ? game.initialFen : INITIAL_FEN;
+
   return {
     id: 0,
     event: "Local Game",
@@ -82,7 +80,7 @@ export function createPGNFromMoves(moves: string[], result: string, initialFen?:
   pgn += `[White "?"]\n`;
   pgn += `[Black "?"]\n`;
   pgn += `[Result "${result}"]\n`;
-  
+
   // Include initial FEN if provided and different from standard starting position
   const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
   if (initialFen && initialFen !== INITIAL_FEN) {
@@ -90,7 +88,7 @@ export function createPGNFromMoves(moves: string[], result: string, initialFen?:
     pgn += `[FEN "${initialFen}"]\n`;
   }
   pgn += "\n";
-  
+
   // Add moves
   if (!moves || moves.length === 0) {
     pgn += result;

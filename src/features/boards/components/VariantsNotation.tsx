@@ -31,14 +31,14 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { Comment } from "@/components/Comment";
-import { TreeStateContext } from "@/components/TreeStateContext";
-import { currentInvisibleAtom } from "@/state/atoms";
-import { keyMapAtom } from "@/state/keybindings";
-import type { TreeNode } from "@/utils/treeReducer";
 import CompleteMoveCell from "@/components/CompleteMoveCell";
 import * as styles from "@/components/GameNotation.css";
 import * as moveStyles from "@/components/MoveCell.css";
 import OpeningName from "@/components/OpeningName";
+import { TreeStateContext } from "@/components/TreeStateContext";
+import { currentInvisibleAtom } from "@/state/atoms";
+import { keyMapAtom } from "@/state/keybindings";
+import type { TreeNode } from "@/utils/treeReducer";
 
 const variationRefs = {
   variants: React.createRef<HTMLSpanElement>(),
@@ -53,13 +53,7 @@ function hasMultipleChildrenInChain(node: TreeNode): boolean {
   return false;
 }
 
-function VariantsNotation({
-  topBar,
-  editingMode,
-}: {
-  topBar?: boolean;
-  editingMode?: boolean;
-}) {
+function VariantsNotation({ topBar, editingMode }: { topBar?: boolean; editingMode?: boolean }) {
   const store = useContext(TreeStateContext);
   if (!store) {
     throw new Error("VariantsNotation must be used within a TreeStateProvider");
@@ -93,9 +87,12 @@ function VariantsNotation({
 
   // Collect all variations from a tree node (all children except the first one)
   // This function traverses the main line and collects all variations that branch off
-  function collectAllVariations(node: TreeNode, currentPath: number[]): Array<{ variation: TreeNode; path: number[]; parentHalfMoves: number }> {
+  function collectAllVariations(
+    node: TreeNode,
+    currentPath: number[],
+  ): Array<{ variation: TreeNode; path: number[]; parentHalfMoves: number }> {
     const variations: Array<{ variation: TreeNode; path: number[]; parentHalfMoves: number }> = [];
-    
+
     // If this node has multiple children, add the variations (all except the first one)
     if (node.children.length > 1) {
       node.children.slice(1).forEach((variation, index) => {
@@ -106,13 +103,13 @@ function VariantsNotation({
         });
       });
     }
-    
+
     // Recursively collect variations from the main line (first child)
     if (node.children.length > 0) {
       const mainLineVariations = collectAllVariations(node.children[0], [...currentPath, 0]);
       variations.push(...mainLineVariations);
     }
-    
+
     return variations;
   }
 
@@ -140,7 +137,7 @@ function VariantsNotation({
       const currentPath = path;
       const variations = tree.children;
       const subVariations = variations && variations.length > 1 ? variations.slice(1) : [];
-      
+
       return (
         <>
           <CompleteMoveCell
@@ -187,7 +184,7 @@ function VariantsNotation({
         </>
       );
     }
-    
+
     // If no move but has children, render the first child
     const variations = tree.children;
     if (!variations?.length) return null;
@@ -272,7 +269,7 @@ function VariantsNotation({
     // Render the first move of the variation
     const firstMovePath = path;
     const firstMoveSan = variation.san;
-    
+
     // Get sub-variations from this variation (all children except the first one)
     const subVariations = variation.children.length > 1 ? variation.children.slice(1) : [];
 
@@ -346,11 +343,15 @@ function VariantsNotation({
           lineHeight: "1.5",
         }}
       >
-        <Text component="span" c="dimmed" style={{ marginRight: "0.25rem" }}>(</Text>
+        <Text component="span" c="dimmed" style={{ marginRight: "0.25rem" }}>
+          (
+        </Text>
         <Box component="span" style={{ display: "inline" }}>
           {renderVariationContent()}
         </Box>
-        <Text component="span" c="dimmed" style={{ marginLeft: "0.25rem" }}>)</Text>
+        <Text component="span" c="dimmed" style={{ marginLeft: "0.25rem" }}>
+          )
+        </Text>
       </Box>
     );
   }

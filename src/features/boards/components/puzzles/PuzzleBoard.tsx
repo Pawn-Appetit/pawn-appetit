@@ -61,7 +61,7 @@ function PuzzleBoard({
   treeIter.next();
   let currentMove = 0;
   if (puzzle && initialPos) {
-    let iterPos = initialPos.clone();
+    const iterPos = initialPos.clone();
     for (const { node } of treeIter) {
       if (node.move && currentMove < puzzle.moves.length) {
         const normalizedMove = uciNormalize(iterPos, node.move, false);
@@ -182,10 +182,7 @@ function PuzzleBoard({
           orientation={orientation}
           movable={{
             free: false,
-            color:
-              puzzle && equal(position, Array(currentMove).fill(0))
-                ? turn
-                : undefined,
+            color: puzzle && equal(position, Array(currentMove).fill(0)) ? turn : undefined,
             dests: dests,
             events: {
               after: (orig, dest) => {

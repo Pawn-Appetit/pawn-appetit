@@ -96,12 +96,12 @@ export async function removeAnalyzedGamesForAccount(username: string, type: "lic
   } catch {
     return;
   }
-  
+
   // Filter out games that belong to this account
   const filteredGames: AnalyzedGamesMap = {};
   for (const [gameId, pgn] of Object.entries(analyzedGames)) {
     let belongsToAccount = false;
-    
+
     if (type === "lichess") {
       // For Lichess, gameId is the game ID, check if PGN contains the username
       // Lichess PGNs typically have White/Black headers with usernames
@@ -109,11 +109,10 @@ export async function removeAnalyzedGamesForAccount(username: string, type: "lic
       const blackMatch = pgn.match(/\[Black\s+"([^"]+)"/);
       const whiteName = whiteMatch ? whiteMatch[1] : "";
       const blackName = blackMatch ? blackMatch[1] : "";
-      
+
       // Check if username matches either white or black player
-      belongsToAccount = 
-        whiteName.toLowerCase() === username.toLowerCase() || 
-        blackName.toLowerCase() === username.toLowerCase();
+      belongsToAccount =
+        whiteName.toLowerCase() === username.toLowerCase() || blackName.toLowerCase() === username.toLowerCase();
     } else if (type === "chesscom") {
       // For Chess.com, gameId is the URL, check if URL contains the username
       // Chess.com URLs are like: https://www.chess.com/game/live/123456
@@ -122,19 +121,18 @@ export async function removeAnalyzedGamesForAccount(username: string, type: "lic
       const blackMatch = pgn.match(/\[Black\s+"([^"]+)"/);
       const whiteName = whiteMatch ? whiteMatch[1] : "";
       const blackName = blackMatch ? blackMatch[1] : "";
-      
+
       // Check if username matches either white or black player
-      belongsToAccount = 
-        whiteName.toLowerCase() === username.toLowerCase() || 
-        blackName.toLowerCase() === username.toLowerCase();
+      belongsToAccount =
+        whiteName.toLowerCase() === username.toLowerCase() || blackName.toLowerCase() === username.toLowerCase();
     }
-    
+
     // Keep the game only if it does NOT belong to this account
     if (!belongsToAccount) {
       filteredGames[gameId] = pgn;
     }
   }
-  
+
   await writeTextFile(file, JSON.stringify(filteredGames));
 }
 
@@ -146,5 +144,3 @@ export async function clearAllAnalyzedGames(): Promise<void> {
   const file = await resolve(dir, FILENAME);
   await writeTextFile(file, JSON.stringify({}));
 }
-
-

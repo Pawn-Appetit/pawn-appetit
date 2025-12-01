@@ -1,7 +1,6 @@
 import { Portal, Stack } from "@mantine/core";
-import { memo, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import React, { memo, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import React from "react";
 import GameNotation from "@/components/GameNotation";
 import MoveControls from "@/components/MoveControls";
 import { ResponsiveLoadingWrapper } from "@/components/ResponsiveLoadingWrapper";
@@ -96,9 +95,9 @@ function GameNotationWrapper({
   // If children are provided and they're not just MoveControls, render only those (like VariantsNotation)
   // Otherwise, render GameNotation with optional additional children (like MoveControls)
   const hasCustomNotation = React.Children.toArray(children).some(
-    (child) => React.isValidElement(child) && child.type !== MoveControls
+    (child) => React.isValidElement(child) && child.type !== MoveControls,
   );
-  
+
   const analysisContent = (
     <Stack h="100%" gap={positioning.gap} style={{ flexDirection: positioning.stackDirection }}>
       {editingMode && editingCard ? (

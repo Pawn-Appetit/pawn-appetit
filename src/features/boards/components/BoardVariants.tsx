@@ -1,13 +1,16 @@
 import type { Piece } from "@lichess-org/chessground/types";
-import { Box, Portal } from "@mantine/core";
+import { Box, Button, Portal } from "@mantine/core";
 import { useHotkeys, useToggle } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
+import { IconPuzzle } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
+import { save } from "@tauri-apps/plugin-dialog";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { useAtom, useAtomValue } from "jotai";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
+import MoveControls from "@/components/MoveControls";
 import { TreeStateContext } from "@/components/TreeStateContext";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import {
@@ -19,16 +22,12 @@ import {
   enableAllAtom,
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
-import { defaultPGN, getPGN, getMoveText } from "@/utils/chess";
+import { defaultPGN, getMoveText, getPGN } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
+import { createFile, isTempImportFile } from "@/utils/files";
 import { formatDateToPGN } from "@/utils/format";
-import { isTempImportFile, createFile } from "@/utils/files";
 import { reloadTab, saveTab, saveToFile, type Tab } from "@/utils/tabs";
 import { getNodeAtPath, type TreeNode } from "@/utils/treeReducer";
-import { save } from "@tauri-apps/plugin-dialog";
-import { Button } from "@mantine/core";
-import { IconPuzzle } from "@tabler/icons-react";
-import MoveControls from "@/components/MoveControls";
 import EditingCard from "./EditingCard";
 import EvalListener from "./EvalListener";
 import GameNotationWrapper from "./GameNotationWrapper";
@@ -63,50 +62,53 @@ function BoardVariants() {
   const promoteVariation = useStore(store, (s) => s.promoteVariation);
   const deleteMove = useStore(store, (s) => s.deleteMove);
 
-  const saveFile = useCallback(async (showNotification = true) => {
-    try {
-      if (
-        currentTab?.source != null &&
-        currentTab?.source?.type === "file" &&
-        !isTempImportFile(currentTab?.source?.path)
-      ) {
-        // Save the file
-        await saveTab(currentTab, store);
-        // Mark as saved in the store
-        setStoreSave();
-        // Show success notification only if requested
-        if (showNotification) {
-          notifications.show({
-            title: t("common.save"),
-            message: t("common.fileSavedSuccessfully"),
-            color: "green",
+  const saveFile = useCallback(
+    async (showNotification = true) => {
+      try {
+        if (
+          currentTab?.source != null &&
+          currentTab?.source?.type === "file" &&
+          !isTempImportFile(currentTab?.source?.path)
+        ) {
+          // Save the file
+          await saveTab(currentTab, store);
+          // Mark as saved in the store
+          setStoreSave();
+          // Show success notification only if requested
+          if (showNotification) {
+            notifications.show({
+              title: t("common.save"),
+              message: t("common.fileSavedSuccessfully"),
+              color: "green",
+            });
+          }
+        } else {
+          // Save to a new file
+          await saveToFile({
+            dir: documentDir,
+            setCurrentTab,
+            tab: currentTab,
+            store,
           });
+          if (showNotification) {
+            notifications.show({
+              title: t("common.save"),
+              message: t("common.fileSavedSuccessfully"),
+              color: "green",
+            });
+          }
         }
-      } else {
-        // Save to a new file
-        await saveToFile({
-          dir: documentDir,
-          setCurrentTab,
-          tab: currentTab,
-          store,
+      } catch (error) {
+        // Always show error notifications
+        notifications.show({
+          title: t("common.error"),
+          message: t("common.failedToSaveFile"),
+          color: "red",
         });
-        if (showNotification) {
-          notifications.show({
-            title: t("common.save"),
-            message: t("common.fileSavedSuccessfully"),
-            color: "green",
-          });
-        }
       }
-    } catch (error) {
-      // Always show error notifications
-      notifications.show({
-        title: t("common.error"),
-        message: t("common.failedToSaveFile"),
-        color: "red",
-      });
-    }
-  }, [setCurrentTab, currentTab, documentDir, store, setStoreSave, t]);
+    },
+    [setCurrentTab, currentTab, documentDir, store, setStoreSave, t],
+  );
 
   // Get board orientation (default to white if not set)
   const boardOrientation = headers.orientation || "white";
@@ -128,7 +130,11 @@ function BoardVariants() {
       if (!filePath) return;
 
       // Get filename without extension
-      const fileName = filePath.replace(/\.pgn$/, "").split(/[/\\]/).pop() || `puzzles-${formatDateToPGN(new Date())}`;
+      const fileName =
+        filePath
+          .replace(/\.pgn$/, "")
+          .split(/[/\\]/)
+          .pop() || `puzzles-${formatDateToPGN(new Date())}`;
 
       // Generate puzzles from the current tree
       // Each variation at each position becomes a puzzle
@@ -145,11 +151,7 @@ function BoardVariants() {
       // We traverse the tree and only generate puzzles at positions where there are actual variations
       const MAX_DEPTH = 80; // súbelo si quieres recorrer líneas más largas
 
-      const generatePuzzlesFromNode = (
-        node: TreeNode,
-        depth = 0,
-        puzzlePhaseStarted = false
-      ): void => {
+      const generatePuzzlesFromNode = (node: TreeNode, depth = 0, puzzlePhaseStarted = false): void => {
         if (depth > MAX_DEPTH) return;
 
         const [pos] = positionFromFen(node.fen);
@@ -417,13 +419,7 @@ function BoardVariants() {
         <>
           <VariantsNotation topBar={topBar} editingMode={editingMode} />
           <MoveControls readOnly />
-          <Button
-            leftSection={<IconPuzzle size={18} />}
-            onClick={generatePuzzles}
-            variant="light"
-            fullWidth
-            mt="xs"
-          >
+          <Button leftSection={<IconPuzzle size={18} />} onClick={generatePuzzles} variant="light" fullWidth mt="xs">
             {t("common.generatePuzzles")}
           </Button>
         </>
@@ -433,4 +429,3 @@ function BoardVariants() {
 }
 
 export default BoardVariants;
-
