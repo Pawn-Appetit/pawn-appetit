@@ -1,6 +1,8 @@
-import { Avatar, Badge, Button, Group, ScrollArea, Table, Text } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { Avatar, Badge, Button, Group, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { AnalysisPreview } from "@/components/AnalysisPreview";
+import { getAnalyzedGame } from "@/utils/analyzedGames";
 import { getGameStats, parsePGN } from "@/utils/chess";
 import type { ChessComGame } from "@/utils/chess.com/api";
 
@@ -19,6 +21,56 @@ interface ChessComGamesTabProps {
 export function ChessComGamesTab({ games, chessComUsernames, onAnalyzeGame, onAnalyzeAll }: ChessComGamesTabProps) {
   const { t } = useTranslation();
   const [gameStats, setGameStats] = useState<Map<string, GameStats>>(new Map());
+  const [analyzedPgns, setAnalyzedPgns] = useState<Map<string, string>>(new Map());
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 25;
+
+  // Load analyzed PGNs for preview
+  useEffect(() => {
+    if (games.length === 0) return;
+
+    let cancelled = false;
+
+    const loadAnalyzedPgns = async () => {
+      const pgnMap = new Map<string, string>();
+
+      for (const game of games) {
+        if (cancelled) break;
+
+        try {
+          // Try to get analyzed PGN first (using URL as gameId for Chess.com)
+          const analyzedPgn = await getAnalyzedGame(game.url);
+          if (analyzedPgn) {
+            pgnMap.set(game.url, analyzedPgn);
+          } else if (game.pgn) {
+            // Fallback to original PGN if no analysis available
+            pgnMap.set(game.url, game.pgn);
+          }
+        } catch {
+          // Silently skip games that fail to load
+        }
+
+        if (!cancelled) {
+          await new Promise((resolve) => setTimeout(resolve, 10));
+        }
+      }
+
+      if (!cancelled) {
+        setAnalyzedPgns(pgnMap);
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      if (!cancelled) {
+        loadAnalyzedPgns().catch(() => {});
+      }
+    }, 100);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
+  }, [games]);
 
   // Calculate stats for games with PGN
   useEffect(() => {
@@ -84,30 +136,45 @@ export function ChessComGamesTab({ games, chessComUsernames, onAnalyzeGame, onAn
     }
   };
 
+  // Paginate games
+  const paginatedGames = useMemo(() => {
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return games.slice(start, end);
+  }, [games, page, itemsPerPage]);
+
+  const totalPages = Math.ceil(games.length / itemsPerPage);
+
+  // Reset to page 1 when games change
+  useEffect(() => {
+    setPage(1);
+  }, [games.length]);
+
   return (
-    <ScrollArea h={{ base: 200, sm: 220, md: 240, lg: 260 }} type="auto">
-      <Table striped highlightOnHover>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Opponent</Table.Th>
-            <Table.Th>Color</Table.Th>
-            <Table.Th>Result</Table.Th>
-            <Table.Th>Accuracy</Table.Th>
-            <Table.Th>ACPL</Table.Th>
-            <Table.Th>Moves</Table.Th>
-            <Table.Th>Account</Table.Th>
-            <Table.Th>Date</Table.Th>
-            <Table.Th>
-              {onAnalyzeAll && (
-                <Button size="xs" variant="light" onClick={onAnalyzeAll}>
-                  Analyze All
-                </Button>
-              )}
-            </Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {games.map((g) => {
+    <Stack gap="xs">
+      <ScrollArea h={{ base: 200, sm: 220, md: 240, lg: 260 }} type="auto">
+        <Table striped highlightOnHover>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Opponent</Table.Th>
+              <Table.Th>Color</Table.Th>
+              <Table.Th>Result</Table.Th>
+              <Table.Th>Accuracy</Table.Th>
+              <Table.Th>ACPL</Table.Th>
+              <Table.Th>Moves</Table.Th>
+              <Table.Th>Account</Table.Th>
+              <Table.Th>Date</Table.Th>
+              <Table.Th>
+                {onAnalyzeAll && (
+                  <Button size="xs" variant="light" onClick={onAnalyzeAll}>
+                    Analyze All
+                  </Button>
+                )}
+              </Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {paginatedGames.map((g) => {
             const isUserWhite = chessComUsernames.includes(g.white.username);
             const opponent = isUserWhite ? g.black : g.white;
             const userAccount = isUserWhite ? g.white : g.black;
@@ -173,9 +240,11 @@ export function ChessComGamesTab({ games, chessComUsernames, onAnalyzeGame, onAn
                 </Table.Td>
                 <Table.Td>
                   <Group gap="xs" wrap="nowrap">
-                    <Button size="xs" variant="light" onClick={() => onAnalyzeGame(g)}>
-                      Analyze
-                    </Button>
+                    <AnalysisPreview pgn={analyzedPgns.get(g.url) || g.pgn || null}>
+                      <Button size="xs" variant="light" onClick={() => onAnalyzeGame(g)}>
+                        Analyze
+                      </Button>
+                    </AnalysisPreview>
                     <Button size="xs" variant="light" component="a" href={g.url} target="_blank">
                       View Online
                     </Button>
@@ -183,9 +252,15 @@ export function ChessComGamesTab({ games, chessComUsernames, onAnalyzeGame, onAn
                 </Table.Td>
               </Table.Tr>
             );
-          })}
-        </Table.Tbody>
-      </Table>
-    </ScrollArea>
+            })}
+          </Table.Tbody>
+        </Table>
+      </ScrollArea>
+      {totalPages > 1 && (
+        <Group justify="center" mt="xs">
+          <Pagination value={page} onChange={setPage} total={totalPages} size="sm" />
+        </Group>
+      )}
+    </Stack>
   );
 }

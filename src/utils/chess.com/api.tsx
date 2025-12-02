@@ -103,6 +103,7 @@ async function getGameArchives(player: string) {
 export async function fetchLastChessComGames(
   player: string,
   showErrorNotification: boolean = false,
+  limit: number = 100,
 ): Promise<ChessComGame[]> {
   try {
     const archives = await getGameArchives(player);
@@ -110,44 +111,52 @@ export async function fetchLastChessComGames(
       // User has no archives - this is expected, don't show error
       return [];
     }
-    const lastArchiveUrl = archives.archives[archives.archives.length - 1];
-    const response = await fetch(lastArchiveUrl, { headers, method: "GET" });
 
-    if (!response.ok) {
-      // Don't show notification for 404 (user not found) or 403 (forbidden) - these are expected
-      if (response.status === 404 || response.status === 403) {
-        return [];
+    // Start from the most recent archive and work backwards
+    const allGames: ChessComGame[] = [];
+    const archivesToFetch = [...archives.archives].reverse(); // Most recent first
+
+    for (const archiveUrl of archivesToFetch) {
+      if (allGames.length >= limit) {
+        break;
       }
-      error(`Failed to fetch games from ${lastArchiveUrl}: ${response.status}`);
-      // Only show notification if explicitly requested
-      if (showErrorNotification) {
-        notifications.show({
-          title: "Fetch Error",
-          message: `Could not fetch recent games for ${player}.`,
-          color: "red",
-          icon: <IconX />,
-        });
+
+      try {
+        const response = await fetch(archiveUrl, { headers, method: "GET" });
+
+        if (!response.ok) {
+          // Don't show notification for 404 (user not found) or 403 (forbidden) - these are expected
+          if (response.status === 404 || response.status === 403) {
+            continue;
+          }
+          error(`Failed to fetch games from ${archiveUrl}: ${response.status}`);
+          continue;
+        }
+
+        const gamesData = ChessComGames.safeParse(await response.json());
+
+        if (!gamesData.success) {
+          error(`Invalid game data from ${archiveUrl}: ${gamesData.error}`);
+          continue;
+        }
+
+        // Add games sorted by end_time (most recent first)
+        const sortedGames = gamesData.data.games.sort((a, b) => b.end_time - a.end_time);
+        allGames.push(...sortedGames);
+
+        // If we have enough games, break
+        if (allGames.length >= limit) {
+          break;
+        }
+      } catch (e) {
+        error(`Error fetching games from ${archiveUrl}: ${e}`);
+        continue;
       }
-      return [];
     }
 
-    const gamesData = ChessComGames.safeParse(await response.json());
-
-    if (!gamesData.success) {
-      error(`Invalid game data from ${lastArchiveUrl}: ${gamesData.error}`);
-      // Only show notification if explicitly requested
-      if (showErrorNotification) {
-        notifications.show({
-          title: "Fetch Error",
-          message: `Could not fetch recent games for ${player}.`,
-          color: "red",
-          icon: <IconX />,
-        });
-      }
-      return [];
-    }
-
-    return gamesData.data.games.sort((a, b) => b.end_time - a.end_time);
+    // Sort all games by end_time and limit to requested amount
+    const sortedAllGames = allGames.sort((a, b) => b.end_time - a.end_time);
+    return sortedAllGames.slice(0, limit);
   } catch (e) {
     error(`Error fetching last chess.com games for ${player}: ${e}`);
     // Only show notification if explicitly requested

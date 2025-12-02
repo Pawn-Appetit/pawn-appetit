@@ -208,12 +208,12 @@ export default function DashboardPage() {
         selectedChessComUser === "all" ? chessComUsernames : selectedChessComUser ? [selectedChessComUser] : [];
       if (usersToFetch.length > 0) {
         info(`Fetching Chess.com games for: ${JSON.stringify(usersToFetch)}`);
-        const allGamesPromises = usersToFetch.map((username) => fetchLastChessComGames(username));
+        const allGamesPromises = usersToFetch.map((username) => fetchLastChessComGames(username, false, 100));
         const gamesArrays = await Promise.all(allGamesPromises);
 
         const combinedGames = gamesArrays.flat();
         combinedGames.sort((a, b) => b.end_time - a.end_time);
-        const games = combinedGames.slice(0, 50);
+        const games = combinedGames.slice(0, 100);
 
         // Load analyzed PGNs from storage
         const analyzedGames = await getAllAnalyzedGames();
