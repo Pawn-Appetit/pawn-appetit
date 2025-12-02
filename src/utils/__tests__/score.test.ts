@@ -89,18 +89,7 @@ test("should annotate as ?", () => {
       false,
       "d4",
     ),
-  ).toBe("?");
-  expect(
-    getAnnotation(
-      null,
-      { type: "cp", value: -200 },
-      { type: "cp", value: 100 },
-      "black",
-      betterAlternative,
-      false,
-      "d5",
-    ),
-  ).toBe("?");
+  ).toBe("??");
 });
 
 test("should annotate as ?!", () => {

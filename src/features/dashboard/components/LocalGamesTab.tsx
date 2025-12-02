@@ -1,7 +1,7 @@
 import { ActionIcon, Avatar, Badge, Button, Group, ScrollArea, Table, Text } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
-import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { GameRecord } from "@/utils/gameRecords";
 import { calculateGameStats, type GameStats } from "@/utils/gameRecords";
 
@@ -19,16 +19,16 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
   // Calculate stats for all games (lazy, non-blocking)
   useEffect(() => {
     if (games.length === 0) return;
-    
+
     let cancelled = false;
-    
+
     const calculateStats = async () => {
       const statsMap = new Map<string, GameStats>();
-      
+
       // Process games with small delays to avoid blocking the UI
       for (const game of games) {
         if (cancelled) break;
-        
+
         try {
           const stats = await calculateGameStats(game);
           if (stats && !cancelled) {
@@ -39,13 +39,13 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
         } catch {
           // Silently skip games that fail to parse
         }
-        
+
         // Small delay to yield to the UI thread
         if (!cancelled) {
           await new Promise((resolve) => setTimeout(resolve, 10));
         }
       }
-      
+
       if (!cancelled) {
         setGameStats(statsMap);
       }
@@ -59,7 +59,7 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
         });
       }
     }, 100);
-    
+
     return () => {
       cancelled = true;
       clearTimeout(timeoutId);
@@ -102,9 +102,9 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
             } else {
               dateStr = `${Math.floor(diffMs / (24 * 60 * 60 * 1000))}d ago`;
             }
-            
+
             const stats = gameStats.get(g.id);
-            
+
             return (
               <Table.Tr key={g.id}>
                 <Table.Td>
@@ -140,18 +140,18 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
                       {stats.acpl.toFixed(1)}
                     </Text>
                   ) : (
-                  <Text size="xs" c="dimmed">
-                    -
-                  </Text>
+                    <Text size="xs" c="dimmed">
+                      -
+                    </Text>
                   )}
                 </Table.Td>
                 <Table.Td>{g.moves.length}</Table.Td>
                 <Table.Td c="dimmed">{dateStr}</Table.Td>
                 <Table.Td>
                   <Group gap="xs">
-                  <Button size="xs" variant="light" onClick={() => onAnalyzeGame(g)}>
-                    Analyze
-                  </Button>
+                    <Button size="xs" variant="light" onClick={() => onAnalyzeGame(g)}>
+                      Analyze
+                    </Button>
                     {onDeleteGame && (
                       <ActionIcon
                         size="sm"

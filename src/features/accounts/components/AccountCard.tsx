@@ -168,9 +168,8 @@ export function AccountCard({
       const found = dbs.find((db) => db.filename === `${title}_${type}.db3`) ?? null;
       if (!found) {
         // Try case-insensitive match
-        const foundCaseInsensitive = dbs.find(
-          (db) => db.filename.toLowerCase() === `${title}_${type}.db3`.toLowerCase(),
-        ) ?? null;
+        const foundCaseInsensitive =
+          dbs.find((db) => db.filename.toLowerCase() === `${title}_${type}.db3`.toLowerCase()) ?? null;
         setCurrentDatabase(foundCaseInsensitive);
       } else {
         setCurrentDatabase(found);
@@ -190,16 +189,15 @@ export function AccountCard({
           // Refresh databases list multiple times to ensure we get the latest data
           let updatedDatabases = await getDatabases();
           setDatabases(updatedDatabases);
-          
+
           // Try to find the database, with retries if not found immediately
           let found = updatedDatabases.find((db) => db.filename === `${title}_${type}.db3`) ?? null;
           if (!found) {
             // Try case-insensitive match
-            found = updatedDatabases.find(
-              (db) => db.filename.toLowerCase() === `${title}_${type}.db3`.toLowerCase(),
-            ) ?? null;
+            found =
+              updatedDatabases.find((db) => db.filename.toLowerCase() === `${title}_${type}.db3`.toLowerCase()) ?? null;
           }
-          
+
           // If still not found, retry after a short delay
           if (!found) {
             await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -207,12 +205,12 @@ export function AccountCard({
             setDatabases(updatedDatabases);
             found = updatedDatabases.find((db) => db.filename === `${title}_${type}.db3`) ?? null;
             if (!found) {
-              found = updatedDatabases.find(
-                (db) => db.filename.toLowerCase() === `${title}_${type}.db3`.toLowerCase(),
-              ) ?? null;
+              found =
+                updatedDatabases.find((db) => db.filename.toLowerCase() === `${title}_${type}.db3`.toLowerCase()) ??
+                null;
             }
           }
-          
+
           if (found && found.type === "success") {
             info(`Found database after download: ${found.filename} with ${found.game_count} games`);
             setCurrentDatabase(found);
@@ -236,14 +234,11 @@ export function AccountCard({
   // If total is 0 or less than downloadedGames, use downloadedGames as minimum total
   // This handles cases where account.count.all might not be available or is outdated
   // If we have downloaded games, the total should be at least equal to downloadedGames
-  const effectiveTotal =
-    total === 0 || (downloadedGames > 0 && total < downloadedGames) ? downloadedGames : total;
+  const effectiveTotal = total === 0 || (downloadedGames > 0 && total < downloadedGames) ? downloadedGames : total;
   // Calculate percentage: if effectiveTotal is 0, return "0"; otherwise calculate normally
   // Cap percentage at 100% to handle edge cases
   const percentage =
-    effectiveTotal === 0
-      ? "0"
-      : Math.min(100, Math.max(0, (downloadedGames / effectiveTotal) * 100)).toFixed(2);
+    effectiveTotal === 0 ? "0" : Math.min(100, Math.max(0, (downloadedGames / effectiveTotal) * 100)).toFixed(2);
 
   async function getLastGameDate({ database: db }: { database: DatabaseInfo }) {
     const games = await query_games(db.file, {
@@ -463,7 +458,9 @@ export function AccountCard({
                     disabled={loading}
                     onClick={async () => {
                       setLoading(true);
-                      const lastGameDate = currentDatabase ? await getLastGameDate({ database: currentDatabase }) : null;
+                      const lastGameDate = currentDatabase
+                        ? await getLastGameDate({ database: currentDatabase })
+                        : null;
                       if (type === "lichess") {
                         await downloadLichess(title, lastGameDate, total - downloadedGames, setProgress, token);
                       } else {

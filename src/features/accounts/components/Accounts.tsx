@@ -122,9 +122,21 @@ function Accounts({
   return (
     <>
       {view === "grid" ? (
-        <AccountCards databases={databases} setDatabases={setDatabases} query={query} sortBy={sortBy} isLoading={isLoading} />
+        <AccountCards
+          databases={databases}
+          setDatabases={setDatabases}
+          query={query}
+          sortBy={sortBy}
+          isLoading={isLoading}
+        />
       ) : (
-        <AccountsTableView databases={databases} setDatabases={setDatabases} query={query} sortBy={sortBy} isLoading={isLoading} />
+        <AccountsTableView
+          databases={databases}
+          setDatabases={setDatabases}
+          query={query}
+          sortBy={sortBy}
+          isLoading={isLoading}
+        />
       )}
       <AccountModal open={open} setOpen={setOpen} addLichess={addLichess} addChessCom={addChessCom} />
     </>

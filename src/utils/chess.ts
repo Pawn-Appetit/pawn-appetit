@@ -6,7 +6,7 @@ import { isPawns, parseComment } from "chessops/pgn";
 import { makeSan, parseSan } from "chessops/san";
 import { match } from "ts-pattern";
 import { commands, type Outcome, type Score, type Token } from "@/bindings";
-import { ANNOTATION_INFO, isBasicAnnotation, NAG_INFO, type Annotation } from "./annotation";
+import { ANNOTATION_INFO, type Annotation, isBasicAnnotation, NAG_INFO } from "./annotation";
 import { parseSanOrUci, positionFromFen } from "./chessops";
 import { harmonicMean, isPrefix, mean } from "./misc";
 import { formatScore, getAccuracy, getCPLoss, INITIAL_SCORE } from "./score";
@@ -67,12 +67,12 @@ export function getMoveText(
       // This prevents multiple annotations from appearing like "!?!?!?"
       let basicAnnotation: Annotation | null = null;
       const otherAnnotations: Annotation[] = [];
-      
+
       for (const annotation of tree.annotations) {
         if (annotation === "") continue;
         const annotationInfo = ANNOTATION_INFO[annotation];
         if (!annotationInfo) continue; // Skip if annotation is not in ANNOTATION_INFO
-        
+
         if (isBasicAnnotation(annotation)) {
           // Keep only the most important basic annotation
           // Priority: ?? > ? > ?! > !? > ! > !! > Best
@@ -91,7 +91,7 @@ export function getMoveText(
           otherAnnotations.push(annotation);
         }
       }
-      
+
       // Add the single basic annotation
       if (basicAnnotation) {
         // Best uses NAG $8, not "*" (which is reserved for game result)
@@ -102,7 +102,7 @@ export function getMoveText(
           moveText += basicAnnotation;
         }
       }
-      
+
       // Add non-basic annotations as NAGs
       for (const annotation of otherAnnotations) {
         const annotationInfo = ANNOTATION_INFO[annotation];
@@ -301,7 +301,7 @@ export function getPGN(
   }
   if (tree.children.length > 0) {
     const mainChild = tree.children[path ? path[0] : 0];
-    
+
     // Add the move text for the main line child
     pgn += getMoveText(mainChild, {
       glyphs: glyphs,
@@ -309,31 +309,29 @@ export function getPGN(
       extraMarkups,
       isFirst: root,
     });
-    
+
     // Add variations right after the current move, before continuing with the main line
     // Variations are stored as siblings of the main line child
     // Process variations if: variations are enabled AND we're not following a specific path AND there are variations
     if (variations && !path && tree.children.length > 1) {
-      const variationsPGN = tree.children.slice(1).map(
-        (variation) => {
-          // For variations, we need to process the entire variation tree recursively
-          // This includes the variation's move and all its children (which may include sub-variations)
-          return getVariationPGN(variation, {
-            glyphs,
-            comments,
-            extraMarkups,
-            variations,
-            isFirst: true,
-          });
-        },
-      );
+      const variationsPGN = tree.children.slice(1).map((variation) => {
+        // For variations, we need to process the entire variation tree recursively
+        // This includes the variation's move and all its children (which may include sub-variations)
+        return getVariationPGN(variation, {
+          glyphs,
+          comments,
+          extraMarkups,
+          variations,
+          isFirst: true,
+        });
+      });
       for (const variation of variationsPGN) {
         if (variation) {
           pgn += ` (${variation}) `;
         }
       }
     }
-    
+
     // Continue with the main line after variations
     // Process mainChild's children, which may include more moves and variations
     if (mainChild.children.length > 0) {
@@ -385,7 +383,7 @@ function getVariationPGN(
   },
 ): string {
   let pgn = "";
-  
+
   // Add the move text for this variation node
   if (node.san) {
     pgn += getMoveText(node, {
@@ -395,31 +393,29 @@ function getVariationPGN(
       isFirst,
     });
   }
-  
+
   // Process the main line of this variation (first child)
   if (node.children.length > 0) {
     const mainChild = node.children[0];
-    
+
     // Add sub-variations of this variation (siblings of the main child)
     if (variations && node.children.length > 1) {
-      const subVariationsPGN = node.children.slice(1).map(
-        (subVariation) => {
-          return getVariationPGN(subVariation, {
-            glyphs,
-            comments,
-            extraMarkups,
-            variations,
-            isFirst: true,
-          });
-        },
-      );
+      const subVariationsPGN = node.children.slice(1).map((subVariation) => {
+        return getVariationPGN(subVariation, {
+          glyphs,
+          comments,
+          extraMarkups,
+          variations,
+          isFirst: true,
+        });
+      });
       for (const subVariation of subVariationsPGN) {
         if (subVariation) {
           pgn += ` (${subVariation}) `;
         }
       }
     }
-    
+
     // Continue with the main line of this variation
     if (mainChild.children.length > 0) {
       pgn += getPGN(mainChild, {
@@ -441,7 +437,7 @@ function getVariationPGN(
       });
     }
   }
-  
+
   return pgn.trim();
 }
 
@@ -507,10 +503,10 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
     // Collect all move sequences (separated by variations or end of tokens)
     const sequences: Token[][] = [];
     let currentSequence: Token[] = [];
-    
+
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
-      
+
       if (token.type === "ParenOpen") {
         // If we have a sequence collected, save it as a variation
         if (currentSequence.length > 0) {
@@ -556,18 +552,18 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
         currentSequence.push(token);
       }
     }
-    
+
     // Save last sequence if any (this is the "main line" which should also be a variation)
     if (currentSequence.length > 0) {
       sequences.push([...currentSequence]);
     }
-    
+
     // Parse each sequence as a separate variation (no main line)
     // All sequences are treated equally as variations
     for (const sequence of sequences) {
       // Check if this sequence starts with a paren (it's already a variation)
       const isVariation = sequence.length > 0 && sequence[0].type === "ParenOpen";
-      
+
       if (isVariation) {
         // Parse as a variation (remove outer parens and parse)
         const variationTokens = sequence.slice(1, -1); // Remove opening and closing parens
@@ -583,7 +579,7 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
         }
       }
     }
-    
+
     return tree;
   }
 
@@ -689,7 +685,7 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
         san,
         halfMoves: root.halfMoves + 1,
       });
-      
+
       root.children.push(newTree);
 
       // Update variation parent node BEFORE updating root
@@ -702,7 +698,7 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
       break;
     }
   }
-  
+
   return tree;
 }
 
@@ -714,7 +710,12 @@ export async function parsePGN(pgn: string, initialFen?: string, isVariantsMode 
 
   const [pos] = positionFromFen(fen);
 
-  const tree = innerParsePGN(tokens, initialFen?.trim() || headers.fen.trim(), pos?.turn === "black" ? 1 : 0, isVariantsMode);
+  const tree = innerParsePGN(
+    tokens,
+    initialFen?.trim() || headers.fen.trim(),
+    pos?.turn === "black" ? 1 : 0,
+    isVariantsMode,
+  );
   tree.headers = headers;
   tree.position = headers.start ?? [];
   return tree;
@@ -787,7 +788,7 @@ export function getGameStats(root: TreeNode) {
     "!!": 0,
     "!": 0,
     "!?": 0,
-    "Best": 0,
+    Best: 0,
   };
 
   const blackAnnotations = {
@@ -797,7 +798,7 @@ export function getGameStats(root: TreeNode) {
     "!!": 0,
     "!": 0,
     "!?": 0,
-    "Best": 0,
+    Best: 0,
   };
 
   if (root.children.length === 0) {

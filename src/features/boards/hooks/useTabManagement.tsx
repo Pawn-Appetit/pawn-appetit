@@ -34,7 +34,7 @@ function getTabState(tabId: string): { version: number; state: { dirty?: boolean
     }
 
     const parsedState = JSON.parse(rawState);
-    
+
     if (isValidTabState(parsedState)) {
       return parsedState;
     }
@@ -189,7 +189,7 @@ export function useTabManagement() {
       const id = genID();
       setTabs((prevTabs) => {
         const tab = prevTabs.find((tab) => tab.value === value);
-        
+
         try {
           const existingState = sessionStorage.getItem(value);
           if (existingState) {
@@ -218,9 +218,7 @@ export function useTabManagement() {
 
   const keyMap = useAtomValue(keyMapAtom);
   useHotkeys([
-    [
-      keyMap.CLOSE_BOARD_TAB.keys, () => closeTab(activeTab, true),
-    ],
+    [keyMap.CLOSE_BOARD_TAB.keys, () => closeTab(activeTab, true)],
     [keyMap.CYCLE_BOARD_TABS.keys, () => cycleTabs()],
     [keyMap.REVERSE_CYCLE_BOARD_TABS.keys, () => cycleTabs(true)],
     [keyMap.BOARD_TAB_ONE.keys, () => selectTab(0)],

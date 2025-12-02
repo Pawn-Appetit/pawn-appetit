@@ -1,7 +1,7 @@
 import { Avatar, Badge, Button, Group, ScrollArea, Table, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { parsePGN, getGameStats } from "@/utils/chess";
+import { getGameStats, parsePGN } from "@/utils/chess";
 import type { ChessComGame } from "@/utils/chess.com/api";
 
 interface GameStats {
@@ -71,7 +71,7 @@ export function ChessComGamesTab({ games, chessComUsernames, onAnalyzeGame, onAn
       cancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [games, chessComUsernames, games.map(g => g.pgn).join('|')]); // Also depend on PGNs to recalculate when PGNs are updated
+  }, [games, chessComUsernames, games.map((g) => g.pgn).join("|")]); // Also depend on PGNs to recalculate when PGNs are updated
 
   // Calculate move count from PGN if available
   const getMoveCount = (game: ChessComGame): number => {
@@ -143,7 +143,9 @@ export function ChessComGamesTab({ games, chessComUsernames, onAnalyzeGame, onAn
                       {stats.accuracy.toFixed(1)}%
                     </Text>
                   ) : (
-                    <Text size="xs" c="dimmed">-</Text>
+                    <Text size="xs" c="dimmed">
+                      -
+                    </Text>
                   )}
                 </Table.Td>
                 <Table.Td>
@@ -152,7 +154,9 @@ export function ChessComGamesTab({ games, chessComUsernames, onAnalyzeGame, onAn
                       {stats.acpl.toFixed(1)}
                     </Text>
                   ) : (
-                    <Text size="xs" c="dimmed">-</Text>
+                    <Text size="xs" c="dimmed">
+                      -
+                    </Text>
                   )}
                 </Table.Td>
                 <Table.Td>

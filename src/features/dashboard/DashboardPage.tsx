@@ -16,19 +16,19 @@ import { practices } from "@/features/learn/constants/practices";
 import { activeTabAtom, enginesAtom, sessionsAtom, tabsAtom } from "@/state/atoms";
 import { useUserStatsStore } from "@/state/userStatsStore";
 import { type Achievement, getAchievements } from "@/utils/achievements";
+import { getAllAnalyzedGames, saveAnalyzedGame } from "@/utils/analyzedGames";
+import { getMainLine, getPGN, parsePGN } from "@/utils/chess";
 import { type ChessComGame, fetchLastChessComGames } from "@/utils/chess.com/api";
-import { parsePGN, getPGN, getMainLine } from "@/utils/chess";
-import { type TreeState } from "@/utils/treeReducer";
 import { type DailyGoal, getDailyGoals } from "@/utils/dailyGoals";
-import { type GameRecord, getRecentGames, updateGameRecord, deleteGameRecord } from "@/utils/gameRecords";
-import { saveAnalyzedGame, getAllAnalyzedGames } from "@/utils/analyzedGames";
+import type { LocalEngine } from "@/utils/engines";
 import { createFile } from "@/utils/files";
+import { deleteGameRecord, type GameRecord, getRecentGames, updateGameRecord } from "@/utils/gameRecords";
 import { fetchLastLichessGames } from "@/utils/lichess/api";
 import { getPuzzleStats, getTodayPuzzleCount } from "@/utils/puzzleStreak";
 import { createTab, genID, type Tab } from "@/utils/tabs";
+import type { TreeState } from "@/utils/treeReducer";
 import { unwrap } from "@/utils/unwrap";
-import type { LocalEngine } from "@/utils/engines";
-import { AnalyzeAllModal, type AnalyzeAllConfig } from "./components/AnalyzeAllModal";
+import { type AnalyzeAllConfig, AnalyzeAllModal } from "./components/AnalyzeAllModal";
 import { DailyGoalsCard } from "./components/DailyGoalsCard";
 import { GamesHistoryCard } from "./components/GamesHistoryCard";
 import { PuzzleStatsCard } from "./components/PuzzleStatsCard";
@@ -133,13 +133,13 @@ export default function DashboardPage() {
       setRecentGames(games);
     };
     loadGames();
-    
+
     // Listen for games:updated event to refresh local games after analysis
     const handleGamesUpdated = () => {
       loadGames();
     };
     window.addEventListener("games:updated", handleGamesUpdated);
-    
+
     return () => {
       window.removeEventListener("games:updated", handleGamesUpdated);
     };
@@ -171,30 +171,30 @@ export default function DashboardPage() {
         const combinedGames = gamesArrays.flat();
         combinedGames.sort((a, b) => b.createdAt - a.createdAt);
         const games = combinedGames.slice(0, 50);
-        
+
         // Load analyzed PGNs from storage
         const analyzedGames = await getAllAnalyzedGames();
         // Create a new array to ensure React detects the change
-        const gamesWithAnalysis = games.map(game => {
+        const gamesWithAnalysis = games.map((game) => {
           if (analyzedGames[game.id]) {
             return { ...game, pgn: analyzedGames[game.id] };
           }
           return game;
         });
-        
+
         setLichessGames(gamesWithAnalysis);
       } else {
         setLichessGames([]);
       }
     };
     fetchGames();
-    
+
     // Listen for lichess:games:updated event to refresh Lichess games after analysis
     const handleLichessGamesUpdated = () => {
       fetchGames();
     };
     window.addEventListener("lichess:games:updated", handleLichessGamesUpdated);
-    
+
     return () => {
       window.removeEventListener("lichess:games:updated", handleLichessGamesUpdated);
     };
@@ -214,30 +214,30 @@ export default function DashboardPage() {
         const combinedGames = gamesArrays.flat();
         combinedGames.sort((a, b) => b.end_time - a.end_time);
         const games = combinedGames.slice(0, 50);
-        
+
         // Load analyzed PGNs from storage
         const analyzedGames = await getAllAnalyzedGames();
         // Create a new array to ensure React detects the change
-        const gamesWithAnalysis = games.map(game => {
+        const gamesWithAnalysis = games.map((game) => {
           if (analyzedGames[game.url]) {
             return { ...game, pgn: analyzedGames[game.url] };
           }
           return game;
         });
-        
+
         setChessComGames(gamesWithAnalysis);
       } else {
         setChessComGames([]);
       }
     };
     fetchGames();
-    
+
     // Listen for chesscom:games:updated event to refresh Chess.com games after analysis
     const handleChessComGamesUpdated = () => {
       fetchGames();
     };
     window.addEventListener("chesscom:games:updated", handleChessComGamesUpdated);
-    
+
     return () => {
       window.removeEventListener("chesscom:games:updated", handleChessComGamesUpdated);
     };
@@ -733,7 +733,7 @@ export default function DashboardPage() {
             ...s,
             value: s.value?.toString() ?? "",
           }));
-          
+
           // Force Threads to 1 for batch analysis, regardless of engine configuration
           const threadsSetting = engineSettings.find((s) => s.name.toLowerCase() === "threads");
           if (threadsSetting) {
@@ -786,19 +786,22 @@ export default function DashboardPage() {
               let tree: TreeState;
               let moves: string[];
               let initialFen: string;
-              let gameHeaders: ReturnType<typeof createLocalGameHeaders | typeof createChessComGameHeaders | typeof createLichessGameHeaders>;
+              let gameHeaders: ReturnType<
+                typeof createLocalGameHeaders | typeof createChessComGameHeaders | typeof createLichessGameHeaders
+              >;
 
               if (analyzeAllGameType === "local") {
                 // For local games, use PGN if available, otherwise reconstruct from moves
                 const gameRecord = game as GameRecord;
-                const pgn = gameRecord.pgn || createPGNFromMoves(gameRecord.moves, gameRecord.result, gameRecord.initialFen);
+                const pgn =
+                  gameRecord.pgn || createPGNFromMoves(gameRecord.moves, gameRecord.result, gameRecord.initialFen);
                 tree = await parsePGN(pgn, gameRecord.initialFen);
                 moves = gameRecord.moves;
                 initialFen = gameRecord.initialFen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
                 gameHeaders = createLocalGameHeaders(gameRecord);
               } else {
                 // For Chess.com and Lichess games, parse PGN
-                const pgn = (game as ChessComGame | typeof lichessGames[0]).pgn!;
+                const pgn = (game as ChessComGame | (typeof lichessGames)[0]).pgn!;
                 tree = await parsePGN(pgn);
                 // Extract UCI moves from the main line using getMainLine
                 const is960 = tree.headers?.variant === "Chess960";
@@ -807,7 +810,7 @@ export default function DashboardPage() {
                 gameHeaders =
                   analyzeAllGameType === "chesscom"
                     ? createChessComGameHeaders(game as ChessComGame)
-                    : createLichessGameHeaders(game as typeof lichessGames[0]);
+                    : createLichessGameHeaders(game as (typeof lichessGames)[0]);
               }
 
               // Analyze the game
@@ -843,7 +846,7 @@ export default function DashboardPage() {
               // Use the same addAnalysis function from the store to ensure consistency
               // This ensures the same logic is used for both individual and batch analysis
               const { addAnalysis } = await import("@/state/store/tree");
-              
+
               // Apply analysis using the same function used in individual analysis
               // This ensures consistency and prevents PGN damage
               addAnalysis(tree, analysis);
@@ -882,7 +885,8 @@ export default function DashboardPage() {
               }
 
               // Ensure PGN has a result (required for valid PGN)
-              const hasResult = /\[Result\s+"[^"]+"\]/.test(analyzedPgn) || /\s+(1-0|0-1|1\/2-1\/2|\*)\s*$/.test(analyzedPgn);
+              const hasResult =
+                /\[Result\s+"[^"]+"\]/.test(analyzedPgn) || /\s+(1-0|0-1|1\/2-1\/2|\*)\s*$/.test(analyzedPgn);
               if (!hasResult && tree.headers?.result) {
                 // If result is missing but we have it in headers, append it
                 analyzedPgn = analyzedPgn.trim() + ` ${tree.headers.result}`;
@@ -919,7 +923,7 @@ export default function DashboardPage() {
                     return updated;
                   });
                 } else if (analyzeAllGameType === "lichess") {
-                  const lichessGame = game as typeof lichessGames[0];
+                  const lichessGame = game as (typeof lichessGames)[0];
                   lichessGame.pgn = analyzedPgn;
                   // Persist the analyzed PGN
                   await saveAnalyzedGame(lichessGame.id, analyzedPgn);
@@ -957,10 +961,10 @@ export default function DashboardPage() {
               });
               break;
             }
-            
+
             // Update progress in modal
             onProgress(i + 1, gamesToAnalyze.length);
-            
+
             // Update notifications less frequently
             if ((i + 1) % 10 === 0 || i === gamesToAnalyze.length - 1) {
               notifications.show({

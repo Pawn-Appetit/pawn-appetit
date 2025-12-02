@@ -19,6 +19,7 @@ import {
   TextInput,
   ThemeIcon,
 } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import {
   IconAlertCircle,
   IconArrowsExchange,
@@ -31,9 +32,10 @@ import {
   IconZoomCheck,
 } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
+import { save } from "@tauri-apps/plugin-dialog";
 import { parseUci } from "chessops";
-import { makeSan, parseSan } from "chessops/san";
 import { INITIAL_FEN } from "chessops/fen";
+import { makeSan, parseSan } from "chessops/san";
 import equal from "fast-deep-equal";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
@@ -51,8 +53,6 @@ import {
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
-import { notifications } from "@mantine/notifications";
-import { save } from "@tauri-apps/plugin-dialog";
 import { commands, events, type GoMode, type Outcome } from "@/bindings";
 import GameInfo from "@/components/GameInfo";
 import MoveControls from "@/components/MoveControls";
@@ -68,14 +68,14 @@ import {
   loadableEnginesAtom,
   tabsAtom,
 } from "@/state/atoms";
-import { getLastMainlinePosition, getMainLine, getPGN, getVariationLine, getMoveText } from "@/utils/chess";
+import { getLastMainlinePosition, getMainLine, getMoveText, getPGN, getVariationLine } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import type { TimeControlField } from "@/utils/clock";
 import { getDocumentDir } from "@/utils/documentDir";
-import { formatDateToPGN } from "@/utils/format";
 import type { LocalEngine } from "@/utils/engines";
 import { createFile } from "@/utils/files";
-import { saveGameRecord, type GameRecord } from "@/utils/gameRecords";
+import { formatDateToPGN } from "@/utils/format";
+import { type GameRecord, saveGameRecord } from "@/utils/gameRecords";
 import { createTab } from "@/utils/tabs";
 import { type GameHeaders, type TreeNode, treeIteratorMainLine } from "@/utils/treeReducer";
 import GameNotationWrapper from "./GameNotationWrapper";
@@ -110,12 +110,7 @@ function EnginesSelect({ engine, setEngine, engines = [], enginesState }: Engine
   if (enginesState !== "loading" && engines.length === 0) {
     return (
       <Stack gap="md">
-        <Alert
-          icon={<IconAlertCircle size={16} />}
-          title={t("game.noEnginesAvailable")}
-          color="orange"
-          variant="light"
-        >
+        <Alert icon={<IconAlertCircle size={16} />} title={t("game.noEnginesAvailable")} color="orange" variant="light">
           <Text size="sm">{t("game.noEnginesAvailableDesc")}</Text>
         </Alert>
         <Button variant="outline" size="sm" onClick={() => navigate({ to: "/engines" })}>
@@ -406,10 +401,10 @@ function useClockTimer(
       // If turn changed, clear interval and apply increment
       if (prevTurn !== null && prevTurn !== currentTurn && incrementAppliedRef.current !== turnKey) {
         // Clear existing interval
-    if (intervalId) {
-      clearInterval(intervalId);
-      setIntervalId(null);
-    }
+        if (intervalId) {
+          clearInterval(intervalId);
+          setIntervalId(null);
+        }
 
         // Apply increment to the player who just moved (previous turn)
         // Use refs to avoid dependency on whiteTime/blackTime
@@ -575,18 +570,18 @@ function BoardGame() {
 
   // Save settings with debounce (excluding when manually applying FEN)
   const saveTimeoutRef = useRef<any | null>(null);
-  
+
   useEffect(() => {
     // Skip auto-save when manually applying FEN to avoid conflicts
     if (isApplyingFen) {
       return;
     }
-    
+
     // Clear any pending save
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
-    
+
     saveTimeoutRef.current = setTimeout(() => {
       saveGameSettings({
         inputColor,
@@ -678,11 +673,11 @@ function BoardGame() {
       if (player.type === "engine" && player.engine) {
         const engine = player.engine;
         const tabKey = activeTab + currentTurn;
-        
+
         // Create a unique key for this request to prevent duplicate calls
         // Include engine path to ensure uniqueness per engine instance
         const requestKey = `${tabKey}-${engine.path}-${root.fen}-${moves.join(",")}`;
-        
+
         // Skip if we're already processing this exact request
         if (engineRequestRef.current === requestKey) {
           return;
@@ -691,36 +686,38 @@ function BoardGame() {
         // Mark this request as in progress BEFORE making the call
         // This prevents multiple calls from creating duplicate engines
         engineRequestRef.current = requestKey;
-        
+
         // Let the Rust code handle engine reuse/creation
         // The Rust manager checks if an engine exists and reuses it if options match
         // If options don't match, it stops and reconfigures the existing engine
-        commands.getBestMoves(
-          currentTurn,
-          engine.path,
-          tabKey,
-          player.timeControl
-            ? {
-                t: "PlayersTime",
-                c: {
-                  white: whiteTime ?? 0,
-                  black: blackTime ?? 0,
-                  winc: player.timeControl.increment ?? 0,
-                  binc: player.timeControl.increment ?? 0,
-                },
-              }
-            : player.go,
-          {
-            fen: root.fen,
-            moves: moves,
-            extraOptions: (engine.settings || [])
-              .filter((s) => s.name !== "MultiPV")
-              .map((s) => ({ ...s, value: s.value?.toString() ?? "" })),
-          },
-        ).catch(() => {
-          // Clear the ref on error so we can retry
-          engineRequestRef.current = null;
-        });
+        commands
+          .getBestMoves(
+            currentTurn,
+            engine.path,
+            tabKey,
+            player.timeControl
+              ? {
+                  t: "PlayersTime",
+                  c: {
+                    white: whiteTime ?? 0,
+                    black: blackTime ?? 0,
+                    winc: player.timeControl.increment ?? 0,
+                    binc: player.timeControl.increment ?? 0,
+                  },
+                }
+              : player.go,
+            {
+              fen: root.fen,
+              moves: moves,
+              extraOptions: (engine.settings || [])
+                .filter((s) => s.name !== "MultiPV")
+                .map((s) => ({ ...s, value: s.value?.toString() ?? "" })),
+            },
+          )
+          .catch(() => {
+            // Clear the ref on error so we can retry
+            engineRequestRef.current = null;
+          });
       } else {
         // Clear ref if it's not an engine turn
         engineRequestRef.current = null;
@@ -746,13 +743,13 @@ function BoardGame() {
       if (gameState !== "playing" || !activeTab || !pos) {
         return;
       }
-      
+
       // Clear the engine request ref when we receive any response for this tab/turn
       // This allows new requests even if the payload doesn't match exactly
       if (payload.tab === activeTab + pos.turn) {
         engineRequestRef.current = null;
       }
-      
+
       const ev = payload.bestLines;
       // CRITICAL: The payload.fen is the INITIAL FEN (root.fen) that was sent to getBestMoves
       // The backend sends proc.options.fen which is root.fen, not the final FEN after moves
@@ -797,16 +794,7 @@ function BoardGame() {
         player2Settings,
       });
     }
-  }, [
-    gameState,
-    headers,
-    inputColor,
-    sameTimeControl,
-    customFen,
-    player1Settings,
-    player2Settings,
-    saveGameSettings,
-  ]);
+  }, [gameState, headers, inputColor, sameTimeControl, customFen, player1Settings, player2Settings, saveGameSettings]);
 
   /**
    * Applies a specific FEN (string) to the tree, updates headers and saves settings.
@@ -833,12 +821,12 @@ function BoardGame() {
 
       // Update input state
       setCustomFen(fenToUse);
-      
+
       // Update board immediately - setFen updates the root tree directly
       // This triggers the board to re-render with the new position
       // NOTE: setFen will reset the tree, so only call it when we want to start fresh
       setFen(fenToUse);
-      
+
       // Update headers - but DON'T pass fen here as setFen already updated the root
       // Passing fen here could cause setHeaders to reset the tree again if the logic changes
       // We update fen in headers separately to track the initial FEN
@@ -851,7 +839,17 @@ function BoardGame() {
 
       return true;
     },
-    [headers, inputColor, sameTimeControl, player1Settings, player2Settings, setFen, setHeaders, validateFen, saveGameSettings],
+    [
+      headers,
+      inputColor,
+      sameTimeControl,
+      player1Settings,
+      player2Settings,
+      setFen,
+      setHeaders,
+      validateFen,
+      saveGameSettings,
+    ],
   );
 
   const applyFen = useCallback(() => {
@@ -962,7 +960,7 @@ function BoardGame() {
       clearTimeout(saveTimeoutRef.current);
       saveTimeoutRef.current = null;
     }
-    
+
     // Save current settings immediately before resetting
     saveGameSettings({
       inputColor,
@@ -994,7 +992,7 @@ function BoardGame() {
         setFen(fenToUse);
         setHeaders({ ...headers, fen: fenToUse, result: "*" });
       } else {
-    setFen(INITIAL_FEN);
+        setFen(INITIAL_FEN);
         setHeaders({ ...headers, fen: INITIAL_FEN, result: "*" });
         if (saved.customFen.trim()) {
           setFenError(t("game.invalidFen") || "Invalid FEN position");
@@ -1019,20 +1017,20 @@ function BoardGame() {
   const endGame = useCallback(async () => {
     // First, change game state to stop any ongoing engine requests
     setGameState("settingUp");
-    
+
     // Stop all engines immediately - kill ALL instances comprehensively
     if (activeTab) {
       try {
         // Strategy 1: Kill all engines that start with the activeTab (Rust uses starts_with)
         // This should catch most instances
         await commands.killEngines(activeTab);
-        
+
         // Strategy 2: Explicitly kill engines for known tab variants
         await Promise.all([
           commands.killEngines(activeTab + "white").catch(() => {}),
           commands.killEngines(activeTab + "black").catch(() => {}),
         ]);
-        
+
         // Strategy 3: Kill engines individually by path for each known engine
         // This ensures we kill specific engine instances that might not match the pattern
         if (engines.length > 0) {
@@ -1043,7 +1041,7 @@ function BoardGame() {
           ]);
           await Promise.all(killPromises);
         }
-        
+
         // Strategy 4: Also kill engines for players that might be engines
         const currentPlayers = getPlayers();
         if (currentPlayers.white.type === "engine" && currentPlayers.white.engine) {
@@ -1066,28 +1064,28 @@ function BoardGame() {
     // Save the game record before resetting
     // Only save if there are moves in the game
     let savedPgn = ""; // Store PGN for use in creating analysis tab
-    
+
     // CRITICAL: Check if we actually have moves to save
     const hasMoves = root.children.length > 0;
-    
+
     if (hasMoves) {
       // Get the initial FEN from headers (set when game started)
       // This is more reliable than root.fen which may change if user navigates back
       const initialFen = headers.fen || root.fen;
-      
+
       // CRITICAL: We need to traverse from the actual root, not from current position
       // The root should have the initial FEN, and all moves should be in root.children[0] chain
-      
+
       // Extract all SAN moves from the main line by traversing root.children[0] recursively
       const sanMoves: string[] = [];
       let currentNode = root;
       let moveCount = 0;
       const MAX_MOVES = 500; // Safety limit to prevent infinite loops
-      
+
       // Iterate through the main line manually to ensure we get all moves
       while (currentNode.children.length > 0 && moveCount < MAX_MOVES) {
         const child = currentNode.children[0]; // Always take the first child (main line)
-        
+
         // Each node in the main line should have a SAN move
         if (child.san) {
           sanMoves.push(child.san);
@@ -1117,17 +1115,17 @@ function BoardGame() {
           // If node has neither SAN nor move, we've reached the end
           break;
         }
-        
+
         currentNode = child;
       }
-      
+
       // Get the last node for final FEN
       const mainLine = Array.from(treeIteratorMainLine(root));
       const lastNode = mainLine[mainLine.length - 1].node;
-      
+
       // Use current result or "*" if game was stopped early
       const gameResult = headers.result && headers.result !== "*" ? headers.result : "*";
-      
+
       // Build PGN headers
       let pgn = `[Event "${headers.event || "Local Game"}"]\n`;
       pgn += `[Site "${headers.site || "Pawn Appetit"}"]\n`;
@@ -1149,7 +1147,7 @@ function BoardGame() {
         pgn += `[FEN "${initialFen}"]\n`;
       }
       pgn += "\n";
-      
+
       // Format moves in PGN format (pair white and black moves)
       if (sanMoves.length > 0) {
         const movePairs: string[] = [];
@@ -1157,7 +1155,7 @@ function BoardGame() {
           const moveNumber = Math.floor(i / 2) + 1;
           const whiteMove = sanMoves[i];
           const blackMove = sanMoves[i + 1];
-          
+
           if (blackMove) {
             movePairs.push(`${moveNumber}. ${whiteMove} ${blackMove}`);
           } else {
@@ -1168,7 +1166,7 @@ function BoardGame() {
       } else {
         pgn += gameResult;
       }
-      
+
       // Ensure PGN is not empty and has moves
       if (!pgn || pgn.trim().length === 0) {
         // PGN is empty, skipping save
@@ -1184,7 +1182,7 @@ function BoardGame() {
     // Use the manually constructed PGN we already built above to ensure consistency
     if (savedPgn && root.children.length > 0) {
       const currentActiveTab = activeTab;
-      
+
       // Create the tab first
       const newTabId = await createTab({
         tab: {
@@ -1196,10 +1194,10 @@ function BoardGame() {
         pgn: savedPgn,
         headers,
       });
-      
+
       // Restore focus to current tab
       setActiveTab(currentActiveTab);
-      
+
       // Get the PGN and FEN initial from the newly created tab
       // The tab stores its state in sessionStorage with the tab ID
       try {
@@ -1208,7 +1206,7 @@ function BoardGame() {
           const tabState = JSON.parse(tabStateJson);
           if (tabState?.state) {
             const treeState = tabState.state;
-            
+
             // Get PGN from the tree state using getPGN
             const tabPgn = getPGN(treeState.root, {
               headers: treeState.headers,
@@ -1217,20 +1215,21 @@ function BoardGame() {
               glyphs: true,
               variations: true,
             });
-            
+
             // Get initial FEN from the tree state root
             const tabInitialFen = treeState.root?.fen || treeState.headers?.fen;
-            
+
             // Get the last node for final FEN
             const mainLine = Array.from(treeIteratorMainLine(treeState.root));
             const lastNode = mainLine[mainLine.length - 1].node;
-            
+
             // Get UCI moves for the moves array (for backward compatibility)
             const uciMoves = getMainLine(treeState.root, treeState.headers?.variant === "Chess960");
-            
+
             // Use current result or "*" if game was stopped early
-            const gameResult = treeState.headers?.result && treeState.headers.result !== "*" ? treeState.headers.result : "*";
-            
+            const gameResult =
+              treeState.headers?.result && treeState.headers.result !== "*" ? treeState.headers.result : "*";
+
             // Save the game record with PGN and initial FEN from the tab
             const record: GameRecord = {
               id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -1245,7 +1244,9 @@ function BoardGame() {
                 engine: players.black.type === "engine" ? players.black.engine?.path : undefined,
               },
               result: gameResult,
-              timeControl: treeState.headers?.time_control || `${treeState.headers?.white_time_control || ""},${treeState.headers?.black_time_control || ""}`,
+              timeControl:
+                treeState.headers?.time_control ||
+                `${treeState.headers?.white_time_control || ""},${treeState.headers?.black_time_control || ""}`,
               timestamp: Date.now(),
               moves: uciMoves, // UCI moves for backward compatibility
               variant: treeState.headers?.variant ?? undefined,
@@ -1253,7 +1254,7 @@ function BoardGame() {
               initialFen: tabInitialFen !== INITIAL_FEN ? tabInitialFen : undefined, // Initial FEN from tab
               pgn: tabPgn, // Full PGN from tab
             };
-            
+
             // Save the game record
             await saveGameRecord(record);
           }
@@ -1284,16 +1285,16 @@ function BoardGame() {
 
   // Check if we're coming from a variants file
   const isFromVariants = activeTabData?.source?.type === "file" && activeTabData?.source?.metadata?.type === "variants";
-  
+
   // Get board orientation (default to white if not set)
   const boardOrientation = headers.orientation || "white";
-  
+
   // Generate puzzles from variants
   const generatePuzzles = useCallback(async () => {
     try {
       // Get document directory
       const documentDir = await getDocumentDir();
-      
+
       // Open save dialog
       const filePath = await save({
         defaultPath: `${documentDir}/puzzles-${formatDateToPGN(new Date())}.pgn`,
@@ -1304,31 +1305,35 @@ function BoardGame() {
           },
         ],
       });
-      
+
       if (!filePath) return;
-      
+
       // Get filename without extension
-      const fileName = filePath.replace(/\.pgn$/, "").split(/[/\\]/).pop() || `puzzles-${formatDateToPGN(new Date())}`;
-      
+      const fileName =
+        filePath
+          .replace(/\.pgn$/, "")
+          .split(/[/\\]/)
+          .pop() || `puzzles-${formatDateToPGN(new Date())}`;
+
       // Generate puzzles from the current tree
       // Each puzzle is based on a position where there are multiple variations (next moves)
       const puzzles: string[] = [];
-      
+
       // Function to recursively find positions with variations
       const findPuzzlePositions = (node: TreeNode, depth = 0): void => {
         // Only consider positions where it's the turn of the puzzle color
         const [pos] = positionFromFen(node.fen);
         if (!pos) return;
-        
+
         const currentTurn = pos.turn;
         const puzzleColor = boardOrientation === "white" ? "white" : "black";
-        
+
         // If this position has multiple children (variations) and it's the puzzle color's turn
         if (node.children.length > 1 && currentTurn === puzzleColor) {
           // Create a puzzle from this position
           // Take the first variation as the solution (or any variation)
           const solutionVariation = node.children[0];
-          
+
           // Get the solution moves (just the next move, or up to 2 moves if needed)
           let solutionMoves = "";
           if (solutionVariation.san) {
@@ -1338,7 +1343,7 @@ function BoardGame() {
               extraMarkups: false,
               isFirst: false,
             }).trim();
-            
+
             // If there's a continuation, add it
             if (solutionVariation.children.length > 0 && solutionVariation.children[0].san) {
               const nextMove = getMoveText(solutionVariation.children[0], {
@@ -1350,15 +1355,15 @@ function BoardGame() {
               solutionMoves += " " + nextMove;
             }
           }
-          
+
           // Create puzzle PGN
           let puzzlePGN = `[FEN "${node.fen}"]\n`;
           puzzlePGN += `[Solution "${solutionMoves}"]\n`;
           puzzlePGN += `\n${solutionMoves}\n\n`;
-          
+
           puzzles.push(puzzlePGN);
         }
-        
+
         // Recursively check children (limit depth to avoid too many puzzles)
         if (depth < 10) {
           for (const child of node.children) {
@@ -1366,24 +1371,24 @@ function BoardGame() {
           }
         }
       };
-      
+
       // Start from root
       findPuzzlePositions(root);
-      
+
       // If no puzzles found from variations, create puzzles from positions with at least one move
       if (puzzles.length === 0) {
         // Create puzzles from all positions where it's the puzzle color's turn
         const createPuzzlesFromPositions = (node: TreeNode, depth = 0): void => {
           const [pos] = positionFromFen(node.fen);
           if (!pos) return;
-          
+
           const currentTurn = pos.turn;
           const puzzleColor = boardOrientation === "white" ? "white" : "black";
-          
+
           // If it's the puzzle color's turn and there's at least one move
           if (currentTurn === puzzleColor && node.children.length > 0) {
             const solutionVariation = node.children[0];
-            
+
             if (solutionVariation.san) {
               const solutionMoves = getMoveText(solutionVariation, {
                 glyphs: false,
@@ -1391,15 +1396,15 @@ function BoardGame() {
                 extraMarkups: false,
                 isFirst: false,
               }).trim();
-              
+
               let puzzlePGN = `[FEN "${node.fen}"]\n`;
               puzzlePGN += `[Solution "${solutionMoves}"]\n`;
               puzzlePGN += `\n${solutionMoves}\n\n`;
-              
+
               puzzles.push(puzzlePGN);
             }
           }
-          
+
           // Recursively check children
           if (depth < 10) {
             for (const child of node.children) {
@@ -1407,13 +1412,13 @@ function BoardGame() {
             }
           }
         };
-        
+
         createPuzzlesFromPositions(root);
       }
-      
+
       // Combine all puzzles into a single PGN string
       const puzzlesPGN = puzzles.join("");
-      
+
       // Create the file with puzzle type
       await createFile({
         filename: fileName,
@@ -1421,7 +1426,7 @@ function BoardGame() {
         pgn: puzzlesPGN,
         dir: documentDir,
       });
-      
+
       notifications.show({
         title: t("common.save"),
         message: t("common.puzzlesGeneratedSuccessfully"),
@@ -1554,9 +1559,9 @@ function BoardGame() {
                     </Group>
                     <Divider label={t("game.startingPosition")} />
                     <Stack gap="md">
-                      <InputWrapper 
-                        label={t("game.fen")} 
-                        error={fenError} 
+                      <InputWrapper
+                        label={t("game.fen")}
+                        error={fenError}
                         description={t("game.fenDescription")}
                         styles={{
                           label: {
@@ -1645,21 +1650,16 @@ function BoardGame() {
       )}
       <GameNotationWrapper topBar>
         <Stack gap="xs">
-        <MoveControls
-          readOnly
-          currentTabType="play"
-          startGame={startGame}
+          <MoveControls
+            readOnly
+            currentTabType="play"
+            startGame={startGame}
             endGame={endGame}
-          gameState={gameState}
-          startGameDisabled={startGameDisabled}
-        />
+            gameState={gameState}
+            startGameDisabled={startGameDisabled}
+          />
           {isFromVariants && (
-            <Button
-              leftSection={<IconPuzzle size={18} />}
-              onClick={generatePuzzles}
-              variant="light"
-              fullWidth
-            >
+            <Button leftSection={<IconPuzzle size={18} />} onClick={generatePuzzles} variant="light" fullWidth>
               {t("common.generatePuzzles")}
             </Button>
           )}

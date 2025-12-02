@@ -1,6 +1,7 @@
 import { Button, Checkbox, Group, Stack, Text, TextInput } from "@mantine/core";
 import type { ContextModalProps } from "@mantine/modals";
 import { useLoaderData } from "@tanstack/react-router";
+import { basename } from "@tauri-apps/api/path";
 import { makeFen, parseFen } from "chessops/fen";
 import { useAtom } from "jotai";
 import { useState } from "react";
@@ -25,7 +26,6 @@ import { getLichessGame } from "@/utils/lichess/api";
 import { parseMultiplePgnGames } from "@/utils/pgnUtils";
 import { defaultTree, getGameName, type TreeState } from "@/utils/treeReducer";
 import { ImportSummary } from "./ImportSummary";
-import { basename } from "@tauri-apps/api/path";
 
 type ImportType = "PGN" | "Link" | "FEN";
 

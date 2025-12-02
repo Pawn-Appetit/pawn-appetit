@@ -11,10 +11,10 @@ import EvalChart from "@/components/EvalChart";
 import ProgressButton from "@/components/ProgressButtonWithOutState";
 import { TreeStateContext } from "@/components/TreeStateContext";
 import { activeTabAtom } from "@/state/atoms";
+import { saveAnalyzedGame } from "@/utils/analyzedGames";
 import { ANNOTATION_INFO, annotationColors, isBasicAnnotation } from "@/utils/annotation";
 import { getGameStats, getMainLine, getPGN } from "@/utils/chess";
 import { updateGameRecord } from "@/utils/gameRecords";
-import { saveAnalyzedGame } from "@/utils/analyzedGames";
 import { label } from "./AnalysisPanel.css";
 import ReportModal from "./ReportModal";
 
@@ -35,7 +35,7 @@ function ReportPanel() {
   const [reportingMode, toggleReportingMode] = useToggle();
 
   const stats = useMemo(() => getGameStats(root), [root]);
-  
+
   // Track if we've already saved the PGN for this analysis completion
   const hasSavedPgnRef = useRef(false);
 
@@ -44,7 +44,7 @@ function ReportPanel() {
     // Only save if analysis is completed, not in progress, and we haven't saved yet
     if (isCompleted && !inProgress && !hasSavedPgnRef.current && activeTab) {
       hasSavedPgnRef.current = true;
-      
+
       // Generate PGN with all evaluations and annotations
       // Use a longer delay and get the latest root from the store to ensure the tree is fully updated
       const timeoutId = setTimeout(async () => {
@@ -53,14 +53,14 @@ function ReportPanel() {
           // This ensures we have the most up-to-date tree after addAnalysis completes
           const latestRoot = store.getState().root;
           const latestHeaders = store.getState().headers;
-          
+
           // Verify the tree has moves (not just the root)
           if (latestRoot.children.length === 0) {
             console.error("Tree has no moves, skipping save");
             hasSavedPgnRef.current = false;
             return;
           }
-          
+
           // Count total moves in the main line to verify completeness
           let moveCount = 0;
           let tempNode: typeof latestRoot | undefined = latestRoot;
@@ -68,7 +68,7 @@ function ReportPanel() {
             moveCount++;
             tempNode = tempNode.children[0];
           }
-          
+
           // If the tree seems incomplete (less than 5 moves), wait a bit more and retry
           let finalRoot = latestRoot;
           let finalHeaders = latestHeaders;
@@ -87,18 +87,18 @@ function ReportPanel() {
               }
               return count;
             })();
-            
+
             if (retryMoveCount < 5) {
               console.error(`Tree still incomplete after retry (${retryMoveCount} moves), skipping save`);
               hasSavedPgnRef.current = false;
               return;
             }
-            
+
             // Use the retry root and headers
             finalRoot = retryRoot;
             finalHeaders = retryHeaders;
           }
-          
+
           // Generate PGN with all evaluations, annotations, and variations using the final root
           let pgnWithEvals = getPGN(finalRoot, {
             headers: finalHeaders,
@@ -107,19 +107,19 @@ function ReportPanel() {
             glyphs: true,
             variations: true,
           });
-          
+
           // Validate PGN: ensure it's not empty
           if (!pgnWithEvals || pgnWithEvals.trim().length === 0) {
             console.error("Generated PGN is empty, skipping save");
             hasSavedPgnRef.current = false; // Reset flag so we can try again
             return;
           }
-          
+
           // Ensure PGN has a result (required for valid PGN)
           // Check if result is in headers
           const hasResultInHeaders = /\[Result\s+"[^"]+"\]/.test(pgnWithEvals);
           const hasResultAtEnd = /\s+(1-0|0-1|1\/2-1\/2|\*)\s*$/.test(pgnWithEvals);
-          
+
           if (!hasResultInHeaders && !hasResultAtEnd) {
             // If result is missing, add it from headers or use "*"
             const result = finalHeaders?.result || "*";
@@ -137,15 +137,15 @@ function ReportPanel() {
               }
             }
           }
-          
+
           // Final validation: ensure PGN is not just headers
-          const moveText = pgnWithEvals.split('\n\n')[1] || "";
+          const moveText = pgnWithEvals.split("\n\n")[1] || "";
           if (!moveText || moveText.trim().length === 0) {
             console.error("Generated PGN has no moves, skipping save");
             hasSavedPgnRef.current = false;
             return;
           }
-          
+
           // Additional validation: ensure PGN has a reasonable number of moves
           // Count moves in the PGN text (approximate)
           const moveMatches = moveText.match(/\d+\.\s+\S+/g) || [];
@@ -154,12 +154,10 @@ function ReportPanel() {
             hasSavedPgnRef.current = false;
             return;
           }
-          
+
           // Check if this tab is associated with a local game
-          const localGameId = typeof window !== "undefined" 
-            ? sessionStorage.getItem(`${activeTab}_localGameId`)
-            : null;
-          
+          const localGameId = typeof window !== "undefined" ? sessionStorage.getItem(`${activeTab}_localGameId`) : null;
+
           if (localGameId) {
             // Update the GameRecord with the new PGN that includes evaluations
             await updateGameRecord(localGameId, { pgn: pgnWithEvals });
@@ -169,13 +167,11 @@ function ReportPanel() {
             }
           } else {
             // Check if this tab is associated with a Chess.com or Lichess game
-            const chessComGameUrl = typeof window !== "undefined"
-              ? sessionStorage.getItem(`${activeTab}_chessComGameUrl`)
-              : null;
-            const lichessGameId = typeof window !== "undefined"
-              ? sessionStorage.getItem(`${activeTab}_lichessGameId`)
-              : null;
-            
+            const chessComGameUrl =
+              typeof window !== "undefined" ? sessionStorage.getItem(`${activeTab}_chessComGameUrl`) : null;
+            const lichessGameId =
+              typeof window !== "undefined" ? sessionStorage.getItem(`${activeTab}_lichessGameId`) : null;
+
             if (chessComGameUrl) {
               // Save analyzed PGN for Chess.com game
               await saveAnalyzedGame(chessComGameUrl, pgnWithEvals);
@@ -197,12 +193,12 @@ function ReportPanel() {
           hasSavedPgnRef.current = false; // Reset flag on error
         }
       }, 500); // Increased delay to 500ms to ensure tree is fully updated after addAnalysis completes
-      
+
       return () => {
         clearTimeout(timeoutId);
       };
     }
-    
+
     // Reset the flag when analysis starts again
     if (inProgress) {
       hasSavedPgnRef.current = false;
@@ -276,11 +272,11 @@ const GameStats = memo(
               // Order like Chess.com: Brilliant, Great, Best, Interesting, Dubious, Mistake, Blunder
               const order: Record<string, number> = {
                 "!!": 1, // Brilliant
-                "!": 2,  // Great
-                "Best": 3, // Best
+                "!": 2, // Great
+                Best: 3, // Best
                 "!?": 4, // Interesting
                 "?!": 5, // Dubious
-                "?": 6,  // Mistake
+                "?": 6, // Mistake
                 "??": 7, // Blunder
               };
               return (order[a] || 99) - (order[b] || 99);

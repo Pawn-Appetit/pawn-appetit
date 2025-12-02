@@ -166,15 +166,14 @@ function LichessOrChessCom({
     const account = session.lichess.account;
     const lichessSession = session.lichess;
     let totalGames = account.count?.all ?? 0;
-    
+
     // Try to find database with exact match first, then try case-insensitive match
     let database = databases.find((db) => db.filename === `${account.username}_lichess.db3`) ?? null;
     if (!database) {
-      database = databases.find(
-        (db) => db.filename.toLowerCase() === `${account.username}_lichess.db3`.toLowerCase(),
-      ) ?? null;
+      database =
+        databases.find((db) => db.filename.toLowerCase() === `${account.username}_lichess.db3`.toLowerCase()) ?? null;
     }
-    
+
     // Ensure totalGames is at least equal to downloadedGames
     // This handles cases where account.count.all is outdated, incorrect, or unavailable
     // If we have downloaded games, the total should be at least equal to downloadedGames
@@ -220,7 +219,7 @@ function LichessOrChessCom({
           const dbDir = await appDataDir();
           const dbPath = await resolve(dbDir, "db", `${account.username}_lichess.db3`);
           const pgnPath = await resolve(dbDir, "db", `${account.username}_lichess.pgn`);
-          
+
           try {
             // Delete database file if it exists
             try {
@@ -228,14 +227,14 @@ function LichessOrChessCom({
             } catch {
               // Database file might not exist, ignore
             }
-            
+
             // Delete PGN file if it exists
             try {
               await remove(pgnPath);
             } catch {
               // PGN file might not exist, ignore
             }
-            
+
             // Delete analyzed games for this account
             try {
               const { removeAnalyzedGamesForAccount } = await import("@/utils/analyzedGames");
@@ -246,7 +245,7 @@ function LichessOrChessCom({
           } catch (error) {
             console.error("Error deleting account files:", error);
           }
-          
+
           // Remove session
           setSessions((sessions) => sessions.filter((s) => s.lichess?.account.id !== account.id));
         }}
@@ -290,11 +289,12 @@ function LichessOrChessCom({
     // Try to find database with exact match first, then try case-insensitive match
     let database = databases.find((db) => db.filename === `${session.chessCom?.username}_chesscom.db3`) ?? null;
     if (!database) {
-      database = databases.find(
-        (db) => db.filename.toLowerCase() === `${session.chessCom?.username}_chesscom.db3`.toLowerCase(),
-      ) ?? null;
+      database =
+        databases.find(
+          (db) => db.filename.toLowerCase() === `${session.chessCom?.username}_chesscom.db3`.toLowerCase(),
+        ) ?? null;
     }
-    
+
     // Ensure totalGames is at least equal to downloadedGames
     // This handles cases where stats are outdated, incorrect, or unavailable
     // If we have downloaded games, the total should be at least equal to downloadedGames
@@ -314,12 +314,12 @@ function LichessOrChessCom({
         setSessions={setSessions}
         logout={async () => {
           if (!session.chessCom) return;
-          
+
           // Delete database file and PGN file for this account
           const dbDir = await appDataDir();
           const dbPath = await resolve(dbDir, "db", `${session.chessCom.username}_chesscom.db3`);
           const pgnPath = await resolve(dbDir, "db", `${session.chessCom.username}_chesscom.pgn`);
-          
+
           try {
             // Delete database file if it exists
             try {
@@ -327,14 +327,14 @@ function LichessOrChessCom({
             } catch {
               // Database file might not exist, ignore
             }
-            
+
             // Delete PGN file if it exists
             try {
               await remove(pgnPath);
             } catch {
               // PGN file might not exist, ignore
             }
-            
+
             // Delete analyzed games for this account
             try {
               const { removeAnalyzedGamesForAccount } = await import("@/utils/analyzedGames");
@@ -345,7 +345,7 @@ function LichessOrChessCom({
           } catch (error) {
             console.error("Error deleting account files:", error);
           }
-          
+
           // Remove session
           setSessions((sessions) => sessions.filter((s) => s.chessCom?.username !== session.chessCom?.username));
         }}

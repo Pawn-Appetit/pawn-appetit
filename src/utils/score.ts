@@ -60,11 +60,7 @@ export function normalizeScore(score: ScoreValue, color: Color): number {
   return minMax(cp, -CP_CEILING, CP_CEILING);
 }
 
-function normalizeScores(
-  prev: ScoreValue,
-  next: ScoreValue,
-  color: Color,
-): { prevCP: number; nextCP: number } {
+function normalizeScores(prev: ScoreValue, next: ScoreValue, color: Color): { prevCP: number; nextCP: number } {
   return {
     prevCP: normalizeScore(prev, color),
     nextCP: normalizeScore(next, color),
@@ -73,11 +69,7 @@ function normalizeScores(
 
 export function getAccuracy(prev: ScoreValue, next: ScoreValue, color: Color): number {
   const { prevCP, nextCP } = normalizeScores(prev, next, color);
-  return minMax(
-    103.1668 * Math.exp(-0.04354 * (getWinChance(prevCP) - getWinChance(nextCP))) - 3.1669 + 1,
-    0,
-    100,
-  );
+  return minMax(103.1668 * Math.exp(-0.04354 * (getWinChance(prevCP) - getWinChance(nextCP))) - 3.1669 + 1, 0, 100);
 }
 
 export function getCPLoss(prev: ScoreValue, next: ScoreValue, color: Color): number {
@@ -130,11 +122,7 @@ function allAlternativesHopeless(prevMoves: BestMoves[], color: Color): boolean 
  * - Significant CP differences.
  * - Ignores small differences between equally hopeless moves (e.g. -1000 vs -900).
  */
-function hasClearlyBetterAlternative(
-  prevMoves: BestMoves[],
-  playedScore: ScoreValue,
-  color: Color,
-): boolean {
+function hasClearlyBetterAlternative(prevMoves: BestMoves[], playedScore: ScoreValue, color: Color): boolean {
   if (prevMoves.length === 0) return false;
 
   const playedCP = normalizeScore(playedScore, color);
@@ -223,8 +211,7 @@ export function getAnnotation(
 
   // Special case: throwing away a winning position
   // From mate/decisive advantage to lost/mate against.
-  const nextIsClearlyLosing =
-    nextCP < -300 || nextIsLosingMate || (next.type === "cp" && nextCP <= -300);
+  const nextIsClearlyLosing = nextCP < -300 || nextIsLosingMate || (next.type === "cp" && nextCP <= -300);
 
   if ((prevWasWinningMate || prevWasDecisive) && nextIsClearlyLosing && hasBetterAlternativeFlag) {
     return "??";
@@ -232,28 +219,19 @@ export function getAnnotation(
 
   // Blunder: loses >20% win probability OR >400cp from a reasonable position,
   // as long as a clearly better alternative exists.
-  if (
-    hasBetterAlternativeFlag &&
-    (winChanceDiff > 20 || (prevCP - nextCP > 400 && prevCP > 0))
-  ) {
+  if (hasBetterAlternativeFlag && (winChanceDiff > 20 || (prevCP - nextCP > 400 && prevCP > 0))) {
     return "??";
   }
 
   // Mistake: loses >10% win probability OR >200cp from a good position,
   // with a clearly better alternative available.
-  if (
-    hasBetterAlternativeFlag &&
-    (winChanceDiff > 10 || (prevCP - nextCP > 200 && prevCP > 100))
-  ) {
+  if (hasBetterAlternativeFlag && (winChanceDiff > 10 || (prevCP - nextCP > 200 && prevCP > 100))) {
     return "?";
   }
 
   // Dubious: loses >5% win chance OR >100cp from an equal / slightly better position,
   // and there is at least one somewhat better alternative.
-  if (
-    hasBetterAlternativeFlag &&
-    (winChanceDiff > 5 || (prevCP - nextCP > 100 && prevCP >= 0))
-  ) {
+  if (hasBetterAlternativeFlag && (winChanceDiff > 5 || (prevCP - nextCP > 100 && prevCP >= 0))) {
     return "?!";
   }
 
@@ -291,11 +269,7 @@ export function getAnnotation(
     if (prevMoves.length > 1) {
       const secondScore = prevMoves[1].score.value;
       const secondCP = normalizeScore(secondScore, color);
-      const { prevCP: bestVsSecondPrevCP, nextCP: bestVsSecondNextCP } = normalizeScores(
-        bestScore,
-        secondScore,
-        color,
-      );
+      const { prevCP: bestVsSecondPrevCP, nextCP: bestVsSecondNextCP } = normalizeScores(bestScore, secondScore, color);
       const bestWinChance = getWinChance(bestVsSecondPrevCP);
       const secondWinChance = getWinChance(bestVsSecondNextCP);
 
@@ -347,11 +321,7 @@ export function getAnnotation(
     if (prevMoves.length > 1) {
       const secondScore = prevMoves[1].score.value;
       const secondCP = normalizeScore(secondScore, color);
-      const { prevCP: bestVsSecondPrevCP, nextCP: bestVsSecondNextCP } = normalizeScores(
-        bestScore,
-        secondScore,
-        color,
-      );
+      const { prevCP: bestVsSecondPrevCP, nextCP: bestVsSecondNextCP } = normalizeScores(bestScore, secondScore, color);
       const bestWinChance = getWinChance(bestVsSecondPrevCP);
       const secondWinChance = getWinChance(bestVsSecondNextCP);
 

@@ -1,4 +1,5 @@
 import { save } from "@tauri-apps/plugin-dialog";
+import { INITIAL_FEN } from "chessops/fen";
 import { z } from "zod";
 import type { StoreApi } from "zustand";
 import { commands } from "@/bindings";
@@ -6,10 +7,9 @@ import { fileMetadataSchema } from "@/features/files/utils/file";
 import type { TreeStoreState } from "@/state/store/tree";
 import { createFile, getFileNameWithoutExtension, isTempImportFile } from "@/utils/files";
 import { unwrap } from "@/utils/unwrap";
-import { INITIAL_FEN } from "chessops/fen";
-import { getPGN, getMoveText, parsePGN } from "./chess";
+import { getMoveText, getPGN, parsePGN } from "./chess";
 import { formatDateToPGN } from "./format";
-import type { GameHeaders, TreeState, TreeNode } from "./treeReducer";
+import type { GameHeaders, TreeNode, TreeState } from "./treeReducer";
 
 const dbGameMetadataSchema = z.object({
   type: z.literal("db"),
@@ -78,12 +78,16 @@ export async function createTab({
     if (headers) {
       const parsedHeaders = tree.headers;
       // Check if parsed headers are complete (not just default values)
-      const hasCompleteHeaders = 
-        parsedHeaders.event && parsedHeaders.event !== "?" &&
-        parsedHeaders.site && parsedHeaders.site !== "?" &&
-        parsedHeaders.white && parsedHeaders.white !== "?" &&
-        parsedHeaders.black && parsedHeaders.black !== "?";
-      
+      const hasCompleteHeaders =
+        parsedHeaders.event &&
+        parsedHeaders.event !== "?" &&
+        parsedHeaders.site &&
+        parsedHeaders.site !== "?" &&
+        parsedHeaders.white &&
+        parsedHeaders.white !== "?" &&
+        parsedHeaders.black &&
+        parsedHeaders.black !== "?";
+
       if (hasCompleteHeaders) {
         // PGN has complete headers, preserve them (especially FEN which is the initial position)
         // Only update fields that are explicitly provided and missing in parsed headers
@@ -211,12 +215,8 @@ export async function saveTab(tab: Tab, store: StoreApi<TreeStoreState>) {
       glyphs: true,
       variations: true,
     })}\n\n`;
-    
-    await commands.writeGame(
-      tab.source.path,
-      tab?.gameNumber || 0,
-      pgn,
-    );
+
+    await commands.writeGame(tab.source.path, tab?.gameNumber || 0, pgn);
   } else if (tab.source?.type === "db") {
     const headers = store.getState().headers;
     const moves = `${getPGN(store.getState().root, {
@@ -252,7 +252,7 @@ function getVariationPGN(
   },
 ): string {
   let pgn = "";
-  
+
   // Get the move text for this node (getMoveText handles move numbers and formatting)
   if (node.san) {
     pgn += getMoveText(node, {
@@ -262,7 +262,7 @@ function getVariationPGN(
       isFirst,
     });
   }
-  
+
   // Continue with the main line (first child)
   if (node.children.length > 0) {
     pgn += getVariationPGN(node.children[0], {
@@ -273,7 +273,7 @@ function getVariationPGN(
       isFirst: false,
     });
   }
-  
+
   // Add sub-variations
   if (variations && node.children.length > 1) {
     for (let i = 1; i < node.children.length; i++) {
@@ -288,7 +288,7 @@ function getVariationPGN(
       pgn += ` (${subVariationPGN})`;
     }
   }
-  
+
   return pgn.trim();
 }
 
@@ -301,7 +301,7 @@ function getPgnHeadersText(headers: GameHeaders): string {
   text += `[White "${headers.white || "?"}"]\n`;
   text += `[Black "${headers.black || "?"}"]\n`;
   text += `[Result "${headers.result || "*"}"]\n`;
-  
+
   if (headers.white_elo) {
     text += `[WhiteElo "${headers.white_elo}"]\n`;
   }
@@ -333,7 +333,7 @@ function getPgnHeadersText(headers: GameHeaders): string {
     text += `[SetUp "1"]\n`;
     text += `[FEN "${headers.fen}"]\n`;
   }
-  
+
   return text;
 }
 
@@ -342,7 +342,7 @@ export async function reloadTab(tab: Tab): Promise<TreeState | undefined> {
 
   if (tab.source?.type === "file") {
     const game = unwrap(await commands.readGames(tab.source.path, 0, 0))[0];
-    
+
     // For variants files, parse as normal PGN (with variations) but display in variants view
     // Don't use isVariantsMode for parsing - that's only for special PGNs where all sequences are variations
     tree = await parsePGN(game, undefined, false);
