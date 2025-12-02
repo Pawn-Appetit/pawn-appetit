@@ -82,7 +82,7 @@ async function getFilesFromFilesSection(): Promise<PuzzleDatabaseInfo[]> {
           title: file.name.replace(".pgn", ""),
           description: "Custom puzzle collection",
           puzzleCount: unwrap(await commands.countPgnGames(file.path)),
-          storageSize: Number(stats.last_modified),
+          storageSize: BigInt(stats.size),
           path: file.path,
         };
       }),

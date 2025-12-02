@@ -62,7 +62,7 @@ type UnifiedDatabase =
       player_count: number;
       event_count: number;
       game_count: number;
-      storage_size: number;
+      storage_size: bigint;
     });
 
 function isSuccessDatabase(db: UnifiedDatabase): db is UnifiedDatabase & { type: "success" } {
@@ -82,7 +82,7 @@ function isPuzzleDatabase(db: UnifiedDatabase): db is UnifiedDatabase & {
   player_count: number;
   event_count: number;
   game_count: number;
-  storage_size: number;
+  storage_size: bigint;
 } {
   return db.dbType === "puzzle";
 }

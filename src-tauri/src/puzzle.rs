@@ -191,7 +191,7 @@ pub struct PuzzleDatabaseInfo {
     /// Number of puzzles in the database
     puzzle_count: i32,
     /// Size of the database file in bytes
-    storage_size: i32,
+    storage_size: i64,
     /// Full path to the database file
     path: String,
 }
@@ -249,7 +249,7 @@ pub async fn get_puzzle_db_info(
         }
     };
 
-    let storage_size = file_path.metadata()?.len() as i32;
+    let storage_size = file_path.metadata()?.len() as i64;
     let filename = file_path
         .file_name()
         .ok_or_else(|| {
