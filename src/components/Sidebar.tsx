@@ -90,7 +90,7 @@ export const linksdata = [
   },
   { icon: IconFiles, label: "files", url: "/files" },
   { icon: IconUsers, label: "accounts", url: "/accounts" },
-  { icon: IconPuzzle, label: "puzzles", url: null, isPuzzles: true },
+  { icon: IconPuzzle, label: "puzzles", url: "", isPuzzles: true },
   { icon: IconSchool, label: "learn", url: "/learn" },
 ];
 
@@ -140,7 +140,7 @@ export function SideBar() {
             <Menu.Dropdown>
               {burgerMenuLinks.map((link) => {
                 const IconComponent = link.props.icon;
-                const isPuzzles = link.props.url === null || (link.key as string) === "puzzles";
+                const isPuzzles = link.props.url === "" || (link.key as string) === "puzzles";
                 if (isPuzzles) {
                   return (
                     <Menu.Item
