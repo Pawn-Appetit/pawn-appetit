@@ -398,7 +398,44 @@ function getVariationPGN(
   if (node.children.length > 0) {
     const mainChild = node.children[0];
 
-    // Add sub-variations of this variation (siblings of the main child)
+    // Process the main line using getPGN recursively, which will:
+    // 1. Add the main child's move text with correct numbering
+    // 2. Add nested sub-variations of the main child (these appear right after mainChild's move)
+    // 3. Continue recursively with the main line, preserving all nested variations
+    // This ensures that deeply nested variations are preserved correctly
+    if (mainChild.san) {
+      // Determine if the first move needs special numbering
+      const isFirstInContinuation = !!node.san;
+      const isBlackMove = mainChild.halfMoves % 2 === 0;
+      const shouldUseIsFirst = isFirstInContinuation && isBlackMove;
+      
+      // Add the move text for the main child with correct numbering
+      pgn += getMoveText(mainChild, {
+        glyphs,
+        comments,
+        extraMarkups,
+        isFirst: shouldUseIsFirst,
+      });
+
+      // Use getPGN recursively to process the rest of the main line and all nested variations
+      // This will correctly handle deeply nested variations within the main line
+      // getPGN with root=false will process mainChild's children (not mainChild itself)
+      if (mainChild.children.length > 0) {
+        pgn += getPGN(mainChild, {
+          headers: null,
+          glyphs,
+          comments,
+          variations,
+          extraMarkups,
+          root: false,
+          path: null,
+        });
+      }
+    }
+
+    // Add top-level sub-variations of this variation (siblings of the main child)
+    // These are variations that appear at the same level as the main line within the variation
+    // They appear after the entire main line has been processed
     if (variations && node.children.length > 1) {
       const subVariationsPGN = node.children.slice(1).map((subVariation) => {
         return getVariationPGN(subVariation, {
@@ -414,27 +451,6 @@ function getVariationPGN(
           pgn += ` (${subVariation}) `;
         }
       }
-    }
-
-    // Continue with the main line of this variation
-    if (mainChild.children.length > 0) {
-      pgn += getPGN(mainChild, {
-        headers: null,
-        glyphs,
-        comments,
-        variations,
-        extraMarkups,
-        root: false,
-        path: null,
-      });
-    } else if (mainChild.san) {
-      // If mainChild has no children but has a move, output it
-      pgn += getMoveText(mainChild, {
-        glyphs,
-        comments,
-        extraMarkups,
-        isFirst: false,
-      });
     }
   }
 
@@ -584,7 +600,8 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
   }
 
   // Normal parsing mode (maintains main line and variations)
-  for (let i = 0; i < tokens.length; i++) {
+  let i = 0;
+  while (i < tokens.length) {
     const token = tokens[i];
 
     if (token.type === "Comment") {
@@ -624,10 +641,11 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
       }
 
       root.comment = comment.text;
+      i++;
     } else if (token.type === "ParenOpen") {
       const variation = [];
       let subvariations = 0;
-      i++;
+      i++; // Skip the opening paren
       while (i < tokens.length && (subvariations > 0 || tokens[i].type !== "ParenClose")) {
         if (tokens[i].type === "ParenOpen") {
           subvariations++;
@@ -637,16 +655,36 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
         variation.push(tokens[i]);
         i++;
       }
+      // The loop exits when we find the matching closing paren
+      // At this point, i points to the closing paren (which we don't include in variation)
+      // We need to skip it so the main loop continues with the next token
+      if (i < tokens.length && tokens[i].type === "ParenClose") {
+        i++; // Skip the closing paren
+      }
       // Parse variation normally to maintain nested variations
       // Variations should be added to the variation parent node (the node before the current move)
       // Use variationParentNode.halfMoves to ensure correct move numbering
       // Use isVariantsMode=false to parse variations correctly (they should be added as siblings)
       const variationHalfMoves = variationParentNode.halfMoves;
       const newTree = innerParsePGN(variation, variationParentNode.fen, variationHalfMoves, false);
-      if (newTree.root.children.length > 0) {
-        variationParentNode.children.push(newTree.root.children[0]);
+      // Add ALL children from the parsed variation tree
+      // The first child is the main line of the variation (which contains all nested sub-variations)
+      // Additional children are top-level variations within the variation (siblings of the main line)
+      // All nested sub-variations within the main line are already preserved within the main line tree structure
+      for (const child of newTree.root.children) {
+        variationParentNode.children.push(child);
       }
+      // IMPORTANT: After processing a variation, the main line should continue from the current root
+      // The root remains the same (it's the node after the move where the variation was attached)
+      // Subsequent moves in the main line will be added as children of the current root
+      // No need to change root or variationParentNode here - the loop will continue and process
+      // the next tokens (which should be moves in the main line after the variation)
+      // Note: i was already incremented to skip the closing paren, so we continue without incrementing
+      continue;
     } else if (token.type === "ParenClose") {
+      // Should not normally happen in normal parsing mode, but handle it
+      i++;
+      continue;
     } else if (token.type === "Nag") {
       const nagAnnotation = NAG_INFO.get(token.value) || "";
       if (nagAnnotation && ANNOTATION_INFO[nagAnnotation]) {
@@ -665,15 +703,18 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
           return aInfo.nag - bInfo.nag;
         });
       }
+      i++;
     } else if (token.type === "San") {
       const [pos, error] = positionFromFen(root.fen);
       if (error) {
+        i++;
         continue;
       }
       // Parse the SAN (no longer support "*" as it's reserved for game result)
       const sanValue = token.value;
       const move = parseSan(pos, sanValue);
       if (!move) {
+        i++;
         continue;
       }
       const san = makeSan(pos, move);
@@ -694,8 +735,12 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
       variationParentNode = root;
       prevNode = root;
       root = newTree;
+      i++;
     } else if (token.type === "Outcome") {
       break;
+    } else {
+      // Unknown token type, skip it
+      i++;
     }
   }
 

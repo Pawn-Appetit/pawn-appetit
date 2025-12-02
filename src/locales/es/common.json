@@ -28,9 +28,12 @@
     "requireName": "El nombre es obligatorio",
     "requirePath": "La ruta es obligatoria",
     "pgnFile": "Archivo PGN",
+    "pgnFiles": "Archivos PGN",
     "pgnGame": "Partida en PGN",
     "or": "O",
     "clickToSelectPGN": "Haga clic para seleccionar un archivo PGN",
+    "clickToSelectMultiplePGN": "Haga clic para seleccionar archivos PGN (se admite selección múltiple)",
+    "multipleFiles": "{{count}} archivos seleccionados",
     "size": "Tamaño",
     "generalSettings": "Configuración general",
     "data": "Datos",
@@ -54,9 +57,32 @@
       "closeWithoutSaving": "Cerrar sin guardar"
     },
     "loading": "Cargando...",
+    "grid": "Cuadrícula",
+    "table": "Tabla",
+    "sort": "Ordenar",
+    "sortDirection": "Dirección de ordenamiento",
+    "view": "Vista",
     "continue": "Continuar",
     "review": "Revisar",
-    "noGameSelected": "Ningún juego seleccionado"
+    "noGameSelected": "Ningún juego seleccionado",
+    "importMore": "Importar más",
+    "close": "Cerrar",
+    "import": "Importar",
+    "all": "Todos",
+    "convert": "Convertir",
+    "copied": "Copiado",
+    "copy": "Copiar",
+    "update": "Actualizar",
+    "reload": "Recargar",
+    "reloadFile": "Recargar archivo",
+    "namePlaceholder": "Nombre",
+    "details": "Detalles",
+    "fileSavedSuccessfully": "Archivo guardado exitosamente",
+    "failedToSaveFile": "Error al guardar el archivo",
+    "puzzlesGeneratedSuccessfully": "{{count}} puzzles generados exitosamente",
+    "failedToGeneratePuzzles": "Error al generar puzzles",
+    "generatePuzzles": "Generar Puzzles",
+    "clearAllAnalyzedGames": "Limpiar todos los análisis guardados"
   },
   "chess": {
     "checkmate": "Jaque mate",
@@ -152,6 +178,238 @@
       "unknown": "Error desconocido"
     }
   },
+  "error": {
+    "title": "Ocurrió un error",
+    "unexpectedError": "Error inesperado:",
+    "copyStackTrace": "Copiar rastreo de pila",
+    "reportPrompt": "Por favor, reporta esto en",
+    "reportOr": "o en el"
+  },
+  "analysis": {
+    "noEnginesInstalled": "No hay motores instalados. Por favor",
+    "addEngine": "agrega un motor",
+    "first": "primero.",
+    "checkOpponentThreat": "Revisar la amenaza del oponente",
+    "engineSpeed": "Qué tan rápido está corriendo el motor",
+    "killEngine": "Detener motor",
+    "enableWDL": "Habilitar WDL"
+  },
+  "logs": {
+    "filterAll": "Todos",
+    "filterGUI": "GUI",
+    "filterEngine": "Motor",
+    "noEnginesLoaded": "No hay motores cargados",
+    "noLogsFor": "No hay logs para",
+    "engine": "motor"
+  },
+  "moves": {
+    "transposition": "Transposición"
+  },
+  "game": {
+    "timeSettings": "Configuración de tiempo",
+    "timeControl": "Tiempo",
+    "unlimited": "Ilimitado",
+    "time": "Tiempo",
+    "increment": "Incremento",
+    "sameTimeControl": "Mismo control de tiempo",
+    "noEnginesAvailable": "No hay motores de ajedrez disponibles",
+    "noEnginesAvailableDesc": "Actualmente no hay motores de ajedrez instalados o detectados en tu sistema. Para jugar contra un motor, necesitarás instalar uno primero.",
+    "installEngine": "Instalar motor",
+    "selectEngine": "Seleccionar motor",
+    "openingFor": "apertura para",
+    "startingPosition": "Posición inicial",
+    "fen": "Posición FEN",
+    "fenDescription": "Ingresa una posición FEN o deja vacío para la posición inicial estándar",
+    "applyFen": "Aplicar FEN",
+    "resetFen": "Restablecer a la posición inicial",
+    "invalidFen": "Posición FEN inválida"
+  },
+  "databases": {
+    "selectDatabasePrompt": "Selecciona una base de datos",
+    "doubleclickTip": "Haz doble clic en una base de datos para seleccionarla",
+    "loadError": "Error al cargar la base de datos",
+    "reason": "Razón",
+    "checkFileError": "Verifica si el archivo existe y tienes permiso para leerlo",
+    "noTournamentSelected": "No hay torneo seleccionado",
+    "noPlayerSelected": "No hay jugador seleccionado",
+    "processingPlayerData": "Procesando datos del jugador",
+    "searchPlaceholder": "Buscar bases de datos...",
+    "noDatabasesFound": "No se encontraron bases de datos",
+    "player1": "Jugador 1",
+    "player2": "Jugador 2",
+    "on": "Activado",
+    "off": "Desactivado",
+    "analyzeGame": "Analizar partida",
+    "deleteGame": "Eliminar partida",
+    "fideInfo": {
+      "title": "Información del jugador FIDE",
+      "sex": "Sexo: {{sex}}",
+      "born": "Nacido: {{birthday}}",
+      "standard": "Estándar",
+      "rapid": "Rápida",
+      "blitz": "Blitz"
+    },
+    "playerTable": {
+      "minElo": "ELO mínimo",
+      "maxElo": "ELO máximo"
+    },
+    "tournamentCard": {
+      "tabs": {
+        "games": "Partidas",
+        "leaderboard": "Clasificación"
+      }
+    }
+  },
+  "accounts": {
+    "title": "Cuentas",
+    "viewDatabases": "Ver bases de datos del jugador",
+    "processingGames": "Procesando partidas...",
+    "databaseLoadError": "Error al cargar la base de datos",
+    "searchPlaceholder": "Buscar cuentas...",
+    "addAccount": "Agregar cuenta",
+    "name": "Nombre",
+    "website": "Sitio web",
+    "username": "Nombre de usuario",
+    "loginWithBrowser": "Iniciar sesión con el navegador",
+    "loginWithBrowserDesc": "Permite descargas de partidas más rápidas",
+    "selectPlayer": "Seleccionar jugador",
+    "enterUsername": "Ingresa tu nombre de usuario",
+    "noAccountsFound": "No se encontraron cuentas",
+    "personalCard": {
+      "fideInfo": "Información FIDE",
+      "tabs": {
+        "overview": "Resumen",
+        "ratings": "Puntuaciones",
+        "openings": "Aperturas"
+      }
+    },
+    "dateRange": {
+      "allTime": "Todo el tiempo"
+    },
+    "selector": {
+      "allWebsites": "Todos los sitios web",
+      "allAccounts": "Todas las cuentas",
+      "website": "Sitio web",
+      "account": "Cuenta"
+    },
+    "overview": {
+      "clickToSeeMonthDetails": "Haz clic para ver los detalles del mes",
+      "clickToReturnToYears": "Haz clic para volver a la vista de años"
+    },
+    "accountCard": {
+      "mainAccount": "Cuenta principal",
+      "setAsMainAccount": "Establecer como cuenta principal",
+      "updateStats": "Actualizar estadísticas",
+      "downloadGames": "Descargar partidas",
+      "removeAccount": "Eliminar cuenta",
+      "downloaded": "Descargado",
+      "gamesCount": "{{count}} partidas",
+      "editName": "Editar nombre",
+      "lastUpdate": "Última actualización",
+      "saveChanges": "Guardar cambios",
+      "cancelEdit": "Cancelar edición"
+    }
+  },
+  "practice": {
+    "noPositionsYet": "aún no hay posiciones",
+    "noLogsYet": "Aún no hay logs",
+    "adjustSearchCriteria": "Ajusta los criterios de búsqueda para ver algunos logs",
+    "hintMessage": "Pista: Busca oportunidades tácticas o patrones en la posición"
+  },
+  "repertoire": {
+    "maxDepth": "Profundidad máxima:",
+    "totalMoves": "Movimientos totales:",
+    "analyzing": "Analizando repertorio",
+    "noMissingMoves": "No hay movimientos faltantes",
+    "missingMoves": "Movimientos faltantes",
+    "refreshMoves": "Actualizar movimientos",
+    "variations": "Variaciones",
+    "markAsStartHint": "Marcar como posición inicial",
+    "noMissingMovesFound": "No se encontraron movimientos faltantes",
+    "practicePositions": "Posiciones de práctica",
+    "practiceLogs": "Logs de práctica"
+  },
+  "notifications": {
+    "failedToOpenFile": "Error al abrir el archivo",
+    "newVersionAvailable": "Nueva versión disponible",
+    "updating": "Actualizando",
+    "downloadingUpdate": "Descargando e instalando actualización...",
+    "clearAllData": "Limpiar todos los datos",
+    "dataCleared": "Datos limpiados",
+    "dataClearedMessage": "Todos los datos guardados han sido limpiados. La aplicación se recargará.",
+    "failedToClearData": "Error al limpiar los datos",
+    "openingLogs": "Abriendo logs",
+    "failedToOpenLogFile": "Error al abrir el archivo de log",
+    "aboutTitle": "Pawn Appétit",
+    "menuError": "Error de menú",
+    "failedToCreateMenu": "Error al crear el menú de la aplicación",
+    "versionReadyToInstall": "La versión {{version}} está lista para instalar",
+    "updatingApplication": "Actualizando aplicación",
+    "updateCompleted": "Actualización completada",
+    "appWillRestart": "La aplicación se reiniciará para aplicar la actualización",
+    "updateFailed": "Error en la actualización"
+  },
+  "dashboard": {
+    "noMainAccount": "No hay cuenta principal",
+    "suggestions": {
+      "analyzeLastGame": "Analiza tu última partida",
+      "exploreOpenings": "Explora aperturas populares"
+    },
+    "timeControlCards": {
+      "classicalDesc": "Juega partidas de ajedrez clásico",
+      "rapidDesc": "Juega partidas rápidas de ritmo acelerado",
+      "blitzDesc": "Juega partidas blitz de ritmo rápido",
+      "bulletDesc": "Juega partidas bullet ultra rápidas"
+    },
+    "tabs": {
+      "local": "Local",
+      "lichess": "Lichess"
+    },
+    "tableHeaders": {
+      "opponent": "Oponente",
+      "color": "Color",
+      "result": "Resultado",
+      "accuracy": "Precisión",
+      "moves": "Movimientos",
+      "date": "Fecha",
+      "account": "Cuenta"
+    },
+    "suggestedForYou": "Sugerido para ti",
+    "dailyGoals": "Objetivos diarios"
+  },
+  "databaseOptions": {
+    "player": "Jugador",
+    "search": "Buscar",
+    "color": "Color",
+    "result": "Resultado",
+    "any": "Cualquiera",
+    "whiteWon": "Ganaron las blancas",
+    "draw": "Tablas",
+    "blackWon": "Ganaron las negras",
+    "from": "Desde",
+    "to": "Hasta",
+    "startDate": "Fecha de inicio",
+    "endDate": "Fecha de finalización",
+    "position": "Posición",
+    "exact": "Exacta",
+    "partial": "Parcial",
+    "currentPosition": "Posición actual",
+    "similarStructure": "Estructura similar",
+    "empty": "Vacío",
+    "since": "Desde",
+    "until": "Hasta",
+    "pickDate": "Seleccionar fecha",
+    "playerUsername": "Nombre de usuario del jugador",
+    "selectColor": "Seleccionar color"
+  },
+  "gameInfo": {
+    "unknownEvent": "Evento desconocido",
+    "unknownSite": "Sitio desconocido",
+    "unknownElo": "ELO desconocido",
+    "openingFor": "apertura para",
+    "unknownPlaceholder": "?",
+    "unknownDate": "????.??.??"
+  },
   "units": {
     "count": "{{count, number}}",
     "bytes": "{{bytes, bytes}}",
@@ -244,6 +502,7 @@
       "files": "Archivos",
       "databases": "Bases de datos",
       "engines": "Motores",
+      "puzzles": "Puzzles",
       "learn": "Aprender",
       "settings": "Configuración",
       "keyboardShortcuts": "Atajos de teclado"

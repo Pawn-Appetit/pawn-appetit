@@ -123,7 +123,12 @@ export default function DatabasesPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortState>({ field: "name", direction: "asc" });
-  const [category, setCategory] = useState<DatabaseCategory>("all");
+  // Initialize category from search.tab parameter
+  const [category, setCategory] = useState<DatabaseCategory>(() => {
+    if (search.tab === "puzzles") return "puzzles";
+    if (search.tab === "games") return "games";
+    return "all";
+  });
   const [convertLoading, setConvertLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
@@ -132,6 +137,19 @@ export default function DatabasesPage() {
   const [referenceDatabase, setReferenceDatabase] = useAtom(referenceDbAtom);
 
   const { layout } = useResponsiveLayout();
+
+  // Update category when search.tab changes
+  useEffect(() => {
+    if (search.tab === "puzzles") {
+      setCategory("puzzles");
+    } else if (search.tab === "games") {
+      setCategory("games");
+    } else if (!search.tab && !search.value) {
+      // Only reset to "all" if there's no tab and no value parameter
+      // This prevents resetting when navigating away from add modal
+      setCategory("all");
+    }
+  }, [search.tab, search.value]);
 
   useEffect(() => {
     if (search.value === "add") {
@@ -144,7 +162,7 @@ export default function DatabasesPage() {
 
       navigate({
         to: "/databases",
-        search: {},
+        search: search.tab ? { tab: search.tab } : {},
         replace: true,
       });
     }
@@ -238,12 +256,20 @@ export default function DatabasesPage() {
     { value: "games", label: t("features.databases.card.games", "Games") },
   ];
 
+  // Determine title and search placeholder based on current tab
+  const headerTitle = search.tab === "puzzles" 
+    ? t("features.sidebar.puzzles", "Puzzles")
+    : t("features.databases.title");
+  const searchPlaceholder = search.tab === "puzzles"
+    ? "Search puzzles"
+    : "Search databases";
+
   return (
     <>
       <GenericHeader
-        title={t("features.databases.title")}
+        title={headerTitle}
         folder="db"
-        searchPlaceholder="Search databases"
+        searchPlaceholder={searchPlaceholder}
         query={query}
         setQuery={setQuery}
         sortOptions={sortOptions}

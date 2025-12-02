@@ -14,7 +14,9 @@ export const Route = createFileRoute("/databases/")({
   validateSearch: searchSchema,
   beforeLoad: async ({ search }) => {
     const { database } = activeDatabaseViewStore.getState();
-    if (database && !search.value) {
+    // Don't redirect if there's a tab parameter (puzzles or games)
+    // This allows direct navigation to the puzzles tab
+    if (database && !search.value && !search.tab) {
       throw redirect({
         to: "/databases/$databaseId",
         params: { databaseId: database.title },
