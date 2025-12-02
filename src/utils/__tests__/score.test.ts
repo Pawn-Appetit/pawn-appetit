@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { formatScore, getAccuracy, getAnnotation, getCPLoss, getWinChance } from "@/utils/score";
+import type { BestMoves } from "../../bindings/generated";
 
 test("should format a positive cp score correctly", () => {
   expect(formatScore({ type: "cp", value: 50 })).toBe("+0.50");
@@ -33,7 +34,7 @@ test("should calculate the cp loss correctly", () => {
 test("should annotate as ??", () => {
   // Need to provide prevMoves with a clearly better alternative (at least 100cp better)
   // For ??, we need to lose >400cp from a reasonable position (prevCP > 0)
-  const betterAlternative = [
+  const betterAlternative: BestMoves[] = [
     {
       depth: 1,
       multipv: 1,
@@ -60,7 +61,7 @@ test("should annotate as ?", () => {
   // Important: To avoid ??, we need: winChanceDiff <= 20 AND prevCP - nextCP <= 400
   // Important: To avoid !?, we need: nextCP <= -100 OR (bestWinChance - currentWinChance > 5)
   // Important: The move parameter should NOT match the best move to avoid "Best" annotation
-  const betterAlternative = [
+  const betterAlternative: BestMoves[] = [
     {
       depth: 1,
       multipv: 1,
@@ -96,7 +97,7 @@ test("should annotate as ?!", () => {
   // For ?!, we need: hasBetterAlternativeFlag && (winChanceDiff > 5 || (prevCP - nextCP > 100 && prevCP >= 0))
   // Important: To avoid ?, we need: winChanceDiff <= 10 AND (prevCP - nextCP <= 200 OR prevCP <= 100)
   // Important: The move parameter should NOT match the best move to avoid "Best" annotation
-  const betterAlternative = [
+  const betterAlternative: BestMoves[] = [
     {
       depth: 1,
       multipv: 1,
