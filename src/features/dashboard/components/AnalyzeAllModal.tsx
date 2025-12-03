@@ -8,6 +8,7 @@ export type AnalysisSpeed = "express" | "swift" | "focused" | "advanced" | "deep
 export interface AnalyzeAllConfig {
   speed: AnalysisSpeed;
   depth: number;
+  analyzeMode: "all" | "unanalyzed";
 }
 
 const ANALYSIS_OPTIONS: Record<AnalysisSpeed, { label: string; depth: number }> = {
@@ -27,9 +28,10 @@ interface AnalyzeAllModalProps {
     isCancelled: () => boolean,
   ) => Promise<void>;
   gameCount: number;
+  unanalyzedGameCount?: number;
 }
 
-export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount }: AnalyzeAllModalProps) {
+export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount, unanalyzedGameCount, analyzeMode = "unanalyzed" }: AnalyzeAllModalProps) {
   const { t } = useTranslation();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
@@ -39,13 +41,22 @@ export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount }: Analy
     initialValues: {
       speed: "focused",
       depth: 16,
+      analyzeMode: analyzeMode,
     },
   });
 
+  // Calculate the actual game count based on selected mode
+  const actualGameCount = form.values.analyzeMode === "unanalyzed" 
+    ? (unanalyzedGameCount ?? gameCount)
+    : gameCount;
+
   const handleSubmit = async () => {
     const selectedOption = ANALYSIS_OPTIONS[form.values.speed];
+    const countToAnalyze = form.values.analyzeMode === "unanalyzed" 
+      ? (unanalyzedGameCount ?? gameCount)
+      : gameCount;
     setIsAnalyzing(true);
-    setProgress({ current: 0, total: gameCount });
+    setProgress({ current: 0, total: countToAnalyze });
     cancelledRef.current = false;
 
     try {
@@ -53,6 +64,7 @@ export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount }: Analy
         {
           speed: form.values.speed,
           depth: selectedOption.depth,
+          analyzeMode: form.values.analyzeMode,
         },
         (current, total) => {
           setProgress({ current, total });
@@ -76,7 +88,8 @@ export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount }: Analy
 
   const handleStop = () => {
     cancelledRef.current = true;
-    setIsAnalyzing(false);
+    // Don't set isAnalyzing to false immediately - let the onAnalyze callback handle it
+    // This ensures the cancellation is properly propagated
   };
 
   // Reset progress when modal closes
@@ -93,11 +106,22 @@ export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount }: Analy
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack gap="md">
           <Text size="sm" c="dimmed">
-            Select analysis depth for {gameCount} {gameCount === 1 ? "game" : "games"}. This will analyze all games
+            Select analysis depth for {actualGameCount} {actualGameCount === 1 ? "game" : "games"}. This will analyze games
             shown in the dashboard using the default engine.
           </Text>
 
-          <Radio.Group {...form.getInputProps("speed")} disabled={isAnalyzing}>
+          <Radio.Group
+            label="Analyze"
+            {...form.getInputProps("analyzeMode")}
+            disabled={isAnalyzing}
+          >
+            <Stack gap="xs">
+              <Radio value="unanalyzed" label="Only unanalyzed games" />
+              <Radio value="all" label="All games (re-analyze)" />
+            </Stack>
+          </Radio.Group>
+
+          <Radio.Group label="Analysis Depth" {...form.getInputProps("speed")} disabled={isAnalyzing}>
             <Stack gap="xs">
               {Object.entries(ANALYSIS_OPTIONS).map(([key, option]) => (
                 <Radio key={key} value={key} label={option.label} />

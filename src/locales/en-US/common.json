@@ -350,6 +350,7 @@
   },
   "dashboard": {
     "noMainAccount": "No main account",
+    "estimatedElo": "Est. Elo",
     "suggestions": {
       "analyzeLastGame": "Analyze your last game",
       "exploreOpenings": "Explore popular openings"

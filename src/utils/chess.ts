@@ -490,12 +490,10 @@ export async function getOpening(root: TreeNode, position: number[]): Promise<st
   if (tree === null) {
     return "";
   }
+  // Directly search by FEN without backtracking - this ensures we match by position, not move order
   const res = await commands.getOpeningFromFen(tree.fen);
   if (res.status === "error") {
-    if (position.length === 0) {
-      return "";
-    }
-    return getOpening(root, position.slice(0, -1));
+    return "";
   }
   return res.data;
 }

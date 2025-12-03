@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { AnalysisPreview } from "@/components/AnalysisPreview";
 import { getAnalyzedGame } from "@/utils/analyzedGames";
 import { getGameStats, parsePGN } from "@/utils/chess";
+import { calculateEstimatedElo } from "@/utils/eloEstimation";
 
 interface LichessGame {
   id: string;
@@ -27,16 +28,25 @@ interface GameStats {
 interface LichessGamesTabProps {
   games: LichessGame[];
   lichessUsernames: string[];
+  selectedUser?: string | null;
+  isLoading?: boolean;
   onAnalyzeGame: (game: LichessGame) => void;
   onAnalyzeAll?: () => void;
 }
 
-export function LichessGamesTab({ games, lichessUsernames, onAnalyzeGame, onAnalyzeAll }: LichessGamesTabProps) {
+export function LichessGamesTab({ games, lichessUsernames, selectedUser, isLoading = false, onAnalyzeGame, onAnalyzeAll }: LichessGamesTabProps) {
   const { t } = useTranslation();
   const [gameStats, setGameStats] = useState<Map<string, GameStats>>(new Map());
   const [analyzedPgns, setAnalyzedPgns] = useState<Map<string, string>>(new Map());
   const [page, setPage] = useState(1);
   const itemsPerPage = 25;
+
+  // Debug: log when isLoading changes
+  useEffect(() => {
+    if (isLoading) {
+      console.log("LichessGamesTab: isLoading = true");
+    }
+  }, [isLoading]);
 
   // Load analyzed PGNs for preview
   useEffect(() => {
@@ -102,7 +112,17 @@ export function LichessGamesTab({ games, lichessUsernames, onAnalyzeGame, onAnal
           const tree = await parsePGN(game.pgn);
           const stats = getGameStats(tree.root);
 
-          const isUserWhite = lichessUsernames.includes(game.players.white.user?.name || "");
+          // If a specific user is selected, use that user to determine account vs opponent
+          const gameWhiteName = game.players.white.user?.name || "";
+          const gameBlackName = game.players.black.user?.name || "";
+          const accountUsername = selectedUser && selectedUser !== "all" 
+            ? selectedUser 
+            : lichessUsernames.find(u => 
+                u.toLowerCase() === gameWhiteName.toLowerCase() || 
+                u.toLowerCase() === gameBlackName.toLowerCase()
+              ) || gameWhiteName;
+          
+          const isUserWhite = (gameWhiteName || "").toLowerCase() === (accountUsername || "").toLowerCase();
           const userColor = isUserWhite ? "white" : "black";
 
           const accuracy = userColor === "white" ? stats.whiteAccuracy : stats.blackAccuracy;
@@ -163,6 +183,17 @@ export function LichessGamesTab({ games, lichessUsernames, onAnalyzeGame, onAnal
     setPage(1);
   }, [games.length]);
 
+  if (isLoading) {
+    return (
+      <Stack gap="xs" align="center" justify="center" style={{ minHeight: "200px" }}>
+        <Loader size="md" />
+        <Text size="sm" c="dimmed">
+          Loading...
+        </Text>
+      </Stack>
+    );
+  }
+
   return (
     <Stack gap="xs">
       <ScrollArea h={{ base: 200, sm: 220, md: 240, lg: 260 }} type="auto">
@@ -174,6 +205,7 @@ export function LichessGamesTab({ games, lichessUsernames, onAnalyzeGame, onAnal
               <Table.Th>Result</Table.Th>
               <Table.Th>Accuracy</Table.Th>
               <Table.Th>ACPL</Table.Th>
+              <Table.Th>{t("dashboard.estimatedElo")}</Table.Th>
               <Table.Th>Moves</Table.Th>
               <Table.Th>Account</Table.Th>
               <Table.Th>Date</Table.Th>
@@ -188,7 +220,18 @@ export function LichessGamesTab({ games, lichessUsernames, onAnalyzeGame, onAnal
           </Table.Thead>
           <Table.Tbody>
             {paginatedGames.map((g) => {
-            const isUserWhite = lichessUsernames.includes(g.players.white.user?.name || "");
+            // If a specific user is selected, use that user to determine account vs opponent
+            // Otherwise, use the lichessUsernames list
+            const gameWhiteName = g.players.white.user?.name || "";
+            const gameBlackName = g.players.black.user?.name || "";
+            const accountUsername = selectedUser && selectedUser !== "all" 
+              ? selectedUser 
+              : lichessUsernames.find(u => 
+                  u.toLowerCase() === gameWhiteName.toLowerCase() || 
+                  u.toLowerCase() === gameBlackName.toLowerCase()
+                ) || gameWhiteName;
+            
+            const isUserWhite = (gameWhiteName || "").toLowerCase() === (accountUsername || "").toLowerCase();
             const opponent = isUserWhite ? g.players.black : g.players.white;
             const userAccount = isUserWhite ? g.players.white : g.players.black;
             const color = isUserWhite ? t("chess.white") : t("chess.black");
@@ -227,6 +270,17 @@ export function LichessGamesTab({ games, lichessUsernames, onAnalyzeGame, onAnal
                   {stats ? (
                     <Text size="xs" fw={500}>
                       {stats.acpl.toFixed(1)}
+                    </Text>
+                  ) : (
+                    <Text size="xs" c="dimmed">
+                      -
+                    </Text>
+                  )}
+                </Table.Td>
+                <Table.Td>
+                  {stats && stats.acpl > 0 ? (
+                    <Text size="xs" fw={500}>
+                      {calculateEstimatedElo(stats.acpl)}
                     </Text>
                   ) : (
                     <Text size="xs" c="dimmed">

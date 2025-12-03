@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AnalysisPreview } from "@/components/AnalysisPreview";
 import { getAnalyzedGame } from "@/utils/analyzedGames";
+import { calculateEstimatedElo } from "@/utils/eloEstimation";
 import type { GameRecord } from "@/utils/gameRecords";
 import { calculateGameStats, type GameStats } from "@/utils/gameRecords";
 
@@ -143,6 +144,7 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
               <Table.Th>Result</Table.Th>
               <Table.Th>Accuracy</Table.Th>
               <Table.Th>ACPL</Table.Th>
+              <Table.Th>{t("dashboard.estimatedElo")}</Table.Th>
               <Table.Th>Moves</Table.Th>
               <Table.Th>Date</Table.Th>
               <Table.Th>
@@ -205,6 +207,17 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
                   {stats ? (
                     <Text size="xs" fw={500}>
                       {stats.acpl.toFixed(1)}
+                    </Text>
+                  ) : (
+                    <Text size="xs" c="dimmed">
+                      -
+                    </Text>
+                  )}
+                </Table.Td>
+                <Table.Td>
+                  {stats && stats.acpl > 0 ? (
+                    <Text size="xs" fw={500}>
+                      {calculateEstimatedElo(stats.acpl)}
                     </Text>
                   ) : (
                     <Text size="xs" c="dimmed">

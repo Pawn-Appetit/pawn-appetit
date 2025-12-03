@@ -30,6 +30,8 @@ interface GamesHistoryCardProps {
   lichessUsernames: string[];
   selectedChessComUser: string | null;
   selectedLichessUser: string | null;
+  isLoadingChessComGames?: boolean;
+  isLoadingLichessGames?: boolean;
   onChessComUserChange: (user: string | null) => void;
   onLichessUserChange: (user: string | null) => void;
   onRefreshChessCom: () => void;
@@ -53,6 +55,8 @@ export function GamesHistoryCard({
   lichessUsernames,
   selectedChessComUser,
   selectedLichessUser,
+  isLoadingChessComGames = false,
+  isLoadingLichessGames = false,
   onChessComUserChange,
   onLichessUserChange,
   onRefreshChessCom,
@@ -123,6 +127,8 @@ export function GamesHistoryCard({
           <ChessComGamesTab
             games={chessComGames}
             chessComUsernames={chessComUsernames}
+            selectedUser={selectedChessComUser}
+            isLoading={isLoadingChessComGames}
             onAnalyzeGame={onAnalyzeChessComGame}
             onAnalyzeAll={onAnalyzeAllChessCom}
           />
@@ -132,6 +138,8 @@ export function GamesHistoryCard({
           <LichessGamesTab
             games={lichessGames}
             lichessUsernames={lichessUsernames}
+            selectedUser={selectedLichessUser}
+            isLoading={isLoadingLichessGames}
             onAnalyzeGame={onAnalyzeLichessGame}
             onAnalyzeAll={onAnalyzeAllLichess}
           />

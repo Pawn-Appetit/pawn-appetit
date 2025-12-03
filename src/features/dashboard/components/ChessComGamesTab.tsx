@@ -1,9 +1,10 @@
-import { Avatar, Badge, Button, Group, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
+import { Avatar, Badge, Button, Group, Loader, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AnalysisPreview } from "@/components/AnalysisPreview";
 import { getAnalyzedGame } from "@/utils/analyzedGames";
 import { getGameStats, parsePGN } from "@/utils/chess";
+import { calculateEstimatedElo } from "@/utils/eloEstimation";
 import type { ChessComGame } from "@/utils/chess.com/api";
 
 interface GameStats {
@@ -14,16 +15,25 @@ interface GameStats {
 interface ChessComGamesTabProps {
   games: ChessComGame[];
   chessComUsernames: string[];
+  selectedUser?: string | null;
+  isLoading?: boolean;
   onAnalyzeGame: (game: ChessComGame) => void;
   onAnalyzeAll?: () => void;
 }
 
-export function ChessComGamesTab({ games, chessComUsernames, onAnalyzeGame, onAnalyzeAll }: ChessComGamesTabProps) {
+export function ChessComGamesTab({ games, chessComUsernames, selectedUser, isLoading = false, onAnalyzeGame, onAnalyzeAll }: ChessComGamesTabProps) {
   const { t } = useTranslation();
   const [gameStats, setGameStats] = useState<Map<string, GameStats>>(new Map());
   const [analyzedPgns, setAnalyzedPgns] = useState<Map<string, string>>(new Map());
   const [page, setPage] = useState(1);
   const itemsPerPage = 25;
+
+  // Debug: log when isLoading changes
+  useEffect(() => {
+    if (isLoading) {
+      console.log("ChessComGamesTab: isLoading = true");
+    }
+  }, [isLoading]);
 
   // Load analyzed PGNs for preview
   useEffect(() => {
@@ -89,7 +99,15 @@ export function ChessComGamesTab({ games, chessComUsernames, onAnalyzeGame, onAn
           const tree = await parsePGN(game.pgn);
           const stats = getGameStats(tree.root);
 
-          const isUserWhite = chessComUsernames.includes(game.white.username);
+          // If a specific user is selected, use that user to determine account vs opponent
+          const accountUsername = selectedUser && selectedUser !== "all" 
+            ? selectedUser 
+            : chessComUsernames.find(u => 
+                u.toLowerCase() === game.white.username.toLowerCase() || 
+                u.toLowerCase() === game.black.username.toLowerCase()
+              ) || game.white.username;
+          
+          const isUserWhite = (game.white.username || "").toLowerCase() === (accountUsername || "").toLowerCase();
           const userColor = isUserWhite ? "white" : "black";
 
           const accuracy = userColor === "white" ? stats.whiteAccuracy : stats.blackAccuracy;
@@ -150,6 +168,17 @@ export function ChessComGamesTab({ games, chessComUsernames, onAnalyzeGame, onAn
     setPage(1);
   }, [games.length]);
 
+  if (isLoading) {
+    return (
+      <Stack gap="xs" align="center" justify="center" style={{ minHeight: "200px" }}>
+        <Loader size="md" />
+        <Text size="sm" c="dimmed">
+          Loading...
+        </Text>
+      </Stack>
+    );
+  }
+
   return (
     <Stack gap="xs">
       <ScrollArea h={{ base: 200, sm: 220, md: 240, lg: 260 }} type="auto">
@@ -161,6 +190,7 @@ export function ChessComGamesTab({ games, chessComUsernames, onAnalyzeGame, onAn
               <Table.Th>Result</Table.Th>
               <Table.Th>Accuracy</Table.Th>
               <Table.Th>ACPL</Table.Th>
+              <Table.Th>{t("dashboard.estimatedElo")}</Table.Th>
               <Table.Th>Moves</Table.Th>
               <Table.Th>Account</Table.Th>
               <Table.Th>Date</Table.Th>
@@ -175,7 +205,16 @@ export function ChessComGamesTab({ games, chessComUsernames, onAnalyzeGame, onAn
           </Table.Thead>
           <Table.Tbody>
             {paginatedGames.map((g) => {
-            const isUserWhite = chessComUsernames.includes(g.white.username);
+            // If a specific user is selected, use that user to determine account vs opponent
+            // Otherwise, use the chessComUsernames list
+            const accountUsername = selectedUser && selectedUser !== "all" 
+              ? selectedUser 
+              : chessComUsernames.find(u => 
+                  u.toLowerCase() === g.white.username.toLowerCase() || 
+                  u.toLowerCase() === g.black.username.toLowerCase()
+                ) || g.white.username;
+            
+            const isUserWhite = (g.white.username || "").toLowerCase() === (accountUsername || "").toLowerCase();
             const opponent = isUserWhite ? g.black : g.white;
             const userAccount = isUserWhite ? g.white : g.black;
             const color = isUserWhite ? t("chess.white") : t("chess.black");
@@ -219,6 +258,17 @@ export function ChessComGamesTab({ games, chessComUsernames, onAnalyzeGame, onAn
                   {stats ? (
                     <Text size="xs" fw={500}>
                       {stats.acpl.toFixed(1)}
+                    </Text>
+                  ) : (
+                    <Text size="xs" c="dimmed">
+                      -
+                    </Text>
+                  )}
+                </Table.Td>
+                <Table.Td>
+                  {stats && stats.acpl > 0 ? (
+                    <Text size="xs" fw={500}>
+                      {calculateEstimatedElo(stats.acpl)}
                     </Text>
                   ) : (
                     <Text size="xs" c="dimmed">
