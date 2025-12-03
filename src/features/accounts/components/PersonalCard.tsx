@@ -1,7 +1,7 @@
-import { ActionIcon, Box, Flex, Tooltip as MTTooltip, Paper, Select, Tabs, Text } from "@mantine/core";
+import { ActionIcon, Badge, Box, Flex, Paper, Select, Tabs, Text, Tooltip } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
-import { useContext, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import type { PlayerGameInfo } from "@/bindings";
@@ -9,6 +9,7 @@ import { DatabaseViewStateContext } from "@/features/databases/components/Databa
 import FideInfo from "@/features/databases/components/drawers/FideInfo";
 import { sessionsAtom } from "@/state/atoms";
 import type { DatabaseViewStore } from "@/state/store/database";
+import { analyzePlayerStyle } from "@/utils/playerStyle";
 import OpeningsPanel from "./PersonalCardPanels/OpeningsPanel";
 import OverviewPanel from "./PersonalCardPanels/OverviewPanel";
 import RatingsPanel from "./PersonalCardPanels/RatingsPanel";
@@ -33,6 +34,9 @@ function PersonalPlayerCard({
     new Set(sessions.map((s) => s.player || s.lichess?.username || s.chessCom?.username || "")),
   );
 
+  // Analyze player style from openings
+  const playerStyle = useMemo(() => analyzePlayerStyle(info), [info]);
+
   return (
     <Paper
       h="100%"
@@ -44,14 +48,14 @@ function PersonalPlayerCard({
       <FideInfo key={name} opened={opened} setOpened={setOpened} name={name} />
       <Box pos="relative">
         {name !== "Stats" && (
-          <MTTooltip label={t("accounts.personalCard.fideInfo")}>
+          <Tooltip label={t("accounts.personalCard.fideInfo")}>
             <ActionIcon pos="absolute" right={0} onClick={() => setOpened(true)}>
               <IconInfoCircle />
             </ActionIcon>
-          </MTTooltip>
+          </Tooltip>
         )}
         {setName ? (
-          <Flex justify="center">
+          <Flex justify="center" direction="column" gap="xs">
             <Select
               value={name}
               data={players}
@@ -65,11 +69,29 @@ function PersonalPlayerCard({
                 },
               }}
             />
+            <Flex direction="column" gap={4} align="center">
+              <Badge color={playerStyle.color} variant="light" size="lg">
+                {t(playerStyle.label)}
+              </Badge>
+              <Text fz="xs" c="dimmed" ta="center" style={{ maxWidth: "320px", lineHeight: 1.4 }}>
+                {t(playerStyle.description)}
+              </Text>
+            </Flex>
           </Flex>
         ) : (
-          <Text fz="lg" fw={500} ta="center">
-            {name}
-          </Text>
+          <Flex direction="column" gap="xs" align="center">
+            <Text fz="lg" fw={500} ta="center">
+              {name}
+            </Text>
+            <Flex direction="column" gap={4} align="center">
+              <Badge color={playerStyle.color} variant="light" size="lg">
+                {t(playerStyle.label)}
+              </Badge>
+              <Text fz="xs" c="dimmed" ta="center" style={{ maxWidth: "320px", lineHeight: 1.4 }}>
+                {t(playerStyle.description)}
+              </Text>
+            </Flex>
+          </Flex>
         )}
       </Box>
       <Tabs
