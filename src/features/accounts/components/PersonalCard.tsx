@@ -32,7 +32,7 @@ function PersonalPlayerCard({
   const sessions = useAtomValue(sessionsAtom);
   const players = Array.from(
     new Set(sessions.map((s) => s.player || s.lichess?.username || s.chessCom?.username || "")),
-  );
+  ).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
 
   // Analyze player style from openings
   const playerStyle = useMemo(() => analyzePlayerStyle(info), [info]);
