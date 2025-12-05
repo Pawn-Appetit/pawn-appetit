@@ -32,7 +32,7 @@
     "pgnGame": "Partida en PGN",
     "or": "O",
     "clickToSelectPGN": "Haga clic para seleccionar un archivo PGN",
-    "clickToSelectMultiplePGN": "Haga clic para seleccionar archivos PGN (se admite selección múltiple)",
+    "clickToSelectMultiplePGN": "Haz clic para seleccionar archivos PGN (se admite selección múltiple)",
     "multipleFiles": "{{count}} archivos seleccionados",
     "size": "Tamaño",
     "generalSettings": "Configuración general",
@@ -351,6 +351,7 @@
   },
   "dashboard": {
     "noMainAccount": "No hay cuenta principal",
+    "estimatedElo": "Elo Est.",
     "suggestions": {
       "analyzeLastGame": "Analiza tu última partida",
       "exploreOpenings": "Explora aperturas populares"
@@ -372,10 +373,9 @@
       "accuracy": "Precisión",
       "moves": "Movimientos",
       "date": "Fecha",
-      "account": "Cuenta"
-    },
-    "suggestedForYou": "Sugerido para ti",
-    "dailyGoals": "Objetivos diarios"
+      "account": "Cuenta",
+      "estimatedElo": "Elo Est."
+    }
   },
   "databaseOptions": {
     "player": "Jugador",
@@ -508,11 +508,6 @@
       "keyboardShortcuts": "Atajos de teclado"
     },
     "dashboard": {
-      "welcome": {
-        "firstOpen": "¡Bienvenido a Pawn Appétit!",
-        "back": "Bienvenido de nuevo",
-        "desc": "¿Listo para hacer tu mejor jugada?"
-      },
       "cards": {
         "learn": {
           "title": "Aprender ajedrez",
@@ -564,6 +559,87 @@
           "desc": "Sube y edita archivos PGN para analizar tus propias partidas o estudiar posiciones específicas con control total.",
           "button": "Importar"
         }
+      },
+      "suggestedForYou": "Sugerido para ti",
+      "dailyGoals": "Objetivos diarios",
+      "dayStreak": "racha de días",
+      "thisWeek": "Esta semana",
+      "tags": {
+        "lessons": "Lecciones",
+        "openings": "Aperturas",
+        "endgames": "Finales",
+        "tactics": "Táctica"
+      },
+      "start": "Comenzar",
+      "streak": "Racha",
+      "achievement": "Logro",
+      "startPuzzleStreak": "Comienza la racha de puzzles de hoy",
+      "keepStreak": "Mantén la racha: resuelve más puzzles",
+      "win": "Victoria",
+      "loss": "Derrota",
+      "analyzeAllGames": "Analizar Todas las Partidas",
+      "selectAnalysisDepth_one": "Selecciona la profundidad de análisis para {{count}} partida. Esto analizará las partidas mostradas en el tablero usando el motor predeterminado.",
+      "selectAnalysisDepth_other": "Selecciona la profundidad de análisis para {{count}} partidas. Esto analizará las partidas mostradas en el tablero usando el motor predeterminado.",
+      "analyze": "Analizar",
+      "onlyUnanalyzedGames": "Solo partidas sin analizar",
+      "allGamesReanalyze": "Todas las partidas (re-analizar)",
+      "analysisDepth": "Profundidad de Análisis",
+      "analyzingGames": "Analizando {{current}} de {{total}} partidas...",
+      "stopAnalysis": "Detener Análisis",
+      "analysisSpeeds": {
+        "express": "Express / profundidad 8",
+        "swift": "Rápido / profundidad 12",
+        "focused": "Intermedio / profundidad 16",
+        "advanced": "Avanzado / profundidad 20",
+        "deepdive": "Profundo / profundidad 24"
+      },
+      "deleteGame": "Eliminar partida",
+      "allAccounts": "Todas las cuentas",
+      "noEngineAvailable": "No hay motor disponible",
+      "noEngineAvailableMessage": "Por favor instala un motor primero en la página de Motores.",
+      "analysisStarted": "Análisis iniciado",
+      "analysisCancelled": "Análisis cancelado",
+      "analysisProgress": "Progreso del análisis",
+      "analysisComplete": "Análisis completado",
+      "newGame": "Nueva partida",
+      "unknown": "Desconocido",
+      "engine": "Motor",
+      "editProfile": {
+        "title": "Editar Perfil",
+        "fideIdLabel": "ID FIDE",
+        "fideIdPlaceholder": "Ingresa tu ID FIDE",
+        "invalidFideId": "El ID FIDE debe ser un número",
+        "enterFideId": "Por favor ingresa un ID FIDE",
+        "playerNotFound": "Jugador no encontrado. Por favor verifica el ID FIDE.",
+        "searchError": "Error al buscar el jugador. Por favor intenta de nuevo.",
+        "search": "Buscar",
+        "name": "Nombre",
+        "firstName": "Primer Nombre",
+        "customName": "Nombre para Mostrar",
+        "customNamePlaceholder": "Ingresa tu nombre preferido",
+        "customNameDescription": "Este nombre se mostrará en el dashboard",
+        "title": "Título FIDE",
+        "gender": "Género",
+        "male": "Masculino",
+        "female": "Femenino",
+        "error": "Error",
+        "note": "Nota: La búsqueda de jugadores FIDE puede no estar disponible. Aún puedes guardar el ID FIDE manualmente.",
+        "ratings": "Ratings FIDE",
+        "standard": "Estándar",
+        "rapid": "Rápido",
+        "blitz": "Blitz"
+      },
+      "welcome": {
+        "firstOpen": "¡Bienvenido a Pawn Appétit!",
+        "back": "Bienvenido de nuevo",
+        "backWithName": {
+          "male": "¡Bienvenido de nuevo, {{name}}!",
+          "female": "¡Bienvenida de nuevo, {{name}}!"
+        },
+        "desc": "¿Listo para hacer tu mejor jugada?",
+        "fideTitle": "Título FIDE",
+        "worldRank": "Ranking Mundial",
+        "nationalRank": "Ranking Nacional"
       }
     },
     "tabs": {
@@ -586,7 +662,24 @@
         "saveToCollection": "Guardar en la colección",
         "online": "En línea",
         "importing": "Importando...",
-        "import": "Importar"
+        "import": "Importar",
+        "importComplete": "Importación completada",
+        "gamesImported": {
+          "one": "{{count}} partida importada",
+          "other": "{{count}} partidas importadas"
+        },
+        "errorCount": {
+          "one": "{{count}} error",
+          "other": "{{count}} errores"
+        },
+        "allGamesImported": "¡Todas las partidas fueron importadas exitosamente!",
+        "partialImport": "{{imported}} de {{total}} partidas importadas exitosamente",
+        "showErrors": "Mostrar errores",
+        "fileError": "Error en archivo: {{file}}",
+        "generalError": "Error de importación",
+        "gameError": "Error en partida {{gameIndex}}",
+        "importedFiles": "Archivos importados",
+        "analyzeFile": "Analizar"
       },
       "puzzle": {
         "title": "Puzzles",
@@ -604,7 +697,8 @@
         "editPosition": "Editar posición",
         "savePGN": "Guardar PGN ({{key}})",
         "addGame": "Añadir partida",
-        "flipBoard": "Voltear tablero ({{key}})"
+        "flipBoard": "Voltear tablero ({{key}})",
+        "takeBack": "Deshacer"
       },
       "tabs": {
         "practice": "Práctica",
@@ -700,7 +794,11 @@
       "completed": "Completado",
       "exercisesCompleted": "ejercicios completados",
       "lessonCompleted": "¡Felicidades! Has completado {{lesson}}!",
-      "completionMessage": "Has completado con éxito todos los ejercicios de esta lección. ¡Sigue con el gran trabajo!"
+      "completionMessage": "Has completado con éxito todos los ejercicios de esta lección. ¡Sigue con el gran trabajo!",
+      "description": "Tutoriales guiados paso a paso que cubren los fundamentos del ajedrez",
+      "lessons": "Lecciones",
+      "backToLearn": "Volver a Aprender",
+      "tryTheseMoves": "Prueba estos movimientos:"
     },
     "practice": {
       "title": "Práctica de ajedrez",
@@ -713,7 +811,18 @@
       "showHint": "Mostrar pista",
       "hintText": "Busca oportunidades tácticas o casillas clave que controlen la posición.",
       "congratulations": "¡Felicidades!",
-      "completedCategory": "¡Has completado todos los ejercicios en {{category}}!"
+      "completedCategory": "¡Has completado todos los ejercicios en {{category}}!",
+      "practice": "Práctica",
+      "backToLearn": "Volver a Aprender",
+      "backToPractice": "Volver a Práctica",
+      "searchPlaceholder": "Buscar categorías de práctica...",
+      "noCategoriesFound": "No se encontraron categorías",
+      "adjustSearchCriteria": "Intenta ajustar tus criterios de búsqueda",
+      "resetExercise": "Reiniciar ejercicio",
+      "lookForBestMove": "Busca la mejor jugada en esta posición. ¡Considera todos los motivos tácticos!",
+      "comingSoon": "Próximamente",
+      "startTraining": "Comenzar entrenamiento",
+      "continue": "Continuar"
     },
     "engines": {
       "title": "Motores",
@@ -725,7 +834,8 @@
         "numOfCores": "Número de núcleos",
         "sizeOfHash": "Tamaño del hash",
         "editJSON": "Editar JSON",
-        "reset": "Restablecer valores predeterminados"
+        "reset": "Restablecer valores predeterminados",
+        "selectEngineTip": "Consejo: Selecciona un motor para editar su configuración."
       },
       "add": {
         "title": "Agregar motor",
@@ -742,7 +852,13 @@
       "remove": {
         "title": "Eliminar motor",
         "message": "¿Está seguro de que desea eliminar este motor de Pawn Appétit?"
-      }
+      },
+      "searchPlaceholder": "Buscar motores...",
+      "noEnginesFound": "No se encontraron motores",
+      "noEnginesFoundMessage": "Intenta ajustar tu búsqueda o agregar un nuevo motor.",
+      "unknownEngine": "Motor desconocido",
+      "selectImage": "Seleccionar imagen",
+      "invalidConfiguration": "Configuración inválida"
     },
     "databases": {
       "title": "Tus bases de datos",
@@ -781,6 +897,10 @@
       "delete": {
         "title": "Eliminar base de datos",
         "message": "¿Está seguro de que desea eliminar esta base de datos?"
+      },
+      "category": {
+        "games": "Partidas",
+        "puzzles": "Puzzles"
       }
     },
     "files": {
@@ -792,7 +912,8 @@
         "tournament": "Torneo",
         "puzzle": "Puzzle",
         "other": "Otro",
-        "folder": "Carpeta"
+        "folder": "Carpeta",
+        "all": "Todos"
       },
       "delete": {
         "title": "Eliminar archivo",
@@ -871,7 +992,8 @@
       "showingSolution": "Mostrando solución",
       "viewSolution": "Ver solución",
       "loadingRatingRange": "Cargando rango de Elo...",
-      "enterTitle": "Introducir título del puzzle"
+      "enterTitle": "Introducir título del puzzle",
+      "title": "Puzzle"
     },
     "tablebase": {
       "title": "Base de finales",
@@ -879,6 +1001,23 @@
       "dtm": "DTM {{count}}",
       "dtz": "DTZ {{count}}",
       "fiftyMoveRule": "*debido a la regla de las 50 jugadas"
+    },
+    "updater": {
+      "newVersionAvailable": "Nueva versión disponible",
+      "versionInfo": "La versión {{version}} ya está disponible",
+      "prereleaseWarning": "Versión Pre-lanzamiento",
+      "prereleaseDescription": "Esta es una versión pre-lanzamiento y puede contener errores o características incompletas.",
+      "releaseNotes": "¿Qué hay de nuevo:",
+      "viewFullNotes": "Ver notas de lanzamiento completas",
+      "publishedAt": "Publicado: {{date}}",
+      "skipVersion": "Omitir esta versión",
+      "remindLater": "Recordarme más tarde",
+      "updating": "Actualizando...",
+      "updateNow": "Actualizar ahora",
+      "updateFailed": "Error en la actualización",
+      "updateCompleted": "Actualización completada",
+      "checkingForUpdates": "Buscando actualizaciones",
+      "noUpdatesAvailable": "No hay actualizaciones disponibles"
     }
   },
   "settings": {
@@ -932,7 +1071,80 @@
       "title": "Apariencia",
       "desc": "Personalizar la apariencia de la aplicación",
       "theme": {
-        "theme": "Tema"
+        "theme": "Tema",
+        "manage": "Gestionar",
+        "manageTitle": "Gestionar Temas",
+        "customThemes": "Temas personalizados",
+        "builtInThemes": "Temas integrados",
+        "createNew": "Crear nuevo",
+        "created": "Tema creado",
+        "createdMessage": "Tema {{name}} creado exitosamente",
+        "edit": "Editar tema",
+        "duplicate": "Duplicar tema",
+        "duplicated": "Tema duplicado",
+        "duplicatedMessage": "{{name}} creado exitosamente",
+        "export": "Exportar tema",
+        "exported": "Tema exportado",
+        "exportedMessage": "Tema {{name}} exportado exitosamente",
+        "exportFailed": "Error al exportar",
+        "exportFailedMessage": "No se pudo exportar el tema.",
+        "delete": "Eliminar tema",
+        "import": "Importar tema",
+        "importFromFile": "Importar desde archivo",
+        "importFromJSON": "Importar desde JSON",
+        "importTheme": "Importar tema",
+        "importDesc": "Pega el contenido JSON de un archivo de tema a continuación:",
+        "importPlaceholder": "Pega el JSON del tema aquí...",
+        "imported": "Tema importado",
+        "importedMessage": "Tema {{name}} importado exitosamente",
+        "importFailed": "Error al importar",
+        "importFailedMessage": "Formato de archivo de tema inválido",
+        "noCustomThemes": "Aún no hay temas personalizados. Crea tu primer tema personalizado para comenzar.",
+        "builtIn": "Integrado",
+        "apply": "Aplicar tema",
+        "applied": "Tema aplicado",
+        "appliedMessage": "Tema {{name}} aplicado",
+        "name": "Nombre del tema",
+        "nameRequired": "El nombre del tema es obligatorio",
+        "namePlaceholder": "Ingresa el nombre del tema",
+        "description": "Descripción",
+        "descriptionPlaceholder": "Ingresa la descripción del tema",
+        "author": "Autor",
+        "authorPlaceholder": "Ingresa el nombre del autor",
+        "create": "Crear",
+        "importFile": "Importar archivo",
+        "createError": "Error al crear tema",
+        "deleteError": "Error al eliminar tema",
+        "duplicateError": "Error al duplicar tema",
+        "exportError": "Error al exportar tema",
+        "importError": "Error al importar tema",
+        "deleted": "Tema eliminado",
+        "deletedMessage": "Tema {{name}} eliminado",
+        "visualEditor": "Editor visual",
+        "updated": "Tema actualizado",
+        "updatedMessage": "Tema {{name}} actualizado exitosamente",
+        "saveError": "Error al guardar tema",
+        "editTheme": "Editar tema",
+        "hidePreview": "Ocultar vista previa",
+        "showPreview": "Mostrar vista previa",
+        "basic": "Configuración básica",
+        "colors": "Colores",
+        "components": "Componentes",
+        "primaryColor": "Color principal",
+        "defaultRadius": "Radio predeterminado",
+        "fontFamily": "Familia de fuentes",
+        "monospaceFont": "Fuente monoespaciada",
+        "scale": "Escala",
+        "luminanceThreshold": "Umbral de luminancia",
+        "fontSmoothing": "Suavizado de fuentes",
+        "autoContrast": "Contraste automático",
+        "focusRing": "Anillo de enfoque",
+        "white": "Color blanco",
+        "black": "Color negro",
+        "colorPalettes": "Paletas de colores",
+        "addColor": "Agregar color",
+        "newColorName": "Ingresa el nombre del color",
+        "autoDesc": "Coincide automáticamente con la preferencia del sistema"
       },
       "themeDesc": "Esquema de color general",
       "custom": "Personalizada",
@@ -955,7 +1167,13 @@
       "dateFormat": "Formato de fecha",
       "dateFormatDesc": "Elige entre formato internacional (YYYY-MM-DD) o formato local",
       "international": "Internacional",
-      "locale": "Formato local"
+      "locale": "Formato local",
+      "colorScheme": "Esquema de color",
+      "colorSchemeDesc": "Preferencia de modo claro u oscuro",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "blindfold": "Venda en los ojos",
+      "blindfoldDesc": "El tablero es visible pero las piezas están ocultas"
     },
     "sound": {
       "title": "Sonido",
@@ -989,7 +1207,13 @@
     "gameplay": "Juego",
     "analysis": "Análisis",
     "interface": "Interfaz",
-    "system": "Sistema"
+    "system": "Sistema",
+    "about": "Acerca de",
+    "aboutDesc": "Aprende más sobre Pawn Appétit",
+    "telemetryLoading": "Cargando configuración de telemetría...",
+    "telemetryDetails": "Los datos de telemetría son anónimos y nos ayudan a entender cómo se usa Pawn Appétit para mejorar la experiencia. Nunca recopilamos información personal o contenido de partidas. Los datos se almacenan de forma segura usando Supabase.",
+    "pickValue": "Seleccionar valor",
+    "pressAnyKey": "Presiona cualquier tecla"
   },
   "formatters": {
     "dateFormat": "{{date, dateformat}}",
@@ -1002,5 +1226,196 @@
     "duration": "{{duration, duration}}",
     "durationLong": "{{duration, durationLong}}",
     "score": "{{score, score}}"
+  },
+  "keybindings": {
+    "openFile": "Abrir archivo",
+    "saveFile": "Guardar archivo",
+    "appReload": "Recargar",
+    "exitApp": "Salir de Pawn Appétit",
+    "spotlightSearch": "Búsqueda Spotlight",
+    "newBoardTab": "Nueva pestaña de tablero",
+    "closeBoardTab": "Cerrar pestaña de tablero",
+    "cycleBoardTabs": "Ciclar pestañas de tablero",
+    "reverseCycleBoardTabs": "Ciclar pestañas de tablero en reversa",
+    "boardTabOne": "Ir a pestaña de tablero uno",
+    "boardTabTwo": "Ir a pestaña de tablero dos",
+    "boardTabThree": "Ir a pestaña de tablero tres",
+    "boardTabFour": "Ir a pestaña de tablero cuatro",
+    "boardTabFive": "Ir a pestaña de tablero cinco",
+    "boardTabSix": "Ir a pestaña de tablero seis",
+    "boardTabSeven": "Ir a pestaña de tablero siete",
+    "boardTabEight": "Ir a pestaña de tablero ocho",
+    "boardTabLast": "Ir a la pestaña de tablero más a la derecha",
+    "playBoard": "Jugar",
+    "analyzeBoard": "Analizar",
+    "trainBoard": "Entrenar",
+    "importBoard": "Importar",
+    "copyFen": "Copiar FEN",
+    "copyPgn": "Copiar PGN",
+    "pasteFen": "Pegar FEN",
+    "exportGame": "Exportar partida",
+    "nextMove": "Siguiente movimiento",
+    "previousMove": "Movimiento anterior",
+    "goToBranchStart": "Ir al inicio de la rama",
+    "goToBranchEnd": "Ir al final de la rama",
+    "goToStart": "Ir al inicio de la partida",
+    "goToEnd": "Ir al final de la partida",
+    "nextBranching": "Siguiente punto de ramificación",
+    "previousBranching": "Punto de ramificación anterior",
+    "nextBranch": "Siguiente rama",
+    "previousBranch": "Rama anterior",
+    "annotationBrilliant": "Alternar anotación de jugada brillante",
+    "annotationGood": "Alternar anotación de jugada buena",
+    "annotationInteresting": "Alternar anotación de jugada interesante",
+    "annotationDubious": "Alternar anotación de jugada dudosa",
+    "annotationMistake": "Alternar anotación de error",
+    "annotationBlunder": "Alternar anotación de error grave",
+    "deleteMove": "Eliminar movimiento",
+    "promoteVariation": "Promover variación",
+    "deleteVariation": "Eliminar variación",
+    "addVariation": "Agregar variación",
+    "collapseVariations": "Colapsar variaciones",
+    "addComment": "Agregar comentario",
+    "editComment": "Editar comentario",
+    "practiceTab": "Ir a pestaña de práctica",
+    "analysisTab": "Ir a pestaña de análisis",
+    "databaseTab": "Ir a pestaña de base de datos",
+    "annotateTab": "Ir a pestaña de anotar",
+    "infoTab": "Ir a pestaña de información",
+    "toggleEvalBar": "Alternar barra de evaluación y flechas",
+    "toggleAllEngines": "Alternar todos los motores",
+    "toggleBlur": "Alternar desenfoque",
+    "toggleEngine": "Alternar motor",
+    "stopEngine": "Detener motor",
+    "analyzePosition": "Analizar posición",
+    "infiniteAnalysis": "Análisis infinito",
+    "flipBoard": "Voltear tablero",
+    "resetPosition": "Restablecer posición",
+    "setupPosition": "Configurar posición",
+    "swapOrientation": "Intercambiar orientación",
+    "clearShapes": "Limpiar formas",
+    "blindfold": "Venda en los ojos",
+    "findPosition": "Buscar posición",
+    "quickSearch": "Búsqueda rápida",
+    "filterGames": "Filtrar partidas",
+    "toggleSidebar": "Alternar barra lateral",
+    "toggleNotation": "Alternar notación",
+    "toggleFullscreen": "Alternar pantalla completa",
+    "focusBoard": "Enfocar tablero",
+    "focusMoves": "Enfocar movimientos",
+    "showHint": "Mostrar pista",
+    "retryPosition": "Reintentar posición",
+    "markAsCorrect": "Marcar como correcto",
+    "skipPosition": "Saltar posición",
+    "addToRepertoire": "Agregar al repertorio",
+    "removeFromRepertoire": "Eliminar del repertorio",
+    "undo": "Deshacer",
+    "redo": "Rehacer",
+    "newGame": "Nueva partida",
+    "duplicateTab": "Duplicar pestaña",
+    "openSettings": "Abrir configuración",
+    "showKeybindings": "Mostrar atajos de teclado",
+    "toggleHelp": "Alternar ayuda",
+    "jumpToMove": "Saltar a movimiento",
+    "goToPositionNumber": "Ir a número de posición",
+    "previousGame": "Partida anterior",
+    "nextGame": "Siguiente partida"
+  },
+  "errors": {
+    "failedToLoadAnalysisPanels": "Error al cargar paneles de análisis",
+    "failedToLoadGameAnalysis": "Error al cargar análisis de partida",
+    "failedToInitializeChessBoard": "Error al inicializar tablero de ajedrez",
+    "failedToLoadMobileBoardLayout": "Error al cargar diseño de tablero móvil",
+    "defaultLayout": "Diseño predeterminado",
+    "unexpectedError": "Error inesperado:",
+    "invalidMove": "Movimiento inválido"
+  },
+  "window": {
+    "minimize": "Minimizar ventana",
+    "maximize": "Maximizar ventana",
+    "maximizeRestore": "Maximizar/Restaurar ventana",
+    "close": "Cerrar ventana"
+  },
+  "sidebar": {
+    "more": "Más"
+  },
+  "board": {
+    "human": "Humano",
+    "moveInput": {
+      "enterMove": "Ingresar movimiento",
+      "invalidMove": "Movimiento inválido"
+    },
+    "choosePromotionPiece": "Elige pieza de promoción:"
+  },
+  "learn": {
+    "chessMasteryHub": "Centro de Maestría de Ajedrez",
+    "progressTooltip": "Progreso",
+    "yourProgress": "Tu progreso",
+    "overallProgress": "Progreso general",
+    "streak": "Racha",
+    "streakDays": "{{count}} días",
+    "level": "Nivel",
+    "totalPoints": "Puntos totales",
+    "beginner": "Principiante",
+    "intermediate": "Intermedio",
+    "advanced": "Avanzado",
+    "master": "Maestro"
+  },
+  "themes": {
+    "preview": {
+      "title": "Vista previa del tema",
+      "preview": "Vista previa",
+      "unknown": "Desconocido",
+      "colorPalette": "Paleta de colores",
+      "componentExamples": "Ejemplos de componentes",
+      "buttons": "Botones",
+      "inputs": "Entradas",
+      "data": "Datos",
+      "feedback": "Retroalimentación",
+      "primaryButton": "Botón principal",
+      "outline": "Contorno",
+      "light": "Claro",
+      "subtle": "Sutil",
+      "extraSmall": "Extra pequeño",
+      "small": "Pequeño",
+      "medium": "Mediano",
+      "large": "Grande",
+      "textInput": "Entrada de texto",
+      "enterText": "Ingresar texto",
+      "withIcon": "Con icono",
+      "searchPlaceholder": "Buscar...",
+      "switch": "Interruptor",
+      "enableNotifications": "Habilitar notificaciones",
+      "slider": "Deslizador",
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "role": "Rol",
+      "demoUser1": "Juan Pérez",
+      "demoUser2": "María García",
+      "demoUser3": "Pedro López",
+      "admin": "Administrador",
+      "user": "Usuario",
+      "moderator": "Moderador",
+      "filled": "Relleno",
+      "dot": "Punto",
+      "settings": "Configuración",
+      "userProfile": "Perfil de usuario",
+      "typography": "Tipografía",
+      "heading1": "Encabezado 1",
+      "heading2": "Encabezado 2",
+      "heading3": "Encabezado 3",
+      "largeText": "Texto grande con familia de fuentes: {{fontFamily}}",
+      "regularText": "Texto regular que demuestra el estilo de fuente predeterminado.",
+      "smallDimmedText": "Texto pequeño atenuado para información secundaria.",
+      "monospaceText": "Texto monoespaciado: {{fontFamily}}",
+      "layoutSpacing": "Diseño y espaciado",
+      "cardWithRadius": "Tarjeta con radio {{radius}}",
+      "scaleFactor": "Factor de escala: {{scale}}",
+      "cardWithShadow": "Tarjeta con sombra",
+      "usingThemeColors": "Usando colores y espaciado del tema"
+    }
+  },
+  "about": {
+    "tauriVersion": "Versión de Tauri: {{version}}"
   }
 }

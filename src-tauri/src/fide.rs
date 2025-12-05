@@ -161,3 +161,176 @@ pub async fn find_fide_player(
         Err(Error::NoMatchFound)
     }
 }
+
+#[tauri::command]
+#[specta::specta]
+pub async fn fetch_fide_profile_html(fide_id: String) -> Result<String, String> {
+    let url = format!("https://ratings.fide.com/profile/{}", fide_id);
+    
+    let client = reqwest::Client::builder()
+        .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+        .build()
+        .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
+    
+    let response = client
+        .get(&url)
+        .send()
+        .await
+        .map_err(|e| format!("Failed to fetch FIDE profile: {}", e))?;
+    
+    if !response.status().is_success() {
+        return Err(format!("HTTP error: {}", response.status()));
+    }
+    
+    let html = response
+        .text()
+        .await
+        .map_err(|e| format!("Failed to read response: {}", e))?;
+    
+    Ok(html)
+}
+
+/// Save a FIDE profile photo (either from URL or base64 data) to local storage
+/// Returns the local file path
+#[tauri::command]
+#[specta::specta]
+pub async fn save_fide_photo(fide_id: String, photo_data: String, app: tauri::AppHandle) -> Result<String, String> {
+    use std::fs;
+    use base64::{Engine as _, engine::general_purpose};
+    
+    println!("save_fide_photo called for FIDE ID: {}", fide_id);
+    println!("Photo data length: {}", photo_data.len());
+    println!("Photo data starts with: {}", &photo_data[..photo_data.len().min(100)]);
+    
+    // Get app data directory
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| {
+            let err_msg = format!("Failed to get app data directory: {}", e);
+            println!("ERROR: {}", err_msg);
+            err_msg
+        })?;
+    
+    println!("App data directory: {:?}", app_data_dir);
+    
+    // Create fide-photos directory
+    let photos_dir = app_data_dir.join("fide-photos");
+    println!("Creating photos directory: {:?}", photos_dir);
+    
+    fs::create_dir_all(&photos_dir)
+        .map_err(|e| {
+            let err_msg = format!("Failed to create photos directory: {}", e);
+            println!("ERROR: {}", err_msg);
+            err_msg
+        })?;
+    
+    let photo_path = photos_dir.join(format!("{}.jpg", fide_id));
+    println!("Target photo path: {:?}", photo_path);
+    
+    // Check if photo_data is a data URI (base64) or a URL
+    if photo_data.starts_with("data:image") {
+        println!("Processing base64 data URI...");
+        
+        // Extract base64 data
+        let base64_data = photo_data
+            .split(',')
+            .nth(1)
+            .ok_or_else(|| {
+                let err_msg = "Invalid base64 data URI - no comma found".to_string();
+                println!("ERROR: {}", err_msg);
+                err_msg
+            })?;
+        
+        println!("Base64 data length: {}", base64_data.len());
+        
+        // Decode base64
+        let image_bytes = general_purpose::STANDARD
+            .decode(base64_data)
+            .map_err(|e| {
+                let err_msg = format!("Failed to decode base64: {}", e);
+                println!("ERROR: {}", err_msg);
+                err_msg
+            })?;
+        
+        println!("Decoded image bytes length: {}", image_bytes.len());
+        
+        // Write to file
+        fs::write(&photo_path, image_bytes)
+            .map_err(|e| {
+                let err_msg = format!("Failed to write photo file: {}", e);
+                println!("ERROR: {}", err_msg);
+                err_msg
+            })?;
+        
+        println!("✓ Successfully wrote photo to file");
+    } else if photo_data.starts_with("http") {
+        println!("Downloading photo from URL...");
+        
+        // Download from URL
+        let client = reqwest::Client::builder()
+            .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+            .timeout(std::time::Duration::from_secs(30))
+            .build()
+            .map_err(|e| {
+                let err_msg = format!("Failed to create HTTP client: {}", e);
+                println!("ERROR: {}", err_msg);
+                err_msg
+            })?;
+        
+        let response = client
+            .get(&photo_data)
+            .send()
+            .await
+            .map_err(|e| {
+                let err_msg = format!("Failed to download photo: {}", e);
+                println!("ERROR: {}", err_msg);
+                err_msg
+            })?;
+        
+        println!("HTTP response status: {}", response.status());
+        
+        if !response.status().is_success() {
+            let err_msg = format!("Photo download failed with status: {}", response.status());
+            println!("ERROR: {}", err_msg);
+            return Err(err_msg);
+        }
+        
+        let bytes = response
+            .bytes()
+            .await
+            .map_err(|e| {
+                let err_msg = format!("Failed to read photo bytes: {}", e);
+                println!("ERROR: {}", err_msg);
+                err_msg
+            })?;
+        
+        println!("Downloaded {} bytes", bytes.len());
+        
+        fs::write(&photo_path, bytes)
+            .map_err(|e| {
+                let err_msg = format!("Failed to write photo file: {}", e);
+                println!("ERROR: {}", err_msg);
+                err_msg
+            })?;
+        
+        println!("✓ Successfully wrote photo to file");
+    } else {
+        let err_msg = format!("Invalid photo data format. Starts with: {}", &photo_data[..photo_data.len().min(50)]);
+        println!("ERROR: {}", err_msg);
+        return Err(err_msg);
+    }
+    
+    // Return the path as a string
+    let path_str = photo_path
+        .to_str()
+        .ok_or_else(|| {
+            let err_msg = "Failed to convert path to string".to_string();
+            println!("ERROR: {}", err_msg);
+            err_msg
+        })?
+        .to_string();
+    
+    println!("✓ Returning photo path: {}", path_str);
+    Ok(path_str)
+}

@@ -246,7 +246,30 @@ pub async fn convert_pgn(
         },
     )?;
 
-    if !db_exists {
+    // Check if tables exist, even if the file exists
+    // This handles cases where the file exists but is empty or corrupted
+    let tables_exist = {
+        #[derive(QueryableByName)]
+        struct TableInfo {
+            #[diesel(sql_type = Text, column_name = "name")]
+            _name: String,
+        }
+        
+        // Check if Players table exists
+        let result: std::result::Result<Vec<TableInfo>, _> = sql_query(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='Players'"
+        ).load(db);
+        
+        result.is_ok() && !result.unwrap().is_empty()
+    };
+
+    let needs_init = !db_exists || !tables_exist;
+    
+    if needs_init {
+        // Initialize database if file doesn't exist or tables are missing
+        if !tables_exist && db_exists {
+            info!("Database file exists but tables are missing, reinitializing...");
+        }
         core::init_db(db, &title, &description)?;
     }
 
@@ -280,7 +303,7 @@ pub async fn convert_pgn(
         Ok(())
     })?;
 
-    if !db_exists {
+    if needs_init {
         // Create all the necessary indexes
         db.batch_execute(INDEXES_SQL)?;
     }

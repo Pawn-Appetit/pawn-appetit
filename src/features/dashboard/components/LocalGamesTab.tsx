@@ -1,10 +1,9 @@
 import { ActionIcon, Avatar, Badge, Button, Group, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
-import { IconTrash } from "@tabler/icons-react";
+import { IconSortAscending, IconSortDescending, IconTrash } from "@tabler/icons-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AnalysisPreview } from "@/components/AnalysisPreview";
 import { getAnalyzedGame } from "@/utils/analyzedGames";
-import { calculateEstimatedElo } from "@/utils/eloEstimation";
 import type { GameRecord } from "@/utils/gameRecords";
 import { calculateGameStats, type GameStats } from "@/utils/gameRecords";
 
@@ -21,6 +20,8 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
   const [analyzedPgns, setAnalyzedPgns] = useState<Map<string, string>>(new Map());
   const [page, setPage] = useState(1);
   const itemsPerPage = 25;
+  const [sortBy, setSortBy] = useState<"elo" | "date" | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   // Load analyzed PGNs for preview
   useEffect(() => {
@@ -69,13 +70,13 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
     };
   }, [games]);
 
-  // Calculate stats for all games (lazy, non-blocking)
+  // Load stats for all games - use saved stats if available, otherwise calculate
   useEffect(() => {
     if (games.length === 0) return;
 
     let cancelled = false;
 
-    const calculateStats = async () => {
+    const loadStats = async () => {
       const statsMap = new Map<string, GameStats>();
 
       // Process games with small delays to avoid blocking the UI
@@ -83,13 +84,13 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
         if (cancelled) break;
 
         try {
-          const stats = await calculateGameStats(game);
-          if (stats && !cancelled) {
-            statsMap.set(game.id, stats);
-            // Update state incrementally
+          // First, check if stats are already saved in the game record
+          if (game.stats && game.stats.acpl > 0) {
+            // Use saved stats directly
+            statsMap.set(game.id, game.stats);
             setGameStats(new Map(statsMap));
           }
-        } catch {
+        } catch (error) {
           // Silently skip games that fail to parse
         }
 
@@ -107,7 +108,7 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
     // Delay initial calculation to avoid blocking initial render
     const timeoutId = setTimeout(() => {
       if (!cancelled) {
-        calculateStats().catch(() => {
+        loadStats().catch(() => {
           // Silently handle any errors
         });
       }
@@ -119,12 +120,75 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
     };
   }, [games]);
 
-  // Paginate games
-  const paginatedGames = useMemo(() => {
+  // Sort and paginate games
+  const sortedAndPaginatedGames = useMemo(() => {
+    let sortedGames = [...games];
+    
+    if (sortBy === "elo") {
+      sortedGames.sort((a, b) => {
+        const statsA = gameStats.get(a.id);
+        const statsB = gameStats.get(b.id);
+        const eloA = statsA?.estimatedElo || 0;
+        const eloB = statsB?.estimatedElo || 0;
+        return sortDirection === "asc" ? eloA - eloB : eloB - eloA;
+      });
+    } else if (sortBy === "date") {
+      sortedGames.sort((a, b) => {
+        return sortDirection === "asc" ? a.timestamp - b.timestamp : b.timestamp - a.timestamp;
+      });
+    }
+    
     const start = (page - 1) * itemsPerPage;
     const end = start + itemsPerPage;
-    return games.slice(start, end);
-  }, [games, page, itemsPerPage]);
+    return sortedGames.slice(start, end);
+  }, [games, page, itemsPerPage, sortBy, sortDirection, gameStats]);
+
+  // Calculate averages for footer
+  const averages = useMemo(() => {
+    const gamesWithStats = games.filter(g => {
+      const stats = gameStats.get(g.id);
+      return stats && stats.acpl > 0;
+    });
+    
+    if (gamesWithStats.length === 0) {
+      return { accuracy: 0, acpl: 0, elo: 0 };
+    }
+    
+    let totalAccuracy = 0;
+    let totalAcpl = 0;
+    let totalElo = 0;
+    let count = 0;
+    let eloCount = 0;
+    
+    gamesWithStats.forEach(g => {
+      const stats = gameStats.get(g.id);
+      if (stats && stats.acpl > 0) {
+        totalAccuracy += stats.accuracy;
+        totalAcpl += stats.acpl;
+        if (stats.estimatedElo !== undefined) {
+          totalElo += stats.estimatedElo;
+          eloCount++;
+        }
+        count++;
+      }
+    });
+    
+    return {
+      accuracy: count > 0 ? totalAccuracy / count : 0,
+      acpl: count > 0 ? totalAcpl / count : 0,
+      elo: eloCount > 0 ? totalElo / eloCount : 0,
+    };
+  }, [games, gameStats]);
+
+  const handleSort = (field: "elo" | "date") => {
+    if (sortBy === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(field);
+      setSortDirection("desc");
+    }
+    setPage(1); // Reset to first page when sorting changes
+  };
 
   const totalPages = Math.ceil(games.length / itemsPerPage);
 
@@ -134,8 +198,8 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
   }, [games.length]);
 
   return (
-    <Stack gap="xs">
-      <ScrollArea h={{ base: 200, sm: 220, md: 240, lg: 260 }} type="auto">
+    <Stack gap="xs" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minHeight: 0 }}>
+      <ScrollArea style={{ flex: 1, minHeight: 0 }} type="auto">
         <Table striped highlightOnHover>
           <Table.Thead>
             <Table.Tr>
@@ -144,9 +208,29 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
               <Table.Th>Result</Table.Th>
               <Table.Th>Accuracy</Table.Th>
               <Table.Th>ACPL</Table.Th>
-              <Table.Th>{t("dashboard.estimatedElo")}</Table.Th>
+              <Table.Th 
+                style={{ cursor: "pointer", userSelect: "none" }}
+                onClick={() => handleSort("elo")}
+              >
+                <Group gap="xs" wrap="nowrap">
+                  {t("dashboard.estimatedElo")}
+                  {sortBy === "elo" && (
+                    sortDirection === "asc" ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
+                  )}
+                </Group>
+              </Table.Th>
               <Table.Th>Moves</Table.Th>
-              <Table.Th>Date</Table.Th>
+              <Table.Th 
+                style={{ cursor: "pointer", userSelect: "none" }}
+                onClick={() => handleSort("date")}
+              >
+                <Group gap="xs" wrap="nowrap">
+                  Date
+                  {sortBy === "date" && (
+                    sortDirection === "asc" ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
+                  )}
+                </Group>
+              </Table.Th>
               <Table.Th>
                 {onAnalyzeAll && (
                   <Button size="xs" variant="light" onClick={onAnalyzeAll}>
@@ -157,7 +241,7 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {paginatedGames.map((g) => {
+            {sortedAndPaginatedGames.map((g) => {
             const isUserWhite = g.white.type === "human";
             const opponent = isUserWhite ? g.black : g.white;
             const color = isUserWhite ? t("chess.white") : t("chess.black");
@@ -181,7 +265,7 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
                     <Avatar size={24} radius="xl">
                       {(opponent.name ?? "?")[0]?.toUpperCase()}
                     </Avatar>
-                    <Text>{opponent.name ?? (opponent.engine ? `Engine (${opponent.engine})` : "?")}</Text>
+                    <Text>{opponent.name ?? (opponent.engine ? `${t("features.dashboard.engine")} (${opponent.engine})` : "?")}</Text>
                   </Group>
                 </Table.Td>
                 <Table.Td>
@@ -189,7 +273,7 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
                 </Table.Td>
                 <Table.Td>
                   <Badge color={g.result === "1-0" ? "teal" : g.result === "0-1" ? "red" : "gray"}>
-                    {g.result === "1-0" ? "Win" : g.result === "0-1" ? "Loss" : g.result}
+                    {g.result === "1-0" ? t("features.dashboard.win") : g.result === "0-1" ? t("features.dashboard.loss") : g.result}
                   </Badge>
                 </Table.Td>
                 <Table.Td>
@@ -215,9 +299,9 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
                   )}
                 </Table.Td>
                 <Table.Td>
-                  {stats && stats.acpl > 0 ? (
+                  {stats && stats.estimatedElo !== undefined ? (
                     <Text size="xs" fw={500}>
-                      {calculateEstimatedElo(stats.acpl)}
+                      {stats.estimatedElo}
                     </Text>
                   ) : (
                     <Text size="xs" c="dimmed">
@@ -240,7 +324,7 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
                         variant="subtle"
                         color="red"
                         onClick={() => onDeleteGame(g.id)}
-                        title="Delete game"
+                        title={t("features.dashboard.deleteGame")}
                       >
                         <IconTrash size={16} />
                       </ActionIcon>
@@ -251,6 +335,29 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
             );
             })}
           </Table.Tbody>
+          <Table.Tfoot>
+            <Table.Tr>
+              <Table.Td colSpan={3}>
+                <Text size="xs" fw={600}>Average</Text>
+              </Table.Td>
+              <Table.Td>
+                <Text size="xs" fw={500}>
+                  {averages.accuracy > 0 ? `${averages.accuracy.toFixed(1)}%` : "-"}
+                </Text>
+              </Table.Td>
+              <Table.Td>
+                <Text size="xs" fw={500}>
+                  {averages.acpl > 0 ? averages.acpl.toFixed(1) : "-"}
+                </Text>
+              </Table.Td>
+              <Table.Td>
+                <Text size="xs" fw={500}>
+                  {averages.elo > 0 ? Math.round(averages.elo) : "-"}
+                </Text>
+              </Table.Td>
+              <Table.Td colSpan={4}></Table.Td>
+            </Table.Tr>
+          </Table.Tfoot>
         </Table>
       </ScrollArea>
       {totalPages > 1 && (

@@ -1,6 +1,7 @@
-import type { Outcome } from "@/bindings";
+import type { NormalizedGame, Outcome } from "@/bindings";
 import type { ChessComGame } from "@/utils/chess.com/api";
-import { formatDateToPGN } from "@/utils/format";
+import { formatDateToPGN, parseDate } from "@/utils/format";
+import { getTimeControl } from "@/utils/timeControl";
 import type { GameRecord } from "@/utils/gameRecords";
 
 interface GameHeaders {
@@ -109,4 +110,148 @@ export function createPGNFromMoves(moves: string[], result: string, initialFen?:
   }
   pgn += movesPairs.join(" ") + " " + result;
   return pgn;
+}
+
+/**
+ * Convert NormalizedGame from database to LichessGame format
+ */
+export function convertNormalizedToLichessGame(game: NormalizedGame): {
+  id: string;
+  players: {
+    white: { user?: { name: string } };
+    black: { user?: { name: string } };
+  };
+  speed: string;
+  createdAt: number;
+  winner?: string;
+  status: string;
+  pgn?: string;
+  lastFen: string;
+} {
+  // Extract game ID from site or PGN (usually contains the game ID for Lichess)
+  // Format: "https://lichess.org/{gameId}" or just the gameId
+  let gameId = game.id.toString();
+  if (game.site && game.site.includes("lichess.org/")) {
+    const match = game.site.match(/lichess\.org\/([a-zA-Z0-9]+)/);
+    if (match) {
+      gameId = match[1];
+    }
+  } else if (game.moves) {
+    // Try to extract from PGN if site doesn't have it
+    // Lichess PGNs often have Site header with the game ID
+    const siteMatch = game.moves.match(/\[Site\s+"([^"]+)"/);
+    if (siteMatch && siteMatch[1].includes("lichess.org/")) {
+      const match = siteMatch[1].match(/lichess\.org\/([a-zA-Z0-9]+)/);
+      if (match) {
+        gameId = match[1];
+      }
+    }
+  }
+
+  // Parse date to timestamp
+  const date = parseDate(game.date || "");
+  const createdAt = date ? date.getTime() : Date.now();
+
+  // Determine winner from result
+  let winner: string | undefined;
+  let status = "finished";
+  if (game.result === "1-0") {
+    winner = "white";
+    status = "white";
+  } else if (game.result === "0-1") {
+    winner = "black";
+    status = "black";
+  } else if (game.result === "1/2-1/2") {
+    status = "draw";
+  } else {
+    status = "*";
+  }
+
+  // Determine speed from time_control
+  const timeControl = game.time_control || "";
+  const speedCategory = getTimeControl("Lichess", timeControl);
+  // Convert to Lichess speed format (capitalize first letter, handle special cases)
+  let speed = speedCategory.charAt(0).toUpperCase() + speedCategory.slice(1).replace(/_/g, "");
+  // Handle special cases
+  if (speedCategory === "ultra_bullet") {
+    speed = "UltraBullet";
+  } else if (speedCategory === "correspondence") {
+    speed = "Correspondence";
+  }
+
+  return {
+    id: gameId,
+    players: {
+      white: { user: { name: game.white } },
+      black: { user: { name: game.black } },
+    },
+    speed: speed,
+    createdAt: createdAt,
+    winner: winner,
+    status: status,
+    pgn: game.moves || undefined,
+    lastFen: game.fen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  };
+}
+
+/**
+ * Convert NormalizedGame from database to ChessComGame format
+ */
+export function convertNormalizedToChessComGame(game: NormalizedGame): ChessComGame {
+  // Extract game URL from site or PGN (usually contains the game URL for Chess.com)
+  // Format: "https://www.chess.com/game/live/{gameId}" or similar
+  let url = `https://www.chess.com/game/live/${game.id}`;
+  if (game.site && game.site.includes("chess.com")) {
+    url = game.site;
+  } else if (game.moves) {
+    // Try to extract from PGN if site doesn't have it
+    // Chess.com PGNs often have Site header with the game URL
+    const siteMatch = game.moves.match(/\[Site\s+"([^"]+)"/);
+    if (siteMatch && siteMatch[1].includes("chess.com")) {
+      url = siteMatch[1];
+    }
+  }
+
+  // Parse date to timestamp
+  const date = parseDate(game.date || "");
+  const end_time = date ? Math.floor(date.getTime() / 1000) : Math.floor(Date.now() / 1000);
+
+  // Determine result strings for white and black
+  let whiteResult = "referred";
+  let blackResult = "referred";
+  if (game.result === "1-0") {
+    whiteResult = "win";
+    blackResult = "checkmated";
+  } else if (game.result === "0-1") {
+    whiteResult = "checkmated";
+    blackResult = "win";
+  } else if (game.result === "1/2-1/2") {
+    whiteResult = "agreed";
+    blackResult = "agreed";
+  }
+
+  // Determine initial setup (FEN)
+  const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  const initial_setup = game.fen || INITIAL_FEN;
+
+  return {
+    url: url,
+    pgn: game.moves || null,
+    time_control: game.time_control || "",
+    end_time: end_time,
+    rated: true,
+    initial_setup: initial_setup,
+    fen: game.fen || INITIAL_FEN,
+    rules: "chess",
+    white: {
+      rating: game.white_elo || 0,
+      result: whiteResult,
+      username: game.white,
+    },
+    black: {
+      rating: game.black_elo || 0,
+      result: blackResult,
+      username: game.black,
+    },
+  };
 }

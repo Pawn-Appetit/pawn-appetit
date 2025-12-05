@@ -37,14 +37,14 @@ export function PuzzleStatsCard({ stats, onStartPuzzles }: PuzzleStatsCardProps)
               </ThemeIcon>
               <Text fw={700}>{stats.currentStreak}</Text>
               <Text size="xs" c="dimmed">
-                day streak
+                {t("features.dashboard.dayStreak")}
               </Text>
             </Stack>
           }
         />
         <Box style={{ flex: 1 }}>
           <Text size="sm" c="dimmed" mb={6}>
-            This week
+            {t("features.dashboard.thisWeek")}
           </Text>
           <BarChart
             h={120}

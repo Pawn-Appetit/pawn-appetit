@@ -38,7 +38,7 @@ use crate::db::{
     delete_indexes, export_to_pgn, get_player, get_players_game_info, get_tournaments,
     search_position,
 };
-use crate::fide::{download_fide_db, find_fide_player};
+use crate::fide::{download_fide_db, find_fide_player, fetch_fide_profile_html, save_fide_photo};
 use crate::fs::{set_file_as_executable, DownloadProgress};
 use crate::lexer::lex_pgn;
 use crate::oauth::authenticate;
@@ -98,6 +98,8 @@ pub async fn run() {
         .commands(tauri_specta::collect_commands!(
             app::platform::screen_capture,
             find_fide_player,
+            fetch_fide_profile_html,
+            save_fide_photo,
             get_best_moves,
             analyze_game,
             stop_engine,
@@ -211,3 +213,4 @@ async fn open_external_link(app: AppHandle, url: String) -> Result<(), String> {
         .open_url(url, None::<String>)
         .map_err(|e| format!("Failed to open external link: {}", e))
 }
+

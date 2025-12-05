@@ -1,6 +1,7 @@
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { getGameStats, parsePGN } from "@/utils/chess";
+import { calculateEstimatedElo } from "@/utils/eloEstimation";
 
 export interface GameRecord {
   id: string;
@@ -22,6 +23,7 @@ export interface GameRecord {
   fen: string; // Final FEN position
   initialFen?: string; // Initial FEN position (if different from standard)
   pgn?: string; // Full PGN with headers and moves
+  stats?: GameStats; // Calculated stats including estimatedElo (saved once during analysis)
 }
 
 const FILENAME = "played_games.json";
@@ -168,6 +170,7 @@ export async function deleteGameRecord(gameId: string): Promise<void> {
 export interface GameStats {
   accuracy: number;
   acpl: number; // Average Centipawns Loss
+  estimatedElo?: number; // Estimated Elo based on ACPL (calculated once during analysis)
 }
 
 /**
@@ -199,9 +202,13 @@ export async function calculateGameStats(game: GameRecord): Promise<GameStats | 
       return null;
     }
 
+    // Don't calculate estimatedElo here - it should only be calculated and saved when generating a report
+    // This function is used for backwards compatibility and should not calculate estimatedElo
+
     return {
       accuracy,
       acpl,
+      // estimatedElo is not calculated here - only when saving from a report
     };
   } catch {
     // If parsing fails, return null

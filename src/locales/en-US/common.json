@@ -373,9 +373,7 @@
       "moves": "Moves",
       "date": "Date",
       "account": "Account"
-    },
-    "suggestedForYou": "Suggested for you",
-    "dailyGoals": "Daily goals"
+    }
   },
   "databaseOptions": {
     "player": "Player",
@@ -561,11 +559,6 @@
       "helpTitle": "Show keyboard shortcuts help"
     },
     "dashboard": {
-      "welcome": {
-        "firstOpen": "Welcome to Pawn Appétit!",
-        "back": "Welcome back",
-        "desc": "Ready to make your next best move?"
-      },
       "cards": {
         "learn": {
           "title": "Learn Chess",
@@ -617,6 +610,87 @@
           "desc": "Upload and edit PGN files to analyze your own games or study specific positions with full control.",
           "button": "Import"
         }
+      },
+      "suggestedForYou": "Suggested for you",
+      "dailyGoals": "Daily goals",
+      "dayStreak": "day streak",
+      "thisWeek": "This week",
+      "tags": {
+        "lessons": "Lessons",
+        "openings": "Openings",
+        "endgames": "Endgames",
+        "tactics": "Tactics"
+      },
+      "start": "Start",
+      "streak": "Streak",
+      "achievement": "Achievement",
+      "startPuzzleStreak": "Start today's puzzle streak",
+      "keepStreak": "Keep the streak: solve more puzzles",
+      "win": "Win",
+      "loss": "Loss",
+      "analyzeAllGames": "Analyze All Games",
+      "selectAnalysisDepth_one": "Select analysis depth for {{count}} game. This will analyze games shown in the dashboard using the default engine.",
+      "selectAnalysisDepth_other": "Select analysis depth for {{count}} games. This will analyze games shown in the dashboard using the default engine.",
+      "analyze": "Analyze",
+      "onlyUnanalyzedGames": "Only unanalyzed games",
+      "allGamesReanalyze": "All games (re-analyze)",
+      "analysisDepth": "Analysis Depth",
+      "analyzingGames": "Analyzing {{current}} of {{total}} games...",
+      "stopAnalysis": "Stop Analysis",
+      "analysisSpeeds": {
+        "express": "Express / depth 8",
+        "swift": "Fast / depth 12",
+        "focused": "Intermediate / depth 16",
+        "advanced": "Advanced / depth 20",
+        "deepdive": "Deep / depth 24"
+      },
+      "deleteGame": "Delete game",
+      "allAccounts": "All Accounts",
+      "noEngineAvailable": "No Engine Available",
+      "noEngineAvailableMessage": "Please install an engine first in the Engines page.",
+      "analysisStarted": "Analysis Started",
+      "analysisCancelled": "Analysis Cancelled",
+      "analysisProgress": "Analysis Progress",
+      "analysisComplete": "Analysis Complete",
+      "newGame": "New Game",
+      "unknown": "Unknown",
+      "engine": "Engine",
+      "editProfile": {
+        "title": "Edit Profile",
+        "fideIdLabel": "FIDE ID",
+        "fideIdPlaceholder": "Enter your FIDE ID",
+        "invalidFideId": "FIDE ID must be a number",
+        "enterFideId": "Please enter a FIDE ID",
+        "playerNotFound": "Player not found. Please verify the FIDE ID.",
+        "searchError": "Error searching for player. Please try again.",
+        "search": "Search",
+        "name": "Name",
+        "firstName": "First Name",
+        "customName": "Display Name",
+        "customNamePlaceholder": "Enter your preferred name",
+        "customNameDescription": "This name will be shown in the dashboard",
+        "title": "FIDE Title",
+        "gender": "Gender",
+        "male": "Male",
+        "female": "Female",
+        "error": "Error",
+        "note": "Note: FIDE player search may not be available. You can still save the FIDE ID manually.",
+        "ratings": "FIDE Ratings",
+        "standard": "Standard",
+        "rapid": "Rapid",
+        "blitz": "Blitz"
+      },
+      "welcome": {
+        "firstOpen": "Welcome to Pawn Appétit!",
+        "back": "Welcome back",
+        "backWithName": {
+          "male": "Welcome back, {{name}}!",
+          "female": "Welcome back, {{name}}!"
+        },
+        "desc": "Ready to make your next best move?",
+        "fideTitle": "FIDE Title",
+        "worldRank": "World Rank",
+        "nationalRank": "National Rank"
       }
     },
     "tabs": {

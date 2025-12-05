@@ -1,5 +1,6 @@
 import { Badge, Box, Card, Divider, Group, Progress, Stack, Text, ThemeIcon } from "@mantine/core";
 import { IconFlame, IconTrophy } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 import type { Achievement } from "@/utils/achievements";
 import type { DailyGoal } from "@/utils/dailyGoals";
 
@@ -10,10 +11,11 @@ interface DailyGoalsCardProps {
 }
 
 export function DailyGoalsCard({ goals, achievements, currentStreak }: DailyGoalsCardProps) {
+  const { t } = useTranslation();
   return (
     <Card withBorder p="lg" radius="md" h="100%">
       <Group justify="space-between" mb="sm">
-        <Text fw={700}>Daily goals</Text>
+        <Text fw={700}>{t("features.dashboard.dailyGoals")}</Text>
         <ThemeIcon variant="light" color="teal">
           <IconTrophy size={16} />
         </ThemeIcon>
@@ -37,11 +39,11 @@ export function DailyGoalsCard({ goals, achievements, currentStreak }: DailyGoal
       <Divider my="md" />
       <Group>
         <Badge color="yellow" variant="light" leftSection={<IconFlame size={14} />}>
-          Streak {currentStreak}
+          {t("features.dashboard.streak")} {currentStreak}
         </Badge>
         {achievements.map((a) => (
           <Badge key={a.id} color="teal" variant="light" leftSection={<IconTrophy size={14} />}>
-            Achievement: {a.label}
+            {t("features.dashboard.achievement")}: {a.label}
           </Badge>
         ))}
       </Group>

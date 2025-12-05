@@ -21,6 +21,26 @@ async findFidePlayer(player: string) : Promise<Result<FidePlayer | null, string>
     else return { status: "error", error: e  as any };
 }
 },
+async fetchFideProfileHtml(fideId: string) : Promise<Result<string, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("fetch_fide_profile_html", { fideId }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Save a FIDE profile photo (either from URL or base64 data) to local storage
+ * Returns the local file path
+ */
+async saveFidePhoto(fideId: string, photoData: string) : Promise<Result<string, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("save_fide_photo", { fideId, photoData }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 /**
  * Get best moves from the engine for a given position and options.
  */
@@ -672,7 +692,7 @@ puzzleCount: number;
 /**
  * Size of the database file in bytes
  */
-storageSize: bigint;
+storageSize: bigint; 
 /**
  * Full path to the database file
  */

@@ -44,6 +44,17 @@ function GameInfo({
       <FideInfo opened={blackOpened} setOpened={setBlackOpened} name={headers.black} />
 
       <Group w="100%" wrap="nowrap">
+        {!simplified && (
+          <Text
+            c="dimmed"
+            tt="uppercase"
+            fw="bold"
+            onClick={() => setWhiteOpened(true)}
+            className={classes.colorHover}
+          >
+            {t("chess.white")}
+          </Text>
+        )}
         {simplified === "repertoire" && (
           <Text c="dimmed" tt="uppercase" fw="bold" className={classes.colorHover} onClick={() => setWhiteOpened(true)}>
             {t("chess.white")}
@@ -103,7 +114,7 @@ function GameInfo({
             onClick={() => setBlackOpened(true)}
             className={classes.colorHover}
           >
-            Black
+            {t("chess.black")}
           </Text>
         )}
       </Group>
@@ -224,7 +235,7 @@ function GameInfo({
           />
           <input
             className={classes.textInput}
-            placeholder="Unknown ELO"
+            placeholder={t("gameInfo.unknownElo")}
             value={headers.white_elo || ""}
             onChange={(n) =>
               setHeaders({
@@ -254,7 +265,7 @@ function GameInfo({
           />
           <input
             className={cx(classes.textInput, classes.right)}
-            placeholder="Unknown ELO"
+            placeholder={t("gameInfo.unknownElo")}
             value={headers.black_elo || ""}
             onChange={(n) =>
               setHeaders({

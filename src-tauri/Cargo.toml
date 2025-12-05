@@ -80,6 +80,7 @@ regex = "1.12.2"
 postgrest = "1.6"
 uuid = { version = "1.18.1", features = ["v4"] }
 fs_extra = "1.3.0"
+base64 = "0.22.1"
 
 [features]
 # by default Tauri runs in production mode

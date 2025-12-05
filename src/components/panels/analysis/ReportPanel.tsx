@@ -11,10 +11,11 @@ import EvalChart from "@/components/EvalChart";
 import ProgressButton from "@/components/ProgressButtonWithOutState";
 import { TreeStateContext } from "@/components/TreeStateContext";
 import { activeTabAtom } from "@/state/atoms";
-import { saveAnalyzedGame } from "@/utils/analyzedGames";
+import { saveAnalyzedGame, saveGameStats, getGameStats as getSavedGameStats } from "@/utils/analyzedGames";
 import { ANNOTATION_INFO, annotationColors, isBasicAnnotation } from "@/utils/annotation";
 import { getGameStats, getMainLine, getPGN } from "@/utils/chess";
-import { updateGameRecord } from "@/utils/gameRecords";
+import { calculateEstimatedElo } from "@/utils/eloEstimation";
+import { updateGameRecord, type GameStats } from "@/utils/gameRecords";
 import { label } from "./AnalysisPanel.css";
 import ReportModal from "./ReportModal";
 
@@ -155,12 +156,53 @@ function ReportPanel() {
             return;
           }
 
+          // Calculate stats from the analyzed game using the stats already calculated in the report
+          // We can use the stats from the root node which are already calculated
+          const reportStats = getGameStats(finalRoot);
+          
           // Check if this tab is associated with a local game
           const localGameId = typeof window !== "undefined" ? sessionStorage.getItem(`${activeTab}_localGameId`) : null;
 
           if (localGameId) {
-            // Update the GameRecord with the new PGN that includes evaluations
-            await updateGameRecord(localGameId, { pgn: pgnWithEvals });
+            // Get the game record to determine user color
+            const { getRecentGames } = await import("@/utils/gameRecords");
+            const games = await getRecentGames(1000); // Get enough games to find ours
+            const gameRecord = games.find(g => g.id === localGameId);
+            
+            if (gameRecord) {
+              // Determine which color the user played
+              const isUserWhite = gameRecord.white.type === "human";
+              const userColor = isUserWhite ? "white" : "black";
+              
+              // Get stats for the user's color from the report
+              const accuracy = userColor === "white" ? reportStats.whiteAccuracy : reportStats.blackAccuracy;
+              const acpl = userColor === "white" ? reportStats.whiteCPL : reportStats.blackCPL;
+              
+              // Calculate estimated Elo
+              let calculatedStats: GameStats | null = null;
+              if (accuracy > 0 || acpl > 0) {
+                calculatedStats = {
+                  accuracy,
+                  acpl,
+                  estimatedElo: acpl > 0 ? calculateEstimatedElo(acpl) : undefined,
+                };
+              }
+              
+              // Update the GameRecord with the new PGN and calculated stats
+              if (calculatedStats) {
+                await updateGameRecord(localGameId, { 
+                  pgn: pgnWithEvals,
+                  stats: calculatedStats,
+                });
+              } else {
+                // If stats calculation failed, still update PGN
+                await updateGameRecord(localGameId, { pgn: pgnWithEvals });
+              }
+            } else {
+              // Fallback: just update PGN if game not found
+              await updateGameRecord(localGameId, { pgn: pgnWithEvals });
+            }
+            
             // Trigger refresh of games list in dashboard
             if (typeof window !== "undefined") {
               window.dispatchEvent(new CustomEvent("games:updated"));
@@ -175,6 +217,41 @@ function ReportPanel() {
             if (chessComGameUrl) {
               // Save analyzed PGN for Chess.com game
               await saveAnalyzedGame(chessComGameUrl, pgnWithEvals);
+              
+              // Calculate and save stats using the stats already calculated in the report
+              try {
+                // Get the username from sessionStorage to determine which color the user played
+                const chessComUsername = typeof window !== "undefined" 
+                  ? sessionStorage.getItem(`${activeTab}_chessComUsername`) 
+                  : null;
+                
+                if (chessComUsername) {
+                  // Extract usernames from PGN headers
+                  const whiteMatch = pgnWithEvals.match(/\[White\s+"([^"]+)"/);
+                  const blackMatch = pgnWithEvals.match(/\[Black\s+"([^"]+)"/);
+                  const whiteName = whiteMatch ? whiteMatch[1] : "";
+                  const blackName = blackMatch ? blackMatch[1] : "";
+                  
+                  const isUserWhite = whiteName.toLowerCase() === chessComUsername.toLowerCase();
+                  const userColor = isUserWhite ? "white" : "black";
+                  
+                  // Use stats from the report (already calculated)
+                  const accuracy = userColor === "white" ? reportStats.whiteAccuracy : reportStats.blackAccuracy;
+                  const acpl = userColor === "white" ? reportStats.whiteCPL : reportStats.blackCPL;
+                  
+                  if (accuracy > 0 || acpl > 0) {
+                    const stats: GameStats = {
+                      accuracy,
+                      acpl,
+                      estimatedElo: acpl > 0 ? calculateEstimatedElo(acpl) : undefined,
+                    };
+                    await saveGameStats(chessComGameUrl, stats);
+                  }
+                }
+              } catch (error) {
+                // Silently handle errors
+              }
+              
               // Trigger refresh of Chess.com games list in dashboard
               if (typeof window !== "undefined") {
                 window.dispatchEvent(new CustomEvent("chesscom:games:updated"));
@@ -182,6 +259,41 @@ function ReportPanel() {
             } else if (lichessGameId) {
               // Save analyzed PGN for Lichess game
               await saveAnalyzedGame(lichessGameId, pgnWithEvals);
+              
+              // Calculate and save stats using the stats already calculated in the report
+              try {
+                // Get the username from sessionStorage to determine which color the user played
+                const lichessUsername = typeof window !== "undefined" 
+                  ? sessionStorage.getItem(`${activeTab}_lichessUsername`) 
+                  : null;
+                
+                if (lichessUsername) {
+                  // Extract usernames from PGN headers
+                  const whiteMatch = pgnWithEvals.match(/\[White\s+"([^"]+)"/);
+                  const blackMatch = pgnWithEvals.match(/\[Black\s+"([^"]+)"/);
+                  const whiteName = whiteMatch ? whiteMatch[1] : "";
+                  const blackName = blackMatch ? blackMatch[1] : "";
+                  
+                  const isUserWhite = whiteName.toLowerCase() === lichessUsername.toLowerCase();
+                  const userColor = isUserWhite ? "white" : "black";
+                  
+                  // Use stats from the report (already calculated)
+                  const accuracy = userColor === "white" ? reportStats.whiteAccuracy : reportStats.blackAccuracy;
+                  const acpl = userColor === "white" ? reportStats.whiteCPL : reportStats.blackCPL;
+                  
+                  if (accuracy > 0 || acpl > 0) {
+                    const stats: GameStats = {
+                      accuracy,
+                      acpl,
+                      estimatedElo: acpl > 0 ? calculateEstimatedElo(acpl) : undefined,
+                    };
+                    await saveGameStats(lichessGameId, stats);
+                  }
+                }
+              } catch (error) {
+                // Silently handle errors
+              }
+              
               // Trigger refresh of Lichess games list in dashboard
               if (typeof window !== "undefined") {
                 window.dispatchEvent(new CustomEvent("lichess:games:updated"));
@@ -345,6 +457,7 @@ const GameStats = memo(
 
 function AccuracyCard({ color, cpl, accuracy }: { color: string; cpl: number; accuracy: number }) {
   const { t } = useTranslation();
+  const estimatedElo = cpl > 0 ? calculateEstimatedElo(cpl) : undefined;
 
   return (
     <Paper withBorder p="xs">
@@ -352,6 +465,11 @@ function AccuracyCard({ color, cpl, accuracy }: { color: string; cpl: number; ac
         <Stack gap={0} align="start">
           <Text c="dimmed">{color}</Text>
           <Text fz="sm">{cpl.toFixed(1)} ACPL</Text>
+          {estimatedElo !== undefined && (
+            <Text fz="sm" c="dimmed">
+              {Math.round(estimatedElo)} {t("dashboard.estimatedElo")}
+            </Text>
+          )}
         </Stack>
         <Stack gap={0} align="center">
           <Text fz="xl" lh="normal">

@@ -1,6 +1,6 @@
 import { Button, Group, Modal, Progress, Radio, Stack, Text } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export type AnalysisSpeed = "express" | "swift" | "focused" | "advanced" | "deepdive";
@@ -11,13 +11,13 @@ export interface AnalyzeAllConfig {
   analyzeMode: "all" | "unanalyzed";
 }
 
-const ANALYSIS_OPTIONS: Record<AnalysisSpeed, { label: string; depth: number }> = {
-  express: { label: "Express / depth 8", depth: 8 },
-  swift: { label: "Fast / depth 12", depth: 12 },
-  focused: { label: "Intermediate / depth 16", depth: 16 },
-  advanced: { label: "Advanced / depth 20", depth: 20 },
-  deepdive: { label: "Deep / depth 24", depth: 24 },
-};
+const getAnalysisOptions = (t: (key: string) => string): Record<AnalysisSpeed, { label: string; depth: number }> => ({
+  express: { label: t("features.dashboard.analysisSpeeds.express"), depth: 8 },
+  swift: { label: t("features.dashboard.analysisSpeeds.swift"), depth: 12 },
+  focused: { label: t("features.dashboard.analysisSpeeds.focused"), depth: 16 },
+  advanced: { label: t("features.dashboard.analysisSpeeds.advanced"), depth: 20 },
+  deepdive: { label: t("features.dashboard.analysisSpeeds.deepdive"), depth: 24 },
+});
 
 interface AnalyzeAllModalProps {
   opened: boolean;
@@ -29,10 +29,12 @@ interface AnalyzeAllModalProps {
   ) => Promise<void>;
   gameCount: number;
   unanalyzedGameCount?: number;
+  analyzeMode?: "all" | "unanalyzed";
 }
 
 export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount, unanalyzedGameCount, analyzeMode = "unanalyzed" }: AnalyzeAllModalProps) {
   const { t } = useTranslation();
+  const ANALYSIS_OPTIONS = getAnalysisOptions(t);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const cancelledRef = useRef(false);
@@ -45,10 +47,12 @@ export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount, unanaly
     },
   });
 
-  // Calculate the actual game count based on selected mode
-  const actualGameCount = form.values.analyzeMode === "unanalyzed" 
-    ? (unanalyzedGameCount ?? gameCount)
-    : gameCount;
+  // Calculate the actual game count based on selected mode - use useMemo to update when form values change
+  const actualGameCount = useMemo(() => {
+    return form.values.analyzeMode === "unanalyzed" 
+      ? (unanalyzedGameCount ?? gameCount)
+      : gameCount;
+  }, [form.values.analyzeMode, unanalyzedGameCount, gameCount]);
 
   const handleSubmit = async () => {
     const selectedOption = ANALYSIS_OPTIONS[form.values.speed];
@@ -92,36 +96,43 @@ export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount, unanaly
     // This ensures the cancellation is properly propagated
   };
 
-  // Reset progress when modal closes
+  // Reset progress and form when modal opens/closes
   useEffect(() => {
     if (!opened) {
       setProgress({ current: 0, total: 0 });
       setIsAnalyzing(false);
       cancelledRef.current = false;
+    } else {
+      // Reset form to initial values when modal opens
+      form.setValues({
+        speed: "focused",
+        depth: 16,
+        analyzeMode: analyzeMode,
+      });
     }
-  }, [opened]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opened, analyzeMode]);
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Analyze All Games" size="md">
+    <Modal opened={opened} onClose={onClose} title={t("features.dashboard.analyzeAllGames")} size="md">
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack gap="md">
           <Text size="sm" c="dimmed">
-            Select analysis depth for {actualGameCount} {actualGameCount === 1 ? "game" : "games"}. This will analyze games
-            shown in the dashboard using the default engine.
+            {t(`features.dashboard.selectAnalysisDepth_${actualGameCount === 1 ? "one" : "other"}`, { count: actualGameCount })}
           </Text>
 
           <Radio.Group
-            label="Analyze"
+            label={t("features.dashboard.analyze")}
             {...form.getInputProps("analyzeMode")}
             disabled={isAnalyzing}
           >
             <Stack gap="xs">
-              <Radio value="unanalyzed" label="Only unanalyzed games" />
-              <Radio value="all" label="All games (re-analyze)" />
+              <Radio value="unanalyzed" label={t("features.dashboard.onlyUnanalyzedGames")} />
+              <Radio value="all" label={t("features.dashboard.allGamesReanalyze")} />
             </Stack>
           </Radio.Group>
 
-          <Radio.Group label="Analysis Depth" {...form.getInputProps("speed")} disabled={isAnalyzing}>
+          <Radio.Group label={t("features.dashboard.analysisDepth")} {...form.getInputProps("speed")} disabled={isAnalyzing}>
             <Stack gap="xs">
               {Object.entries(ANALYSIS_OPTIONS).map(([key, option]) => (
                 <Radio key={key} value={key} label={option.label} />
@@ -133,7 +144,7 @@ export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount, unanaly
             <Stack gap="xs" mt="md">
               <Progress value={(progress.current / progress.total) * 100} />
               <Text size="sm" c="dimmed" ta="center">
-                Analyzing {progress.current} of {progress.total} games...
+                {t("features.dashboard.analyzingGames", { current: progress.current, total: progress.total })}
               </Text>
             </Stack>
           )}
@@ -141,15 +152,15 @@ export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount, unanaly
           <Group justify="flex-end" mt="md">
             {isAnalyzing ? (
               <Button variant="filled" color="red" onClick={handleStop}>
-                Stop Analysis
+                {t("features.dashboard.stopAnalysis")}
               </Button>
             ) : (
               <>
                 <Button variant="subtle" onClick={onClose} disabled={isAnalyzing}>
-                  Cancel
+                  {t("common.cancel")}
                 </Button>
                 <Button type="submit" loading={isAnalyzing} disabled={isAnalyzing}>
-                  Analyze
+                  {t("features.dashboard.analyze")}
                 </Button>
               </>
             )}
