@@ -1,7 +1,9 @@
 import { Avatar, Badge, Button, Group, Loader, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
 import { IconSortAscending, IconSortDescending } from "@tabler/icons-react";
+import { useAtomValue } from "jotai";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { currentThemeIdAtom } from "@/features/themes/state/themeAtoms";
 import { AnalysisPreview } from "@/components/AnalysisPreview";
 import { getAnalyzedGame, getGameStats as getSavedGameStats } from "@/utils/analyzedGames";
 import type { ChessComGame } from "@/utils/chess.com/api";
@@ -23,6 +25,8 @@ interface ChessComGamesTabProps {
 
 export function ChessComGamesTab({ games, chessComUsernames, selectedUser, isLoading = false, onAnalyzeGame, onAnalyzeAll }: ChessComGamesTabProps) {
   const { t } = useTranslation();
+  const currentThemeId = useAtomValue(currentThemeIdAtom);
+  const isAcademiaMaya = currentThemeId === "academia-maya";
   const [gameStats, setGameStats] = useState<Map<string, GameStats>>(new Map());
   const [analyzedPgns, setAnalyzedPgns] = useState<Map<string, string>>(new Map());
   const [page, setPage] = useState(1);
@@ -291,6 +295,28 @@ export function ChessComGamesTab({ games, chessComUsernames, selectedUser, isLoa
             const color = isUserWhite ? t("chess.white") : t("chess.black");
             const result = isUserWhite ? g.white.result : g.black.result;
             const stats = gameStats.get(g.url);
+            
+            // Translate result
+            const getTranslatedResult = (result: string) => {
+              if (result === "win") return t("features.dashboard.win");
+              if (result === "checkmated" || result === "resigned" || result === "timeout" || result === "abandoned") return t("features.dashboard.loss");
+              if (result === "stalemate" || result === "insufficient" || result === "repetition" || result === "agreed") return t("chess.draw");
+              return result;
+            };
+            
+            // Get color for result badge - different colors for Academia Maya
+            const getResultColor = (result: string, isUserWin: boolean) => {
+              if (isAcademiaMaya) {
+                if (isUserWin) return "green"; // Verde para victoria en Academia Maya
+                if (result === "checkmated" || result === "resigned" || result === "timeout" || result === "abandoned") return "red"; // Rojo para derrota
+                return "gray"; // Gris para empate
+              } else {
+                // Default colors for other themes
+                if (result === "win") return "teal";
+                if (result === "checkmated" || result === "resigned") return "red";
+                return "gray";
+              }
+            };
 
             return (
               <Table.Tr key={g.url}>
@@ -307,11 +333,9 @@ export function ChessComGamesTab({ games, chessComUsernames, selectedUser, isLoa
                 </Table.Td>
                 <Table.Td>
                   <Badge
-                    color={
-                      result === "win" ? "teal" : result === "checkmated" || result === "resigned" ? "red" : "gray"
-                    }
+                    color={getResultColor(result, result === "win")}
                   >
-                    {result}
+                    {getTranslatedResult(result)}
                   </Badge>
                 </Table.Td>
                 <Table.Td>

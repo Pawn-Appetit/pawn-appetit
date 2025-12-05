@@ -1,8 +1,10 @@
 import { ActionIcon, Avatar, Badge, Button, Group, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
 import { IconSortAscending, IconSortDescending, IconTrash } from "@tabler/icons-react";
+import { useAtomValue } from "jotai";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AnalysisPreview } from "@/components/AnalysisPreview";
+import { currentThemeIdAtom } from "@/features/themes/state/themeAtoms";
 import { getAnalyzedGame } from "@/utils/analyzedGames";
 import type { GameRecord } from "@/utils/gameRecords";
 import { calculateGameStats, type GameStats } from "@/utils/gameRecords";
@@ -16,6 +18,8 @@ interface LocalGamesTabProps {
 
 export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame }: LocalGamesTabProps) {
   const { t } = useTranslation();
+  const currentThemeId = useAtomValue(currentThemeIdAtom);
+  const isAcademiaMaya = currentThemeId === "academia-maya";
   const [gameStats, setGameStats] = useState<Map<string, GameStats>>(new Map());
   const [analyzedPgns, setAnalyzedPgns] = useState<Map<string, string>>(new Map());
   const [page, setPage] = useState(1);
@@ -245,6 +249,23 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
             const isUserWhite = g.white.type === "human";
             const opponent = isUserWhite ? g.black : g.white;
             const color = isUserWhite ? t("chess.white") : t("chess.black");
+            
+            // Determine if user won
+            const userWon = (isUserWhite && g.result === "1-0") || (!isUserWhite && g.result === "0-1");
+            
+            // Get color for result badge - different colors for Academia Maya
+            const getResultColor = () => {
+              if (isAcademiaMaya) {
+                if (userWon) return "green"; // Verde para victoria en Academia Maya
+                if (g.result === "1-0" || g.result === "0-1") return "red"; // Rojo para derrota (cuando el usuario perdió)
+                return "gray"; // Gris para empate
+              } else {
+                // Default colors for other themes
+                if (userWon) return "teal";
+                if (g.result === "1-0" || g.result === "0-1") return "red";
+                return "gray";
+              }
+            };
             const now = Date.now();
             const diffMs = now - g.timestamp;
             let dateStr = "";
@@ -272,7 +293,7 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
                   <Badge variant="light">{color}</Badge>
                 </Table.Td>
                 <Table.Td>
-                  <Badge color={g.result === "1-0" ? "teal" : g.result === "0-1" ? "red" : "gray"}>
+                  <Badge color={getResultColor()}>
                     {g.result === "1-0" ? t("features.dashboard.win") : g.result === "0-1" ? t("features.dashboard.loss") : g.result}
                   </Badge>
                 </Table.Td>

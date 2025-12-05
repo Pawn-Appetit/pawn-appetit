@@ -1,7 +1,9 @@
 import { Avatar, Badge, Button, Group, Loader, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
 import { IconSortAscending, IconSortDescending } from "@tabler/icons-react";
+import { useAtomValue } from "jotai";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { currentThemeIdAtom } from "@/features/themes/state/themeAtoms";
 import { AnalysisPreview } from "@/components/AnalysisPreview";
 import { getAnalyzedGame, getGameStats as getSavedGameStats } from "@/utils/analyzedGames";
 
@@ -36,6 +38,8 @@ interface LichessGamesTabProps {
 
 export function LichessGamesTab({ games, lichessUsernames, selectedUser, isLoading = false, onAnalyzeGame, onAnalyzeAll }: LichessGamesTabProps) {
   const { t } = useTranslation();
+  const currentThemeId = useAtomValue(currentThemeIdAtom);
+  const isAcademiaMaya = currentThemeId === "academia-maya";
   const [gameStats, setGameStats] = useState<Map<string, GameStats>>(new Map());
   const [analyzedPgns, setAnalyzedPgns] = useState<Map<string, string>>(new Map());
   const [page, setPage] = useState(1);
@@ -305,6 +309,31 @@ export function LichessGamesTab({ games, lichessUsernames, selectedUser, isLoadi
             const userAccount = isUserWhite ? g.players.white : g.players.black;
             const color = isUserWhite ? t("chess.white") : t("chess.black");
             const stats = gameStats.get(g.id);
+            
+            // Translate status
+            const getTranslatedStatus = (status: string) => {
+              if (status === "white") return t("chess.white");
+              if (status === "black") return t("chess.black");
+              if (status === "draw") return t("chess.draw");
+              return status;
+            };
+            
+            // Determine if user won
+            const userWon = g.winner === (isUserWhite ? "white" : "black");
+            
+            // Get color for result badge - different colors for Academia Maya
+            const getResultColor = () => {
+              if (isAcademiaMaya) {
+                if (userWon) return "green"; // Verde para victoria en Academia Maya
+                if (g.winner) return "red"; // Rojo para derrota
+                return "gray"; // Gris para empate
+              } else {
+                // Default colors for other themes
+                if (userWon) return "teal";
+                if (g.winner) return "red";
+                return "gray";
+              }
+            };
 
             return (
               <Table.Tr key={g.id}>
@@ -320,8 +349,8 @@ export function LichessGamesTab({ games, lichessUsernames, selectedUser, isLoadi
                   <Badge variant="light">{color}</Badge>
                 </Table.Td>
                 <Table.Td>
-                  <Badge color={g.winner === color.toLowerCase() ? "teal" : g.winner ? "red" : "gray"}>
-                    {g.status}
+                  <Badge color={getResultColor()}>
+                    {getTranslatedStatus(g.status)}
                   </Badge>
                 </Table.Td>
                 <Table.Td>
