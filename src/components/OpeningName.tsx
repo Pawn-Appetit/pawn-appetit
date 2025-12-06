@@ -13,7 +13,15 @@ function OpeningName() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    getOpening(root, position).then((v) => setOpeningName(v));
+    getOpening(root, position).then((v) => {
+      // If we found an opening, update it
+      if (v && v !== "") {
+        setOpeningName(v);
+      }
+      // If no opening found, keep the last one we found (don't clear it)
+      // This ensures the opening label persists even when moving to positions
+      // that don't have a named opening in the database
+    });
   }, [root, position]);
 
   return (
