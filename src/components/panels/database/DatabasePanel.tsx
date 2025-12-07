@@ -78,7 +78,18 @@ async function fetchOpening(db: DBType, tab: string, gameDetailsLimit: number) {
     })
     .with({ type: "local" }, async ({ options }) => {
       if (!options.path) throw Error("Missing reference database");
+      console.log("[DatabasePanel] Calling searchPosition with:", { 
+        fen: options.fen, 
+        gameDetailsLimit,
+        path: options.path 
+      });
       const positionData = await searchPosition({ ...options, gameDetailsLimit }, tab);
+      console.log("[DatabasePanel] searchPosition returned:", {
+        openingsCount: positionData[0]?.length || 0,
+        gamesCount: positionData[1]?.length || 0,
+        firstOpening: positionData[0]?.[0],
+        firstGame: positionData[1]?.[0],
+      });
       return {
         openings: sortOpenings(positionData[0]),
         games: positionData[1],
@@ -104,7 +115,13 @@ function DatabasePanel() {
 
   useEffect(() => {
     if (db === "local") {
-      setLocalOptions((q) => ({ ...q, fen: debouncedFen }));
+      setLocalOptions((q) => {
+        // Only update if FEN actually changed to avoid unnecessary re-renders
+        if (q.fen !== debouncedFen) {
+          return { ...q, fen: debouncedFen };
+        }
+        return q;
+      });
       setGameLimit(10); // reset preview limit when FEN changes
     }
   }, [debouncedFen, setLocalOptions, db]);
@@ -144,16 +161,36 @@ function DatabasePanel() {
     setGameLimit(10);
   }, [db]);
 
+  // Debug: Log when query conditions change
+  const queryEnabled = tabType !== "options" 
+    && !!tab?.value 
+    && (db !== "local" || (!!debouncedFen && !!localOptions.path));
+  
+  useEffect(() => {
+    if (db === "local") {
+      console.log("[DatabasePanel] Query conditions:", {
+        tabType,
+        hasTab: !!tab?.value,
+        hasFen: !!debouncedFen,
+        hasPath: !!localOptions.path,
+        enabled: queryEnabled,
+        fen: debouncedFen,
+      });
+    }
+  }, [db, tabType, tab?.value, debouncedFen, localOptions.path, queryEnabled]);
+
   const {
     data: openingData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["database-opening", dbType, tab?.value, gameLimit],
+    // Include debouncedFen directly in queryKey to ensure React Query detects FEN changes
+    queryKey: ["database-opening", db, db === "local" ? debouncedFen : null, dbType, tab?.value, gameLimit],
     queryFn: async () => {
+      console.log("[DatabasePanel] Executing query for FEN:", debouncedFen, "gameLimit:", gameLimit);
       return fetchOpening(dbType, tab?.value || "", gameLimit);
     },
-    enabled: tabType !== "options" && !!tab?.value,
+    enabled: queryEnabled,
   });
 
   const grandTotal = openingData?.openings?.reduce((acc, curr) => acc + curr.black + curr.white + curr.draw, 0);

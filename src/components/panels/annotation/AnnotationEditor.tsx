@@ -26,7 +26,11 @@ function AnnotationEditor() {
   const editor = useEditor(
     {
       extensions: [
-        StarterKit,
+        StarterKit.configure({
+          // Disable link and underline from StarterKit since we're adding them separately with custom config
+          link: false,
+          underline: false,
+        }),
         Underline,
         Link.configure({
           autolink: true,

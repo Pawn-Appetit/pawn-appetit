@@ -570,14 +570,102 @@ pub struct GameQuery {
     pub position: Option<PositionQuery>,
 }
 
+// Helper functions for serializing/deserializing u64 as string for bigint compatibility
+mod bigint_serde {
+    use serde::{Deserialize, Deserializer, Serializer};
+    
+    pub fn serialize<S>(value: &Option<u64>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match value {
+            Some(v) => serializer.serialize_str(&v.to_string()),
+            None => serializer.serialize_none(),
+        }
+    }
+    
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<u64>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        use serde::de::Visitor;
+        use std::fmt;
+        
+        struct BigIntVisitor;
+        
+        impl<'de> Visitor<'de> for BigIntVisitor {
+            type Value = Option<u64>;
+            
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("a string representing a u64, a number, or null")
+            }
+            
+            fn visit_none<E>(self) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(None)
+            }
+            
+            fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                deserializer.deserialize_any(self)
+            }
+            
+            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                value.parse::<u64>()
+                    .map(Some)
+                    .map_err(|e| serde::de::Error::custom(format!("Failed to parse '{}' as u64: {}", value, e)))
+            }
+            
+            fn visit_string<E>(self, value: String) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                value.parse::<u64>()
+                    .map(Some)
+                    .map_err(|e| serde::de::Error::custom(format!("Failed to parse '{}' as u64: {}", value, e)))
+            }
+            
+            fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(Some(value))
+            }
+            
+            fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if value < 0 {
+                    return Err(serde::de::Error::custom(format!("Negative value {} cannot be converted to u64", value)));
+                }
+                Ok(Some(value as u64))
+            }
+        }
+        
+        // Try deserializing as Option first, then as direct value
+        deserializer.deserialize_any(BigIntVisitor)
+    }
+}
+
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq, Hash, Type)]
 pub struct GameQueryJs {
     #[specta(optional)]
     pub options: Option<QueryOptions<GameSort>>,
     /// Optional limit for number of game details to load (stats are always full)
     /// Used to fetch small preview (e.g., 10) and then on-demand up to 1000
+    /// Using u64 instead of usize for better bigint compatibility with TypeScript
+    /// Serialized as string to handle bigint in JSON
     #[specta(optional)]
-    pub game_details_limit: Option<usize>,
+    #[serde(with = "bigint_serde")]
+    pub game_details_limit: Option<u64>,
     #[specta(optional)]
     pub player1: Option<i32>,
     #[specta(optional)]

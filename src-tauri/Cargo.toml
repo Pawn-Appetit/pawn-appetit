@@ -105,6 +105,9 @@ strip = true           # Strip symbols to reduce binary size
 panic = "abort"        # Smaller binary, faster runtime
 
 # OPTIMIZED: Dev profile with some optimizations for better dev experience
+# FIXED: Set opt-level = 0 for debug builds to prevent link.exe errors on Windows
+# Debug builds with opt-level > 0 can cause symbol conflicts with native dependencies
 [profile.dev]
-opt-level = 1          # Some optimization even in dev mode (default is 0)
+opt-level = 0          # No optimization in dev mode (prevents link.exe 1120 errors)
 incremental = true      # Faster incremental builds (default, but explicit)
+debug = true           # Include debug symbols

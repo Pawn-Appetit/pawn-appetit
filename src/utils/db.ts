@@ -202,16 +202,26 @@ export async function searchPosition(options: LocalOptions, tab: string) {
     throw new Error("Missing reference database");
   }
   
-  const res = await commands.searchPosition(
-    options.path!,
-    {
+    try {
+    // Convert to number first, then to string for Tauri serialization
+    // Tauri's JSON.stringify can't handle bigint, so we pass as string
+    // The Rust serializer will deserialize it back to u64
+    const gameDetailsLimitValue = options.gameDetailsLimit !== undefined 
+      ? options.gameDetailsLimit 
+      : 10;
+    
+    console.log("[db.ts] Calling searchPosition with gameDetailsLimit:", gameDetailsLimitValue, "type:", typeof gameDetailsLimitValue);
+    
+    const query = {
       player1: options.color === "white" ? options.player : undefined,
       player2: options.color === "black" ? options.player : undefined,
       position: {
         fen: options.fen,
         type_: options.type,
       },
-      game_details_limit: options.gameDetailsLimit ?? 10,
+      // Pass as string - Rust serializer will deserialize to u64
+      // This avoids JSON.stringify error with bigint
+      game_details_limit: String(gameDetailsLimitValue),
       start_date: options.start_date,
       end_date: options.end_date,
       wanted_result: options.result,
@@ -220,16 +230,45 @@ export async function searchPosition(options: LocalOptions, tab: string) {
         sort: (options.sort || "averageElo") as "id" | "date" | "whiteElo" | "blackElo" | "averageElo" | "ply_count",
         direction: (options.direction || "desc") as "asc" | "desc",
       },
-    },
-    tab,
-  );
-  
-  if (res.status === "error") {
-    if (res.error !== "Search stopped") {
-      unwrap(res);
+    };
+    
+    // Log query (now game_details_limit is already a string)
+    console.log("[db.ts] Query object:", JSON.stringify(query));
+    console.log("[db.ts] game_details_limit type:", typeof query.game_details_limit, "value:", query.game_details_limit);
+    
+    let res;
+    try {
+      res = await commands.searchPosition(
+        options.path!,
+        query,
+        tab,
+      );
+      console.log("[db.ts] searchPosition response received, status:", res.status);
+    } catch (error) {
+      console.error("[db.ts] searchPosition invocation failed:", error);
+      console.error("[db.ts] Error details:", {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      throw error;
     }
-    return Promise.reject(res.error);
+    
+    if (res.status === "error") {
+      console.error("[db.ts] searchPosition error:", res.error);
+      if (res.error !== "Search stopped") {
+        unwrap(res);
+      }
+      return Promise.reject(res.error);
+    }
+    
+    console.log("[db.ts] searchPosition success:", {
+      openingsCount: res.data?.[0]?.length || 0,
+      gamesCount: res.data?.[1]?.length || 0,
+    });
+    
+    return res.data;
+  } catch (error) {
+    console.error("[db.ts] searchPosition exception:", error);
+    throw error;
   }
-  
-  return res.data;
 }

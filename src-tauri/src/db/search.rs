@@ -338,6 +338,7 @@ pub async fn search_position(
     let start = Instant::now();
     
     log::info!("search_position called for tab_id: {}, file: {:?}", tab_id, file);
+    log::info!("game_details_limit: {:?}", query.game_details_limit);
 
     // Cancel any previous search for this tab
     if let Some(prev_cancel_flag) = state.active_searches.get(&tab_id) {
@@ -371,13 +372,34 @@ pub async fn search_position(
     const MAX_CACHE_ENTRIES: usize = 100;
     
     if !DISABLE_CACHE {
-        let cache_key = (query.clone(), file.clone());
+        // Create cache key WITHOUT game_details_limit (stats are the same regardless of limit)
+        let mut cache_query = query.clone();
+        cache_query.game_details_limit = None; // Normalize for cache key
+        let cache_key = (cache_query, file.clone());
         
         // Return cached results if available (FAST PATH)
         if let Some(cached_result) = state.line_cache.get(&cache_key) {
-            log::info!("Returning cached results for tab: {}", tab_id);
+            let (cached_openings, cached_games) = cached_result.value().clone();
+            log::info!("Returning cached results for tab: {} (cache hit): {} openings, {} games", 
+                tab_id, cached_openings.len(), cached_games.len());
+            
+            // If cached, still need to respect the requested game_details_limit
+            let game_details_limit_usize: usize = query.game_details_limit
+                .unwrap_or(10)
+                .min(1000)
+                .try_into()
+                .unwrap_or(10);
+            
+            let truncated_games = if cached_games.len() > game_details_limit_usize {
+                cached_games.into_iter().take(game_details_limit_usize).collect()
+            } else {
+                cached_games
+            };
+            
+            log::info!("After truncation: {} games for tab: {}", truncated_games.len(), tab_id);
+            
             state.active_searches.remove(&tab_id);
-            return Ok(cached_result.clone());
+            return Ok((cached_openings, truncated_games));
         }
 
         // Clear cache more aggressively to prevent memory growth
@@ -463,11 +485,12 @@ pub async fn search_position(
     let _ = diesel::sql_query("PRAGMA cache_size=200000;").execute(db);    // ~200MB if page_size 1k
 
     // Get total count for progress tracking
+    log::debug!("Querying total count for tab: {}", tab_id);
     let total_count: i64 = build_base_query().count().get_result(db)?;
     log::info!("Found {} games matching filters for tab: {}", total_count, tab_id);
     
     if total_count == 0 {
-        log::debug!("No games match filters for tab: {}", tab_id);
+        log::warn!("No games match filters for tab: {} - returning empty results", tab_id);
         state.active_searches.remove(&tab_id);
         drop(permit);
         return Ok((vec![], vec![]));
@@ -540,7 +563,10 @@ pub async fn search_position(
                 .limit(batch_size as i64)
                 .load(db)?;
         
+        log::debug!("Loaded {} games in batch {}/{} for tab: {}", batch.len(), batch_num + 1, batches_to_process, tab_id);
+        
         if batch.is_empty() {
+            log::warn!("Empty batch {} for tab: {} - stopping", batch_num, tab_id);
             break;
         }
 
@@ -659,18 +685,24 @@ pub async fn search_position(
         load_start.elapsed(), 
         tab_id);
 
-    // REMOVED: Log removed for production performance - was called on every search
-
-    // Final cancellation check
-    // No cancellation check here; completion is guarded by permit scope.
-
     // Convert results
     let openings: Vec<PositionStats> = position_stats.into_values().collect();
     
-    log::info!("Found {} unique moves in statistics for tab: {}", openings.len(), tab_id);
+    log::info!("Found {} unique moves in statistics, {} matching game IDs for tab: {}", 
+        openings.len(), 
+        matched_game_ids.len(), 
+        tab_id);
 
     // Determine how many game details to load (stats are already complete)
-    let game_details_limit: usize = query.game_details_limit.unwrap_or(10).min(1000);
+    // Convert from u64 (from TypeScript bigint) to usize
+    // Frontend passes 10 by default, 1000 when games tab is opened
+    log::debug!("game_details_limit from query: {:?} for tab: {}", query.game_details_limit, tab_id);
+    let game_details_limit: usize = query.game_details_limit
+        .unwrap_or(10)  // Default to 10 (matches frontend default)
+        .min(1000)
+        .try_into()
+        .unwrap_or(10); // Fallback to 10 if conversion fails
+    log::debug!("Converted game_details_limit: {} for tab: {}", game_details_limit, tab_id);
 
     // Load full game details for matched games (limited)
     if !matched_game_ids.is_empty() {
@@ -800,10 +832,22 @@ pub async fn search_position(
     }
 
     // Cache results (unless caching is disabled for debugging)
+    // NOTE: Cache FULL results (up to 1000 games), then truncate on retrieval based on requested limit
     let result = (openings.clone(), normalized_games.clone());
     if !DISABLE_CACHE {
-        let cache_key = (query.clone(), file.clone());
-        state.line_cache.insert(cache_key.clone(), result.clone());
+        // Create cache key WITHOUT game_details_limit (stats are the same regardless of limit)
+        let mut cache_query = query.clone();
+        cache_query.game_details_limit = None; // Normalize for cache key
+        let cache_key = (cache_query, file.clone());
+        
+        // Only cache if we have results (avoid caching empty results from failed searches)
+        if !openings.is_empty() || !normalized_games.is_empty() {
+            state.line_cache.insert(cache_key.clone(), result.clone());
+            log::debug!("Cached {} openings, {} games for tab: {}", openings.len(), normalized_games.len(), tab_id);
+        } else {
+            log::warn!("Not caching empty results for tab: {} (openings: {}, games: {})", 
+                tab_id, openings.len(), normalized_games.len());
+        }
     }
 
     // Emit completion
@@ -822,6 +866,10 @@ pub async fn search_position(
     state.active_searches.remove(&tab_id);
     
     log::info!("search_position completed for tab: {} in {:?}", tab_id, start.elapsed());
+    log::info!("Returning result: {} openings, {} games for tab: {}", 
+        result.0.len(), 
+        result.1.len(), 
+        tab_id);
     
     Ok(result)
 }
@@ -885,7 +933,10 @@ pub async fn is_position_in_db(
     );
 
     if !exists {
-        state.line_cache.insert((query, file), (vec![], vec![]));
+        // Normalize cache key without game_details_limit
+        let mut cache_query = query;
+        cache_query.game_details_limit = None;
+        state.line_cache.insert((cache_query, file), (vec![], vec![]));
     }
 
     drop(permit);

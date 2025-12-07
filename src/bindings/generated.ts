@@ -667,6 +667,8 @@ export type GameQueryJs = { options?: QueryOptions<GameSort> | null;
 /**
  * Optional limit for number of game details to load (stats are always full)
  * Used to fetch small preview (e.g., 10) and then on-demand up to 1000
+ * Using u64 instead of usize for better bigint compatibility with TypeScript
+ * Serialized as string to handle bigint in JSON
  */
 game_details_limit?: bigint | null; player1?: number | null; player2?: number | null; tournament_id?: number | null; start_date?: string | null; end_date?: string | null; range1?: [number, number] | null; range2?: [number, number] | null; sides?: Sides | null; outcome?: string | null; position?: PositionQueryJs | null; wanted_result?: string | null }
 export type GameSort = "id" | "date" | "whiteElo" | "blackElo" | "averageElo" | "ply_count"
