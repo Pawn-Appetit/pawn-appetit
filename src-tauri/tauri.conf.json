@@ -40,7 +40,7 @@
     },
     "resources": [],
     "targets": "all",
-    "createUpdaterArtifacts": false
+    "createUpdaterArtifacts": true
   },
   "build": {
     "beforeDevCommand": "pnpm start-vite",
