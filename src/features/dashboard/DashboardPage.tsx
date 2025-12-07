@@ -89,6 +89,8 @@ export default function DashboardPage() {
     worldRank?: number;
     nationalRank?: number;
     photo?: string;
+    age?: number;
+    birthYear?: number;
   } | null>(null);
   
   // Display name - independent of FIDE ID
@@ -117,6 +119,8 @@ export default function DashboardPage() {
           worldRank: profile.worldRank,
           nationalRank: profile.nationalRank,
           photo: profile.photo,
+          age: profile.age,
+          birthYear: profile.birthYear,
         };
         console.log("Loaded FIDE profile:", playerData);
         console.log("Ratings:", { 

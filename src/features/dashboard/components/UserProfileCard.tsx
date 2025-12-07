@@ -21,6 +21,8 @@ interface FidePlayerData {
   worldRank?: number;
   nationalRank?: number;
   photo?: string;
+  age?: number;
+  birthYear?: number;
 }
 
 interface UserProfileCardProps {
