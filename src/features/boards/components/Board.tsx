@@ -364,18 +364,6 @@ function Board({
         }
       }
     }
-
-    console.log({
-      totalEngines: arrows.size,
-      enabledEngines: Object.keys(engineLines).length,
-      engineLines,
-      finalShapes: shapes.map((shape) => ({
-        from: shape.orig,
-        to: shape.dest,
-        color: shape.brush,
-        lineWidth: shape.modifiers?.lineWidth,
-      })),
-    });
   }
 
   if (currentNode.shapes.length > 0) {

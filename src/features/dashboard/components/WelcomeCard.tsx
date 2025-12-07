@@ -1,8 +1,9 @@
 import { Badge, Box, Button, Card, Group, Image, Stack, Text, Title } from "@mantine/core";
 import { IconChess, IconUpload } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { currentThemeIdAtom } from "@/features/themes/state/themeAtoms";
 
 interface WelcomeCardProps {
@@ -27,6 +28,36 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
   const { t } = useTranslation();
   const currentThemeId = useAtomValue(currentThemeIdAtom);
   const [imageError, setImageError] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | undefined>(undefined);
+  
+  // Convert file path to URL if needed (for local files)
+  // If it's already a URL (http/https) or tauri://, use it directly
+  useEffect(() => {
+    if (!fideInfo?.photo) {
+      setPhotoUrl(undefined);
+      return;
+    }
+
+    // If it's already a URL (http, https, or tauri://), use it directly
+    if (
+      fideInfo.photo.startsWith("http://") ||
+      fideInfo.photo.startsWith("https://") ||
+      fideInfo.photo.startsWith("tauri://")
+    ) {
+      setPhotoUrl(fideInfo.photo);
+      return;
+    }
+
+    try {
+      // convertFileSrc es síncrono y devuelve string
+      const url = convertFileSrc(fideInfo.photo);
+      setPhotoUrl(url);
+    } catch (error) {
+      console.error("Failed to convert file path to URL:", error);
+      // Fallback to original path - might work in some cases
+      setPhotoUrl(fideInfo.photo);
+    }
+  }, [fideInfo?.photo]);
 
   // Determine theme-based background image
   const isAcademiaMaya = currentThemeId === "academia-maya";
@@ -35,31 +66,12 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
 
   const handleImageError = () => {
     if (isAcademiaMaya && !imageError) {
-      console.warn(`Academia Maya image not found. Please save the image as "academia.maya.png" in the public folder.`);
       setImageError(true);
     }
   };
 
-  // Debug: Log fideInfo to see what we're receiving
-  if (fideInfo) {
-    console.log("WelcomeCard fideInfo:", fideInfo);
-    console.log("Ratings check:", {
-      standard: fideInfo.standardRating,
-      rapid: fideInfo.rapidRating,
-      blitz: fideInfo.blitzRating,
-      hasStandard: !!fideInfo.standardRating,
-      hasRapid: !!fideInfo.rapidRating,
-      hasBlitz: !!fideInfo.blitzRating,
-    });
-  }
-
   // Determine welcome message based on first open, player name, title, and gender
   let welcomeMessage: string;
-  
-  // Debug: Log fideInfo to see what we're receiving
-  console.log("WelcomeCard - fideInfo:", fideInfo);
-  console.log("WelcomeCard - fideInfo.title:", fideInfo?.title);
-  console.log("WelcomeCard - playerFirstName:", playerFirstName);
   
   if (isFirstOpen) {
     welcomeMessage = t("features.dashboard.welcome.firstOpen");
@@ -68,12 +80,10 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
     // If there's a FIDE title, include it in the greeting
     if (fideInfo?.title) {
       const nameWithTitle = `${fideInfo.title} ${playerFirstName}`;
-      console.log("WelcomeCard - Using title in greeting:", nameWithTitle);
       welcomeMessage = t(`features.dashboard.welcome.backWithName.${genderKey}`, { 
         name: nameWithTitle
       });
     } else {
-      console.log("WelcomeCard - No title, using firstName only");
       welcomeMessage = t(`features.dashboard.welcome.backWithName.${genderKey}`, { 
         name: playerFirstName 
       });
@@ -81,14 +91,12 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
   } else {
     welcomeMessage = t("features.dashboard.welcome.back");
   }
-  
-  console.log("WelcomeCard - Final welcomeMessage:", welcomeMessage);
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
       <Group align="flex-start" justify="space-between" wrap="nowrap" gap="xl">
         {/* Left column: FIDE profile photo - only show if it exists */}
-        {fideInfo?.photo ? (
+        {photoUrl ? (
           <Box
             style={{
               position: "relative",
@@ -100,13 +108,13 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
             }}
           >
             <Image
-              src={fideInfo.photo}
+              src={photoUrl}
               alt="FIDE Profile Photo"
               width={140}
               height={140}
               fit="cover"
               onError={(e) => {
-                console.error("Failed to load FIDE photo:", fideInfo.photo);
+                console.error("Failed to load FIDE photo:", photoUrl);
                 e.currentTarget.style.display = "none";
               }}
             />

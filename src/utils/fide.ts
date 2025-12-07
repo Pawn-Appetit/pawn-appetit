@@ -25,7 +25,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
   console.log("fetchFidePlayer called with ID:", fideId);
   try {
     // Use Tauri command to fetch HTML from backend (no CORS restrictions)
-    const { invoke, convertFileSrc } = await import("@tauri-apps/api/core");
+    const { invoke } = await import("@tauri-apps/api/core");
     console.log("Fetching FIDE profile HTML via Tauri command...");
     
     let html: string;
@@ -995,9 +995,11 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
         });
         console.log("✓ Photo saved locally at:", localPhotoPath);
         
-        // Convert the local path to a URL that the frontend can use
-        photo = convertFileSrc(localPhotoPath);
-        console.log("✓ Photo converted to frontend URL:", photo);
+        // Store the file path directly (not the converted URL)
+        // The URL conversion should happen when displaying the image, not when saving
+        // This ensures the path works correctly in both dev and production
+        photo = localPhotoPath;
+        console.log("✓ Photo path stored:", photo);
       } catch (error) {
         console.error("❌ Failed to save photo locally:", error);
         console.error("Error details:", JSON.stringify(error));

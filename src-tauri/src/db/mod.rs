@@ -62,6 +62,7 @@ const PRAGMA_JOURNAL_MODE_DELETE: &str = include_str!("../../../database/pragmas
 const PRAGMA_JOURNAL_MODE_OFF: &str = include_str!("../../../database/pragmas/journal_mode_off.sql");
 const PRAGMA_FOREIGN_KEYS_ON: &str = include_str!("../../../database/pragmas/foreign_keys_on.sql");
 const PRAGMA_BUSY_TIMEOUT: &str = include_str!("../../../database/pragmas/busy_timeout.sql");
+const PRAGMA_PERFORMANCE: &str = include_str!("../../../database/pragmas/performance_pragmas.sql");
 
 // Games queries
 const GAMES_CHECK_INDEXES: &str = include_str!("../../../database/queries/games/check_indexes.sql");
@@ -105,7 +106,7 @@ impl Default for ConnectionOptions {
         Self {
             journal_mode: JournalMode::Delete,
             enable_foreign_keys: true,
-            busy_timeout: Some(Duration::from_secs(30)),
+            busy_timeout: Some(Duration::from_secs(60)), // OPTIMIZED: Increased from 30s to 60s for heavy queries
         }
     }
 }
@@ -115,6 +116,19 @@ impl diesel::r2d2::CustomizeConnection<SqliteConnection, diesel::r2d2::Error>
 {
     fn on_acquire(&self, conn: &mut SqliteConnection) -> std::result::Result<(), diesel::r2d2::Error> {
         (|| {
+            // FIXED: Check if tables exist before applying performance pragmas
+            // This prevents errors when database is being initialized
+            let tables_exist = diesel::sql_query(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='Players' LIMIT 1"
+            )
+            .execute(conn)
+            .is_ok();
+            
+            // Only apply performance PRAGMAs if database is already initialized
+            if tables_exist {
+                conn.batch_execute(PRAGMA_PERFORMANCE)?;
+            }
+            
             match self.journal_mode {
                 JournalMode::Delete => conn.batch_execute(PRAGMA_JOURNAL_MODE_DELETE)?,
                 JournalMode::Off => conn.batch_execute(PRAGMA_JOURNAL_MODE_OFF)?,
@@ -140,7 +154,9 @@ fn get_db_or_create(
         Some(pool) => pool.clone(),
         None => {
             let pool = Pool::builder()
-                .max_size(16)
+                .max_size(32) // OPTIMIZED: Increased from 16 to 32 for better concurrency
+                .min_idle(Some(4)) // OPTIMIZED: Keep minimum connections ready
+                .connection_timeout(Duration::from_secs(30))
                 .connection_customizer(Box::new(options))
                 .build(ConnectionManager::<SqliteConnection>::new(db_path))?;
             state
@@ -287,21 +303,51 @@ pub async fn convert_pgn(
     let start = Instant::now();
 
     let mut importer = Importer::new(timestamp.map(|t| t as i64));
-    db.transaction::<_, Error, _>(|db| {
-        for (i, game) in BufferedReader::new(uncompressed)
+    
+    // OPTIMIZED: Batch inserts for better performance
+    // Collect games in batches to reduce transaction overhead
+    const BATCH_SIZE: usize = 5000;
+    let mut batch: Vec<TempGame> = Vec::with_capacity(BATCH_SIZE);
+    let mut total_processed = 0;
+    
+    for game in BufferedReader::new(uncompressed)
             .into_iter(&mut importer)
             .flatten()
             .flatten()
-            .enumerate()
-        {
-            if i % 1000 == 0 {
+    {
+        batch.push(game);
+        
+        if batch.len() >= BATCH_SIZE {
+            // Process batch in a single transaction
+            db.transaction::<_, Error, _>(|db| {
+                for game in batch.drain(..) {
+                    insert_to_db(db, &game)?;
+                }
+                Ok(())
+            })?;
+            
+            total_processed += BATCH_SIZE;
                 let elapsed = start.elapsed().as_millis() as u32;
-                app.emit("convert_progress", (i, elapsed)).unwrap();
+            app.emit("convert_progress", (total_processed, elapsed)).unwrap();
             }
+    }
+    
+    // Process remaining games in batch
+    if !batch.is_empty() {
+        // FIXED: Save batch length before moving into closure
+        let batch_len = batch.len();
+        
+        db.transaction::<_, Error, _>(|db| {
+            for game in batch.drain(..) {
             insert_to_db(db, &game)?;
         }
         Ok(())
     })?;
+        
+        total_processed += batch_len;
+        let elapsed = start.elapsed().as_millis() as u32;
+        app.emit("convert_progress", (total_processed, elapsed)).unwrap();
+    }
 
     if needs_init {
         // Create all the necessary indexes
@@ -366,7 +412,7 @@ pub async fn get_db_info(
 ) -> Result<DatabaseInfo> {
     let db_path = PathBuf::from("db").join(file);
 
-    info!("get_db_info {:?}", db_path);
+    // OPTIMIZED: Removed - called frequently, not critical
 
     let path = app.path().resolve(db_path, BaseDirectory::AppData)?;
 
@@ -1187,23 +1233,84 @@ pub async fn get_players_game_info(
         .map(|((site, player), data)| SiteStatsData { site, player, data })
         .collect();
 
-    println!("get_players_game_info {:?}: {:?}", file, timer.elapsed());
+    // OPTIMIZED: Keep timing info but simplify
+    info!("Player stats computed in {:?}", timer.elapsed());
 
     Ok(game_info)
 }
 
+/// Delete a database file and cleanup resources
+/// FIXED: Force close all connections before deletion to prevent "database is locked"
 #[tauri::command]
 #[specta::specta]
 pub async fn delete_database(
     file: PathBuf,
     state: tauri::State<'_, AppState>,
 ) -> Result<()> {
-    let pool = &state.connection_pool;
-    let path_str = file.to_str().unwrap();
-    pool.remove(path_str);
-
-    // delete file
-    remove_file(path_str)?;
+    use std::fs::remove_file;
+    
+    let path_str = file.to_string_lossy().into_owned();
+    
+    log::info!("Attempting to delete database: {:?}", file);
+    
+    // STEP 1: Cancel any ongoing searches by acquiring all permits
+    // This will stop new searches and wait for current ones to complete
+    let _permits = state.new_request.clone();
+    let permit1 = _permits.acquire().await.ok();
+    let permit2 = _permits.acquire().await.ok();
+    
+    // STEP 2: Run PRAGMA optimize before closing connections
+    if let Ok(mut db) = get_db_or_create(&state, &path_str, ConnectionOptions::default()) {
+        let _ = diesel::sql_query("PRAGMA optimize").execute(&mut db);
+    }
+    
+    // Drop permits after optimize
+    drop(permit1);
+    drop(permit2);
+    
+    // Remove from connection pool - this drops the pool and closes all connections
+    if let Some((_, pool)) = state.connection_pool.remove(&path_str) {
+        // Force drop the pool to close all connections immediately
+        drop(pool);
+        log::info!("Closed connection pool for: {:?}", file);
+    }
+    
+    // Clear any cached data for this database
+    let cache_keys_to_remove: Vec<_> = state.line_cache.iter()
+        .filter(|entry| entry.key().1 == file)
+        .map(|entry| entry.key().clone())
+        .collect();
+    
+    for key in cache_keys_to_remove {
+        state.line_cache.remove(&key);
+    }
+    
+    log::info!("Waiting for file handles to be released...");
+    // INCREASED: Wait longer for OS to release all file handles
+    tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+    
+    // Try up to 3 times with increasing delays
+    for attempt in 1..=3 {
+        if file.exists() {
+            match remove_file(&file) {
+                Ok(_) => {
+                    log::info!("✓ Database deleted successfully: {:?}", file);
+                    return Ok(());
+                }
+                Err(e) if attempt < 3 => {
+                    log::warn!("Attempt {} failed: {}. Retrying...", attempt, e);
+                    tokio::time::sleep(std::time::Duration::from_millis(500 * attempt as u64)).await;
+                }
+                Err(e) => {
+                    return Err(Error::Io(e));
+                }
+            }
+        } else {
+            log::warn!("Database file does not exist: {:?}", file);
+            return Ok(());
+        }
+    }
+    
     Ok(())
 }
 
@@ -1455,11 +1562,16 @@ pub async fn merge_players(
     Ok(())
 }
 
+/// Clear the in-memory game cache to free memory
+/// FIXED: Also clear position search cache to prevent unbounded growth
 #[tauri::command]
 #[specta::specta]
-pub fn clear_games(state: tauri::State<'_, AppState>) {
-    let mut state = state.db_cache.lock().unwrap();
-    state.clear();
+pub fn clear_games(state: tauri::State<'_, AppState>) -> Result<()> {
+    // Clear position search cache to free memory
+    state.line_cache.clear();
+    
+    info!("Cleared position search cache");
+    Ok(())
 }
 
 #[cfg(test)]

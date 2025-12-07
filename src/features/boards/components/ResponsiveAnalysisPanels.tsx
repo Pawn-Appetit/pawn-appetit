@@ -122,7 +122,7 @@ function ResponsiveAnalysisPanels({
         h="100%"
         value={currentTab}
         onChange={onTabChange}
-        keepMounted={false}
+        keepMounted={true}
         activateTabWithKeyboard={false}
         style={{
           display: "flex",

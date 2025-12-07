@@ -91,6 +91,47 @@ export const updateDirectoriesCache = async (): Promise<Dirs> => {
   return loadDirectories();
 };
 
+// Singleton to prevent multiple console attachments (prevents "Cannot have two MultiBackends" error)
+let consoleAttachmentPromise: Promise<(() => void) | null> | null = null;
+let isConsoleAttached = false;
+
+export const attachConsoleOnce = async (): Promise<(() => void) | null> => {
+  // If already attached, return a no-op detach function
+  if (isConsoleAttached) {
+    return () => {
+      // No-op: console is already attached and managed elsewhere
+    };
+  }
+
+  // If there's an ongoing attachment, wait for it
+  if (consoleAttachmentPromise) {
+    return consoleAttachmentPromise;
+  }
+
+  // Create new attachment promise
+  consoleAttachmentPromise = (async () => {
+    try {
+      const detach = await attachConsole();
+      isConsoleAttached = true;
+      return detach;
+    } catch (error) {
+      // If attachment fails (e.g., already attached), mark as attached anyway
+      // to prevent retry loops
+      const errorMsg = String(error);
+      if (errorMsg.includes("MultiBackend") || errorMsg.includes("already")) {
+        isConsoleAttached = true;
+        return () => {
+          // No-op: console was already attached
+        };
+      }
+      // Re-throw other errors
+      throw error;
+    }
+  })();
+
+  return consoleAttachmentPromise;
+};
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -231,7 +272,7 @@ function useAppInitialization() {
     try {
       info("Starting React app initialization");
 
-      const [, detach] = await Promise.all([loadDirectories(), attachConsole()]);
+      const [, detach] = await Promise.all([loadDirectories(), attachConsoleOnce()]);
 
       detachConsole = detach;
       info("Console logging attached successfully");
@@ -276,9 +317,7 @@ function usePieceSetManager(pieceSet: string) {
     let mounted = true;
 
     preloadPieceSetCSS(pieceSet).catch((error) => {
-      if (mounted) {
-        console.warn("Piece set CSS preloading failed:", error);
-      }
+      // Piece set CSS preloading failed - non-critical
     });
 
     return () => {
@@ -342,6 +381,7 @@ export default function App() {
 
   useEffect(() => {
     let detachConsole: (() => void) | null = null;
+    let mounted = true;
 
     const init = async () => {
       detachConsole = await initializeApp();
@@ -350,15 +390,20 @@ export default function App() {
     init();
 
     return () => {
+      mounted = false;
       if (detachConsole) {
         try {
           detachConsole();
         } catch (e) {
+          // Only log error if component is still mounted
+          if (mounted) {
           error(`Failed to detach console: ${e}`);
+          }
         }
       }
     };
-  }, [initializeApp]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount, not when initializeApp changes
 
   useEffect(() => {
     const rootElement = document.documentElement;

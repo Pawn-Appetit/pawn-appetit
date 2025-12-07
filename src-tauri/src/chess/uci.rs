@@ -32,7 +32,10 @@ impl UciCommunicator {
     /// Returns `Error` if process or I/O setup fails.
     pub async fn spawn(path: PathBuf) -> Result<Self, Error> {
         let mut command = Command::new(&path);
-        command.current_dir(path.parent().unwrap());
+        // FIXED: Safe parent path handling to prevent panic
+        if let Some(parent) = path.parent() {
+            command.current_dir(parent);
+        }
         command
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -73,7 +76,7 @@ impl UciCommunicator {
     /// # Errors
     /// Returns `Error` if writing fails.
     pub async fn write_line(&mut self, line: &str) -> Result<(), Error> {
-        info!("[engine-stdin] {}", line.trim_end());
+        // REMOVED: Excessive logging - called hundreds of times per second
         self.stdin.write_all(line.as_bytes()).await?;
         Ok(())
     }

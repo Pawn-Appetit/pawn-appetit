@@ -76,6 +76,7 @@ async stopEngine(engine: string, tab: string) : Promise<Result<null, string>> {
 },
 /**
  * Kill a specific engine process by engine name and tab.
+ * FIXED: Always remove from map to prevent memory leaks
  */
 async killEngine(engine: string, tab: string) : Promise<Result<null, string>> {
     try {
@@ -87,6 +88,7 @@ async killEngine(engine: string, tab: string) : Promise<Result<null, string>> {
 },
 /**
  * Kill all engine processes associated with a given tab.
+ * FIXED: Proper error handling to prevent zombie processes
  */
 async killEngines(tab: string) : Promise<Result<null, string>> {
     try {
@@ -170,6 +172,7 @@ async getPlayersGameInfo(file: string, id: number) : Promise<Result<PlayerGameIn
 },
 /**
  * Query a UCI engine for its configuration (name and options).
+ * FIXED: Proper process cleanup with timeout to prevent zombie processes
  */
 async getEngineConfig(path: string) : Promise<Result<EngineConfig, string>> {
     try {
@@ -270,8 +273,17 @@ async deleteEmptyGames(file: string) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
-async clearGames() : Promise<void> {
-    await TAURI_INVOKE("clear_games");
+/**
+ * Clear the in-memory game cache to free memory
+ * FIXED: Also clear position search cache to prevent unbounded growth
+ */
+async clearGames() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("clear_games") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 },
 async setFileAsExecutable(path: string) : Promise<Result<null, string>> {
     try {
@@ -313,6 +325,10 @@ async deleteDbGame(file: string, gameId: number) : Promise<Result<null, string>>
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Delete a database file and cleanup resources
+ * FIXED: Force close all connections before deletion to prevent "database is locked"
+ */
 async deleteDatabase(file: string) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("delete_database", { file }) };

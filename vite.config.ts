@@ -6,6 +6,7 @@ import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vitest/config";
 
 const isDebug = !!process.env.TAURI_ENV_DEBUG;
+const isProdBuild = !isDebug;
 
 const host = process.env.TAURI_DEV_HOST;
 
@@ -33,7 +34,8 @@ export default defineConfig({
     },
   },
   build: {
-    minify: isDebug ? false : "esbuild",
+    // Always minify for tauri build; keep inline sourcemap only for debug
+    minify: "esbuild",
     sourcemap: isDebug ? "inline" : false,
     rollupOptions: {
       output: {

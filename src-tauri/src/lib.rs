@@ -78,9 +78,10 @@ pub struct AppState {
         diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::SqliteConnection>>,
     >,
     line_cache: DashMap<(GameQueryJs, std::path::PathBuf), (Vec<PositionStats>, Vec<NormalizedGame>)>,
-    db_cache: Mutex<Vec<GameData>>,
-    #[derivative(Default(value = "Arc::new(Semaphore::new(2))"))]
+    #[derivative(Default(value = "Arc::new(Semaphore::new(10))"))]
     new_request: Arc<Semaphore>,
+    // Track active searches per tab to enable cancellation
+    active_searches: DashMap<String, Arc<std::sync::atomic::AtomicBool>>,
     pgn_offsets: DashMap<String, Vec<u64>>,
     fide_players: RwLock<Vec<FidePlayer>>,
     engine_processes: DashMap<(String, String), Arc<tokio::sync::Mutex<EngineProcess>>>,

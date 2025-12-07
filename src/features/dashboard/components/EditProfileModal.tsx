@@ -101,16 +101,9 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
     setFidePlayer(null);
 
     try {
-      console.log("Searching for FIDE ID:", fideId);
       const player = await fetchFidePlayer(fideId);
-      console.log("Fetched FIDE player:", player);
       
       if (player) {
-        console.log("Player ratings:", {
-          standard: player.standardRating ?? player.rating,
-          rapid: player.rapidRating,
-          blitz: player.blitzRating,
-        });
         setFidePlayer(player);
       } else {
         setError(t("features.dashboard.editProfile.playerNotFound"));
@@ -128,11 +121,6 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
     const fideId = fideIdValue.trim();
     const finalDisplayName = customName.trim();
     
-    console.log("handleSave - fidePlayer:", fidePlayer);
-    console.log("handleSave - customName:", customName);
-    console.log("handleSave - finalDisplayName:", finalDisplayName);
-    console.log("handleSave - fideId:", fideId);
-
     // Always save the displayName, even if there's no FIDE ID or FIDE player
     if (fidePlayer && fideId) {
       // If there's a FIDE player, save both
@@ -148,7 +136,6 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
         nationalRank: fidePlayer.nationalRank,
         photo: fidePlayer.photo,
       };
-      console.log("handleSave - saving playerData:", playerData);
       onSave(fideId, playerData, finalDisplayName);
     } else if (fideId) {
       // If there's only a FIDE ID but no player (failed or not performed search), save only the ID

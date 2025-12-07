@@ -101,7 +101,6 @@ export default function DashboardPage() {
     const storedDisplayName = localStorage.getItem("pawn-appetit.displayName");
     if (storedDisplayName !== null) {
       setDisplayName(storedDisplayName);
-      console.log("Loaded display name from localStorage:", storedDisplayName);
     }
     
     // Load FIDE profile
@@ -122,19 +121,12 @@ export default function DashboardPage() {
           age: profile.age,
           birthYear: profile.birthYear,
         };
-        console.log("Loaded FIDE profile:", playerData);
-        console.log("Ratings:", { 
-          standard: profile.standardRating, 
-          rapid: profile.rapidRating, 
-          blitz: profile.blitzRating 
-        });
         setFidePlayer(playerData);
         
         // If there's no saved displayName but there's a firstName from FIDE, use it as fallback
         if (storedDisplayName === null && profile.firstName) {
           setDisplayName(profile.firstName);
           localStorage.setItem("pawn-appetit.displayName", profile.firstName);
-          console.log("Set display name from FIDE firstName:", profile.firstName);
         }
       }
     });
@@ -770,23 +762,15 @@ export default function DashboardPage() {
             ratingHistory={ratingHistory}
             customName={displayName}
             onFideUpdate={async (newFideId, newFidePlayer, newDisplayName) => {
-              console.log("onFideUpdate called with:", { newFideId, newFidePlayer, newDisplayName });
               setFideId(newFideId);
               
               // Save display name if provided (can be empty string)
               if (newDisplayName !== undefined) {
                 setDisplayName(newDisplayName);
                 localStorage.setItem("pawn-appetit.displayName", newDisplayName);
-                console.log("Display name saved:", newDisplayName);
               }
               
               if (newFidePlayer) {
-                console.log("Saving FIDE profile with ratings:", {
-                  standard: newFidePlayer.standardRating,
-                  rapid: newFidePlayer.rapidRating,
-                  blitz: newFidePlayer.blitzRating,
-                  title: newFidePlayer.title,
-                });
                 // Save to JSON file first
                 const profileToSave = {
                   fideId: newFideId,
@@ -804,13 +788,9 @@ export default function DashboardPage() {
                   age: newFidePlayer.age,
                   birthYear: newFidePlayer.birthYear,
                 };
-                console.log("Profile to save (with title):", profileToSave);
-                console.log("Title in profileToSave:", profileToSave.title);
                 await saveFideProfile(profileToSave);
                 // Update state after saving - this triggers re-render
-                console.log("Updating state with:", newFidePlayer);
                 setFidePlayer(newFidePlayer);
-                console.log("FIDE profile saved, state updated");
               } else {
                 setFidePlayer(null);
                 await deleteFideProfile();
@@ -1368,7 +1348,6 @@ export default function DashboardPage() {
                       estimatedElo: acpl > 0 ? calculateEstimatedElo(acpl) : undefined,
                     };
                     await saveGameStats(chessComGame.url, stats);
-                    console.log("AnalyzeAll: Saved stats for Chess.com game", chessComGame.url, stats);
                   }
                   
                   // Update the games array to trigger re-render and stats recalculation
@@ -1424,7 +1403,6 @@ export default function DashboardPage() {
                       estimatedElo: acpl > 0 ? calculateEstimatedElo(acpl) : undefined,
                     };
                     await saveGameStats(lichessGame.id, stats);
-                    console.log("AnalyzeAll: Saved stats for Lichess game", lichessGame.id, stats);
                   }
                   
                   // Update the games array to trigger re-render and stats recalculation

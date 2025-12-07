@@ -15,16 +15,18 @@ use super::manager::EngineManager;
 use super::types::*;
 
 /// Kill all engine processes associated with a given tab.
+/// FIXED: Proper error handling to prevent zombie processes
 #[tauri::command]
 #[specta::specta]
 pub async fn kill_engines(tab: String, state: tauri::State<'_, AppState>) -> Result<(), Error> {
     let keys: Vec<_> = state.engine_processes.iter().map(|x| x.key().clone()).collect();
-    for key in keys.clone() {
+    for key in keys {
         if key.0.starts_with(&tab) {
-            {
-                let process = state.engine_processes.get_mut(&key).unwrap();
-                let mut process = process.lock().await;
-                process.kill().await?;
+            // FIXED: Safe cleanup even if kill fails
+            if let Some(process_arc) = state.engine_processes.get(&key) {
+                let mut process = process_arc.lock().await;
+                // Attempt to kill, but always remove from map
+                let _ = process.kill().await; // Ignore errors, ensure cleanup
             }
             state.engine_processes.remove(&key);
         }
@@ -33,6 +35,7 @@ pub async fn kill_engines(tab: String, state: tauri::State<'_, AppState>) -> Res
 }
 
 /// Kill a specific engine process by engine name and tab.
+/// FIXED: Always remove from map to prevent memory leaks
 #[tauri::command]
 #[specta::specta]
 pub async fn kill_engine(
@@ -41,10 +44,13 @@ pub async fn kill_engine(
     state: tauri::State<'_, AppState>,
 ) -> Result<(), Error> {
     let key = (tab, engine);
-    if let Some(process) = state.engine_processes.get(&key) {
-        let mut process = process.lock().await;
-        process.kill().await?;
+    if let Some(process_arc) = state.engine_processes.get(&key) {
+        let mut process = process_arc.lock().await;
+        // Attempt to kill, but always remove from map
+        let _ = process.kill().await; // Ignore errors, ensure cleanup
     }
+    // FIXED: Always remove to prevent memory leak
+    state.engine_processes.remove(&key);
     Ok(())
 }
 
@@ -112,16 +118,24 @@ pub async fn analyze_game(
 }
 
 /// Query a UCI engine for its configuration (name and options).
+/// FIXED: Proper process cleanup with timeout to prevent zombie processes
 #[tauri::command]
 #[specta::specta]
 pub async fn get_engine_config(path: PathBuf) -> Result<EngineConfig, Error> {
     use tokio::io::AsyncBufReadExt;
+    use tokio::time::{timeout, Duration};
 
     let mut command = tokio::process::Command::new(&path);
-    command.current_dir(path.parent().unwrap());
-    command.stdin(std::process::Stdio::piped()).stdout(std::process::Stdio::piped()).stderr(std::process::Stdio::piped());
+    // FIXED: Safe parent path handling
+    if let Some(parent) = path.parent() {
+        command.current_dir(parent);
+    }
+    command.stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped());
     #[cfg(target_os = "windows")]
     command.creation_flags(super::process::CREATE_NO_WINDOW);
+    
     let mut child = command.spawn()?;
     let mut stdin = child.stdin.take().ok_or(Error::NoStdin)?;
     let stdout = child.stdout.take().ok_or(Error::NoStdout)?;
@@ -131,14 +145,36 @@ pub async fn get_engine_config(path: PathBuf) -> Result<EngineConfig, Error> {
     stdin.write_all(b"uci\n").await?;
 
     let mut config = EngineConfig::default();
+    
+    // FIXED: Add timeout to prevent hanging on unresponsive engines
+    let config_future = async {
     loop {
         if let Some(line) = stdout.next_line().await? {
-            if let vampirc_uci::UciMessage::Id { name: Some(name), author: _ } = parse_one(&line) { config.name = name; }
-            if let vampirc_uci::UciMessage::Option(opt) = parse_one(&line) { config.options.push(opt); }
-            if let vampirc_uci::UciMessage::UciOk = parse_one(&line) { break; }
+                if let vampirc_uci::UciMessage::Id { name: Some(name), author: _ } = parse_one(&line) { 
+                    config.name = name; 
+                }
+                if let vampirc_uci::UciMessage::Option(opt) = parse_one(&line) { 
+                    config.options.push(opt); 
+                }
+                if let vampirc_uci::UciMessage::UciOk = parse_one(&line) { 
+                    break; 
+                }
         }
     }
-    Ok(config)
+        Ok::<_, Error>(config)
+    };
+    
+    // FIXED: 5 second timeout and ensure process cleanup
+    let result = timeout(Duration::from_secs(5), config_future).await;
+    
+    // FIXED: Always kill the child process to prevent zombies
+    let _ = child.kill().await;
+    
+    match result {
+        Ok(Ok(cfg)) => Ok(cfg),
+        Ok(Err(e)) => Err(e),
+        Err(_) => Err(Error::EngineTimeout),
+    }
 }
 
 

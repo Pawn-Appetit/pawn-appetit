@@ -36,9 +36,7 @@ export function ChessComGamesTab({ games, chessComUsernames, selectedUser, isLoa
 
   // Debug: log when isLoading changes
   useEffect(() => {
-    if (isLoading) {
-      console.log("ChessComGamesTab: isLoading = true");
-    }
+    // Trigger re-render when isLoading changes
   }, [isLoading]);
 
   // Load analyzed PGNs for preview
@@ -107,7 +105,6 @@ export function ChessComGamesTab({ games, chessComUsernames, selectedUser, isLoa
           
           if (savedStats && savedStats.acpl > 0) {
             statsMap.set(game.url, savedStats);
-            setGameStats(new Map(statsMap));
           }
         } catch {
           // Silently skip games that fail to parse
@@ -118,6 +115,7 @@ export function ChessComGamesTab({ games, chessComUsernames, selectedUser, isLoa
         }
       }
 
+      // Only set state once at the end to avoid multiple re-renders
       if (!cancelled) {
         setGameStats(statsMap);
       }
@@ -133,7 +131,7 @@ export function ChessComGamesTab({ games, chessComUsernames, selectedUser, isLoa
       cancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [games, chessComUsernames, games.map((g) => g.pgn).join("|")]); // Also depend on PGNs to recalculate when PGNs are updated
+  }, [games]); // Games array reference change is sufficient - no need to serialize PGNs
 
   // Calculate move count from PGN if available
   const getMoveCount = (game: ChessComGame): number => {

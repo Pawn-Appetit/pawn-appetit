@@ -105,7 +105,6 @@ function BestMovesComponent({ id, engine, fen, moves, halfMoves, dragHandleProps
     for (const uci of moves) {
       const move = parseUci(uci);
       if (!move) {
-        console.log("Invalid move", uci);
         break;
       }
       pos.play(move);

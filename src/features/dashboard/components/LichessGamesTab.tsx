@@ -49,9 +49,7 @@ export function LichessGamesTab({ games, lichessUsernames, selectedUser, isLoadi
 
   // Debug: log when isLoading changes
   useEffect(() => {
-    if (isLoading) {
-      console.log("LichessGamesTab: isLoading = true");
-    }
+    // Trigger re-render when isLoading changes
   }, [isLoading]);
 
   // Load analyzed PGNs for preview
@@ -120,7 +118,6 @@ export function LichessGamesTab({ games, lichessUsernames, selectedUser, isLoadi
           
           if (savedStats && savedStats.acpl > 0) {
             statsMap.set(game.id, savedStats);
-            setGameStats(new Map(statsMap));
           }
         } catch {
           // Silently skip games that fail to parse
@@ -131,6 +128,7 @@ export function LichessGamesTab({ games, lichessUsernames, selectedUser, isLoadi
         }
       }
 
+      // Only set state once at the end to avoid multiple re-renders
       if (!cancelled) {
         setGameStats(statsMap);
       }
@@ -146,7 +144,7 @@ export function LichessGamesTab({ games, lichessUsernames, selectedUser, isLoadi
       cancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [games, lichessUsernames, games.map((g) => g.pgn).join("|")]); // Also depend on PGNs to recalculate when PGNs are updated
+  }, [games]); // Games array reference change is sufficient - no need to serialize PGNs
 
   // Calculate move count from PGN if available
   const getMoveCount = (game: LichessGame): number => {

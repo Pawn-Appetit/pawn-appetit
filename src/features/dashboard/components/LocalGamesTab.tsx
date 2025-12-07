@@ -92,7 +92,6 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
           if (game.stats && game.stats.acpl > 0) {
             // Use saved stats directly
             statsMap.set(game.id, game.stats);
-            setGameStats(new Map(statsMap));
           }
         } catch (error) {
           // Silently skip games that fail to parse
@@ -104,6 +103,7 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
         }
       }
 
+      // Only set state once at the end to avoid multiple re-renders
       if (!cancelled) {
         setGameStats(statsMap);
       }
@@ -201,6 +201,9 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
     setPage(1);
   }, [games.length]);
 
+  // Calculate current time once per render instead of once per game
+  const now = useMemo(() => Date.now(), [sortedAndPaginatedGames]);
+
   return (
     <Stack gap="xs" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minHeight: 0 }}>
       <ScrollArea style={{ flex: 1, minHeight: 0 }} type="auto">
@@ -266,7 +269,6 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
                 return "gray";
               }
             };
-            const now = Date.now();
             const diffMs = now - g.timestamp;
             let dateStr = "";
             if (diffMs < 60 * 60 * 1000) {

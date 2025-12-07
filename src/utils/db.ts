@@ -198,6 +198,10 @@ export async function getTournamentGames(file: string, id: number) {
 }
 
 export async function searchPosition(options: LocalOptions, tab: string) {
+  if (!options.path) {
+    throw new Error("Missing reference database");
+  }
+  
   const res = await commands.searchPosition(
     options.path!,
     {
@@ -218,11 +222,13 @@ export async function searchPosition(options: LocalOptions, tab: string) {
     },
     tab,
   );
+  
   if (res.status === "error") {
     if (res.error !== "Search stopped") {
       unwrap(res);
     }
-    return Promise.reject();
+    return Promise.reject(res.error);
   }
+  
   return res.data;
 }

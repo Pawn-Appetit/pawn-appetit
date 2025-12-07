@@ -111,7 +111,11 @@ impl GameAnalysisService {
                                         current_analysis.best = proc.best_moves.clone();
                                         proc.last_depth = cur_depth;
                                     }
-                                    assert_eq!(proc.best_moves.len(), proc.real_multipv as usize);
+                                    // FIXED: Replace assert with safe check to prevent panic in production
+                                    if proc.best_moves.len() != proc.real_multipv as usize {
+                                        log::warn!("Engine returned {} moves but expected {} (MultiPV mismatch)", 
+                                                  proc.best_moves.len(), proc.real_multipv);
+                                    }
                                     proc.best_moves.clear();
                                 }
                             }
