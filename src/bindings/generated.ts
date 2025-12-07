@@ -663,7 +663,12 @@ export type Event = { id: number; name: string | null }
 export type FidePlayer = { fideid: number; name: string; country: string; sex: string; title: string | null; w_title: string | null; o_title: string | null; foa_title: string | null; rating: number | null; games: number | null; k: number | null; rapid_rating: number | null; rapid_games: number | null; rapid_k: number | null; blitz_rating: number | null; blitz_games: number | null; blitz_k: number | null; birthday: number | null; flag: string | null }
 export type FileMetadata = { last_modified: bigint; size: bigint; is_dir: boolean; is_readonly: boolean }
 export type GameOutcome = "Won" | "Drawn" | "Lost"
-export type GameQueryJs = { options?: QueryOptions<GameSort> | null; player1?: number | null; player2?: number | null; tournament_id?: number | null; start_date?: string | null; end_date?: string | null; range1?: [number, number] | null; range2?: [number, number] | null; sides?: Sides | null; outcome?: string | null; position?: PositionQueryJs | null; wanted_result?: string | null }
+export type GameQueryJs = { options?: QueryOptions<GameSort> | null; 
+/**
+ * Optional limit for number of game details to load (stats are always full)
+ * Used to fetch small preview (e.g., 10) and then on-demand up to 1000
+ */
+game_details_limit?: bigint | null; player1?: number | null; player2?: number | null; tournament_id?: number | null; start_date?: string | null; end_date?: string | null; range1?: [number, number] | null; range2?: [number, number] | null; sides?: Sides | null; outcome?: string | null; position?: PositionQueryJs | null; wanted_result?: string | null }
 export type GameSort = "id" | "date" | "whiteElo" | "blackElo" | "averageElo" | "ply_count"
 /**
  * Engine search mode (depth, time, nodes, etc).

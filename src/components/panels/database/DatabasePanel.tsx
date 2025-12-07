@@ -2,7 +2,7 @@ import { Alert, Group, ScrollArea, SegmentedControl, Stack, Tabs, Text } from "@
 import { useDebouncedValue } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom, useAtomValue } from "jotai";
-import { memo, useContext, useEffect } from "react";
+import { memo, useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
@@ -43,13 +43,14 @@ export type LocalOptions = {
   result: "any" | "whitewon" | "draw" | "blackwon";
   sort?: "id" | "date" | "whiteElo" | "blackElo" | "averageElo" | "ply_count";
   direction?: "asc" | "desc";
+  gameDetailsLimit?: number;
 };
 
 function sortOpenings(openings: Opening[]) {
   return openings.sort((a, b) => b.black + b.draw + b.white - (a.black + a.draw + a.white));
 }
 
-async function fetchOpening(db: DBType, tab: string) {
+async function fetchOpening(db: DBType, tab: string, gameDetailsLimit: number) {
   return match(db)
     .with({ type: "lch_all" }, async ({ fen, options }) => {
       const data = await getLichessGames(fen, options);
@@ -77,7 +78,7 @@ async function fetchOpening(db: DBType, tab: string) {
     })
     .with({ type: "local" }, async ({ options }) => {
       if (!options.path) throw Error("Missing reference database");
-      const positionData = await searchPosition(options, tab);
+      const positionData = await searchPosition({ ...options, gameDetailsLimit }, tab);
       return {
         openings: sortOpenings(positionData[0]),
         games: positionData[1],
@@ -97,10 +98,14 @@ function DatabasePanel() {
   const [masterOptions] = useAtom(masterOptionsAtom);
   const [localOptions, setLocalOptions] = useAtom(currentLocalOptionsAtom);
   const [db, setDb] = useAtom(currentDbTypeAtom);
+  const [gameLimit, setGameLimit] = useState(10);
+  const tab = useAtomValue(currentTabAtom);
+  const [tabType, setTabType] = useAtom(currentDbTabAtom);
 
   useEffect(() => {
     if (db === "local") {
       setLocalOptions((q) => ({ ...q, fen: debouncedFen }));
+      setGameLimit(10); // reset preview limit when FEN changes
     }
   }, [debouncedFen, setLocalOptions, db]);
 
@@ -109,6 +114,13 @@ function DatabasePanel() {
       setLocalOptions((q) => ({ ...q, path: referenceDatabase }));
     }
   }, [referenceDatabase, setLocalOptions, db]);
+
+  // When entering games tab, load full details (up to 1000) on-demand
+  useEffect(() => {
+    if (tabType === "games" && gameLimit < 1000) {
+      setGameLimit(1000);
+    }
+  }, [tabType, gameLimit]);
 
   const dbType: DBType = match(db)
     .with("local", (v) => ({
@@ -127,17 +139,19 @@ function DatabasePanel() {
     }))
     .exhaustive();
 
-  const tab = useAtomValue(currentTabAtom);
-  const [tabType, setTabType] = useAtom(currentDbTabAtom);
+  // Reset preview limit when database source changes
+  useEffect(() => {
+    setGameLimit(10);
+  }, [db]);
 
   const {
     data: openingData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["database-opening", dbType, tab?.value],
+    queryKey: ["database-opening", dbType, tab?.value, gameLimit],
     queryFn: async () => {
-      return fetchOpening(dbType, tab?.value || "");
+      return fetchOpening(dbType, tab?.value || "", gameLimit);
     },
     enabled: tabType !== "options" && !!tab?.value,
   });

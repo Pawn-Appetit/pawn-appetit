@@ -211,6 +211,7 @@ export async function searchPosition(options: LocalOptions, tab: string) {
         fen: options.fen,
         type_: options.type,
       },
+      game_details_limit: options.gameDetailsLimit ?? 10,
       start_date: options.start_date,
       end_date: options.end_date,
       wanted_result: options.result,

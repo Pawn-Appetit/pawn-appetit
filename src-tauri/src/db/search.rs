@@ -416,7 +416,9 @@ pub async fn search_position(
     let load_start = Instant::now();
     
     // Process in batches to avoid loading entire database into memory
-    const BATCH_SIZE: usize = 100_000;
+    // Adaptive batch size: larger when no filters, smaller when filtered
+    const BATCH_SIZE_NO_FILTERS: usize = 200_000;
+    const BATCH_SIZE_FILTERED: usize = 50_000;
     const MAX_BATCHES: usize = 50; // Process up to 5M games total
     
     let db = &mut get_db_or_create(&state, file.to_str().unwrap(), ConnectionOptions::default())?;
@@ -452,6 +454,14 @@ pub async fn search_position(
         q
     };
     
+    // Apply read-only friendly PRAGMAs to speed up large scans
+    // Safe because searches are read-only
+    let _ = diesel::sql_query("PRAGMA journal_mode=OFF;").execute(db);
+    let _ = diesel::sql_query("PRAGMA synchronous=OFF;").execute(db);
+    let _ = diesel::sql_query("PRAGMA temp_store=MEMORY;").execute(db);
+    let _ = diesel::sql_query("PRAGMA mmap_size=1073741824;").execute(db); // 1 GiB mmap if supported
+    let _ = diesel::sql_query("PRAGMA cache_size=200000;").execute(db);    // ~200MB if page_size 1k
+
     // Get total count for progress tracking
     let total_count: i64 = build_base_query().count().get_result(db)?;
     log::info!("Found {} games matching filters for tab: {}", total_count, tab_id);
@@ -477,8 +487,21 @@ pub async fn search_position(
         matched_ids: Vec<i32>,
     }
     
-    // Process games in batches
-    let batches_to_process = (total_games / BATCH_SIZE + 1).min(MAX_BATCHES);
+    // Choose adaptive batch size
+    let has_filters = query.player1.is_some()
+        || query.player2.is_some()
+        || query.start_date.is_some()
+        || query.end_date.is_some()
+        || query.wanted_result.is_some();
+    let batch_size: usize = if has_filters {
+        BATCH_SIZE_FILTERED
+    } else {
+        BATCH_SIZE_NO_FILTERS
+    };
+
+    // Process games in batches using keyset pagination (no OFFSET)
+    let batches_to_process = (total_games / batch_size + 1).min(MAX_BATCHES);
+    let mut last_id: i32 = 0;
     
     for batch_num in 0..batches_to_process {
         // Check for cancellation before each batch
@@ -488,32 +511,42 @@ pub async fn search_position(
             drop(permit);
             return Err(Error::SearchStopped);
         }
-        
-        let offset = (batch_num * BATCH_SIZE) as i64;
-        let limit = BATCH_SIZE as i64;
-        
-        log::debug!("Processing batch {}/{} for tab: {}", batch_num + 1, batches_to_process, tab_id);
-        
-        // Load batch from database
-        let batch: Vec<(i32, i32, i32, Option<String>, Option<String>, Vec<u8>, Option<String>, i32, i32, i32)> = build_base_query()
-            .select((
-                games::id,
-                games::white_id,
-                games::black_id,
-                games::date,
-                games::result,
-                games::moves,
-                games::fen,
-                games::pawn_home,
-                games::white_material,
-                games::black_material,
-            ))
-            .offset(offset)
-            .limit(limit)
-            .load(db)?;
+
+        log::debug!(
+            "Processing batch {}/{} (last_id={}) for tab: {}",
+            batch_num + 1,
+            batches_to_process,
+            last_id,
+            tab_id
+        );
+
+        // Load batch from database using keyset pagination (id > last_id)
+        let batch: Vec<(i32, i32, i32, Option<String>, Option<String>, Vec<u8>, Option<String>, i32, i32, i32)> =
+            build_base_query()
+                .filter(games::id.gt(last_id))
+                .order(games::id.asc())
+                .select((
+                    games::id,
+                    games::white_id,
+                    games::black_id,
+                    games::date,
+                    games::result,
+                    games::moves,
+                    games::fen,
+                    games::pawn_home,
+                    games::white_material,
+                    games::black_material,
+                ))
+                .limit(batch_size as i64)
+                .load(db)?;
         
         if batch.is_empty() {
             break;
+        }
+
+        // Update last_id for keyset pagination
+        if let Some(last) = batch.last() {
+            last_id = last.0;
         }
         
         // Process batch in parallel
@@ -614,6 +647,11 @@ pub async fn search_position(
                 matched_game_ids.push(id);
             }
         }
+
+        // If fewer than batch_size rows were returned, we've reached the end
+        if batch.len() < batch_size {
+            break;
+        }
     }
     
     log::info!("Processed {} games in {:?} for tab: {}", 
@@ -631,13 +669,21 @@ pub async fn search_position(
     
     log::info!("Found {} unique moves in statistics for tab: {}", openings.len(), tab_id);
 
-    // Load full game details for matched games (limited to 1000)
+    // Determine how many game details to load (stats are already complete)
+    let game_details_limit: usize = query.game_details_limit.unwrap_or(10).min(1000);
+
+    // Load full game details for matched games (limited)
     if !matched_game_ids.is_empty() {
-        log::debug!("Loading {} game details for tab: {}", matched_game_ids.len(), tab_id);
+        log::debug!(
+            "Loading up to {} game details (matched {} total) for tab: {}",
+            game_details_limit,
+            matched_game_ids.len(),
+            tab_id
+        );
     }
     
     // FIXED: Split into chunks to avoid "too many SQL variables" error (SQLite limit ~999)
-    let mut normalized_games = if !matched_game_ids.is_empty() {
+    let mut normalized_games = if !matched_game_ids.is_empty() && game_details_limit > 0 {
         let db = &mut get_db_or_create(&state, file.to_str().unwrap(), ConnectionOptions::default())?;
         
         // SQLite has a limit of ~999 variables per query, so we chunk the IDs
@@ -645,7 +691,13 @@ pub async fn search_position(
         let mut all_detailed_games = Vec::new();
         
         // Process IDs in chunks
-        for chunk in matched_game_ids.chunks(CHUNK_SIZE) {
+        for chunk in matched_game_ids
+            .iter()
+            .take(game_details_limit)
+            .copied()
+            .collect::<Vec<_>>()
+            .chunks(CHUNK_SIZE)
+        {
             let (white_players, black_players) = diesel::alias!(players as white, players as black);
             let mut query_builder = games::table
                 .inner_join(white_players.on(games::white_id.eq(white_players.field(players::id))))

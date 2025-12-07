@@ -574,6 +574,10 @@ pub struct GameQuery {
 pub struct GameQueryJs {
     #[specta(optional)]
     pub options: Option<QueryOptions<GameSort>>,
+    /// Optional limit for number of game details to load (stats are always full)
+    /// Used to fetch small preview (e.g., 10) and then on-demand up to 1000
+    #[specta(optional)]
+    pub game_details_limit: Option<usize>,
     #[specta(optional)]
     pub player1: Option<i32>,
     #[specta(optional)]
