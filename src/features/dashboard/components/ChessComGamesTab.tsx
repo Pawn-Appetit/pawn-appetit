@@ -307,9 +307,9 @@ export function ChessComGamesTab({ games, chessComUsernames, selectedUser, isLoa
             // Get color for result badge - different colors for Academia Maya
             const getResultColor = (result: string, isUserWin: boolean) => {
               if (isAcademiaMaya) {
-                if (isUserWin) return "green"; // Verde para victoria en Academia Maya
-                if (result === "checkmated" || result === "resigned" || result === "timeout" || result === "abandoned") return "red"; // Rojo para derrota
-                return "gray"; // Gris para empate
+                if (isUserWin) return "green"; // Green for victory in Academia Maya
+                if (result === "checkmated" || result === "resigned" || result === "timeout" || result === "abandoned") return "red"; // Red for defeat
+                return "gray"; // Gray for draw
               } else {
                 // Default colors for other themes
                 if (result === "win") return "teal";

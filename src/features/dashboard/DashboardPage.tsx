@@ -130,7 +130,7 @@ export default function DashboardPage() {
         });
         setFidePlayer(playerData);
         
-        // Si no hay displayName guardado pero sí firstName de FIDE, usarlo como fallback
+        // If there's no saved displayName but there's a firstName from FIDE, use it as fallback
         if (storedDisplayName === null && profile.firstName) {
           setDisplayName(profile.firstName);
           localStorage.setItem("pawn-appetit.displayName", profile.firstName);
@@ -773,7 +773,7 @@ export default function DashboardPage() {
               console.log("onFideUpdate called with:", { newFideId, newFidePlayer, newDisplayName });
               setFideId(newFideId);
               
-              // Save display name if provided (puede ser string vacío)
+              // Save display name if provided (can be empty string)
               if (newDisplayName !== undefined) {
                 setDisplayName(newDisplayName);
                 localStorage.setItem("pawn-appetit.displayName", newDisplayName);

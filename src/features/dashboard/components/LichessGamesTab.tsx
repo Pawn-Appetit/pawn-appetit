@@ -324,9 +324,9 @@ export function LichessGamesTab({ games, lichessUsernames, selectedUser, isLoadi
             // Get color for result badge - different colors for Academia Maya
             const getResultColor = () => {
               if (isAcademiaMaya) {
-                if (userWon) return "green"; // Verde para victoria en Academia Maya
-                if (g.winner) return "red"; // Rojo para derrota
-                return "gray"; // Gris para empate
+                if (userWon) return "green"; // Green for victory in Academia Maya
+                if (g.winner) return "red"; // Red for defeat
+                return "gray"; // Gray for draw
               } else {
                 // Default colors for other themes
                 if (userWon) return "teal";

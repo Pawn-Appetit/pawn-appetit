@@ -33,7 +33,7 @@ interface UserProfileCardProps {
   onFideUpdate?: (fideId: string, fidePlayer: FidePlayerData | null, displayName?: string) => void;
   currentFideId?: string;
   fidePlayer?: FidePlayerData | null;
-  customName?: string; // Nombre personalizado para mostrar
+  customName?: string; // Custom name to display
 }
 
 export function UserProfileCard({ name, handle, title, ratingHistory, onFideUpdate, currentFideId, fidePlayer, customName }: UserProfileCardProps) {
@@ -45,13 +45,13 @@ export function UserProfileCard({ name, handle, title, ratingHistory, onFideUpda
     }
   };
 
-  // Si hay un nombre personalizado, usarlo; sino usar el nombre original
+  // If there's a custom name, use it; otherwise use the original name
   const displayName = customName && customName.trim() ? customName : name;
 
-  // Determinar qué título mostrar (FIDE title tiene prioridad si existe)
+  // Determine which title to display (FIDE title has priority if it exists)
   const displayTitle = fidePlayer?.title || title;
   
-  // Determinar qué ratings mostrar (FIDE ratings tienen prioridad si existen)
+  // Determine which ratings to display (FIDE ratings have priority if they exist)
   const displayRatings = {
     classical: fidePlayer?.standardRating || ratingHistory.classical,
     rapid: fidePlayer?.rapidRating || ratingHistory.rapid,

@@ -31,12 +31,12 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
   const [customName, setCustomName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Limpiar el valor para que solo contenga números
+  // Clean the value so it only contains numbers
   const cleanFideId = useCallback((value: string): string => {
     return value.replace(/\D/g, "");
   }, []);
 
-  // Manejar cambios en el input (escribir o pegar)
+  // Handle input changes (typing or pasting)
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.currentTarget.value;
     const cleanedValue = cleanFideId(rawValue);
@@ -44,18 +44,18 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
     setError(null);
   }, [cleanFideId]);
 
-  // Handler adicional para capturar cambios que onChange podría perder (especialmente después de pegar)
+  // Additional handler to capture changes that onChange might miss (especially after pasting)
   const handleInput = useCallback((e: React.FormEvent<HTMLInputElement>) => {
     const rawValue = e.currentTarget.value;
     const cleanedValue = cleanFideId(rawValue);
-    // Solo actualizar si el valor es diferente para evitar loops infinitos
+    // Only update if the value is different to avoid infinite loops
     if (cleanedValue !== fideIdValue) {
       setFideIdValue(cleanedValue);
       setError(null);
     }
   }, [cleanFideId, fideIdValue]);
 
-  // Manejar pegado - prevenir el comportamiento por defecto e insertar el valor limpio
+  // Handle paste - prevent default behavior and insert the cleaned value
   const handlePaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -63,16 +63,16 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
     const pastedText = e.clipboardData.getData("text");
     const cleanedValue = cleanFideId(pastedText);
     
-    // Actualizar el estado inmediatamente - esto debería causar un re-render
-    // y habilitar el botón automáticamente
+    // Update state immediately - this should cause a re-render
+    // and enable the button automatically
     setFideIdValue(cleanedValue);
     setError(null);
   }, [cleanFideId]);
 
-  // Validar FIDE ID
+  // Validate FIDE ID
   const validateFideId = useCallback((fideId: string): string | null => {
     if (!fideId.trim()) {
-      return null; // FIDE ID es opcional
+      return null; // FIDE ID is optional
     }
     if (!/^\d+$/.test(fideId)) {
       return t("features.dashboard.editProfile.invalidFideId");
@@ -80,11 +80,11 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
     return null;
   }, [t]);
 
-  // Buscar jugador FIDE
+  // Search for FIDE player
   const handleSearch = useCallback(async () => {
     const fideId = fideIdValue.trim();
     
-    // Validar formato
+    // Validate format
     const validationError = validateFideId(fideId);
     if (validationError) {
       setError(validationError);
@@ -123,7 +123,7 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
     }
   }, [fideIdValue, validateFideId, t]);
 
-  // Guardar perfil
+  // Save profile
   const handleSave = useCallback(() => {
     const fideId = fideIdValue.trim();
     const finalDisplayName = customName.trim();
@@ -133,12 +133,12 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
     console.log("handleSave - finalDisplayName:", finalDisplayName);
     console.log("handleSave - fideId:", fideId);
 
-    // Siempre guardar el displayName, incluso si no hay FIDE ID o FIDE player
+    // Always save the displayName, even if there's no FIDE ID or FIDE player
     if (fidePlayer && fideId) {
-      // Si hay FIDE player, guardar ambos
+      // If there's a FIDE player, save both
       const playerData = {
         name: fidePlayer.name,
-        firstName: fidePlayer.firstName, // Mantener firstName original de FIDE
+        firstName: fidePlayer.firstName, // Keep original firstName from FIDE
         gender: fidePlayer.gender,
         title: fidePlayer.title,
         standardRating: fidePlayer.standardRating ?? fidePlayer.rating,
@@ -151,18 +151,18 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
       console.log("handleSave - saving playerData:", playerData);
       onSave(fideId, playerData, finalDisplayName);
     } else if (fideId) {
-      // Si solo hay FIDE ID pero no player (búsqueda fallida o no realizada), guardar solo el ID
+      // If there's only a FIDE ID but no player (failed or not performed search), save only the ID
       onSave(fideId, null, finalDisplayName);
     } else {
-      // Si no hay FIDE ID, solo guardar el displayName
+      // If there's no FIDE ID, only save the displayName
       onSave("", null, finalDisplayName);
     }
     
-    // Resetear estado al cerrar
+    // Reset state when closing
     handleClose();
   }, [fideIdValue, fidePlayer, customName, onSave, t]);
 
-  // Cerrar modal y resetear estado
+  // Close modal and reset state
   const handleClose = useCallback(() => {
     onClose();
     setFideIdValue(currentFideId || "");
@@ -170,7 +170,7 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
     setError(null);
   }, [onClose, currentFideId]);
 
-  // Sincronizar cuando se abre el modal o cambia currentFideId
+  // Synchronize when the modal opens or currentFideId changes
   useEffect(() => {
     if (opened) {
       const initialValue = currentFideId || "";
@@ -181,14 +181,14 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
     }
   }, [opened, currentFideId, currentDisplayName]);
 
-  // Habilitar botón de búsqueda si hay un valor válido
-  // Usar useMemo para asegurar que se recalcule cuando cambie fideIdValue
+  // Enable search button if there's a valid value
+  // Use useMemo to ensure it recalculates when fideIdValue changes
   const canSearch = useMemo(() => {
     return fideIdValue.trim().length > 0 && !loading;
   }, [fideIdValue, loading]);
   
   const canSave = useMemo(() => {
-    // Permitir guardar si hay displayName o FIDE ID
+    // Allow saving if there's a displayName or FIDE ID
     return (customName.trim().length > 0 || fideIdValue.trim().length > 0) && !loading;
   }, [customName, fideIdValue, loading]);
 

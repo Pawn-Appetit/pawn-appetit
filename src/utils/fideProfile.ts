@@ -14,7 +14,7 @@ export interface FideProfile {
   worldRank?: number;
   nationalRank?: number;
   federation?: string;
-  photo?: string; // URL de la foto del perfil
+  photo?: string; // URL of the profile photo
   birthYear?: number;
   age?: number;
   updatedAt?: string;

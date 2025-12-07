@@ -256,9 +256,9 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
             // Get color for result badge - different colors for Academia Maya
             const getResultColor = () => {
               if (isAcademiaMaya) {
-                if (userWon) return "green"; // Verde para victoria en Academia Maya
-                if (g.result === "1-0" || g.result === "0-1") return "red"; // Rojo para derrota (cuando el usuario perdió)
-                return "gray"; // Gris para empate
+                if (userWon) return "green"; // Green for victory in Academia Maya
+                if (g.result === "1-0" || g.result === "0-1") return "red"; // Red for defeat (when the user lost)
+                return "gray"; // Gray for draw
               } else {
                 // Default colors for other themes
                 if (userWon) return "teal";

@@ -923,7 +923,7 @@ function BoardGame() {
 
     const fenToUse = customFen.trim() || INITIAL_FEN;
     if (!applyFenString(fenToUse)) {
-      return; // no empezar partida si FEN inválido
+      return; // don't start game if FEN is invalid
     }
 
     // IMPORTANT: Only update headers metadata, NOT the fen field

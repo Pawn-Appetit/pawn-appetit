@@ -65,7 +65,7 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
     welcomeMessage = t("features.dashboard.welcome.firstOpen");
   } else if (playerFirstName) {
     const genderKey = playerGender === "female" ? "female" : "male";
-    // Si tiene título FIDE, incluirlo en el saludo
+    // If there's a FIDE title, include it in the greeting
     if (fideInfo?.title) {
       const nameWithTitle = `${fideInfo.title} ${playerFirstName}`;
       console.log("WelcomeCard - Using title in greeting:", nameWithTitle);
@@ -87,7 +87,7 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
       <Group align="flex-start" justify="space-between" wrap="nowrap" gap="xl">
-        {/* Columna izquierda: Foto de perfil FIDE - solo mostrar si existe */}
+        {/* Left column: FIDE profile photo - only show if it exists */}
         {fideInfo?.photo ? (
           <Box
             style={{
@@ -113,7 +113,7 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
           </Box>
         ) : null}
         
-        {/* Columna central: Información y acciones */}
+        {/* Central column: Information and actions */}
         <Stack gap="md" style={{ flex: 1, minWidth: 0 }}>
           <Stack gap={4}>
             <Title order={1} fw={800}>
@@ -124,7 +124,7 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
             </Text>
           </Stack>
           
-          {/* Información FIDE */}
+          {/* FIDE Information */}
           {fideInfo && (fideInfo.title || fideInfo.age || fideInfo.worldRank || fideInfo.nationalRank) && (
             <Group gap="md" wrap="wrap">
               {fideInfo.title && (
@@ -134,7 +134,7 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
               )}
               {fideInfo.age && (
                 <Badge size="lg" color="blue" variant="light">
-                  {fideInfo.age} años
+                  {fideInfo.age} {t("common.years")}
                 </Badge>
               )}
               {fideInfo.worldRank && (
@@ -186,7 +186,7 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
             </Group>
           )}
           
-          {/* Botones de acción */}
+          {/* Action buttons */}
           <Group gap="xs" mt="xs">
             <Button radius="md" onClick={onPlayChess} leftSection={<IconChess size={18} />}>
               {t("features.dashboard.cards.playChess.button")}

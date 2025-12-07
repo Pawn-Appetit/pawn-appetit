@@ -18,8 +18,8 @@ export interface FidePlayer {
 }
 
 /**
- * Busca información de un jugador de FIDE por su ID usando scraping
- * Extrae datos de ratings.fide.com/profile/{fideId}
+ * Searches for FIDE player information by ID using scraping
+ * Extracts data from ratings.fide.com/profile/{fideId}
  */
 export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null> {
   console.log("fetchFidePlayer called with ID:", fideId);
@@ -37,8 +37,8 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       return null;
     }
 
-    // Verificar si la página indica que el jugador no existe
-    // FIDE puede mostrar diferentes mensajes de error
+    // Check if the page indicates that the player does not exist
+    // FIDE can show different error messages
     const htmlLower = html.toLowerCase();
     const has404 = htmlLower.includes("404");
     const hasNotFound = htmlLower.includes("not found") || htmlLower.includes("player not found") || htmlLower.includes("page not found");
@@ -46,8 +46,8 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
     
     console.log("Checking for error indicators:", { has404, hasNotFound, hasError });
     
-    // Solo retornar null si hay indicadores claros de error Y no hay contenido útil
-    // A veces FIDE muestra "404" en el HTML pero el perfil existe
+    // Only return null if there are clear error indicators AND no useful content
+    // Sometimes FIDE shows "404" in the HTML but the profile exists
     if ((has404 || hasNotFound || hasError) && html.length < 10000) {
       console.log("FIDE profile not found for ID:", fideId, "HTML too short:", html.length);
       return null;
@@ -55,11 +55,11 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
     
     console.log("HTML looks valid, proceeding to parse. Length:", html.length);
 
-    // Parsear el HTML usando DOMParser
+    // Parse the HTML using DOMParser
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
 
-    // Extraer nombre completo - buscar en múltiples selectores comunes de FIDE
+    // Extract full name - search in multiple common FIDE selectors
     let fullName = "";
     const nameSelectors = [
       ".profile-top-title",
@@ -78,25 +78,25 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
 
-    // Si no encontramos nombre, buscar en el título de la página
+    // If we don't find a name, search in the page title
     if (!fullName || fullName.length < 2) {
       const titleElement = doc.querySelector("title");
       const titleText = titleElement?.textContent?.trim() || "";
-      // El título suele ser "Name - FIDE Ratings"
+      // The title is usually "Name - FIDE Ratings"
       const titleMatch = titleText.match(/^([^-]+)/);
       if (titleMatch) {
         fullName = titleMatch[1].trim();
       }
     }
 
-    // Si aún no hay nombre, intentar extraer del título de la página una vez más
+    // If we still don't have a name, try extracting from the page title once more
     if (!fullName || fullName.length < 2) {
       console.log("Name not found in selectors, trying title again...");
       const titleElement = doc.querySelector("title");
       const titleText = titleElement?.textContent?.trim() || "";
       console.log("Title text:", titleText);
       
-      // El título puede ser "Name - FIDE Profile" o "Name FIDE Profile"
+      // The title can be "Name - FIDE Profile" or "Name FIDE Profile"
       const titleMatch = titleText.match(/^([^-]+)/) || titleText.match(/^(.+?)\s+FIDE/i);
       if (titleMatch) {
         fullName = titleMatch[1].trim();
@@ -104,7 +104,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
     
-    // Si aún no hay nombre después de todos los intentos, retornar null
+    // If we still don't have a name after all attempts, return null
     if (!fullName || fullName.length < 2) {
       console.log("Could not extract name from HTML. HTML snippet:", html.substring(0, 500));
       return null;
@@ -112,7 +112,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
     
     console.log("Extracted name:", fullName);
 
-    // Limpiar el nombre (remover títulos, espacios extra, etc.)
+    // Clean the name (remove titles, extra spaces, etc.)
     fullName = fullName.replace(/\s+/g, " ").trim();
 
     // Dividir nombre en partes
@@ -120,10 +120,10 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || "";
 
-    // Extraer título (GM, IM, FM, etc.) del nombre o del HTML
+    // Extract title (GM, IM, FM, etc.) from the name or HTML
     let title: string | undefined;
     
-    // Mapa para convertir nombres completos a abreviaciones
+    // Map to convert full names to abbreviations
     const titleMap: Record<string, string> = {
       "GRANDMASTER": "GM",
       "INTERNATIONAL MASTER": "IM",
@@ -135,33 +135,33 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       "WOMAN CANDIDATE MASTER": "WCM",
       "NATIONAL MASTER": "NM",
       "WOMAN NATIONAL MASTER": "WNM",
-      "MASTER": "FM", // "FIDE Master" se abrevia como FM
+      "MASTER": "FM", // "FIDE Master" is abbreviated as FM
     };
     
-    // Primero intentar extraer del nombre
+    // First try to extract from the name
     const titleMatch = fullName.match(/\b(GM|IM|FM|WGM|WIM|WFM|CM|WCM|NM|WNM)\b/i);
     if (titleMatch) {
       title = titleMatch[1].toUpperCase();
-      // Remover el título del nombre completo para limpiarlo
+      // Remove the title from the full name to clean it
       fullName = fullName.replace(/\b(GM|IM|FM|WGM|WIM|WFM|CM|WCM|NM|WNM)\b/gi, "").trim();
       console.log("Title extracted from name:", title);
     }
     
-    // Si no se encontró en el nombre, buscar en el HTML
+    // If not found in the name, search in the HTML
     if (!title) {
-      // Buscar "FIDE title" o "FIDE Master" en el HTML
-      // FIDE puede mostrar: "FIDE title: FIDE Master" o "FIDE Master" o "Title: FM"
+      // Search for "FIDE title" or "FIDE Master" in the HTML
+      // FIDE can show: "FIDE title: FIDE Master" or "FIDE Master" or "Title: FM"
       const titlePatterns = [
-        // Patrones para "FIDE Master", "FIDE title: FIDE Master", etc.
+        // Patterns for "FIDE Master", "FIDE title: FIDE Master", etc.
         /FIDE\s+title[:\s]+(?:FIDE\s+)?(Master|Grandmaster|International\s+Master|Candidate\s+Master|Woman\s+Grandmaster|Woman\s+International\s+Master|Woman\s+FIDE\s+Master|Woman\s+Candidate\s+Master|National\s+Master|Woman\s+National\s+Master)/i,
         /FIDE\s+(Master|Grandmaster|International\s+Master|Candidate\s+Master|Woman\s+Grandmaster|Woman\s+International\s+Master|Woman\s+FIDE\s+Master|Woman\s+Candidate\s+Master|National\s+Master|Woman\s+National\s+Master)/i,
-        // Patrones para abreviaciones directas
+        // Patterns for direct abbreviations
         /(?:Title|FIDE\s+title)[:\s]+([A-Z]{2,3})\b/i,
         /\btitle[:\s]+([A-Z]{2,3})\b/i,
-        // Buscar en elementos HTML con atributos o clases relacionadas
+        // Search in HTML elements with related attributes or classes
         /<[^>]*(?:class|id|data-title)[^>]*title[^>]*>([A-Z]{2,3})<\/[^>]*>/i,
         /<[^>]*title[^>]*>([A-Z]{2,3})<\/[^>]*>/i,
-        // Buscar en tablas o divs
+        // Search in tables or divs
         /<td[^>]*>.*?title.*?<\/td>\s*<td[^>]*>([A-Z]{2,3})<\/td>/i,
         /<div[^>]*>.*?title.*?<\/div>\s*<div[^>]*>([A-Z]{2,3})<\/div>/i,
       ];
@@ -171,12 +171,12 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
         if (match && match[1]) {
           let potentialTitle = match[1].trim().toUpperCase();
           
-          // Si es un nombre completo, convertirlo
+          // If it's a full name, convert it
           if (titleMap[potentialTitle]) {
             potentialTitle = titleMap[potentialTitle];
           }
           
-          // Verificar que sea un título válido
+          // Verify that it's a valid title
           if (/^(GM|IM|FM|WGM|WIM|WFM|CM|WCM|NM|WNM)$/.test(potentialTitle)) {
             title = potentialTitle;
             console.log("Title extracted from HTML:", title, "from pattern:", pattern);
@@ -185,9 +185,9 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
         }
       }
       
-      // Si aún no encontramos el título, buscar en las clases específicas de FIDE
+      // If we still haven't found the title, search in FIDE-specific classes
       if (!title) {
-        // FIDE usa <div class="profile-info-title"><p>FIDE Master</p></div>
+        // FIDE uses <div class="profile-info-title"><p>FIDE Master</p></div>
         const titleDiv = doc.querySelector(".profile-info-title");
         if (titleDiv) {
           const titleP = titleDiv.querySelector("p");
@@ -195,7 +195,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
           console.log("Found .profile-info-title with text:", titleText);
           
           if (titleText) {
-            // Buscar nombres completos
+            // Search for full names
             const upperText = titleText.toUpperCase();
             for (const [fullName, abbrev] of Object.entries(titleMap)) {
               if (upperText.includes(fullName)) {
@@ -205,7 +205,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
               }
             }
             
-            // Si no se encontró, buscar abreviaciones
+            // If not found, search for abbreviations
             if (!title) {
               const abbrevMatch = titleText.match(/\b(GM|IM|FM|WGM|WIM|WFM|CM|WCM|NM|WNM)\b/i);
               if (abbrevMatch) {
@@ -217,7 +217,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
         }
       }
       
-      // Si aún no encontramos el título, buscar en elementos del DOM
+      // If we still haven't found the title, search in DOM elements
       if (!title) {
         const titleElements = doc.querySelectorAll("[class*='title'], [id*='title'], [data-title]");
         for (const el of titleElements) {
@@ -229,7 +229,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
             break;
           }
           
-          // También buscar nombres completos
+          // Also search for full names
           for (const [fullName, abbrev] of Object.entries(titleMap)) {
             if (text.toUpperCase().includes(fullName)) {
               title = abbrev;
@@ -241,20 +241,20 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
         }
       }
       
-      // Último intento: buscar en todas las celdas de tabla que contengan "title" o "FIDE"
+      // Last attempt: search in all table cells that contain "title" or "FIDE"
       if (!title) {
         const allCells = doc.querySelectorAll("td, th");
         for (let i = 0; i < allCells.length; i++) {
           const cell = allCells[i];
           const cellText = cell.textContent?.toLowerCase() || "";
           if (cellText.includes("title") || cellText.includes("fide")) {
-            // Buscar en la misma celda o en la siguiente
+            // Search in the same cell or the next one
             const currentText = cell.textContent || "";
             const nextCell = allCells[i + 1];
             const nextText = nextCell?.textContent || "";
             const combinedText = (currentText + " " + nextText).toUpperCase();
             
-            // Buscar abreviaciones
+            // Search for abbreviations
             const abbrevMatch = combinedText.match(/\b(GM|IM|FM|WGM|WIM|WFM|CM|WCM|NM|WNM)\b/i);
             if (abbrevMatch) {
               title = abbrevMatch[1].toUpperCase();
@@ -262,7 +262,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
               break;
             }
             
-            // Buscar nombres completos
+            // Search for full names
             for (const [fullName, abbrev] of Object.entries(titleMap)) {
               if (combinedText.includes(fullName)) {
                 title = abbrev;
@@ -278,12 +278,12 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
     
     console.log("Final title:", title || "none");
 
-    // Extraer año de nacimiento y calcular edad
+    // Extract birth year and calculate age
     let birthYear: number | undefined;
     let age: number | undefined;
     
-    // Buscar patrones de fecha de nacimiento en el HTML
-    // FIDE usa <p class="profile-info-byear">1960</p>
+    // Search for birth date patterns in the HTML
+    // FIDE uses <p class="profile-info-byear">1960</p>
     const byearElement = doc.querySelector(".profile-info-byear, p.profile-info-byear");
     if (byearElement) {
       const yearText = byearElement.textContent?.trim();
@@ -297,7 +297,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
     
-    // Si no se encontró, buscar con patrones regex
+    // If not found, search with regex patterns
     if (!birthYear) {
       const birthYearPatterns = [
         /(?:B-Year|B\.Year|Birth\s+Year|Year\s+of\s+Birth|Born)[:\s]+(\d{4})/i,
@@ -319,7 +319,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
     
-    // Si no se encontró, buscar en la tabla de información
+    // If not found, search in the information table
     if (!birthYear) {
       const allCells = doc.querySelectorAll("td, th");
       for (let i = 0; i < allCells.length; i++) {
@@ -343,18 +343,18 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
 
-    // Extraer género - FIDE usa "M" o "F" en el HTML
+    // Extract gender - FIDE uses "M" or "F" in the HTML
     let gender: "male" | "female" = "male"; // Default
     
     console.log("Starting gender extraction for FIDE ID:", fideId);
     
-    // Buscar el género de forma más específica en el HTML
-    // FIDE usa <p class="profile-info-sex">Male</p> o <p class="profile-info-sex">Female</p>
-    // IMPORTANTE: Buscar "Female" primero para evitar falsos positivos
+    // Search for gender more specifically in the HTML
+    // FIDE uses <p class="profile-info-sex">Male</p> or <p class="profile-info-sex">Female</p>
+    // IMPORTANT: Search for "Female" first to avoid false positives
     
     let foundGender: "male" | "female" | null = null;
     
-    // Método 1: Buscar usando la clase específica de FIDE (más confiable)
+    // Method 1: Search using FIDE-specific class (most reliable)
     const genderElement = doc.querySelector(".profile-info-sex, p.profile-info-sex");
     if (genderElement) {
       const genderText = genderElement.textContent?.trim().toLowerCase() || "";
@@ -368,7 +368,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
     
-    // Método 2: Buscar en contexto de "Sex" o "Gender" con regex
+    // Method 2: Search in context of "Sex" or "Gender" with regex
     if (!foundGender) {
       const sexGenderPatterns = [
         /<p[^>]*class="profile-info-sex"[^>]*>\s*(Male|Female|M|F)\s*<\/p>/i,
@@ -380,7 +380,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
         /<td[^>]*>.*?Gender.*?<\/td>\s*<td[^>]*>\s*(Male|Female|M|F)\s*<\/td>/i,
       ];
       
-      // Buscar "Female" primero para evitar falsos positivos
+      // Search for "Female" first to avoid false positives
       for (const pattern of sexGenderPatterns) {
         const match = html.match(pattern);
         if (match && match[1]) {
@@ -397,7 +397,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
     
-    // Método 3: Si no encontramos en patrones específicos, buscar en elementos con div.profile-info-row
+    // Method 3: If we don't find in specific patterns, search in elements with div.profile-info-row
     if (!foundGender) {
       console.log("No gender found in patterns, searching profile-info-row elements...");
       const infoRows = doc.querySelectorAll(".profile-info-row");
@@ -428,7 +428,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
     
-    // Método 4: Si no encontramos, buscar en celdas de tabla
+    // Method 4: If we don't find, search in table cells
     if (!foundGender) {
       console.log("No gender found in profile-info-row, searching table cells...");
       const allCells = doc.querySelectorAll("td, th");
@@ -438,11 +438,11 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
         const cell = allCells[i];
         const cellText = cell.textContent?.toLowerCase() || "";
         
-        // Buscar celdas que mencionen "sex" o "gender"
+        // Search for cells that mention "sex" or "gender"
         if (cellText.includes("sex") || cellText.includes("gender")) {
           console.log(`Found sex/gender cell at index ${i}:`, cellText);
           
-          // Buscar en la misma celda o en la siguiente
+          // Search in the same cell or the next one
           const currentText = cell.textContent?.trim().toLowerCase() || "";
           const nextCell = allCells[i + 1];
           const nextText = nextCell?.textContent?.trim().toLowerCase() || "";
@@ -450,7 +450,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
           console.log(`  Current cell text: "${currentText}"`);
           console.log(`  Next cell text: "${nextText}"`);
           
-          // Buscar "female" o "f" primero (más específico)
+          // Search for "female" or "f" first (more specific)
           if (currentText.includes("female") || currentText === "f" || 
               nextText.includes("female") || nextText === "f") {
             foundGender = "female";
@@ -466,7 +466,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
     
-    // Método 5: Si aún no encontramos, usar títulos femeninos como indicador
+    // Method 5: If we still don't find, use female titles as indicator
     if (!foundGender && title) {
       if (title === "WGM" || title === "WIM" || title === "WFM" || title === "WCM" || title === "WNM") {
         foundGender = "female";
@@ -474,7 +474,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
     
-    // Usar el género encontrado o default a "male"
+    // Use the found gender or default to "male"
     gender = foundGender || "male";
     console.log("Final gender determination:", gender, foundGender ? "(found)" : "(default to male)");
 
@@ -483,29 +483,29 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
     let rapidRating: number | undefined;
     let blitzRating: number | undefined;
 
-    // Buscar ratings usando múltiples patrones regex en el HTML
-    // FIDE puede mostrar: "Standard: 2500", "Std: 2500", "Classical: 2500", etc.
+    // Search for ratings using multiple regex patterns in the HTML
+    // FIDE can show: "Standard: 2500", "Std: 2500", "Classical: 2500", etc.
     const ratingPatterns = [
-      // Patrones para Standard - más flexibles
+      // Patterns for Standard - more flexible
       /(?:standard|std|classical|fide)[\s:]*rating[\s:]*(\d{3,4})/i,
       /(?:standard|std|classical)[\s:]*(\d{3,4})/i,
       /"standard_rating":\s*(\d+)/i,
       /"std_rating":\s*(\d+)/i,
       /"classical_rating":\s*(\d+)/i,
       /rating[\s:]*standard[\s:]*(\d{3,4})/i,
-      // Patrones para Rapid
+      // Patterns for Rapid
       /rapid[\s:]*rating[\s:]*(\d{3,4})/i,
       /rapid[\s:]*(\d{3,4})/i,
       /"rapid_rating":\s*(\d+)/i,
       /rating[\s:]*rapid[\s:]*(\d{3,4})/i,
-      // Patrones para Blitz
+      // Patterns for Blitz
       /blitz[\s:]*rating[\s:]*(\d{3,4})/i,
       /blitz[\s:]*(\d{3,4})/i,
       /"blitz_rating":\s*(\d+)/i,
       /rating[\s:]*blitz[\s:]*(\d{3,4})/i,
     ];
 
-    // Buscar Standard
+    // Search for Standard
     for (let i = 0; i < 6; i++) {
       const match = html.match(ratingPatterns[i]);
       if (match) {
@@ -518,7 +518,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
 
-    // Buscar Rapid
+    // Search for Rapid
     for (let i = 6; i < 10; i++) {
       const match = html.match(ratingPatterns[i]);
       if (match) {
@@ -531,7 +531,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
 
-    // Buscar Blitz
+    // Search for Blitz
     for (let i = 10; i < 14; i++) {
       const match = html.match(ratingPatterns[i]);
       if (match) {
@@ -544,9 +544,9 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
 
-    // Método 1: Buscar ratings usando estructura de párrafos (método más confiable para FIDE)
-    // FIDE usa: <p>2289</p><p>STANDARD</p> dentro de divs con clases específicas
-    // Este método es el más confiable según las pruebas
+    // Method 1: Search for ratings using paragraph structure (most reliable method for FIDE)
+    // FIDE uses: <p>2289</p><p>STANDARD</p> inside divs with specific classes
+    // This method is the most reliable according to tests
     const allParagraphs = doc.querySelectorAll("p");
     for (let i = 0; i < allParagraphs.length - 1; i++) {
       const currentP = allParagraphs[i];
@@ -554,12 +554,12 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       const currentText = currentP.textContent?.trim() || "";
       const nextText = nextP.textContent?.trim().toUpperCase() || "";
       
-      // Verificar si el párrafo actual contiene un número de rating
+      // Check if the current paragraph contains a rating number
       const ratingMatch = currentText.match(/^(\d{3,4})$/);
       if (ratingMatch) {
         const rating = parseInt(ratingMatch[1], 10);
         if (rating >= 1000 && rating <= 3000) {
-          // Verificar el siguiente párrafo para determinar el tipo
+          // Check the next paragraph to determine the type
           if (nextText.includes("STANDARD") && !standardRating) {
             standardRating = rating;
             console.log("Found Standard rating via paragraph structure:", rating);
@@ -574,14 +574,14 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
 
-    // Método 2: Si aún no encontramos todos los ratings, buscar en divs con clases específicas
-    // Nota: FIDE usa "profile-standart" (typo) no "profile-standard"
+    // Method 2: If we still haven't found all ratings, search in divs with specific classes
+    // Note: FIDE uses "profile-standart" (typo) not "profile-standard"
     if (!standardRating || !rapidRating || !blitzRating) {
       const profileStandardDiv = doc.querySelector(".profile-standart, .profile-standard, [class*='profile-standart'], [class*='profile-standard']");
       if (profileStandardDiv && !standardRating) {
         const divText = profileStandardDiv.textContent || "";
         const divClass = profileStandardDiv.className?.toLowerCase() || "";
-        // Buscar "standart" (typo de FIDE) o "standard"
+        // Search for "standart" (FIDE typo) or "standard"
         if (divClass.includes("standart") || divClass.includes("standard") || divText.toUpperCase().includes("STANDARD")) {
           const ratingMatch = divText.match(/\b(\d{3,4})\b/);
           if (ratingMatch) {
@@ -627,9 +627,9 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
 
-    // Si aún no encontramos ratings, buscar en tablas de ratings
+    // If we still haven't found ratings, search in rating tables
     if (!standardRating || !rapidRating || !blitzRating) {
-      // Buscar en tablas de ratings
+      // Search in rating tables
       const ratingTables = doc.querySelectorAll("table");
       ratingTables.forEach((table) => {
         const rows = table.querySelectorAll("tr");
@@ -639,12 +639,12 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
           
           cells.forEach((cell, index) => {
             const cellText = cell.textContent?.trim() || "";
-            // Buscar números de 3-4 dígitos que puedan ser ratings
+            // Search for 3-4 digit numbers that could be ratings
             const ratingMatch = cellText.match(/^(\d{3,4})$/);
             if (ratingMatch) {
               const rating = parseInt(ratingMatch[1], 10);
               if (rating >= 1000 && rating <= 3000) {
-                // Determinar tipo de rating por contexto
+                // Determine rating type by context
                 const headerText = cells[0]?.textContent?.toLowerCase() || "";
                 const fullContext = (rowText + " " + headerText).toLowerCase();
 
@@ -664,7 +664,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
         });
       });
 
-      // Buscar en elementos con clases relacionadas a ratings
+      // Search in elements with rating-related classes
       const ratingElements = doc.querySelectorAll("[class*='rating'], [id*='rating'], [class*='elo'], [class*='standard'], [class*='rapid'], [class*='blitz']");
       ratingElements.forEach((el) => {
         const text = el.textContent?.trim() || "";
@@ -688,11 +688,11 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
         }
       });
       
-      // Buscar en divs y spans que contengan texto como "Standard: 2500" o "2500"
+      // Search in divs and spans that contain text like "Standard: 2500" or "2500"
       const allTextElements = doc.querySelectorAll("div, span, p, td, th");
       allTextElements.forEach((el) => {
         const text = el.textContent?.trim() || "";
-        // Buscar patrones como "Standard: 2500", "Rapid 2500", "Blitz: 2500"
+        // Search for patterns like "Standard: 2500", "Rapid 2500", "Blitz: 2500"
         const standardMatch = text.match(/(?:standard|classical|std)[\s:]*(\d{3,4})/i);
         const rapidMatch = text.match(/rapid[\s:]*(\d{3,4})/i);
         const blitzMatch = text.match(/blitz[\s:]*(\d{3,4})/i);
@@ -721,7 +721,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       });
     }
 
-    // Buscar federación (código de 3 letras)
+    // Search for federation (3-letter code)
     let federation: string | undefined;
     const fedMatch = html.match(/"federation":\s*"([A-Z]{3})"/i) || 
                      html.match(/federation[\s:]*([A-Z]{3})/i) ||
@@ -729,7 +729,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
     if (fedMatch) {
       federation = fedMatch[1].toUpperCase();
     } else {
-      // Buscar en elementos del DOM
+      // Search in DOM elements
       const fedElements = doc.querySelectorAll("[class*='federation'], [class*='country'], [class*='flag'], img[alt*='flag']");
       fedElements.forEach((el) => {
         const text = el.textContent?.trim() || el.getAttribute("title") || el.getAttribute("alt") || "";
@@ -740,12 +740,12 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       });
     }
 
-    // Buscar ranks (mundial y nacional) - FIDE muestra ranks de jugadores activos
+    // Search for ranks (world and national) - FIDE shows ranks of active players
     let worldRank: number | undefined;
     let nationalRank: number | undefined;
 
-    // Buscar ranks en el HTML usando múltiples patrones
-    // FIDE puede mostrar: "World Rank: #123" o "Rank World: 123" o en JSON
+    // Search for ranks in the HTML using multiple patterns
+    // FIDE can show: "World Rank: #123" or "Rank World: 123" or in JSON
     const worldRankPatterns = [
       /(?:world|global)[\s_]*rank[\s:]*#?(\d+)/i,
       /rank[\s_]*world[\s:]*#?(\d+)/i,
@@ -810,7 +810,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       });
     }
 
-    // Buscar en tablas de rankings
+    // Search in ranking tables
     const tables = doc.querySelectorAll("table");
     tables.forEach((table) => {
       const rows = table.querySelectorAll("tr");
@@ -834,15 +834,15 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       });
     });
 
-    // Extraer foto del perfil
+    // Extract profile photo
     let photo: string | undefined;
     
     console.log("Starting photo extraction for FIDE ID:", fideId);
     
-    // Buscar imagen del perfil en diferentes lugares comunes
-    // FIDE generalmente usa imágenes en el header del perfil
+    // Search for profile image in different common places
+    // FIDE generally uses images in the profile header
     const photoSelectors = [
-      "img.profile-top__photo", // FIDE usa guiones bajos dobles
+      "img.profile-top__photo", // FIDE uses double underscores
       ".profile-top-photo img",
       ".profile-photo img",
       ".profile-header img",
@@ -872,13 +872,13 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
           let src = img.src || img.getAttribute("src") || img.getAttribute("data-src") || img.getAttribute("data-lazy-src");
           console.log(`  Image src:`, src);
           if (src) {
-            // Filtrar imágenes que no son fotos de perfil (logos, iconos, etc.)
+            // Filter images that are not profile photos (logos, icons, etc.)
             if (src.includes("logo") || src.includes("icon") || src.includes("flag") || src.includes("badge")) {
               console.log(`  Skipping (logo/icon/flag/badge):`, src);
               continue;
             }
             
-            // Si es un data URI (base64), usarlo directamente sin modificar
+            // If it's a data URI (base64), use it directly without modification
             if (src.startsWith("data:")) {
               photo = src;
               console.log("✓ Found photo via selector (data URI):", selector);
@@ -898,10 +898,10 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
     
-    // Si no encontramos con selectores, buscar en el HTML directamente
+    // If we don't find with selectors, search in the HTML directly
     if (!photo) {
       console.log("No photo found with selectors, searching all images...");
-      // Buscar todas las imágenes y filtrar las que parecen ser fotos de perfil
+      // Search for all images and filter those that appear to be profile photos
       const allImages = doc.querySelectorAll("img");
       console.log(`Found ${allImages.length} total images in HTML`);
       
@@ -914,18 +914,18 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
           
           console.log(`Image ${i + 1}:`, { src, class: imgClass, alt: imgAlt });
           
-          // Filtrar logos, iconos, banderas
+          // Filter logos, icons, flags
           if (src && !src.includes("logo") && !src.includes("icon") && !src.includes("flag") && !src.includes("badge")) {
-            // Preferir imágenes que tengan dimensiones razonables (probablemente fotos)
+            // Prefer images that have reasonable dimensions (probably photos)
             const width = img.width || parseInt(img.getAttribute("width") || "0");
             const height = img.height || parseInt(img.getAttribute("height") || "0");
             
             console.log(`  Dimensions: ${width}x${height}`);
             
-            // FIDE usa imágenes pequeñas a veces, así que bajemos el umbral
+            // FIDE uses small images sometimes, so lower the threshold
             if ((width > 50 && height > 50 && width < 500 && height < 500) || 
                 (width === 0 && height === 0 && (src.includes("upload") || src.includes("photo")))) {
-              // Si es un data URI (base64), usarlo directamente sin modificar
+              // If it's a data URI (base64), use it directly without modification
               if (src.startsWith("data:")) {
                 photo = src;
                 console.log("✓ Found photo via image scan (data URI)");
@@ -946,7 +946,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
     
-    // Último intento: buscar en el HTML con regex
+    // Last attempt: search in the HTML with regex
     if (!photo) {
       console.log("Trying regex patterns on raw HTML...");
       const imgPatterns = [
@@ -963,7 +963,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
           console.log(`Regex match found:`, match[1].substring(0, 100));
           if (!match[1].includes("logo") && !match[1].includes("icon") && !match[1].includes("flag")) {
             let src = match[1];
-            // Si es un data URI (base64), usarlo directamente sin modificar
+            // If it's a data URI (base64), use it directly without modification
             if (src.startsWith("data:")) {
               photo = src;
               console.log("✓ Found photo via regex pattern (data URI)");
@@ -983,33 +983,33 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
       }
     }
 
-    // Si encontramos una foto, descargarla localmente
+    // If we find a photo, download it locally
     if (photo) {
       console.log("Photo found, downloading to local storage:", photo.substring(0, 100));
       try {
-        // Usar el comando de Tauri para guardar la foto localmente
-        // Nota: Tauri/Specta convierte snake_case a camelCase
+        // Use Tauri command to save the photo locally
+        // Note: Tauri/Specta converts snake_case to camelCase
         const localPhotoPath = await invoke<string>("save_fide_photo", {
           fideId: fideId,
           photoData: photo,
         });
         console.log("✓ Photo saved locally at:", localPhotoPath);
         
-        // Convertir la ruta local a una URL que el frontend pueda usar
+        // Convert the local path to a URL that the frontend can use
         photo = convertFileSrc(localPhotoPath);
         console.log("✓ Photo converted to frontend URL:", photo);
       } catch (error) {
         console.error("❌ Failed to save photo locally:", error);
         console.error("Error details:", JSON.stringify(error));
-        // Si falla al guardar, establecer photo como undefined para no mostrar marco vacío
+        // If saving fails, set photo as undefined to avoid showing empty frame
         photo = undefined;
         console.log("Photo set to undefined due to save error");
       }
     } else {
       console.warn("⚠️ No photo found for FIDE ID:", fideId);
-      // Asegurar que photo sea undefined explícitamente
+      // Ensure photo is explicitly undefined
       photo = undefined;
-      // Buscar todas las imágenes en el HTML para debugging
+      // Search for all images in the HTML for debugging
       const allImgTags = html.match(/<img[^>]+>/gi);
       if (allImgTags && allImgTags.length > 0) {
         console.log("All img tags found in HTML (first 5):", allImgTags.slice(0, 5));
@@ -1022,7 +1022,7 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
     if (!standardRating && !rapidRating && !blitzRating) {
       console.warn("No ratings found in FIDE HTML for ID:", fideId);
       console.warn("HTML snippet (first 10000 chars):", html.substring(0, 10000));
-      // Buscar cualquier número de 3-4 dígitos en el HTML para debugging
+      // Search for any 3-4 digit numbers in the HTML for debugging
       const allRatings = html.match(/\b(\d{3,4})\b/g);
       if (allRatings) {
         console.warn("All 3-4 digit numbers found in HTML:", allRatings.slice(0, 20));
@@ -1058,12 +1058,12 @@ export async function fetchFidePlayer(fideId: string): Promise<FidePlayer | null
 }
 
 /**
- * Busca información de FIDE usando un servicio alternativo
- * Puede usar APIs como chess.com, lichess, o servicios de terceros que tengan datos de FIDE
+ * Searches for FIDE information using an alternative service
+ * Can use APIs like chess.com, lichess, or third-party services that have FIDE data
  */
 export async function searchFidePlayerByName(name: string): Promise<FidePlayer[]> {
   try {
-    // Placeholder - en producción esto debería buscar en una base de datos de FIDE
+    // Placeholder - in production this should search in a FIDE database
     return [];
   } catch (error) {
     console.error("Error searching FIDE player:", error);
