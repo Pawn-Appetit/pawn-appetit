@@ -597,7 +597,7 @@ mod bigint_serde {
             type Value = Option<u64>;
             
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("a string representing a u64, a number, or null")
+                formatter.write_str("a string representing a u64, a number, bigint, or null")
             }
             
             fn visit_none<E>(self) -> Result<Self::Value, E>
@@ -648,9 +648,141 @@ mod bigint_serde {
                 }
                 Ok(Some(value as u64))
             }
+            
+            // Handle i128/u128 for JavaScript BigInt values
+            fn visit_i128<E>(self, value: i128) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if value < 0 {
+                    return Err(serde::de::Error::custom(format!("Negative value {} cannot be converted to u64", value)));
+                }
+                if value > u64::MAX as i128 {
+                    return Err(serde::de::Error::custom(format!("Value {} exceeds u64::MAX", value)));
+                }
+                Ok(Some(value as u64))
+            }
+            
+            fn visit_u128<E>(self, value: u128) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if value > u64::MAX as u128 {
+                    return Err(serde::de::Error::custom(format!("Value {} exceeds u64::MAX", value)));
+                }
+                Ok(Some(value as u64))
+            }
+            
+            // Handle f64 (JavaScript numbers that might be sent as floats)
+            fn visit_f64<E>(self, value: f64) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if value < 0.0 || value.fract() != 0.0 {
+                    return Err(serde::de::Error::custom(format!("Value {} cannot be converted to u64 (must be non-negative integer)", value)));
+                }
+                Ok(Some(value as u64))
+            }
+            
+            // Handle u32 (common JavaScript number range)
+            fn visit_u32<E>(self, value: u32) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(Some(value as u64))
+            }
+            
+            // Handle i32 (common JavaScript number range)
+            fn visit_i32<E>(self, value: i32) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if value < 0 {
+                    return Err(serde::de::Error::custom(format!("Negative value {} cannot be converted to u64", value)));
+                }
+                Ok(Some(value as u64))
+            }
+            
+            // Handle u16, u8, i16, i8 for completeness
+            fn visit_u16<E>(self, value: u16) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(Some(value as u64))
+            }
+            
+            fn visit_u8<E>(self, value: u8) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(Some(value as u64))
+            }
+            
+            fn visit_i16<E>(self, value: i16) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if value < 0 {
+                    return Err(serde::de::Error::custom(format!("Negative value {} cannot be converted to u64", value)));
+                }
+                Ok(Some(value as u64))
+            }
+            
+            fn visit_i8<E>(self, value: i8) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if value < 0 {
+                    return Err(serde::de::Error::custom(format!("Negative value {} cannot be converted to u64", value)));
+                }
+                Ok(Some(value as u64))
+            }
+            
+            // Handle map/object case - Tauri might serialize bigint as {"type": "bigint", "value": "..."}
+            // or similar structures
+            fn visit_map<M>(self, mut map: M) -> Result<Self::Value, M::Error>
+            where
+                M: serde::de::MapAccess<'de>,
+            {
+                let mut value_str: Option<String> = None;
+                let mut value_num: Option<u64> = None;
+                
+                while let Some(key) = map.next_key::<String>()? {
+                    match key.as_str() {
+                        "value" | "Value" | "val" => {
+                            // Try to get the value as string first
+                            if let Ok(s) = map.next_value::<String>() {
+                                value_str = Some(s);
+                            } else if let Ok(n) = map.next_value::<u64>() {
+                                value_num = Some(n);
+                            } else if let Ok(n) = map.next_value::<i64>() {
+                                if n >= 0 {
+                                    value_num = Some(n as u64);
+                                }
+                            }
+                        }
+                        _ => {
+                            // Skip unknown keys
+                            let _ = map.next_value::<serde::de::IgnoredAny>()?;
+                        }
+                    }
+                }
+                
+                // Prefer parsed string, then number
+                if let Some(s) = value_str {
+                    s.parse::<u64>()
+                        .map(Some)
+                        .map_err(|e| serde::de::Error::custom(format!("Failed to parse bigint value '{}' as u64: {}", s, e)))
+                } else if let Some(n) = value_num {
+                    Ok(Some(n))
+                } else {
+                    Err(serde::de::Error::custom("Could not extract value from bigint map structure"))
+                }
+            }
         }
         
         // Try deserializing as Option first, then as direct value
+        // This handles both Option<u64> and direct u64 values
         deserializer.deserialize_any(BigIntVisitor)
     }
 }

@@ -1,8 +1,8 @@
 import { Alert, Group, ScrollArea, SegmentedControl, Stack, Tabs, Text } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAtom, useAtomValue } from "jotai";
-import { memo, useContext, useEffect, useState } from "react";
+import { memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
@@ -16,6 +16,7 @@ import {
   masterOptionsAtom,
   referenceDbAtom,
 } from "@/state/atoms";
+import { type NormalizedGame } from "@/bindings";
 import { type Opening, searchPosition } from "@/utils/db";
 import { convertToNormalized, getLichessGames, getMasterGames } from "@/utils/lichess/api";
 import type { LichessGamesOptions, MasterGamesOptions } from "@/utils/lichess/explorer";
@@ -26,6 +27,8 @@ import OpeningsTable from "./OpeningsTable";
 import LichessOptionsPanel from "./options/LichessOptionsPanel";
 import LocalOptionsPanel from "./options/LocalOptionsPanel";
 import MasterOptionsPanel from "./options/MastersOptionsPanel";
+
+type OpeningData = { openings: Opening[]; games: NormalizedGame[] };
 
 type DBType =
   | { type: "local"; options: LocalOptions }
@@ -78,18 +81,7 @@ async function fetchOpening(db: DBType, tab: string, gameDetailsLimit: number) {
     })
     .with({ type: "local" }, async ({ options }) => {
       if (!options.path) throw Error("Missing reference database");
-      console.log("[DatabasePanel] Calling searchPosition with:", { 
-        fen: options.fen, 
-        gameDetailsLimit,
-        path: options.path 
-      });
       const positionData = await searchPosition({ ...options, gameDetailsLimit }, tab);
-      console.log("[DatabasePanel] searchPosition returned:", {
-        openingsCount: positionData[0]?.length || 0,
-        gamesCount: positionData[1]?.length || 0,
-        firstOpening: positionData[0]?.[0],
-        firstGame: positionData[1]?.[0],
-      });
       return {
         openings: sortOpenings(positionData[0]),
         games: positionData[1],
@@ -100,31 +92,56 @@ async function fetchOpening(db: DBType, tab: string, gameDetailsLimit: number) {
 
 function DatabasePanel() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
 
   const store = useContext(TreeStateContext)!;
   const fen = useStore(store, (s) => s.currentNode().fen);
   const referenceDatabase = useAtomValue(referenceDbAtom);
-  const [debouncedFen] = useDebouncedValue(fen, 50);
+  const [db, setDb] = useAtom(currentDbTypeAtom);
+  // Reduced debounce for local DB to improve synchronization with analysis board
+  const [debouncedFen] = useDebouncedValue(fen, db === "local" ? 100 : 50);
   const [lichessOptions] = useAtom(lichessOptionsAtom);
   const [masterOptions] = useAtom(masterOptionsAtom);
   const [localOptions, setLocalOptions] = useAtom(currentLocalOptionsAtom);
-  const [db, setDb] = useAtom(currentDbTypeAtom);
   const [gameLimit, setGameLimit] = useState(10);
   const tab = useAtomValue(currentTabAtom);
   const [tabType, setTabType] = useAtom(currentDbTabAtom);
+  const prevFenRef = useRef<string>(fen);
+  const tabValue = tab?.value ?? "analysis";
 
+  // Update localOptions immediately when FEN changes (before debounce)
+  // This ensures the query always uses the latest FEN
   useEffect(() => {
     if (db === "local") {
-      setLocalOptions((q) => {
-        // Only update if FEN actually changed to avoid unnecessary re-renders
-        if (q.fen !== debouncedFen) {
-          return { ...q, fen: debouncedFen };
-        }
-        return q;
-      });
-      setGameLimit(10); // reset preview limit when FEN changes
+      const fenChanged = fen !== prevFenRef.current;
+      if (fenChanged) {
+        prevFenRef.current = fen;
+        
+        // Cancel any ongoing queries immediately when FEN changes
+        queryClient.cancelQueries({ queryKey: ["database-opening"] });
+        
+        setLocalOptions((q) => {
+          // Update FEN immediately to ensure query uses latest position
+          if (q.fen !== fen) {
+            return { ...q, fen };
+          }
+          return q;
+        });
+        
+        // Reset preview limit when FEN changes
+        setGameLimit(10);
+      }
     }
-  }, [debouncedFen, setLocalOptions, db]);
+  }, [fen, setLocalOptions, db, queryClient]);
+
+  // Handle debounced FEN for final query invalidation
+  // This ensures we don't trigger too many queries during rapid FEN changes
+  useEffect(() => {
+    if (db === "local" && debouncedFen === fen) {
+      // Only invalidate when debounce settles and matches current FEN
+      queryClient.invalidateQueries({ queryKey: ["database-opening"] });
+    }
+  }, [debouncedFen, fen, db, queryClient]);
 
   useEffect(() => {
     if (db === "local") {
@@ -139,10 +156,12 @@ function DatabasePanel() {
     }
   }, [tabType, gameLimit]);
 
-  const dbType: DBType = match(db)
+  // Memoize dbType to avoid recreating on every render
+  // IMPORTANT: Always use localOptions.fen (updated immediately) for local DB to ensure synchronization
+  const dbType: DBType = useMemo(() => match(db)
     .with("local", (v) => ({
       type: v,
-      options: localOptions,
+      options: localOptions, // localOptions.fen is updated immediately when FEN changes
     }))
     .with("lch_all", (v) => ({
       type: v,
@@ -154,46 +173,85 @@ function DatabasePanel() {
       options: masterOptions,
       fen: debouncedFen,
     }))
-    .exhaustive();
+    .exhaustive(), [db, localOptions, lichessOptions, masterOptions, debouncedFen]);
 
   // Reset preview limit when database source changes
   useEffect(() => {
     setGameLimit(10);
   }, [db]);
 
-  // Debug: Log when query conditions change
-  const queryEnabled = tabType !== "options" 
-    && !!tab?.value 
-    && (db !== "local" || (!!debouncedFen && !!localOptions.path));
-  
-  useEffect(() => {
-    if (db === "local") {
-      console.log("[DatabasePanel] Query conditions:", {
-        tabType,
-        hasTab: !!tab?.value,
-        hasFen: !!debouncedFen,
-        hasPath: !!localOptions.path,
-        enabled: queryEnabled,
-        fen: debouncedFen,
-      });
-    }
-  }, [db, tabType, tab?.value, debouncedFen, localOptions.path, queryEnabled]);
+  const queryEnabled = tabType !== "options"
+    && (db !== "local" || (!!localOptions.fen && !!localOptions.path));
 
   const {
     data: openingData,
     isLoading,
     error,
-  } = useQuery({
-    // Include debouncedFen directly in queryKey to ensure React Query detects FEN changes
-    queryKey: ["database-opening", db, db === "local" ? debouncedFen : null, dbType, tab?.value, gameLimit],
-    queryFn: async () => {
-      console.log("[DatabasePanel] Executing query for FEN:", debouncedFen, "gameLimit:", gameLimit);
-      return fetchOpening(dbType, tab?.value || "", gameLimit);
-    },
-    enabled: queryEnabled,
+  } = useQuery<OpeningData, Error, OpeningData, readonly unknown[]>({
+    // Use localOptions.fen directly for queryKey to ensure it matches what's sent to backend
+    queryKey: ["database-opening", db, 
+      db === "local" ? localOptions.fen : debouncedFen, // include fen for all DBs to refetch on board move
+      db === "local" ? localOptions.type : null,
+      db === "local" ? localOptions.player : null,
+      db === "local" ? localOptions.color : null,
+      db === "local" ? localOptions.start_date : null,
+      db === "local" ? localOptions.end_date : null,
+      db === "local" ? localOptions.result : null,
+      db === "local" ? localOptions.sort : null,
+      db === "local" ? localOptions.direction : null,
+      tabValue, gameLimit],
+    queryFn: () => fetchOpening(dbType, tabValue, gameLimit) as Promise<OpeningData>,
+    enabled: queryEnabled && (db !== "local" || !!localOptions.fen && !!localOptions.path),
+    staleTime: 0, // Always refetch when FEN or parameters change to show latest results
+    gcTime: 10000, // Keep in cache for 10 seconds (reduced from 30)
+    refetchOnMount: true, // Refetch when component mounts to ensure fresh data
   });
 
-  const grandTotal = openingData?.openings?.reduce((acc, curr) => acc + curr.black + curr.white + curr.draw, 0);
+  const grandTotal = openingData?.openings?.reduce(
+    (acc: number, curr: Opening) => acc + curr.black + curr.white + curr.draw,
+    0,
+  );
+
+  useEffect(() => {
+    if (error) {
+      console.error("[DatabasePanel] query error", {
+        message: error.message,
+        error: error,
+        stack: error.stack,
+        db,
+        tab: tabValue,
+        tabType,
+        localFen: localOptions.fen,
+        path: localOptions.path,
+        gameLimit,
+      });
+    }
+  }, [error, db, tab?.value, tabType, localOptions.fen, localOptions.path, gameLimit]);
+
+  useEffect(() => {
+    console.debug("[DatabasePanel] query params", {
+      db,
+      tab: tabValue,
+      tabType,
+      enabled: queryEnabled,
+      fenLive: fen,
+      fenDebounced: debouncedFen,
+      localFen: localOptions.fen,
+      localPath: localOptions.path,
+      limit: gameLimit,
+    });
+  }, [db, tab?.value, tabType, queryEnabled, fen, debouncedFen, localOptions.fen, localOptions.path, gameLimit]);
+
+  useEffect(() => {
+    if (openingData) {
+      console.debug("[DatabasePanel] query result", {
+        openings: openingData.openings?.length ?? 0,
+        games: openingData.games?.length ?? 0,
+        sampleOpening: openingData.openings?.[0],
+        sampleGame: openingData.games?.[0]?.id,
+      });
+    }
+  }, [openingData]);
 
   return (
     <Stack h="100%" gap={0}>

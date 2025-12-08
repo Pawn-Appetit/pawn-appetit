@@ -5,6 +5,7 @@ import {
   commands,
   type DatabaseInfo,
   type GameQuery,
+  type GameQueryJs,
   type NormalizedGame,
   type Player,
   type PlayerQuery,
@@ -201,74 +202,101 @@ export async function searchPosition(options: LocalOptions, tab: string) {
   if (!options.path) {
     throw new Error("Missing reference database");
   }
+
+  const fen = (options.fen ?? "").trim();
+  const type = options.type ?? "exact";
+  if (!fen) {
+    throw new Error("Missing FEN for local database search");
+  }
   
+  // Ensure gameDetailsLimit is a valid number between 1 and 1000
+  const parsedLimit =
+    typeof options.gameDetailsLimit === "number" && Number.isFinite(options.gameDetailsLimit)
+      ? options.gameDetailsLimit
+      : Number.parseInt(String(options.gameDetailsLimit ?? ""), 10);
+  const gameDetailsLimitValue = Number.isFinite(parsedLimit)
+    ? Math.max(1, Math.min(1000, Math.floor(parsedLimit)))
+    : 10;
+
+  // Convert result to wanted_result format (undefined for "any" to omit from payload)
+  const wantedResult = options.result === "any" ? undefined : options.result;
+
+  // Build payload matching GameQueryJs type exactly
+  // Only include fields that have values to avoid serialization issues
+  // Note: game_details_limit is serialized as string by Rust's bigint_serde
+  // Tauri handles BigInt, but we need to ensure it's properly typed
+  // Using BigInt as the type expects bigint, and Tauri will handle the serialization
+  const payload: GameQueryJs = {
+    position: {
+      fen,
+      type_: type,
+    },
+    // Send as number - Tauri's JSON serialization doesn't handle BigInt well
+    // The Rust deserializer (bigint_serde) can handle numbers (u64, i64, f64, etc.)
+    // and will convert them to u64. This avoids serialization errors.
+    // TypeScript type expects bigint, but we send number which Rust accepts
+    game_details_limit: gameDetailsLimitValue as any,
+    options: {
+      skipCount: true,
+      sort: (options.sort || "averageElo") as "id" | "date" | "whiteElo" | "blackElo" | "averageElo" | "ply_count",
+      direction: (options.direction || "desc") as "asc" | "desc",
+    },
+    // Only include optional fields if they have values
+    ...(options.color === "white" && options.player !== null ? { player1: options.player } : {}),
+    ...(options.color === "black" && options.player !== null ? { player2: options.player } : {}),
+    ...(options.start_date ? { start_date: options.start_date } : {}),
+    ...(options.end_date ? { end_date: options.end_date } : {}),
+    ...(wantedResult ? { wanted_result: wantedResult } : {}),
+  };
+
+  // Helper to safely stringify payload for logging (BigInt is not JSON serializable)
+  const safeStringify = (obj: any) => {
     try {
-    // Convert to number first, then to string for Tauri serialization
-    // Tauri's JSON.stringify can't handle bigint, so we pass as string
-    // The Rust serializer will deserialize it back to u64
-    const gameDetailsLimitValue = options.gameDetailsLimit !== undefined 
-      ? options.gameDetailsLimit 
-      : 10;
-    
-    console.log("[db.ts] Calling searchPosition with gameDetailsLimit:", gameDetailsLimitValue, "type:", typeof gameDetailsLimitValue);
-    
-    const query = {
-      player1: options.color === "white" ? options.player : undefined,
-      player2: options.color === "black" ? options.player : undefined,
-      position: {
-        fen: options.fen,
-        type_: options.type,
-      },
-      // Pass as string - Rust serializer will deserialize to u64
-      // This avoids JSON.stringify error with bigint
-      game_details_limit: String(gameDetailsLimitValue),
-      start_date: options.start_date,
-      end_date: options.end_date,
-      wanted_result: options.result,
-      options: {
-        skipCount: true,
-        sort: (options.sort || "averageElo") as "id" | "date" | "whiteElo" | "blackElo" | "averageElo" | "ply_count",
-        direction: (options.direction || "desc") as "asc" | "desc",
-      },
-    };
-    
-    // Log query (now game_details_limit is already a string)
-    console.log("[db.ts] Query object:", JSON.stringify(query));
-    console.log("[db.ts] game_details_limit type:", typeof query.game_details_limit, "value:", query.game_details_limit);
-    
-    let res;
-    try {
-      res = await commands.searchPosition(
-        options.path!,
-        query,
-        tab,
+      return JSON.stringify(obj, (key, value) => 
+        typeof value === 'bigint' ? value.toString() : value
       );
-      console.log("[db.ts] searchPosition response received, status:", res.status);
-    } catch (error) {
-      console.error("[db.ts] searchPosition invocation failed:", error);
-      console.error("[db.ts] Error details:", {
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-      });
-      throw error;
+    } catch (e) {
+      return String(obj);
     }
+  };
+
+  console.debug("[db] searchPosition payload", { 
+    tab, 
+    path: options.path, 
+    fen, 
+    type, 
+    gameDetailsLimitValue,
+    payload: safeStringify(payload)
+  });
+
+  try {
+    const res = await commands.searchPosition(options.path!, payload, tab);
     
     if (res.status === "error") {
-      console.error("[db.ts] searchPosition error:", res.error);
+      console.error("[db] searchPosition error response", { 
+        error: res.error, 
+        path: options.path, 
+        fen, 
+        type,
+        payload: safeStringify(payload)
+      });
       if (res.error !== "Search stopped") {
         unwrap(res);
       }
       return Promise.reject(res.error);
     }
     
-    console.log("[db.ts] searchPosition success:", {
-      openingsCount: res.data?.[0]?.length || 0,
-      gamesCount: res.data?.[1]?.length || 0,
-    });
-    
     return res.data;
   } catch (error) {
-    console.error("[db.ts] searchPosition exception:", error);
+    // Don't try to stringify the error or payload in catch - it might contain BigInt
+    console.error("[db] searchPosition exception", { 
+      error: error instanceof Error ? error.message : String(error),
+      errorType: error instanceof Error ? error.constructor.name : typeof error,
+      path: options.path, 
+      fen, 
+      type,
+      gameDetailsLimit: gameDetailsLimitValue
+    });
     throw error;
   }
 }
