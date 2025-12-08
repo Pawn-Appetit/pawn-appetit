@@ -418,8 +418,10 @@ async updateGame(file: string, gameId: number, update: UpdateGame) : Promise<Res
 }
 },
 /**
+ * ============================================================================
  * Search for chess positions in the database
  * Returns position statistics and matching games
+ * ============================================================================
  */
 async searchPosition(file: string, query: GameQueryJs, tabId: string) : Promise<Result<[PositionStats[], NormalizedGame[]], string>> {
     try {
