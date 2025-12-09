@@ -7,6 +7,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { mkdir, writeTextFile } from "@tauri-apps/plugin-fs";
 import { loadFideProfile, saveFideProfile, deleteFideProfile, type FideProfile } from "@/utils/fideProfile";
+import { loadMainAccount, saveMainAccount, updateMainAccountFideId } from "@/utils/mainAccount";
 import { info } from "@tauri-apps/plugin-log";
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useMemo, useState } from "react";
@@ -39,6 +40,7 @@ import { type Suggestion, SuggestionsCard } from "./components/SuggestionsCard";
 import { UserProfileCard } from "./components/UserProfileCard";
 import { WelcomeCard } from "./components/WelcomeCard";
 import { getChessTitle } from "./utils/chessTitle";
+import { calculateOnlineRating } from "./utils/calculateOnlineRating";
 import {
   convertNormalizedToChessComGame,
   convertNormalizedToLichessGame,
@@ -103,38 +105,77 @@ export default function DashboardPage() {
       setDisplayName(storedDisplayName);
     }
     
-    // Load FIDE profile
-    loadFideProfile().then((profile) => {
-      if (profile) {
-        setFideId(profile.fideId);
-                const playerData = {
-          name: profile.name,
-          firstName: profile.firstName,
-          gender: profile.gender,
-          title: profile.title,
-          standardRating: profile.standardRating,
-          rapidRating: profile.rapidRating,
-          blitzRating: profile.blitzRating,
-          worldRank: profile.worldRank,
-          nationalRank: profile.nationalRank,
-          photo: profile.photo,
-          age: profile.age,
-          birthYear: profile.birthYear,
-        };
-        setFidePlayer(playerData);
-        
-        // If there's no saved displayName but there's a firstName from FIDE, use it as fallback
-        if (storedDisplayName === null && profile.firstName) {
-          setDisplayName(profile.firstName);
-          localStorage.setItem("pawn-appetit.displayName", profile.firstName);
+    // Load main account (with FIDE ID if available)
+    loadMainAccount().then((account) => {
+      if (account) {
+        setMainAccountName(account.name);
+        // If main account has FIDE ID, load FIDE profile
+        if (account.fideId) {
+          setFideId(account.fideId);
+          loadFideProfile().then((profile) => {
+            if (profile && profile.fideId === account.fideId) {
+              const playerData = {
+                name: profile.name,
+                firstName: profile.firstName,
+                gender: profile.gender,
+                title: profile.title,
+                standardRating: profile.standardRating,
+                rapidRating: profile.rapidRating,
+                blitzRating: profile.blitzRating,
+                worldRank: profile.worldRank,
+                nationalRank: profile.nationalRank,
+                photo: profile.photo,
+                age: profile.age,
+                birthYear: profile.birthYear,
+              };
+              setFidePlayer(playerData);
+              
+              // If there's no saved displayName but there's a firstName from FIDE, use it as fallback
+              if (storedDisplayName === null && profile.firstName) {
+                setDisplayName(profile.firstName);
+                localStorage.setItem("pawn-appetit.displayName", profile.firstName);
+              }
+            }
+          });
+        } else {
+          // Load FIDE profile if it exists (for backward compatibility)
+          loadFideProfile().then((profile) => {
+            if (profile) {
+              setFideId(profile.fideId);
+              const playerData = {
+                name: profile.name,
+                firstName: profile.firstName,
+                gender: profile.gender,
+                title: profile.title,
+                standardRating: profile.standardRating,
+                rapidRating: profile.rapidRating,
+                blitzRating: profile.blitzRating,
+                worldRank: profile.worldRank,
+                nationalRank: profile.nationalRank,
+                photo: profile.photo,
+                age: profile.age,
+                birthYear: profile.birthYear,
+              };
+              setFidePlayer(playerData);
+              
+              // If there's no saved displayName but there's a firstName from FIDE, use it as fallback
+              if (storedDisplayName === null && profile.firstName) {
+                setDisplayName(profile.firstName);
+                localStorage.setItem("pawn-appetit.displayName", profile.firstName);
+              }
+            }
+          });
+        }
+      } else {
+        // Fallback to localStorage for backward compatibility
+        const stored = localStorage.getItem("mainAccount");
+        if (stored) {
+          setMainAccountName(stored);
+          // Save to new format
+          saveMainAccount({ name: stored });
         }
       }
     });
-  }, []);
-
-  useEffect(() => {
-    const stored = localStorage.getItem("mainAccount");
-    setMainAccountName(stored);
   }, []);
 
   const mainSession = sessions.find(
@@ -144,10 +185,13 @@ export default function DashboardPage() {
       s.chessCom?.username === mainAccountName,
   );
 
+  // Calculate average online rating based on time controls with more than 10 games
+  const averageOnlineRating = calculateOnlineRating(mainSession);
+  
   let user = {
     name: mainAccountName ?? t("dashboard.noMainAccount"),
     handle: "",
-    rating: 0,
+    rating: averageOnlineRating,
   };
   let ratingHistory: { classical?: number; rapid?: number; blitz?: number; bullet?: number } = {};
   if (mainSession?.lichess?.account) {
@@ -155,7 +199,7 @@ export default function DashboardPage() {
     user = {
       name: acc.username,
       handle: `@${acc.username}`,
-      rating: acc.perfs?.classical?.rating ?? acc.perfs?.rapid?.rating ?? acc.perfs?.blitz?.rating ?? 0,
+      rating: averageOnlineRating,
     };
     const classical = acc.perfs?.classical?.rating;
     const rapid = acc.perfs?.rapid?.rating;
@@ -167,7 +211,7 @@ export default function DashboardPage() {
     user = {
       name: mainSession.chessCom.username,
       handle: `@${mainSession.chessCom.username}`,
-      rating: stats.chess_rapid?.last?.rating ?? stats.chess_blitz?.last?.rating ?? 0,
+      rating: averageOnlineRating,
     };
     const rapid = stats.chess_rapid?.last?.rating;
     const blitz = stats.chess_blitz?.last?.rating;
@@ -758,7 +802,7 @@ export default function DashboardPage() {
           <UserProfileCard
             name={user.name}
             handle={user.handle}
-            title={getChessTitle(user.rating)}
+            title={fidePlayer?.title || getChessTitle(user.rating)}
             ratingHistory={ratingHistory}
             customName={displayName}
             onFideUpdate={async (newFideId, newFidePlayer, newDisplayName) => {
@@ -768,6 +812,11 @@ export default function DashboardPage() {
               if (newDisplayName !== undefined) {
                 setDisplayName(newDisplayName);
                 localStorage.setItem("pawn-appetit.displayName", newDisplayName);
+              }
+              
+              // Update main account with FIDE ID
+              if (mainAccountName) {
+                await updateMainAccountFideId(newFideId);
               }
               
               if (newFidePlayer) {

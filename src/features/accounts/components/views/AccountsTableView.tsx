@@ -32,6 +32,7 @@ import { sessionsAtom } from "@/state/atoms";
 import { getChessComAccount, getStats } from "@/utils/chess.com/api";
 import { capitalize, parseDate } from "@/utils/format";
 import { getLichessAccount } from "@/utils/lichess/api";
+import { saveMainAccount } from "@/utils/mainAccount";
 import type { Session } from "@/utils/session";
 import LichessLogo from "../LichessLogo";
 
@@ -82,6 +83,8 @@ function AccountsTableView({
   useEffect(() => {
     if (mainAccount) {
       localStorage.setItem("mainAccount", mainAccount);
+      // Also save to new JSON format
+      saveMainAccount({ name: mainAccount }).catch(console.error);
     }
   }, [mainAccount]);
 

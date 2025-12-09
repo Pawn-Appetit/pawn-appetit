@@ -12,6 +12,7 @@ import { getChessComAccount, getStats } from "@/utils/chess.com/api";
 import { getLichessAccount } from "@/utils/lichess/api";
 import type { Session } from "@/utils/session";
 import { AccountCard } from "../AccountCard";
+import { saveMainAccount } from "@/utils/mainAccount";
 
 function AccountCards({
   databases,
@@ -102,6 +103,8 @@ function AccountCards({
   useEffect(() => {
     if (mainAccount) {
       localStorage.setItem("mainAccount", mainAccount);
+      // Also save to new JSON format
+      saveMainAccount({ name: mainAccount }).catch(console.error);
     }
   }, [mainAccount]);
 
