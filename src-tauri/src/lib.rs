@@ -17,7 +17,7 @@ mod pgn;
 mod puzzle;
 mod telemetry;
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use chess::{BestMovesPayload, EngineProcess, ReportProgress};
 use dashmap::DashMap;
@@ -214,4 +214,5 @@ async fn open_external_link(app: AppHandle, url: String) -> Result<(), String> {
         .open_url(url, None::<String>)
         .map_err(|e| format!("Failed to open external link: {}", e))
 }
+
 

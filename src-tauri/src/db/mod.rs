@@ -35,7 +35,7 @@ use shakmaty::{
 };
 use specta::Type;
 use std::{
-    fs::{remove_file, File, OpenOptions},
+    fs::{File, OpenOptions},
     path::PathBuf,
     sync::atomic::{AtomicUsize, Ordering},
     time::{Duration, Instant},
@@ -169,6 +169,7 @@ fn get_db_or_create(
     Ok(pool.get()?)
 }
 
+#[allow(dead_code)]
 #[derive(Default, Debug, Serialize)]
 pub struct TempPlayer {
     id: usize,
@@ -555,6 +556,7 @@ pub struct QueryOptions<SortT> {
     pub direction: SortDirection,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
 pub struct GameQuery {
     pub options: Option<QueryOptions<GameSort>>,
@@ -572,8 +574,9 @@ pub struct GameQuery {
 
 // Helper functions for serializing/deserializing u64 as string for bigint compatibility
 mod bigint_serde {
-    use serde::{Deserialize, Deserializer, Serializer};
+    use serde::{Deserializer, Serializer};
     
+    #[allow(dead_code)]
     pub fn serialize<S>(value: &Option<u64>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,

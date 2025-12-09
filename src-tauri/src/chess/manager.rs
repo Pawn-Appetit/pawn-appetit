@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use tauri_specta::Event;
-use log::{info, debug};
+use log::info;
 use tokio::sync::Mutex;
 
 use crate::error::Error;

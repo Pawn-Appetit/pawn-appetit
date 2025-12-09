@@ -25,7 +25,7 @@ use std::{
     path::PathBuf,
     sync::{
         Arc,
-        atomic::{AtomicUsize, Ordering},
+        atomic::Ordering,
     },
 };
 use tauri::Emitter;
@@ -60,6 +60,7 @@ const ENABLE_CHECKPOINT_TABLE_SCHEMA: bool = true;
 const ENABLE_CHECKPOINT_FAST_PATH: bool = true;
 
 /// Checkpoint stride (every N plies).
+#[allow(dead_code)]
 const CHECKPOINT_STRIDE: usize = 8;
 
 /// Max candidates allowed to switch into checkpoint path.
@@ -636,6 +637,7 @@ struct CountRow {
 /// Builds / extends the checkpoint index.
 /// This is optional maintenance for large DBs.
 /// It does NOT break existing flows.
+#[allow(dead_code)]
 #[tauri::command]
 #[specta::specta]
 pub async fn build_position_checkpoints(
