@@ -1,5 +1,40 @@
 # Pawn Appétit Changelog
 
+## [0.10.0]
+
+### Added
+- Polish translation support ([#363](https://github.com/Pawn-Appetit/pawn-appetit/pull/363)) - @polandonion
+- Option to display all square coordinates on the chessboard ([#366](https://github.com/Pawn-Appetit/pawn-appetit/pull/366)) - @gm-m
+- Configurable animation speed for repertoire practice mode ([#378](https://github.com/Pawn-Appetit/pawn-appetit/pull/378)) - @sahinakkaya
+- Bulk analysis functionality for games
+- Puzzle generation from variants and repertoire
+- Enhanced menu options with new actions and shortcuts
+- Game sorting by ELO in database view ([#369](https://github.com/Pawn-Appetit/pawn-appetit/pull/369)) - @luisrivasnoriega
+
+### Changed
+- Refactored tab management and enhanced engine selection in Boards
+- Updated engine retrieval to use `loadableEnginesAtom` in EvalListener
+- Improved PGN handling with enhanced header preservation
+- Made Next button color constant during animation playback in repertoire practice
+- Updated dependencies across frontend and backend
+- Removed splash screen and related commands
+
+### Fixed
+- Fixed puzzle board freeze after wrong move ([#365](https://github.com/Pawn-Appetit/pawn-appetit/pull/365)) - @gm-m
+- Fixed JSON formatting issues in Polish translations ([#364](https://github.com/Pawn-Appetit/pawn-appetit/pull/364)) - @gm-m
+- Fixed PGN headers and initial FEN preservation when opening saved games ([#371](https://github.com/Pawn-Appetit/pawn-appetit/pull/371)) - @luisrivasnoriega
+- Fixed directory existence check before file creation in FilesPage ([#372](https://github.com/Pawn-Appetit/pawn-appetit/pull/372)) - @gm-m
+- Fixed Dashboard to correctly show accuracy and ACPL metrics ([#371](https://github.com/Pawn-Appetit/pawn-appetit/pull/371)) - @luisrivasnoriega
+- Fixed multiple PGN file import on Windows ([#374](https://github.com/Pawn-Appetit/pawn-appetit/pull/374)) - @BurnhamG
+- Fixed puzzle streak calculation ([#376](https://github.com/Pawn-Appetit/pawn-appetit/pull/376)) - @BurnhamG
+- Fixed storage size calculation for databases over 2GB ([#377](https://github.com/Pawn-Appetit/pawn-appetit/pull/377)) - @BurnhamG
+- Fixed repertoire performance issues
+- Fixed multiple bugs in variants and puzzle generation ([#382](https://github.com/Pawn-Appetit/pawn-appetit/pull/382)) - @luisrivasnoriega
+- Fixed database and sidebar URL type issues ([#383](https://github.com/Pawn-Appetit/pawn-appetit/pull/383)) - @BurnhamG
+- Fixed notification system
+- Removed puzzles link from sidebar navigation
+- Removed unnecessary `@types/node` dev dependency
+
 ## [0.9.0]
 
 ### Added

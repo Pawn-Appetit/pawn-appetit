@@ -672,7 +672,7 @@ puzzleCount: number;
 /**
  * Size of the database file in bytes
  */
-storageSize: bigint;
+storageSize: bigint; 
 /**
  * Full path to the database file
  */
