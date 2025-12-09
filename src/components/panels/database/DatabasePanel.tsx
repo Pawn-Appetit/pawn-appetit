@@ -103,7 +103,7 @@ function DatabasePanel() {
   const [lichessOptions] = useAtom(lichessOptionsAtom);
   const [masterOptions] = useAtom(masterOptionsAtom);
   const [localOptions, setLocalOptions] = useAtom(currentLocalOptionsAtom);
-  const [gameLimit, setGameLimit] = useState(10);
+  const [gameLimit, setGameLimit] = useState(1000);
   const tab = useAtomValue(currentTabAtom);
   const [tabType, setTabType] = useAtom(currentDbTabAtom);
   const prevFenRef = useRef<string>(fen);
@@ -111,6 +111,7 @@ function DatabasePanel() {
 
   // Update localOptions immediately when FEN changes (before debounce)
   // This ensures the query always uses the latest FEN
+  // Always load 1000 games sorted by elo when FEN changes
   useEffect(() => {
     if (db === "local") {
       const fenChanged = fen !== prevFenRef.current;
@@ -121,18 +122,15 @@ function DatabasePanel() {
         queryClient.cancelQueries({ queryKey: ["database-opening"] });
         
         setLocalOptions((q) => {
-          // Update FEN immediately to ensure query uses latest position
-          if (q.fen !== fen) {
-            return { ...q, fen };
-          }
-          return q;
+          // Update FEN immediately and ensure sort is by averageElo
+          const updated = q.fen !== fen 
+            ? { ...q, fen, sort: "averageElo" as const, direction: "desc" as const }
+            : { ...q, sort: "averageElo" as const, direction: "desc" as const };
+          return updated;
         });
         
-        // Reset preview limit when FEN changes, but only if not in games tab
-        // If in games tab, keep the 1000 limit
-        if (tabType !== "games") {
-          setGameLimit(10);
-        }
+        // Always set limit to 1000 when FEN changes
+        setGameLimit(1000);
       }
     }
   }, [fen, setLocalOptions, db, queryClient]);
@@ -152,20 +150,6 @@ function DatabasePanel() {
     }
   }, [referenceDatabase, setLocalOptions, db]);
 
-  // When entering games tab, load full details (up to 1000) on-demand
-  useEffect(() => {
-    if (tabType === "games" && gameLimit < 1000) {
-      console.debug("[DatabasePanel] Entering games tab, increasing limit to 1000");
-      setGameLimit(1000);
-      // Invalidate query to reload with new limit
-      queryClient.invalidateQueries({ queryKey: ["database-opening"] });
-    } else if (tabType !== "games" && gameLimit === 1000) {
-      // Reset to 10 when leaving games tab
-      console.debug("[DatabasePanel] Leaving games tab, resetting limit to 10");
-      setGameLimit(10);
-    }
-  }, [tabType, gameLimit, queryClient]);
-
   // Memoize dbType to avoid recreating on every render
   // IMPORTANT: Always use localOptions.fen (updated immediately) for local DB to ensure synchronization
   const dbType: DBType = useMemo(() => match(db)
@@ -184,13 +168,6 @@ function DatabasePanel() {
       fen: debouncedFen,
     }))
     .exhaustive(), [db, localOptions, lichessOptions, masterOptions, debouncedFen]);
-
-  // Reset preview limit when database source changes, but only if not in games tab
-  useEffect(() => {
-    if (tabType !== "games") {
-      setGameLimit(10);
-    }
-  }, [db, tabType]);
 
   const queryEnabled = tabType !== "options"
     && (db !== "local" || (!!localOptions.fen && !!localOptions.path));
