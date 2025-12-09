@@ -6,11 +6,11 @@ import { IconBolt, IconChess, IconClock, IconStopwatch } from "@tabler/icons-rea
 import { useNavigate } from "@tanstack/react-router";
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { mkdir, writeTextFile } from "@tauri-apps/plugin-fs";
-import { loadFideProfile, saveFideProfile, deleteFideProfile, type FideProfile } from "@/utils/fideProfile";
-import { loadMainAccount, saveMainAccount, updateMainAccountFideId } from "@/utils/mainAccount";
+import { loadFideProfile, loadFideProfileById, saveFideProfile, deleteFideProfile, deleteFideProfileById, type FideProfile } from "@/utils/fideProfile";
+import { loadMainAccount, saveMainAccount, updateMainAccountFideId, getAccountFideId, getAccountDisplayName, saveAccountDisplayName } from "@/utils/mainAccount";
 import { info } from "@tauri-apps/plugin-log";
 import { useAtom, useAtomValue } from "jotai";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { commands, type GoMode } from "@/bindings";
 import { lessons } from "@/features/learn/constants/lessons";
@@ -98,85 +98,227 @@ export default function DashboardPage() {
   // Display name - independent of FIDE ID
   const [displayName, setDisplayName] = useState<string>("");
 
-  useEffect(() => {
-    // Load display name from localStorage
-    const storedDisplayName = localStorage.getItem("pawn-appetit.displayName");
-    if (storedDisplayName !== null) {
-      setDisplayName(storedDisplayName);
-    }
-    
-    // Load main account (with FIDE ID if available)
-    loadMainAccount().then((account) => {
+  // Function to load main account and FIDE data
+  const loadMainAccountData = useCallback(async () => {
+    try {
+      // Load main account (with FIDE ID if available)
+      const account = await loadMainAccount();
       if (account) {
+        console.log("[Dashboard] Loading main account data for:", account.name);
         setMainAccountName(account.name);
-        // If main account has FIDE ID, load FIDE profile
-        if (account.fideId) {
-          setFideId(account.fideId);
-          loadFideProfile().then((profile) => {
-            if (profile && profile.fideId === account.fideId) {
-              const playerData = {
-                name: profile.name,
-                firstName: profile.firstName,
-                gender: profile.gender,
-                title: profile.title,
-                standardRating: profile.standardRating,
-                rapidRating: profile.rapidRating,
-                blitzRating: profile.blitzRating,
-                worldRank: profile.worldRank,
-                nationalRank: profile.nationalRank,
-                photo: profile.photo,
-                age: profile.age,
-                birthYear: profile.birthYear,
-              };
-              setFidePlayer(playerData);
-              
-              // If there's no saved displayName but there's a firstName from FIDE, use it as fallback
-              if (storedDisplayName === null && profile.firstName) {
-                setDisplayName(profile.firstName);
-                localStorage.setItem("pawn-appetit.displayName", profile.firstName);
-              }
-            }
-          });
+        
+        // Load display name for this account
+        const accountDisplayName = account.displayName || await getAccountDisplayName(account.name);
+        if (accountDisplayName) {
+          setDisplayName(accountDisplayName);
         } else {
-          // Load FIDE profile if it exists (for backward compatibility)
-          loadFideProfile().then((profile) => {
-            if (profile) {
-              setFideId(profile.fideId);
-              const playerData = {
-                name: profile.name,
-                firstName: profile.firstName,
-                gender: profile.gender,
-                title: profile.title,
-                standardRating: profile.standardRating,
-                rapidRating: profile.rapidRating,
-                blitzRating: profile.blitzRating,
-                worldRank: profile.worldRank,
-                nationalRank: profile.nationalRank,
-                photo: profile.photo,
-                age: profile.age,
-                birthYear: profile.birthYear,
-              };
-              setFidePlayer(playerData);
-              
-              // If there's no saved displayName but there's a firstName from FIDE, use it as fallback
-              if (storedDisplayName === null && profile.firstName) {
-                setDisplayName(profile.firstName);
-                localStorage.setItem("pawn-appetit.displayName", profile.firstName);
-              }
+          // Fallback to localStorage for backward compatibility
+          const storedDisplayName = localStorage.getItem("pawn-appetit.displayName");
+          if (storedDisplayName !== null) {
+            setDisplayName(storedDisplayName);
+          } else {
+            setDisplayName("");
+          }
+        }
+        
+        // Load FIDE ID for this account (from account_fide_ids.json or from account.fideId)
+        const accountFideId = account.fideId || await getAccountFideId(account.name);
+        console.log("[Dashboard] FIDE ID for account:", account.name, "is:", accountFideId);
+        
+        if (accountFideId) {
+          console.log("[Dashboard] Found FIDE ID", accountFideId, "for account", account.name);
+          setFideId(accountFideId);
+          
+          // Load profile by FIDE ID (supports multiple profiles - each account can have its own FIDE profile)
+          // Retry logic to handle potential file write delays
+          let profile: FideProfile | null = null;
+          for (let attempt = 0; attempt < 3; attempt++) {
+            if (attempt > 0) {
+              await new Promise(resolve => setTimeout(resolve, 100 * attempt));
             }
-          });
+            profile = await loadFideProfileById(accountFideId);
+            if (profile) {
+              break;
+            }
+          }
+          
+          console.log("[Dashboard] Loaded FIDE profile for ID", accountFideId, ":", profile ? {
+            name: profile.name,
+            title: profile.title,
+            standardRating: profile.standardRating,
+            rapidRating: profile.rapidRating,
+            blitzRating: profile.blitzRating,
+            photo: profile.photo ? "present" : "missing"
+          } : "not found after retries");
+          
+          if (profile) {
+            const playerData = {
+              name: profile.name,
+              firstName: profile.firstName,
+              gender: profile.gender,
+              title: profile.title,
+              standardRating: profile.standardRating,
+              rapidRating: profile.rapidRating,
+              blitzRating: profile.blitzRating,
+              worldRank: profile.worldRank,
+              nationalRank: profile.nationalRank,
+              photo: profile.photo,
+              age: profile.age,
+              birthYear: profile.birthYear,
+            };
+            console.log("[Dashboard] Setting FIDE player data for account", account.name, ":", {
+              name: playerData.name,
+              title: playerData.title,
+              standardRating: playerData.standardRating,
+              rapidRating: playerData.rapidRating,
+              blitzRating: playerData.blitzRating,
+              photo: playerData.photo ? "present" : "missing"
+            });
+            // Force a new object reference to ensure React detects the change
+            setFidePlayer({ ...playerData });
+            
+            // If there's no saved displayName but there's a firstName from FIDE, use it as fallback
+            if (!accountDisplayName && profile.firstName) {
+              setDisplayName(profile.firstName);
+              await saveAccountDisplayName(account.name, profile.firstName);
+            }
+          } else {
+            // No FIDE profile found for this FIDE ID, clear FIDE data
+            console.log("[Dashboard] No FIDE profile found for ID", accountFideId, "after retries, clearing FIDE data");
+            setFideId(null);
+            setFidePlayer(null);
+          }
+        } else {
+          // No FIDE ID for this account, clear FIDE data
+          console.log("[Dashboard] No FIDE ID for account", account.name, ", clearing FIDE data");
+          setFideId(null);
+          setFidePlayer(null);
         }
       } else {
         // Fallback to localStorage for backward compatibility
         const stored = localStorage.getItem("mainAccount");
         if (stored) {
+          console.log("[Dashboard] Loading from localStorage fallback:", stored);
           setMainAccountName(stored);
           // Save to new format
-          saveMainAccount({ name: stored });
+          await saveMainAccount({ name: stored });
+          
+          // Load display name for this account
+          const accountDisplayName = await getAccountDisplayName(stored);
+          if (accountDisplayName) {
+            setDisplayName(accountDisplayName);
+          } else {
+            const storedDisplayName = localStorage.getItem("pawn-appetit.displayName");
+            if (storedDisplayName !== null) {
+              setDisplayName(storedDisplayName);
+            } else {
+              setDisplayName("");
+            }
+          }
+          
+          // Try to load FIDE ID for this account
+          const fideId = await getAccountFideId(stored);
+          if (fideId) {
+            console.log("[Dashboard] Found FIDE ID", fideId, "for account", stored);
+            setFideId(fideId);
+            // Load profile by FIDE ID (supports multiple profiles - each account can have its own FIDE profile)
+            // Retry logic to handle potential file write delays
+            let profile: FideProfile | null = null;
+            for (let attempt = 0; attempt < 3; attempt++) {
+              if (attempt > 0) {
+                await new Promise(resolve => setTimeout(resolve, 100 * attempt));
+              }
+              profile = await loadFideProfileById(fideId);
+              if (profile) {
+                break;
+              }
+            }
+            
+            if (profile) {
+              const playerData = {
+                name: profile.name,
+                firstName: profile.firstName,
+                gender: profile.gender,
+                title: profile.title,
+                standardRating: profile.standardRating,
+                rapidRating: profile.rapidRating,
+                blitzRating: profile.blitzRating,
+                worldRank: profile.worldRank,
+                nationalRank: profile.nationalRank,
+                photo: profile.photo,
+                age: profile.age,
+                birthYear: profile.birthYear,
+              };
+              console.log("[Dashboard] Setting FIDE player data for account", stored, ":", {
+                name: playerData.name,
+                title: playerData.title,
+                standardRating: playerData.standardRating,
+                rapidRating: playerData.rapidRating,
+                blitzRating: playerData.blitzRating,
+                photo: playerData.photo ? "present" : "missing"
+              });
+              // Force a new object reference to ensure React detects the change
+              setFidePlayer({ ...playerData });
+            } else {
+              console.log("[Dashboard] No FIDE profile found for ID", fideId, "after retries");
+              setFideId(null);
+              setFidePlayer(null);
+            }
+          } else {
+            setFideId(null);
+            setFidePlayer(null);
+          }
+        } else {
+          setFideId(null);
+          setFidePlayer(null);
+          setDisplayName("");
         }
       }
-    });
+    } catch (error) {
+      console.error("[Dashboard] Error loading main account data:", error);
+    }
   }, []);
+
+  useEffect(() => {
+    loadMainAccountData();
+    
+    // Listen for main account changes
+    const handleMainAccountChange = (event: CustomEvent) => {
+      loadMainAccountData();
+    };
+    
+    window.addEventListener("mainAccountChanged", handleMainAccountChange as EventListener);
+    
+    // Also listen to localStorage changes (for backward compatibility)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "mainAccount") {
+        loadMainAccountData();
+      }
+    };
+    
+    window.addEventListener("storage", handleStorageChange);
+    
+    return () => {
+      window.removeEventListener("mainAccountChanged", handleMainAccountChange as EventListener);
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [loadMainAccountData]);
+  
+  // Also listen for changes in mainAccountName from localStorage (polling as fallback)
+  useEffect(() => {
+    const checkMainAccountChange = () => {
+      const stored = localStorage.getItem("mainAccount");
+      if (stored && stored !== mainAccountName) {
+        loadMainAccountData();
+      }
+    };
+    
+    // Check periodically to catch changes (fallback if events don't work)
+    // Reduced frequency to avoid performance issues
+    const interval = setInterval(checkMainAccountChange, 1000);
+    
+    return () => clearInterval(interval);
+  }, [mainAccountName, loadMainAccountData]);
 
   const mainSession = sessions.find(
     (s) =>
@@ -218,6 +360,21 @@ export default function DashboardPage() {
     const bullet = stats.chess_bullet?.last?.rating;
     ratingHistory = { rapid, blitz, bullet };
   }
+
+  // Memoize fideInfo to ensure WelcomeCard updates when fidePlayer changes
+  const fideInfo = useMemo(() => {
+    if (!fidePlayer) return undefined;
+    return {
+      title: fidePlayer.title,
+      standardRating: fidePlayer.standardRating,
+      rapidRating: fidePlayer.rapidRating,
+      blitzRating: fidePlayer.blitzRating,
+      worldRank: fidePlayer.worldRank,
+      nationalRank: fidePlayer.nationalRank,
+      photo: fidePlayer.photo,
+      age: fidePlayer.age,
+    };
+  }, [fidePlayer]);
 
   const lichessUsernames = useMemo(
     () => [...new Set(sessions.map((s) => s.lichess?.username).filter(Boolean) as string[])],
@@ -785,16 +942,7 @@ export default function DashboardPage() {
         }}
         playerFirstName={displayName || fidePlayer?.firstName || undefined}
         playerGender={fidePlayer?.gender}
-        fideInfo={fidePlayer ? {
-          title: fidePlayer.title,
-          standardRating: fidePlayer.standardRating,
-          rapidRating: fidePlayer.rapidRating,
-          blitzRating: fidePlayer.blitzRating,
-          worldRank: fidePlayer.worldRank,
-          nationalRank: fidePlayer.nationalRank,
-          photo: fidePlayer.photo,
-          age: fidePlayer.age,
-        } : undefined}
+        fideInfo={fideInfo}
       />
 
       <Grid>
@@ -806,21 +954,19 @@ export default function DashboardPage() {
             ratingHistory={ratingHistory}
             customName={displayName}
             onFideUpdate={async (newFideId, newFidePlayer, newDisplayName) => {
-              setFideId(newFideId);
+              console.log("[Dashboard] onFideUpdate called:", { newFideId, newFidePlayer, newDisplayName, mainAccountName });
               
               // Save display name if provided (can be empty string)
-              if (newDisplayName !== undefined) {
+              if (newDisplayName !== undefined && mainAccountName) {
                 setDisplayName(newDisplayName);
+                // Save display name for this account
+                await saveAccountDisplayName(mainAccountName, newDisplayName);
+                // Also save to localStorage for backward compatibility
                 localStorage.setItem("pawn-appetit.displayName", newDisplayName);
               }
               
-              // Update main account with FIDE ID
-              if (mainAccountName) {
-                await updateMainAccountFideId(newFideId);
-              }
-              
-              if (newFidePlayer) {
-                // Save to JSON file first
+              if (newFidePlayer && newFideId) {
+                // Save FIDE profile first
                 const profileToSave = {
                   fideId: newFideId,
                   name: newFidePlayer.name,
@@ -837,13 +983,37 @@ export default function DashboardPage() {
                   age: newFidePlayer.age,
                   birthYear: newFidePlayer.birthYear,
                 };
+                console.log("[Dashboard] Saving FIDE profile:", profileToSave);
                 await saveFideProfile(profileToSave);
+                
+                // Update main account with FIDE ID after profile is saved
+                if (mainAccountName) {
+                  await updateMainAccountFideId(newFideId);
+                }
+                
                 // Update state after saving - this triggers re-render
-                setFidePlayer(newFidePlayer);
+                // Force a new object reference to ensure React detects the change
+                setFideId(newFideId);
+                setFidePlayer(newFidePlayer ? { ...newFidePlayer } : null);
               } else {
+                // No FIDE player or ID, clear everything
+                if (mainAccountName) {
+                  await updateMainAccountFideId(null);
+                }
+                
+                // Delete the specific FIDE profile if we have a FIDE ID
+                if (fideId) {
+                  await deleteFideProfileById(fideId);
+                } else {
+                  await deleteFideProfile();
+                }
+                
+                setFideId(null);
                 setFidePlayer(null);
-                await deleteFideProfile();
               }
+              
+              // Note: We don't need to reload here since we've already updated the state
+              // The state updates will trigger a re-render with the new data
             }}
             fidePlayer={fidePlayer}
             currentFideId={fideId || undefined}

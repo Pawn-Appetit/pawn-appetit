@@ -128,8 +128,11 @@ function DatabasePanel() {
           return q;
         });
         
-        // Reset preview limit when FEN changes
-        setGameLimit(10);
+        // Reset preview limit when FEN changes, but only if not in games tab
+        // If in games tab, keep the 1000 limit
+        if (tabType !== "games") {
+          setGameLimit(10);
+        }
       }
     }
   }, [fen, setLocalOptions, db, queryClient]);
@@ -152,9 +155,16 @@ function DatabasePanel() {
   // When entering games tab, load full details (up to 1000) on-demand
   useEffect(() => {
     if (tabType === "games" && gameLimit < 1000) {
+      console.debug("[DatabasePanel] Entering games tab, increasing limit to 1000");
       setGameLimit(1000);
+      // Invalidate query to reload with new limit
+      queryClient.invalidateQueries({ queryKey: ["database-opening"] });
+    } else if (tabType !== "games" && gameLimit === 1000) {
+      // Reset to 10 when leaving games tab
+      console.debug("[DatabasePanel] Leaving games tab, resetting limit to 10");
+      setGameLimit(10);
     }
-  }, [tabType, gameLimit]);
+  }, [tabType, gameLimit, queryClient]);
 
   // Memoize dbType to avoid recreating on every render
   // IMPORTANT: Always use localOptions.fen (updated immediately) for local DB to ensure synchronization
@@ -175,10 +185,12 @@ function DatabasePanel() {
     }))
     .exhaustive(), [db, localOptions, lichessOptions, masterOptions, debouncedFen]);
 
-  // Reset preview limit when database source changes
+  // Reset preview limit when database source changes, but only if not in games tab
   useEffect(() => {
-    setGameLimit(10);
-  }, [db]);
+    if (tabType !== "games") {
+      setGameLimit(10);
+    }
+  }, [db, tabType]);
 
   const queryEnabled = tabType !== "options"
     && (db !== "local" || (!!localOptions.fen && !!localOptions.path));

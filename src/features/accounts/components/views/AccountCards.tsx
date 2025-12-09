@@ -12,7 +12,7 @@ import { getChessComAccount, getStats } from "@/utils/chess.com/api";
 import { getLichessAccount } from "@/utils/lichess/api";
 import type { Session } from "@/utils/session";
 import { AccountCard } from "../AccountCard";
-import { saveMainAccount } from "@/utils/mainAccount";
+import { saveMainAccount, getAccountFideId } from "@/utils/mainAccount";
 
 function AccountCards({
   databases,
@@ -103,8 +103,14 @@ function AccountCards({
   useEffect(() => {
     if (mainAccount) {
       localStorage.setItem("mainAccount", mainAccount);
-      // Also save to new JSON format
-      saveMainAccount({ name: mainAccount }).catch(console.error);
+      // Load FIDE ID for this account if it exists
+      getAccountFideId(mainAccount).then((fideId) => {
+        // Also save to new JSON format with FIDE ID if it exists
+        saveMainAccount({ name: mainAccount, fideId: fideId || undefined }).catch(console.error);
+      }).catch(() => {
+        // If no FIDE ID, just save the account name
+        saveMainAccount({ name: mainAccount }).catch(console.error);
+      });
     }
   }, [mainAccount]);
 
