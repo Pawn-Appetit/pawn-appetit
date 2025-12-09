@@ -103,6 +103,10 @@ export async function query_games(db: string, query: GameQuery): Promise<QueryRe
       start_date: query.start_date,
       end_date: query.end_date,
       position: null,
+      // Always include game_details_limit - use null if undefined
+      // The Rust deserializer with deserialize_option should handle null correctly
+      game_details_limit: query.game_details_limit ?? null,
+      wanted_result: query.wanted_result ?? null,
       options: {
         skipCount: query.options?.skipCount ?? false,
         page: query.options?.page,

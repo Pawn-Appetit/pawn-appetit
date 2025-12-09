@@ -607,6 +607,14 @@ mod bigint_serde {
                 Ok(None)
             }
             
+            fn visit_unit<E>(self) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                // Handle null/unit values
+                Ok(None)
+            }
+            
             fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
             where
                 D: Deserializer<'de>,
@@ -781,9 +789,9 @@ mod bigint_serde {
             }
         }
         
-        // Try deserializing as Option first, then as direct value
-        // This handles both Option<u64> and direct u64 values
-        deserializer.deserialize_any(BigIntVisitor)
+        // Use deserialize_option to properly handle Option<u64>
+        // This correctly handles null, missing fields, and actual values
+        deserializer.deserialize_option(BigIntVisitor)
     }
 }
 
@@ -796,7 +804,7 @@ pub struct GameQueryJs {
     /// Using u64 instead of usize for better bigint compatibility with TypeScript
     /// Serialized as string to handle bigint in JSON
     #[specta(optional)]
-    #[serde(with = "bigint_serde")]
+    #[serde(with = "bigint_serde", default)]
     pub game_details_limit: Option<u64>,
     #[specta(optional)]
     pub player1: Option<i32>,
