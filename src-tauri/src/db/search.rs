@@ -5,7 +5,6 @@
 
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
-use diesel::sql_types::{Integer, BigInt};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use shakmaty::{
@@ -21,7 +20,6 @@ use shakmaty::{
 };
 use specta::Type;
 use std::{
-    collections::HashMap,
     path::PathBuf,
     sync::{
         atomic::{AtomicUsize, Ordering},
@@ -59,16 +57,9 @@ const ENABLE_AUX_INDEXES: bool = true;
 /// Enable checkpoint schema auto-creation.
 const ENABLE_CHECKPOINT_TABLE_SCHEMA: bool = true;
 
-/// Enable checkpoint-based fast-path for EXACT queries.
-const ENABLE_CHECKPOINT_FAST_PATH: bool = true;
-
 /// Checkpoint stride (every N plies).
 #[allow(dead_code)]
 const CHECKPOINT_STRIDE: usize = 8;
-
-/// Max candidates allowed to switch into checkpoint path.
-/// If more than this, fallback to full scan to avoid huge IN lists.
-const MAX_CHECKPOINT_CANDIDATES: usize = 350_000;
 
 /// ============================================================================
 /// Aux indexes (minimal + material)
@@ -325,18 +316,6 @@ impl PositionQuery {
         }
     }
 
-    #[inline(always)]
-    fn is_exact(&self) -> bool {
-        matches!(self, PositionQuery::Exact(_))
-    }
-
-    #[inline(always)]
-    fn exact_position(&self) -> Option<&Chess> {
-        match self {
-            PositionQuery::Exact(ref data) => Some(&data.position),
-            _ => None,
-        }
-    }
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, Type, PartialEq, Eq, Hash)]
@@ -410,12 +389,6 @@ impl PositionQuery {
                 true
             }
         }
-    }
-
-    #[inline(always)]
-    fn has_sufficient_material(&self, current_material: &MaterialCount) -> bool {
-        let target = self.target_material();
-        current_material.white >= target.white && current_material.black >= target.black
     }
 
     fn is_reachable_by(&self, material: &MaterialCount, pawn_home: u16) -> bool {
@@ -611,21 +584,6 @@ pub struct ProgressPayload {
 }
 
 /// ============================================================================
-/// Checkpoint query rows
-/// ============================================================================
-#[derive(QueryableByName)]
-struct GameIdRow {
-    #[diesel(sql_type = Integer)]
-    game_id: i32,
-}
-
-#[derive(QueryableByName)]
-struct CountRow {
-    #[diesel(sql_type = BigInt)]
-    c: i64,
-}
-
-/// ============================================================================
 /// Build checkpoints command
 /// ============================================================================
 
@@ -776,160 +734,6 @@ pub async fn build_position_checkpoints(
     );
 
     Ok(inserted_total)
-}
-
-/// ============================================================================
-/// Checkpoint-based exact search path
-/// ============================================================================
-
-#[inline]
-fn has_any_checkpoints(db: &mut SqliteConnection) -> bool {
-    let count: QueryResult<i64> = diesel::sql_query(
-        "SELECT COUNT(1) as c FROM game_position_checkpoints",
-    )
-    .get_result::<CountRow>(db)
-    .map(|r| r.c);
-
-    match count {
-        Ok(c) => c > 0,
-        Err(_) => false,
-    }
-}
-
-#[inline]
-fn load_checkpoint_candidates(
-    db: &mut SqliteConnection,
-    target_hash: i64,
-    target_turn: i32,
-) -> Result<Vec<i32>, Error> {
-    let rows: Vec<GameIdRow> = diesel::sql_query(
-        "SELECT DISTINCT game_id \
-         FROM game_position_checkpoints \
-         WHERE board_hash = ? AND turn = ?",
-    )
-    .bind::<BigInt, _>(target_hash)
-    .bind::<Integer, _>(target_turn)
-    .load(db)?;
-
-    Ok(rows.into_iter().map(|r| r.game_id).collect())
-}
-
-/// Same reduction logic as main scan but on a narrowed ID set.
-/// We reuse the existing filters by applying id.eq_any(chunk) to base query.
-fn search_exact_with_candidates(
-    candidates: &[i32],
-    build_base_query: &dyn Fn() -> games::BoxedQuery<'static, diesel::sqlite::Sqlite>,
-    db: &mut SqliteConnection,
-    position_query: &PositionQuery,
-) -> Result<(Vec<PositionStats>, Vec<i32>), Error> {
-    #[derive(Default)]
-    struct ThreadLocalResults {
-        position_stats: HashMap<String, PositionStats>,
-        matched_ids: Vec<i32>,
-    }
-
-    let mut position_stats: HashMap<String, PositionStats> = HashMap::with_capacity(128);
-    let mut matched_game_ids: Vec<i32> = Vec::with_capacity(1000);
-
-    const ID_CHUNK: usize = 900;
-
-    for chunk in candidates.chunks(ID_CHUNK) {
-        let rows: Vec<(i32, Option<String>, Vec<u8>, Option<String>)> = build_base_query()
-            .filter(games::id.eq_any(chunk))
-            .select((games::id, games::result, games::moves, games::fen))
-            .load(db)?;
-
-        if rows.is_empty() {
-            continue;
-        }
-
-        let position_query_clone = position_query.clone();
-
-        let batch_results = rows
-            .par_iter()
-            .fold(
-                || ThreadLocalResults::default(),
-                |mut acc, (id, result, moves, fen)| {
-                    if let Ok(Some(next_move)) =
-                        get_move_after_match(moves, fen, &position_query_clone)
-                    {
-                        if acc.matched_ids.len() < 1000 {
-                            acc.matched_ids.push(*id);
-                        }
-
-                        let stats = acc.position_stats.entry(next_move.clone()).or_insert_with(|| {
-                            PositionStats {
-                                move_: next_move,
-                                white: 0,
-                                black: 0,
-                                draw: 0,
-                            }
-                        });
-
-                        if let Some(res) = result.as_deref() {
-                            match res {
-                                "1-0" => stats.white += 1,
-                                "0-1" => stats.black += 1,
-                                "1/2-1/2" => stats.draw += 1,
-                                _ => (),
-                            }
-                        }
-                    }
-                    acc
-                },
-            )
-            .reduce(
-                || ThreadLocalResults::default(),
-                |mut acc1, mut acc2| {
-                    if acc1.position_stats.is_empty() {
-                        std::mem::swap(&mut acc1.position_stats, &mut acc2.position_stats);
-                    } else {
-                        for (key, stats2) in acc2.position_stats {
-                            let stats1 =
-                                acc1.position_stats.entry(key).or_insert_with(|| PositionStats {
-                                    move_: stats2.move_.clone(),
-                                    white: 0,
-                                    black: 0,
-                                    draw: 0,
-                                });
-                            stats1.white += stats2.white;
-                            stats1.black += stats2.black;
-                            stats1.draw += stats2.draw;
-                        }
-                    }
-
-                    let remaining = 1000 - acc1.matched_ids.len();
-                    if remaining > 0 {
-                        let to_add = acc2.matched_ids.len().min(remaining);
-                        acc1.matched_ids.reserve(to_add);
-                        acc1.matched_ids.extend(acc2.matched_ids.into_iter().take(remaining));
-                    }
-
-                    acc1
-                },
-            );
-
-        for (key, stats2) in batch_results.position_stats {
-            let stats1 = position_stats.entry(key).or_insert_with(|| PositionStats {
-                move_: stats2.move_.clone(),
-                white: 0,
-                black: 0,
-                draw: 0,
-            });
-            stats1.white += stats2.white;
-            stats1.black += stats2.black;
-            stats1.draw += stats2.draw;
-        }
-
-        let remaining = 1000 - matched_game_ids.len();
-        if remaining > 0 {
-            let to_add = batch_results.matched_ids.len().min(remaining);
-            matched_game_ids.reserve(to_add);
-            matched_game_ids.extend(batch_results.matched_ids.into_iter().take(remaining));
-        }
-    }
-
-    Ok((position_stats.into_values().collect(), matched_game_ids))
 }
 
 /// ============================================================================

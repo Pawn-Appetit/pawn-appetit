@@ -68,7 +68,7 @@ export async function loadMainAccount(): Promise<MainAccount | null> {
     // File doesn't exist, try localStorage
     const name = localStorage.getItem("mainAccount");
     if (name) {
-      const account = { name };
+      const account: MainAccount = { name };
       // Try to load FIDE ID for this account
       const fideId = await getAccountFideId(name);
       if (fideId) {

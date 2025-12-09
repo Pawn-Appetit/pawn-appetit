@@ -82,8 +82,6 @@ pub struct AppState {
     db_cache: std::sync::Mutex<Vec<GameData>>,
     #[derivative(Default(value = "Arc::new(Semaphore::new(10))"))]
     new_request: Arc<Semaphore>,
-    // Track active searches per tab to enable cancellation
-    active_searches: DashMap<String, Arc<std::sync::atomic::AtomicBool>>,
     pgn_offsets: DashMap<String, Vec<u64>>,
     fide_players: RwLock<Vec<FidePlayer>>,
     engine_processes: DashMap<(String, String), Arc<tokio::sync::Mutex<EngineProcess>>>,
