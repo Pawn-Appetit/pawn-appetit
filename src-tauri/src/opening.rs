@@ -111,8 +111,6 @@ pub async fn search_opening_name(query: String) -> Result<Vec<OutOpening>, Error
 
 lazy_static! {
     static ref OPENINGS: Vec<Opening> = {
-        info!("Initializing openings table...");
-
         let mut positions = vec![
             Opening {
                 eco: "Extra".to_string(),

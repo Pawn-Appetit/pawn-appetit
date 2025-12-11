@@ -2,6 +2,16 @@
 //! 
 //! This module handles searching for chess positions in game databases.
 //! It supports both exact position matching and partial position matching.
+//!
+//! Now supports two database families:
+//! - LOCAL: preinstalled/system databases
+//! - ONLINE: downloaded Lichess/Chess.com databases:
+//!   {username}_lichess.db3 or {username}_chesscom.db3
+//!
+//! The ONLINE path avoids using `state.db_cache` and uses reachability
+//! checks based on the initial position derived from each game's FEN,
+//! to prevent false negatives when online DB material/pawn_home metadata
+//! is absent or unreliable.
 
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
@@ -28,9 +38,8 @@ use std::{
     },
 };
 use tauri::Emitter;
-use dashmap::DashMap;
+use dashmap::{mapref::entry::Entry, DashMap};
 use shakmaty::ByColor;
-use log::info;
 
 use crate::{
     db::{
@@ -63,8 +72,30 @@ const ENABLE_CHECKPOINT_TABLE_SCHEMA: bool = true;
 const CHECKPOINT_STRIDE: usize = 8;
 
 /// ============================================================================
+/// ONLINE database detection
+/// ============================================================================
+
+/// Returns true if this file looks like an ONLINE DB:
+/// `{username}_lichess.db3` or `{username}_chesscom.db3`
+#[inline]
+fn is_online_database(file: &PathBuf) -> bool {
+    // Get filename from path (handles both full paths and just filenames)
+    let filename = file.file_name()
+        .and_then(|n| n.to_str())
+        .or_else(|| file.to_str());
+
+    if let Some(name) = filename {
+        let name_lower = name.to_lowercase();
+        name_lower.ends_with("_lichess.db3") || name_lower.ends_with("_chesscom.db3")
+    } else {
+        false
+    }
+}
+
+/// ============================================================================
 /// Aux indexes (minimal + material)
 /// ============================================================================
+
 #[inline]
 fn ensure_aux_indexes(db: &mut SqliteConnection) {
     let _ = diesel::sql_query(
@@ -101,6 +132,7 @@ fn ensure_aux_indexes(db: &mut SqliteConnection) {
 /// ============================================================================
 /// Checkpoint schema
 /// ============================================================================
+
 #[inline]
 fn ensure_checkpoint_table(db: &mut SqliteConnection) {
     let _ = diesel::sql_query(
@@ -126,6 +158,7 @@ fn ensure_checkpoint_table(db: &mut SqliteConnection) {
 /// ============================================================================
 /// Hashing utilities (no external deps)
 /// ============================================================================
+
 #[inline(always)]
 fn mix64(state: &mut u64, v: u64) {
     // simple high-diffusion mix
@@ -199,6 +232,7 @@ fn position_hash_and_turn(position: &Chess) -> (i64, i32) {
 /// ============================================================================
 /// Data for exact position matching
 /// ============================================================================
+
 #[derive(Debug, Hash, PartialEq, Eq, Clone)]
 pub struct ExactData {
     pawn_home: u16,
@@ -285,9 +319,8 @@ pub enum PositionQuery {
 
 impl PositionQuery {
     pub fn exact_from_fen(fen: &str) -> Result<PositionQuery, Error> {
-        // Use Standard castling mode to match how games are encoded from PGN
         let position: Chess =
-            Fen::from_ascii(fen.as_bytes())?.into_position(shakmaty::CastlingMode::Standard)?;
+            Fen::from_ascii(fen.as_bytes())?.into_position(shakmaty::CastlingMode::Chess960)?;
         let pawn_home = get_pawn_home(position.board());
         let material = get_material_count(position.board());
         Ok(PositionQuery::Exact(ExactData {
@@ -317,7 +350,6 @@ impl PositionQuery {
             PositionQuery::Partial(ref data) => &data.material,
         }
     }
-
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, Type, PartialEq, Eq, Hash)]
@@ -406,14 +438,7 @@ impl PositionQuery {
     fn can_reach(&self, material: &MaterialCount, pawn_home: u16) -> bool {
         match self {
             PositionQuery::Exact(ref data) => {
-                // Check if we can reach the target position from the initial position
-                // For pawn_home: if a pawn is still "home" (in initial rank) in the target,
-                // it must have been "home" in the initial position too.
-                // This is because pawns can only move forward, so if target has a pawn home,
-                // initial must have it home too.
-                // is_end_reachable(target, current) checks: target & !current == 0
-                // This means: all bits set in target are also set in current
-                is_end_reachable(data.pawn_home, pawn_home)
+                is_end_reachable(pawn_home, data.pawn_home)
                     && is_material_reachable(material, &data.material)
             }
             PositionQuery::Partial(_) => true,
@@ -506,10 +531,7 @@ impl<'a> MoveStream<'a> {
                     }
                 }
                 Self::END_VARIATION => {
-                    // We should normally not hit this because we skip variations when START_VARIATION is seen,
-                    // but if we do, just advance and continue to avoid aborting the stream.
-                    self.index += 1;
-                    continue;
+                    break;
                 }
                 move_byte => {
                     let legal_moves = self.position.legal_moves();
@@ -521,12 +543,9 @@ impl<'a> MoveStream<'a> {
                             let move_string = san.to_string();
                             self.index += 1;
                             return Some((self.position.clone(), move_string));
-                        } else {
-                            break;
                         }
-                    } else {
-                        break;
                     }
+                    break;
                 }
             }
         }
@@ -537,79 +556,8 @@ impl<'a> MoveStream<'a> {
 
 /// Find the next move played after a position matches the query
 /// This is the en-croissant version - simpler and more efficient
-/// Updated to use MoveStream for proper handling of comments, variations, and NAGs
+#[inline]
 fn get_move_after_match(
-    move_blob: &[u8],
-    fen: &Option<String>,
-    query: &PositionQuery,
-) -> Result<Option<String>, Error> {
-    let start_position = if let Some(fen) = fen {
-        let fen_parsed = Fen::from_ascii(fen.as_bytes())?;
-        // Use standard castling mode to match how moves were encoded from PGN
-        match Chess::from_setup(fen_parsed.into_setup(), shakmaty::CastlingMode::Standard) {
-            Ok(pos) => pos,
-            Err(e) => {
-                return Err(Error::FenError(format!("Invalid FEN: {}", e)));
-            }
-        }
-    } else {
-        Chess::default()
-    };
-
-    // Early return if position matches at start
-    if query.matches(&start_position) {
-        if move_blob.is_empty() {
-            return Ok(Some("*".to_string()));
-        }
-        // Use MoveStream to get the first move, which properly handles comments/variations/NAGs
-        let mut stream = MoveStream::new(move_blob, start_position.clone());
-        if let Some((_pos, san)) = stream.next_move() {
-            return Ok(Some(san));
-        }
-        return Ok(None);
-    }
-
-    // Use MoveStream to iterate through moves properly
-    let mut stream = MoveStream::new(move_blob, start_position);
-    let mut move_count = 0;
-    const MAX_MOVES_WITHOUT_REACHABILITY_CHECK: usize = 20; // Check reachability after 20 moves to optimize
-    
-    while let Some((pos, _san)) = stream.next_move() {
-        move_count += 1;
-        
-        // Check if position matches
-        if query.matches(&pos) {
-            // Position matched! Get the next move
-            if let Some((_next_pos, next_san)) = stream.next_move() {
-                return Ok(Some(next_san));
-            } else {
-                // No more moves, this is the end of the game
-                return Ok(Some("*".to_string()));
-            }
-        }
-        
-        // For positions deep in the game, check reachability periodically to avoid iterating
-        // through entire games when the position is impossible to reach
-        // This is an optimization for local databases with millions of games
-        if move_count > MAX_MOVES_WITHOUT_REACHABILITY_CHECK && move_count % 10 == 0 {
-            let board = pos.board();
-            let current_material = get_material_count(board);
-            let current_pawn_home = get_pawn_home(board);
-            
-            // Check if the target position is still reachable from current position
-            // If not, we can skip the rest of this game
-            if !query.is_reachable_by(&current_material, current_pawn_home) {
-                return Ok(None);
-            }
-        }
-    }
-    
-    Ok(None)
-}
-
-/// Fast path used for local databases (original behaviour).
-/// Uses the compact encoding without variation/comment parsing for speed.
-fn get_move_after_match_fast(
     move_blob: &[u8],
     fen: &Option<String>,
     query: &PositionQuery,
@@ -623,6 +571,7 @@ fn get_move_after_match_fast(
         Chess::default()
     };
 
+    // Early return if position matches at start
     if query.matches(&chess) {
         if move_blob.is_empty() {
             return Ok(Some("*".to_string()));
@@ -641,7 +590,7 @@ fn get_move_after_match_fast(
         };
         chess.play_unchecked(&m);
 
-        // Early prune when target no longer reachable
+        // Early exit if unreachable
         let board = chess.board();
         if !query.is_reachable_by(&get_material_count(board), get_pawn_home(board)) {
             return Ok(None);
@@ -658,7 +607,6 @@ fn get_move_after_match_fast(
             return Ok(None);
         }
     }
-
     Ok(None)
 }
 
@@ -714,9 +662,7 @@ pub async fn build_position_checkpoints(
     let total_games = total_count as usize;
 
     // Keyset scan
-    // Load maximum 1000 games total for position search
-    const MAX_GAMES_TO_SEARCH: usize = 1000;
-    const BATCH_SIZE: usize = 1000;
+    const BATCH_SIZE: usize = 50_000;
     let batches_to_process = (total_games / BATCH_SIZE + 1).min(200);
     let mut last_id: i32 = 0;
 
@@ -752,8 +698,7 @@ pub async fn build_position_checkpoints(
             // Start position
             let start_position = if let Some(fen) = fen {
                 let fen = Fen::from_ascii(fen.as_bytes())?;
-                // Use standard castling mode to match how moves were encoded from PGN
-                Chess::from_setup(fen.into_setup(), shakmaty::CastlingMode::Standard)?
+                Chess::from_setup(fen.into_setup(), shakmaty::CastlingMode::Chess960)?
             } else {
                 Chess::default()
             };
@@ -826,50 +771,47 @@ pub async fn build_position_checkpoints(
 }
 
 /// ============================================================================
-/// Search for chess positions in the database
-/// Returns position statistics and matching games
+/// LOCAL internal search (original behavior preserved)
 /// ============================================================================
-/// Detect if database is from online source (Lichess/Chess.com) or local (Caissa, etc.)
-fn is_online_database(file: &PathBuf) -> bool {
-    // Get filename from path (handles both full paths and just filenames)
-    let filename = file.file_name()
-        .and_then(|n| n.to_str())
-        .or_else(|| file.to_str());
-    
-    if let Some(name) = filename {
-        // Online databases have format: {username}_lichess.db3 or {username}_chesscom.db3
-        // Check if it ends with the pattern (case-insensitive for robustness)
-        let name_lower = name.to_lowercase();
-        name_lower.ends_with("_lichess.db3") || name_lower.ends_with("_chesscom.db3")
-    } else {
-        false
-    }
-}
 
-/// Search position in online databases (Lichess/Chess.com)
-/// Uses reachability check from initial position
-/// Based on original working code that loads all games and processes them
-fn search_position_online_internal(
-    db: &mut diesel::SqliteConnection,
+/// Uses cached in-memory game list in `state.db_cache`.
+/// This is the original LOCAL path.
+fn search_position_local_internal(
+    db: &mut SqliteConnection,
     position_query: &PositionQuery,
     query: &GameQueryJs,
     app: &tauri::AppHandle,
     tab_id: &str,
     state: &AppState,
-    total_games: usize,
-) -> (Vec<PositionStats>, Vec<i32>) {
-    // Adaptive limits based on database size
-    const MAX_SAMPLE_GAMES: usize = 1000; // Limit sample games collected (for display)
-    const MAX_UNIQUE_MOVES: usize = 500; // Limit unique moves tracked
-    
-    let openings: DashMap<String, PositionStats> = DashMap::with_capacity(MAX_UNIQUE_MOVES);
-    let sample_games: Mutex<Vec<i32>> = Mutex::new(Vec::with_capacity(MAX_SAMPLE_GAMES));
+) -> Result<(Vec<PositionStats>, Vec<i32>), Error> {
+    let mut games = state.db_cache.lock().unwrap();
+
+    if games.is_empty() {
+        *games = games::table
+            .select((
+                games::id,
+                games::white_id,
+                games::black_id,
+                games::date,
+                games::result,
+                games::moves,
+                games::fen,
+                games::pawn_home,
+                games::white_material,
+                games::black_material,
+            ))
+            .load(db)?;
+    }
+
+    let games_len = games.len();
+    let openings: DashMap<String, PositionStats> = DashMap::with_capacity(128);
+    let sample_games: Mutex<Vec<i32>> = Mutex::new(Vec::with_capacity(1000));
 
     let processed = AtomicUsize::new(0);
-    let progress_step = (total_games / 20).max(50000);
+    let progress_step = (games_len / 20).max(50000);
     let next_progress_tick = Arc::new(AtomicUsize::new(progress_step));
-    
-    // Pre-compute filter values
+
+    // Pre-compute filter values to avoid repeated clones
     let start_date = query.start_date.as_deref();
     let end_date = query.end_date.as_deref();
     let player1 = query.player1;
@@ -882,44 +824,7 @@ fn search_position_online_internal(
     });
     let next_progress_tick_clone = next_progress_tick.clone();
 
-    // Load games directly from database (original approach)
-    let games: Vec<(i32, i32, i32, Option<String>, Option<String>, Vec<u8>, Option<String>, i32, i32, i32)> = match games::table
-        .select((
-            games::id,
-            games::white_id,
-            games::black_id,
-            games::date,
-            games::result,
-            games::moves,
-            games::fen,
-            games::pawn_home,
-            games::white_material,
-            games::black_material,
-        ))
-        .load(db)
-    {
-        Ok(games) => games,
-        Err(e) => {
-            info!("Error loading games: {:?}", e);
-            return (Vec::new(), Vec::new());
-        },
-    };
-
-    let games_len = games.len();
-    info!("Loaded {} games from database for local search", games_len);
-    
-    if games_len == 0 {
-        info!("WARNING: No games loaded from database!");
-        return (Vec::new(), Vec::new());
-    }
-    
-    // For very large databases, process in chunks to avoid overwhelming the system
-    // Use sequential processing if database is extremely large to avoid contention
-    let use_parallel = games_len < 1_000_000; // Use parallel for databases < 1M games
-    info!("Using {} processing for {} games", if use_parallel { "parallel" } else { "sequential" }, games_len);
-    
-    if use_parallel {
-        games.par_iter().for_each(
+    games.par_iter().for_each(
         |(
             id,
             white_id,
@@ -928,9 +833,9 @@ fn search_position_online_internal(
             result,
             game,
             fen,
-            _end_pawn_home,
-            _white_material,
-            _black_material,
+            end_pawn_home,
+            white_material,
+            black_material,
         )| {
             if state.new_request.available_permits() == 0 {
                 return;
@@ -967,37 +872,13 @@ fn search_position_online_internal(
                 }
             }
 
-            // For online databases, check reachability from initial position
-            let initial_material: MaterialCount = if let Some(fen_str) = fen {
-                if let Ok(fen_parsed) = Fen::from_ascii(fen_str.as_bytes()) {
-                    if let Ok(start_pos) = Chess::from_setup(fen_parsed.into_setup(), shakmaty::CastlingMode::Standard) {
-                        get_material_count(start_pos.board())
-                    } else {
-                        ByColor { white: 39, black: 39 }
-                    }
-                } else {
-                    ByColor { white: 39, black: 39 }
-                }
-            } else {
-                ByColor { white: 39, black: 39 }
-            };
-            
-            let initial_pawn_home: u16 = if let Some(fen_str) = fen {
-                if let Ok(fen_parsed) = Fen::from_ascii(fen_str.as_bytes()) {
-                    if let Ok(start_pos) = Chess::from_setup(fen_parsed.into_setup(), shakmaty::CastlingMode::Standard) {
-                        get_pawn_home(start_pos.board())
-                    } else {
-                        0xFFFF
-                    }
-                } else {
-                    0xFFFF
-                }
-            } else {
-                0xFFFF
+            let end_material: MaterialCount = ByColor {
+                white: *white_material as u8,
+                black: *black_material as u8,
             };
 
-            // Check if we can reach the target position from the initial position
-            if !position_query.can_reach(&initial_material, initial_pawn_home) {
+            // Check reachability before expensive matching
+            if !position_query.can_reach(&end_material, *end_pawn_home as u16) {
                 return;
             }
 
@@ -1012,68 +893,238 @@ fn search_position_online_internal(
                         finished: false,
                     },
                 );
-                next_progress_tick_clone.store(current_tick.saturating_add(progress_step), Ordering::Relaxed);
+                next_progress_tick_clone.store(
+                    current_tick.saturating_add(progress_step),
+                    Ordering::Relaxed,
+                );
             }
 
-            match get_move_after_match(game, fen, position_query) {
-                Ok(Some(m)) => {
-                    // Collect sample games (limited for memory efficiency)
+            if let Ok(Some(m)) = get_move_after_match(game, fen, position_query) {
+                {
+                    let mut sample = sample_games.lock().unwrap();
+                    if sample.len() < 1000 {
+                        sample.push(*id);
+                    }
+                }
+
+                let entry = openings.entry(m);
+                match entry {
+                    Entry::Occupied(mut e) => {
+                        let opening = e.get_mut();
+                        match result.as_deref() {
+                            Some("1-0") => opening.white += 1,
+                            Some("0-1") => opening.black += 1,
+                            Some("1/2-1/2") => opening.draw += 1,
+                            _ => (),
+                        }
+                    }
+                    Entry::Vacant(e) => {
+                        let move_str = e.key().clone();
+                        let (white, black, draw) = match result.as_deref() {
+                            Some("1-0") => (1, 0, 0),
+                            Some("0-1") => (0, 1, 0),
+                            Some("1/2-1/2") => (0, 0, 1),
+                            _ => (0, 0, 0),
+                        };
+                        e.insert(PositionStats {
+                            move_: move_str,
+                            white,
+                            black,
+                            draw,
+                        });
+                    }
+                }
+            }
+        },
+    );
+
+    let openings: Vec<PositionStats> = openings.into_iter().map(|(_, v)| v).collect();
+    let ids: Vec<i32> = sample_games.into_inner().unwrap();
+
+    Ok((openings, ids))
+}
+
+/// ============================================================================
+/// ONLINE internal search
+/// ============================================================================
+
+/// Search position in online databases (Lichess/Chess.com)
+/// Uses reachability check from each game's initial position (from FEN)
+/// and does NOT rely on `games.pawn_home/white_material/black_material`.
+fn search_position_online_internal(
+    db: &mut SqliteConnection,
+    position_query: &PositionQuery,
+    query: &GameQueryJs,
+    app: &tauri::AppHandle,
+    tab_id: &str,
+    state: &AppState,
+    total_games: usize,
+) -> (Vec<PositionStats>, Vec<i32>) {
+    const MAX_SAMPLE_GAMES: usize = 1000;
+
+    let openings: DashMap<String, PositionStats> = DashMap::with_capacity(256);
+    let sample_games: Mutex<Vec<i32>> = Mutex::new(Vec::with_capacity(MAX_SAMPLE_GAMES));
+
+    // Load games directly from database (ONLINE path)
+    let games: Vec<(
+        i32,               // id
+        i32,               // white_id
+        i32,               // black_id
+        Option<String>,    // date
+        Option<String>,    // result
+        Vec<u8>,           // moves
+        Option<String>,    // fen
+        i32,               // pawn_home (ignored)
+        i32,               // white_material (ignored)
+        i32,               // black_material (ignored)
+    )> = match games::table
+        .select((
+            games::id,
+            games::white_id,
+            games::black_id,
+            games::date,
+            games::result,
+            games::moves,
+            games::fen,
+            games::pawn_home,
+            games::white_material,
+            games::black_material,
+        ))
+        .load(db)
+    {
+        Ok(g) => g,
+        Err(_) => return (Vec::new(), Vec::new()),
+    };
+
+    let games_len = games.len();
+    if games_len == 0 {
+        return (Vec::new(), Vec::new());
+    }
+
+    let processed = AtomicUsize::new(0);
+    let expected = total_games.max(games_len).max(1);
+    let progress_step = (expected / 20).max(50000);
+    let next_progress_tick = Arc::new(AtomicUsize::new(progress_step));
+    let next_progress_tick_clone = next_progress_tick.clone();
+
+    // Pre-compute filter values
+    let start_date = query.start_date.as_deref();
+    let end_date = query.end_date.as_deref();
+    let player1 = query.player1;
+    let player2 = query.player2;
+    let wanted_result = query.wanted_result.as_deref().and_then(|r| match r {
+        "whitewon" => Some("1-0"),
+        "blackwon" => Some("0-1"),
+        "draw" => Some("1/2-1/2"),
+        _ => None,
+    });
+
+    let use_parallel = games_len < 1_000_000;
+
+    if use_parallel {
+        games.par_iter().for_each(
+            |(
+                id,
+                white_id,
+                black_id,
+                date,
+                result,
+                game,
+                fen,
+                _end_pawn_home,
+                _white_material,
+                _black_material,
+            )| {
+                if state.new_request.available_permits() == 0 {
+                    return;
+                }
+
+                // Early filter checks (most selective first)
+                if let Some(white) = player1 {
+                    if white != *white_id {
+                        return;
+                    }
+                }
+
+                if let Some(black) = player2 {
+                    if black != *black_id {
+                        return;
+                    }
+                }
+
+                if let Some(expected_result) = wanted_result {
+                    if result.as_deref() != Some(expected_result) {
+                        return;
+                    }
+                }
+
+                if let (Some(start_date), Some(date)) = (start_date, date) {
+                    if date.as_str() < start_date {
+                        return;
+                    }
+                }
+
+                if let (Some(end_date), Some(date)) = (end_date, date) {
+                    if date.as_str() > end_date {
+                        return;
+                    }
+                }
+
+                let index = processed.fetch_add(1, Ordering::Relaxed);
+                let current_tick = next_progress_tick_clone.load(Ordering::Relaxed);
+                if index >= current_tick {
+                    let _ = app.emit(
+                        "search_progress",
+                        ProgressPayload {
+                            progress: ((index + 1) as f64 / games_len as f64 * 100.0).min(99.0),
+                            id: tab_id.to_string(),
+                            finished: false,
+                        },
+                    );
+                    next_progress_tick_clone.store(
+                        current_tick.saturating_add(progress_step),
+                        Ordering::Relaxed,
+                    );
+                }
+
+                if let Ok(Some(m)) = get_move_after_match(game, fen, position_query) {
                     if let Ok(mut sample) = sample_games.try_lock() {
                         if sample.len() < MAX_SAMPLE_GAMES {
                             sample.push(*id);
                         }
                     }
 
-                    // Update statistics
-                    static LEN_CHECK_COUNTER: AtomicUsize = AtomicUsize::new(0);
-                    let check_len = LEN_CHECK_COUNTER.fetch_add(1, Ordering::Relaxed) % 1000 == 0;
-                    let should_add_new = if check_len {
-                        openings.len() < MAX_UNIQUE_MOVES
-                    } else {
-                        true
-                    };
-                    
-                    if should_add_new {
-                        if let Some(mut entry) = openings.get_mut(&m) {
+                    let entry = openings.entry(m);
+                    match entry {
+                        Entry::Occupied(mut e) => {
+                            let opening = e.get_mut();
                             match result.as_deref() {
-                                Some("1-0") => entry.white += 1,
-                                Some("0-1") => entry.black += 1,
-                                Some("1/2-1/2") => entry.draw += 1,
+                                Some("1-0") => opening.white += 1,
+                                Some("0-1") => opening.black += 1,
+                                Some("1/2-1/2") => opening.draw += 1,
                                 _ => (),
                             }
-                        } else {
-                            if openings.len() < MAX_UNIQUE_MOVES {
-                                let move_str = m.clone();
-                                let (white, black, draw) = match result.as_deref() {
-                                    Some("1-0") => (1, 0, 0),
-                                    Some("0-1") => (0, 1, 0),
-                                    Some("1/2-1/2") => (0, 0, 1),
-                                    _ => (0, 0, 0),
-                                };
-                                openings.insert(move_str.clone(), PositionStats {
-                                    move_: move_str,
-                                    white,
-                                    black,
-                                    draw,
-                                });
-                            }
+                        }
+                        Entry::Vacant(e) => {
+                            let move_str = e.key().clone();
+                            let (white, black, draw) = match result.as_deref() {
+                                Some("1-0") => (1, 0, 0),
+                                Some("0-1") => (0, 1, 0),
+                                Some("1/2-1/2") => (0, 0, 1),
+                                _ => (0, 0, 0),
+                            };
+                            e.insert(PositionStats {
+                                move_: move_str,
+                                white,
+                                black,
+                                draw,
+                            });
                         }
                     }
                 }
-                Ok(None) => {}
-                Err(e) => {
-                    // Log error but continue processing other games
-                    static ERROR_COUNT: AtomicUsize = AtomicUsize::new(0);
-                    let error_count = ERROR_COUNT.fetch_add(1, Ordering::Relaxed);
-                    if error_count < 5 {
-                        info!("Error processing game {} in local search: {:?}", id, e);
-                    }
-                }
-            }
-        },
-    );
+            },
+        );
     } else {
-        // Sequential processing for very large databases
         for (
             id,
             white_id,
@@ -1121,33 +1172,36 @@ fn search_position_online_internal(
                 }
             }
 
-            // For online databases, check reachability from initial position
-            let initial_material: MaterialCount = if let Some(fen_str) = fen {
+            let (initial_material, initial_pawn_home): (MaterialCount, u16) = if let Some(fen_str) = fen {
                 if let Ok(fen_parsed) = Fen::from_ascii(fen_str.as_bytes()) {
-                    if let Ok(start_pos) = Chess::from_setup(fen_parsed.into_setup(), shakmaty::CastlingMode::Standard) {
-                        get_material_count(start_pos.board())
+                    if let Ok(start_pos) = Chess::from_setup(
+                        fen_parsed.into_setup(),
+                        shakmaty::CastlingMode::Chess960,
+                    ) {
+                        (
+                            get_material_count(start_pos.board()),
+                            get_pawn_home(start_pos.board()),
+                        )
                     } else {
-                        ByColor { white: 39, black: 39 }
+                        let start = Chess::default();
+                        (
+                            get_material_count(start.board()),
+                            get_pawn_home(start.board()),
+                        )
                     }
                 } else {
-                    ByColor { white: 39, black: 39 }
+                    let start = Chess::default();
+                    (
+                        get_material_count(start.board()),
+                        get_pawn_home(start.board()),
+                    )
                 }
             } else {
-                ByColor { white: 39, black: 39 }
-            };
-            
-            let initial_pawn_home: u16 = if let Some(fen_str) = fen {
-                if let Ok(fen_parsed) = Fen::from_ascii(fen_str.as_bytes()) {
-                    if let Ok(start_pos) = Chess::from_setup(fen_parsed.into_setup(), shakmaty::CastlingMode::Standard) {
-                        get_pawn_home(start_pos.board())
-                    } else {
-                        0xFFFF
-                    }
-                } else {
-                    0xFFFF
-                }
-            } else {
-                0xFFFF
+                let start = Chess::default();
+                (
+                    get_material_count(start.board()),
+                    get_pawn_home(start.board()),
+                )
             };
 
             if !position_query.can_reach(&initial_material, initial_pawn_home) {
@@ -1165,269 +1219,60 @@ fn search_position_online_internal(
                         finished: false,
                     },
                 );
-                next_progress_tick_clone.store(current_tick.saturating_add(progress_step), Ordering::Relaxed);
+                next_progress_tick_clone.store(
+                    current_tick.saturating_add(progress_step),
+                    Ordering::Relaxed,
+                );
             }
 
-            match get_move_after_match(game, fen, position_query) {
-                Ok(Some(m)) => {
-                    {
-                        let mut sample = sample_games.lock().unwrap();
-                        if sample.len() < MAX_SAMPLE_GAMES {
-                            sample.push(*id);
-                        }
-                    }
-
-                    // Update statistics
-                    static LEN_CHECK_COUNTER_SEQ: AtomicUsize = AtomicUsize::new(0);
-                    let check_len = LEN_CHECK_COUNTER_SEQ.fetch_add(1, Ordering::Relaxed) % 1000 == 0;
-                    let should_add_new = if check_len {
-                        openings.len() < MAX_UNIQUE_MOVES
-                    } else {
-                        true
-                    };
-                    
-                    if should_add_new {
-                        if let Some(mut entry) = openings.get_mut(&m) {
-                            match result.as_deref() {
-                                Some("1-0") => entry.white += 1,
-                                Some("0-1") => entry.black += 1,
-                                Some("1/2-1/2") => entry.draw += 1,
-                                _ => (),
-                            }
-                        } else {
-                            if openings.len() < MAX_UNIQUE_MOVES {
-                                let move_str = m.clone();
-                                let (white, black, draw) = match result.as_deref() {
-                                    Some("1-0") => (1, 0, 0),
-                                    Some("0-1") => (0, 1, 0),
-                                    Some("1/2-1/2") => (0, 0, 1),
-                                    _ => (0, 0, 0),
-                                };
-                                openings.insert(move_str.clone(), PositionStats {
-                                    move_: move_str,
-                                    white,
-                                    black,
-                                    draw,
-                                });
-                            }
-                        }
-                    }
-                }
-                Ok(None) => {}
-                Err(_e) => {}
-            }
-        }
-    }
-
-    let openings: Vec<PositionStats> = openings.into_iter().map(|(_, v)| v).collect();
-    let ids: Vec<i32> = sample_games.into_inner().unwrap();
-    info!("search_position_online_internal completed: {} openings, {} game IDs", openings.len(), ids.len());
-    (openings, ids)
-}
-
-/// Search position in local databases (Caissa, etc.)
-/// Does NOT use reachability check (original behavior for local databases)
-/// Based on original working code that loads all games and processes them
-fn search_position_local_internal(
-    db: &mut diesel::SqliteConnection,
-    position_query: &PositionQuery,
-    query: &GameQueryJs,
-    app: &tauri::AppHandle,
-    tab_id: &str,
-    state: &AppState,
-) -> (Vec<PositionStats>, Vec<i32>) {
-    // Adaptive limits based on database size
-    const MAX_SAMPLE_GAMES: usize = 1000; // Limit sample games collected (for display)
-    const MAX_UNIQUE_MOVES: usize = 500; // Limit unique moves tracked
-
-    // Load all games once and cache for subsequent local searches.
-    let games: Vec<(i32, i32, i32, Option<String>, Option<String>, Vec<u8>, Option<String>, i32, i32, i32)> = {
-        let mut cache = state.db_cache.lock().unwrap();
-        if cache.is_empty() {
-            info!("Local search cache miss: loading games into memory");
-            *cache = match games::table
-                .select((
-                    games::id,
-                    games::white_id,
-                    games::black_id,
-                    games::date,
-                    games::result,
-                    games::moves,
-                    games::fen,
-                    games::pawn_home,
-                    games::white_material,
-                    games::black_material,
-                ))
-                .load(db)
-            {
-                Ok(g) => g,
-                Err(e) => {
-                    info!("Error loading games: {:?}", e);
-                    return (Vec::new(), Vec::new());
-                }
-            };
-        }
-        cache.clone()
-    };
-
-    let games_len = games.len();
-    info!("Loaded {} games from database for local search", games_len);
-
-    if games_len == 0 {
-        return (Vec::new(), Vec::new());
-    }
-
-    let openings: DashMap<String, PositionStats> = DashMap::with_capacity(MAX_UNIQUE_MOVES);
-    let sample_games: Mutex<Vec<i32>> = Mutex::new(Vec::with_capacity(MAX_SAMPLE_GAMES));
-
-    let processed = AtomicUsize::new(0);
-    let progress_step = (games_len / 20).max(50_000);
-    let next_progress_tick = Arc::new(AtomicUsize::new(progress_step));
-
-    // Pre-compute filter values
-    let start_date = query.start_date.as_deref();
-    let end_date = query.end_date.as_deref();
-    let player1 = query.player1;
-    let player2 = query.player2;
-    let wanted_result = query.wanted_result.as_deref().and_then(|r| match r {
-        "whitewon" => Some("1-0"),
-        "blackwon" => Some("0-1"),
-        "draw" => Some("1/2-1/2"),
-        _ => None,
-    });
-    let next_progress_tick_clone = next_progress_tick.clone();
-
-    let use_parallel = games_len < 1_000_000; // parallel for up to ~1M games
-
-    let process_game = |(
-        id,
-        white_id,
-        black_id,
-        date,
-        result,
-        game,
-        fen,
-        _end_pawn_home,
-        _white_material,
-        _black_material,
-    ): &(
-        i32,
-        i32,
-        i32,
-        Option<String>,
-        Option<String>,
-        Vec<u8>,
-        Option<String>,
-        i32,
-        i32,
-        i32,
-    )| {
-        if state.new_request.available_permits() == 0 {
-            return;
-        }
-
-        // Early filters (no reachability for local DBs)
-        if let Some(white) = player1 {
-            if white != *white_id {
-                return;
-            }
-        }
-        if let Some(black) = player2 {
-            if black != *black_id {
-                return;
-            }
-        }
-        if let Some(expected_result) = wanted_result {
-            if result.as_deref() != Some(expected_result) {
-                return;
-            }
-        }
-        if let (Some(start_date), Some(date)) = (start_date, date) {
-            if date.as_str() < start_date {
-                return;
-            }
-        }
-        if let (Some(end_date), Some(date)) = (end_date, date) {
-            if date.as_str() > end_date {
-                return;
-            }
-        }
-
-        let index = processed.fetch_add(1, Ordering::Relaxed);
-        let current_tick = next_progress_tick_clone.load(Ordering::Relaxed);
-        if index >= current_tick {
-            let _ = app.emit(
-                "search_progress",
-                ProgressPayload {
-                    progress: ((index + 1) as f64 / games_len as f64 * 100.0).min(99.0),
-                    id: tab_id.to_string(),
-                    finished: false,
-                },
-            );
-            next_progress_tick_clone.store(current_tick.saturating_add(progress_step), Ordering::Relaxed);
-        }
-
-        match get_move_after_match_fast(game, fen, position_query) {
-            Ok(Some(m)) => {
-                // Collect sample games (limited)
-                if let Ok(mut sample) = sample_games.try_lock() {
+            if let Ok(Some(m)) = get_move_after_match(game, fen, position_query) {
+                {
+                    let mut sample = sample_games.lock().unwrap();
                     if sample.len() < MAX_SAMPLE_GAMES {
                         sample.push(*id);
                     }
                 }
 
-                // Update statistics with light contention control
-                static LEN_CHECK_COUNTER: AtomicUsize = AtomicUsize::new(0);
-                let check_len = LEN_CHECK_COUNTER.fetch_add(1, Ordering::Relaxed) % 1000 == 0;
-                let should_add_new = if check_len {
-                    openings.len() < MAX_UNIQUE_MOVES
-                } else {
-                    true
-                };
-
-                if should_add_new {
-                    if let Some(mut entry) = openings.get_mut(&m) {
+                let entry = openings.entry(m);
+                match entry {
+                    Entry::Occupied(mut e) => {
+                        let opening = e.get_mut();
                         match result.as_deref() {
-                            Some("1-0") => entry.white += 1,
-                            Some("0-1") => entry.black += 1,
-                            Some("1/2-1/2") => entry.draw += 1,
+                            Some("1-0") => opening.white += 1,
+                            Some("0-1") => opening.black += 1,
+                            Some("1/2-1/2") => opening.draw += 1,
                             _ => (),
                         }
-                    } else if openings.len() < MAX_UNIQUE_MOVES {
-                        let move_str = m.clone();
+                    }
+                    Entry::Vacant(e) => {
+                        let move_str = e.key().clone();
                         let (white, black, draw) = match result.as_deref() {
                             Some("1-0") => (1, 0, 0),
                             Some("0-1") => (0, 1, 0),
                             Some("1/2-1/2") => (0, 0, 1),
                             _ => (0, 0, 0),
                         };
-                        openings.insert(
-                            move_str.clone(),
-                            PositionStats {
-                                move_: move_str,
-                                white,
-                                black,
-                                draw,
-                            },
-                        );
+                        e.insert(PositionStats {
+                            move_: move_str,
+                            white,
+                            black,
+                            draw,
+                        });
                     }
                 }
             }
-            Ok(None) => {}
-            Err(_e) => {}
         }
-    };
-
-    if use_parallel {
-        games.par_iter().for_each(process_game);
-    } else {
-        games.iter().for_each(process_game);
     }
 
     let openings: Vec<PositionStats> = openings.into_iter().map(|(_, v)| v).collect();
-    let ids: Vec<i32> = sample_games.into_inner().unwrap_or_default();
+    let ids: Vec<i32> = sample_games.into_inner().unwrap();
     (openings, ids)
 }
+
+/// ============================================================================
+/// Search for chess positions in the database
+/// Returns position statistics and matching games
+/// ============================================================================
 
 #[tauri::command]
 #[specta::specta]
@@ -1438,12 +1283,7 @@ pub async fn search_position(
     tab_id: String,
     state: tauri::State<'_, AppState>,
 ) -> Result<(Vec<PositionStats>, Vec<NormalizedGame>), Error> {
-    info!("search_position called: file={:?}, tab_id={}", file.file_name(), tab_id);
-    
     let db = &mut get_db_or_create(&state, file.to_str().unwrap(), ConnectionOptions::default())?;
-
-    // Detect database type
-    let is_online = is_online_database(&file);
 
     // Build cache key (without game_details_limit)
     let mut cache_query = query.clone();
@@ -1451,26 +1291,23 @@ pub async fn search_position(
     let cache_key = (cache_query.clone(), file.clone());
 
     if let Some(pos) = state.line_cache.get(&cache_key) {
-        info!("Cache hit for search_position");
         let (cached_openings, cached_games) = pos.value().clone();
-        
+
         // Apply game_details_limit if specified
         let game_details_limit: usize = query.game_details_limit
             .unwrap_or(10)
             .min(1000)
             .try_into()
             .unwrap_or(10);
-        
+
         let truncated_games = if cached_games.len() > game_details_limit {
             cached_games.into_iter().take(game_details_limit).collect()
         } else {
             cached_games
         };
-        
+
         return Ok((cached_openings, truncated_games));
     }
-    
-    info!("Cache miss, starting new search");
 
     // Convert position query
     let position_query = match &query.position {
@@ -1479,28 +1316,48 @@ pub async fn search_position(
     };
 
     let permit = state.new_request.acquire().await.unwrap();
-    
-    // Get total game count for progress tracking
-    let total_games: i64 = games::table.count().get_result(db)?;
-    let total_games_usize = total_games as usize;
-    info!("Total games in database: {} (type: {})", total_games_usize, if is_online { "online" } else { "local" });
 
-    // Use different search logic based on database type
-    info!("Starting search with {} games", total_games_usize);
-    let (openings, ids) = if is_online {
-        info!("Using online search logic");
-        search_position_online_internal(db, &position_query, &query, &app, &tab_id, &state, total_games_usize)
+    // Decide strategy based on DB type
+    let online = is_online_database(&file);
+
+    // Optional schema/index safety for large/foreign DBs
+    // (kept behind flags and very cheap if already present)
+    if ENABLE_AUX_INDEXES {
+        ensure_aux_indexes(db);
+    }
+    if ENABLE_CHECKPOINT_TABLE_SCHEMA {
+        ensure_checkpoint_table(db);
+    }
+
+    // Phase 1: scan and collect openings + sample IDs
+    let (openings, ids): (Vec<PositionStats>, Vec<i32>) = if online {
+        let total_count: i64 = games::table.count().get_result(db).unwrap_or(0);
+        let total_games = total_count.max(0) as usize;
+
+        search_position_online_internal(
+            db,
+            &position_query,
+            &query,
+            &app,
+            &tab_id,
+            state.inner(),
+            total_games,
+        )
     } else {
-        info!("Using local search logic");
-        search_position_local_internal(db, &position_query, &query, &app, &tab_id, &state)
+        search_position_local_internal(
+            db,
+            &position_query,
+            &query,
+            &app,
+            &tab_id,
+            state.inner(),
+        )?
     };
-    info!("Search completed: found {} openings and {} matching game IDs", openings.len(), ids.len());
 
-    // Note: We don't check available_permits() here because:
-    // 1. We already acquired a permit at the start
-    // 2. If a new request came in, it will wait for this one to complete
-    // 3. We should return results even if a new request is queued
-    // The permit will be dropped at the end of the function
+    if state.new_request.available_permits() == 0 {
+        drop(permit);
+        return Err(Error::SearchStopped);
+    }
 
     // Apply game_details_limit
     let game_details_limit: usize = query.game_details_limit
@@ -1509,10 +1366,7 @@ pub async fn search_position(
         .try_into()
         .unwrap_or(10);
 
-    // Only load details for the first game_details_limit games (max 1000)
-    let total_matches = ids.len();
     let ids_to_load: Vec<i32> = ids.into_iter().take(game_details_limit).collect();
-    info!("Loading details for {} games (limited from {} total matches)", ids_to_load.len(), total_matches);
 
     let (white_players, black_players) = diesel::alias!(players as white, players as black);
     let mut query_builder = games::table
@@ -1555,7 +1409,7 @@ pub async fn search_position(
     } else {
         Vec::new()
     };
-    
+
     let mut normalized_games = normalize_games(games_result)?;
 
     // Sort by average ELO if needed (after loading)
@@ -1585,21 +1439,11 @@ pub async fn search_position(
         }
     }
 
-    info!("Search completed: found {} openings and {} games", openings.len(), normalized_games.len());
-    
-    // Log summary of openings for debugging
-    if !openings.is_empty() {
-        let total_games_in_stats: i32 = openings.iter().map(|o| o.white + o.black + o.draw).sum();
-        info!("Total games in stats: {} (sum of all openings)", total_games_in_stats);
-    }
-    
+    // Cache results (key ignores game_details_limit as before)
     state
         .line_cache
         .insert(cache_key, (openings.clone(), normalized_games.clone()));
-    
-    info!("Results cached successfully");
 
-    // Emit final progress event BEFORE returning
     let _ = app.emit(
         "search_progress",
         ProgressPayload {
@@ -1608,26 +1452,8 @@ pub async fn search_position(
             finished: true,
         },
     );
-    
-    info!("Final progress event emitted for tab_id: {}", tab_id);
 
     drop(permit);
-    
-    // Log data sizes before returning (approximate)
-    let openings_approx_size = openings.len() * 100; // Rough estimate per opening
-    let games_approx_size = normalized_games.len() * 2000; // Rough estimate per game
-    info!("Returning data: ~{} openings (~{} KB), ~{} games (~{} KB)", 
-        openings.len(), openings_approx_size / 1024,
-        normalized_games.len(), games_approx_size / 1024);
-    
-    // Ensure we have valid data to return
-    if openings.is_empty() && normalized_games.is_empty() {
-        info!("WARNING: Returning empty results!");
-    }
-    
-    info!("search_position returning successfully with {} openings and {} games", openings.len(), normalized_games.len());
-    
-    // Return the data - this should trigger the frontend to update
     Ok((openings, normalized_games))
 }
 
@@ -1708,7 +1534,7 @@ mod tests {
     fn assert_partial_match(fen1: &str, fen2: &str) {
         let query = PositionQuery::partial_from_fen(fen1).unwrap();
         let fen = Fen::from_ascii(fen2.as_bytes()).unwrap();
-        let chess = Chess::from_setup(fen.into_setup(), shakmaty::CastlingMode::Standard).unwrap();
+        let chess = Chess::from_setup(fen.into_setup(), shakmaty::CastlingMode::Chess960).unwrap();
         assert!(query.matches(&chess));
     }
 
