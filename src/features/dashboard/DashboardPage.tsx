@@ -320,12 +320,34 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, [mainAccountName, loadMainAccountData]);
 
-  const mainSession = sessions.find(
-    (s) =>
-      s.player === mainAccountName ||
-      s.lichess?.username === mainAccountName ||
-      s.chessCom?.username === mainAccountName,
-  );
+  // Find the main session - prioritize exact username matches over player name matches
+  // This ensures we get the correct session for the main account
+  const mainSession = useMemo(() => {
+    if (!mainAccountName) return undefined;
+    
+    // First, try to find by exact username match (most reliable)
+    const usernameMatch = sessions.find(
+      (s) =>
+        s.lichess?.username === mainAccountName ||
+        s.chessCom?.username === mainAccountName,
+    );
+    
+    if (usernameMatch) {
+      return usernameMatch;
+    }
+    
+    // If no username match, try by player name
+    const playerMatches = sessions.filter(
+      (s) => s.player === mainAccountName,
+    );
+    
+    if (playerMatches.length === 0) return undefined;
+    
+    // If multiple player name matches, take the most recent one (by updatedAt)
+    return playerMatches.reduce((latest, current) => {
+      return current.updatedAt > latest.updatedAt ? current : latest;
+    });
+  }, [sessions, mainAccountName]);
 
   // Calculate average online rating based on time controls with more than 10 games
   const averageOnlineRating = calculateOnlineRating(mainSession);
@@ -336,7 +358,9 @@ export default function DashboardPage() {
     rating: averageOnlineRating,
   };
   let ratingHistory: { classical?: number; rapid?: number; blitz?: number; bullet?: number } = {};
+  let platform: "lichess" | "chesscom" | null = null;
   if (mainSession?.lichess?.account) {
+    platform = "lichess";
     const acc = mainSession.lichess.account;
     user = {
       name: acc.username,
@@ -349,6 +373,7 @@ export default function DashboardPage() {
     const bullet = acc.perfs?.bullet?.rating;
     ratingHistory = { classical, rapid, blitz, bullet };
   } else if (mainSession?.chessCom?.stats) {
+    platform = "chesscom";
     const stats = mainSession.chessCom.stats;
     user = {
       name: mainSession.chessCom.username,
@@ -953,6 +978,7 @@ export default function DashboardPage() {
             title={fidePlayer?.title || getChessTitle(user.rating)}
             ratingHistory={ratingHistory}
             customName={displayName}
+            platform={platform}
             onFideUpdate={async (newFideId, newFidePlayer, newDisplayName) => {
               console.log("[Dashboard] onFideUpdate called:", { newFideId, newFidePlayer, newDisplayName, mainAccountName });
               

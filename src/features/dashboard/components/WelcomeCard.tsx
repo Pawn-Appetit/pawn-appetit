@@ -163,30 +163,30 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
             <Group gap="xl" align="flex-start">
               {fideInfo.standardRating && (
                 <Stack gap={2} align="center">
-                  <Text size="xs" c="dimmed" fw={500}>
+                  <Text size="xs" c="teal.6" fw={500}>
                     {t("features.dashboard.editProfile.standard")}
                   </Text>
-                  <Text size="xl" c="dark" fw={700}>
+                  <Text fz={{ base: "1.375rem", sm: "1.625rem", md: "1.875rem" }} c="teal.6" fw={700} lh={1}>
                     {fideInfo.standardRating}
                   </Text>
                 </Stack>
               )}
               {fideInfo.rapidRating && (
                 <Stack gap={2} align="center">
-                  <Text size="xs" c="dimmed" fw={500}>
+                  <Text size="xs" c="teal.6" fw={500}>
                     {t("features.dashboard.editProfile.rapid")}
                   </Text>
-                  <Text size="xl" c="dark" fw={700}>
+                  <Text fz={{ base: "1.375rem", sm: "1.625rem", md: "1.875rem" }} c="teal.6" fw={700} lh={1}>
                     {fideInfo.rapidRating}
                   </Text>
                 </Stack>
               )}
               {fideInfo.blitzRating && (
                 <Stack gap={2} align="center">
-                  <Text size="xs" c="dimmed" fw={500}>
+                  <Text size="xs" c="yellow.6" fw={500}>
                     {t("features.dashboard.editProfile.blitz")}
                   </Text>
-                  <Text size="xl" c="dark" fw={700}>
+                  <Text fz={{ base: "1.375rem", sm: "1.625rem", md: "1.875rem" }} c="yellow.6" fw={700} lh={1}>
                     {fideInfo.blitzRating}
                   </Text>
                 </Stack>

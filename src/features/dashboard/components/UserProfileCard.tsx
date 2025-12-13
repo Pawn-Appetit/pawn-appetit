@@ -1,6 +1,7 @@
-import { ActionIcon, Avatar, Badge, Box, Card, Divider, Group, Stack, Text } from "@mantine/core";
+import { ActionIcon, Avatar, Badge, Box, Card, Divider, Group, Image, rem, Stack, Text } from "@mantine/core";
 import { IconEdit } from "@tabler/icons-react";
 import { useState } from "react";
+import LichessLogo from "@/features/accounts/components/LichessLogo";
 import { EditProfileModal } from "./EditProfileModal";
 
 interface RatingHistory {
@@ -34,9 +35,10 @@ interface UserProfileCardProps {
   currentFideId?: string;
   fidePlayer?: FidePlayerData | null;
   customName?: string; // Custom name to display
+  platform?: "lichess" | "chesscom" | null; // Platform of the main account
 }
 
-export function UserProfileCard({ name, handle, title, ratingHistory, onFideUpdate, currentFideId, fidePlayer, customName }: UserProfileCardProps) {
+export function UserProfileCard({ name, handle, title, ratingHistory, onFideUpdate, currentFideId, fidePlayer, customName, platform }: UserProfileCardProps) {
   const [editModalOpened, setEditModalOpened] = useState(false);
 
   const handleSave = (fideId: string, fidePlayer: FidePlayerData | null, displayName?: string) => {
@@ -51,11 +53,15 @@ export function UserProfileCard({ name, handle, title, ratingHistory, onFideUpda
   // Determine which title to display (FIDE title has priority if it exists)
   const displayTitle = fidePlayer?.title || title;
   
-  // Determine which ratings to display (FIDE ratings have priority if they exist)
+  // Determine which ratings to display
+  // Priority: Online account ratings (Chess.com/Lichess) > FIDE ratings
+  // This ensures that when the main account is from Chess.com or Lichess,
+  // we show the actual online ratings, not FIDE ratings
+  // Only show classical if platform is Lichess (Chess.com doesn't have classical)
   const displayRatings = {
-    classical: fidePlayer?.standardRating || ratingHistory.classical,
-    rapid: fidePlayer?.rapidRating || ratingHistory.rapid,
-    blitz: fidePlayer?.blitzRating || ratingHistory.blitz,
+    classical: platform === "lichess" ? (ratingHistory.classical || fidePlayer?.standardRating) : undefined,
+    rapid: ratingHistory.rapid || fidePlayer?.rapidRating,
+    blitz: ratingHistory.blitz || fidePlayer?.blitzRating,
     bullet: ratingHistory.bullet,
   };
 
@@ -65,15 +71,35 @@ export function UserProfileCard({ name, handle, title, ratingHistory, onFideUpda
         <Box>
           <Group gap={6} justify="space-between" wrap="nowrap">
             <Group gap={6} wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
-              <Text fw={700} truncate>{displayName}</Text>
-              <ActionIcon
-                variant="subtle"
-                size="sm"
-                onClick={() => setEditModalOpened(true)}
-                title="Edit profile"
-              >
-                <IconEdit size={16} />
-              </ActionIcon>
+              {platform && (
+                <Box
+                  style={{
+                    width: rem(24),
+                    height: rem(24),
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  {platform === "lichess" ? (
+                    <LichessLogo />
+                  ) : (
+                    <Image w={rem(24)} h={rem(24)} src="/chesscom.png" alt="chess.com" />
+                  )}
+                </Box>
+              )}
+              <Group gap={6} wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
+                <Text fw={700} truncate>{displayName}</Text>
+                <ActionIcon
+                  variant="subtle"
+                  size="sm"
+                  onClick={() => setEditModalOpened(true)}
+                  title="Edit profile"
+                >
+                  <IconEdit size={16} />
+                </ActionIcon>
+              </Group>
             </Group>
             {displayTitle && (
               <Badge color="yellow" variant="light">
