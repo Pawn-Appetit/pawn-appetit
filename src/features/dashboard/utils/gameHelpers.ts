@@ -15,6 +15,7 @@ interface GameHeaders {
   fen: string;
   time_control?: string;
   variant?: string;
+  orientation?: "white" | "black";
 }
 
 export function createLocalGameHeaders(game: GameRecord): GameHeaders {

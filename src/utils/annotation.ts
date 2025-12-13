@@ -115,7 +115,7 @@ export function isBasicAnnotation(annotation: string): annotation is "!" | "!!" 
  * These colors are used for visual display of annotations in the UI.
  */
 export const annotationColors: Record<Annotation, string> = {
-  "!!": "#06B6D4", // Brilliant - cyan
+  "!!": "#67E8F9", // Brilliant - light cyan/celeste
   "!": "#3B82F6", // Great / Good / Unique - blue
   Best: "#22C55E", // Best - green
   "!?": "#A855F7", // Interesting - purple

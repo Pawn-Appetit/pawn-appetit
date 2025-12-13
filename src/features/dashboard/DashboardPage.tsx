@@ -1072,6 +1072,9 @@ export default function DashboardPage() {
             onLichessUserChange={setSelectedLichessUser}
             onAnalyzeLocalGame={(game) => {
               const headers = createLocalGameHeaders(game);
+              // Determine which color the user played
+              const isUserWhite = game.white.type === "human";
+              headers.orientation = isUserWhite ? "white" : "black";
               // Use saved PGN if available, otherwise reconstruct from moves with initial FEN
               const pgn = game.pgn || createPGNFromMoves(game.moves, game.result, game.initialFen);
               createTab({
@@ -1094,6 +1097,16 @@ export default function DashboardPage() {
             onAnalyzeChessComGame={(game) => {
               if (game.pgn) {
                 const headers = createChessComGameHeaders(game);
+                // Determine which username is the user's account
+                const accountUsername = selectedChessComUser && selectedChessComUser !== "all" 
+                  ? selectedChessComUser 
+                  : chessComUsernames.find(u => 
+                      u.toLowerCase() === game.white.username.toLowerCase() || 
+                      u.toLowerCase() === game.black.username.toLowerCase()
+                    ) || game.white.username;
+                // Determine which color the user played
+                const isUserWhite = game.white.username.toLowerCase() === accountUsername.toLowerCase();
+                headers.orientation = isUserWhite ? "white" : "black";
                 createTab({
                   tab: {
                     name: `${game.white.username} - ${game.black.username}`,
@@ -1107,13 +1120,6 @@ export default function DashboardPage() {
                   // Store the game URL and username in sessionStorage so we can save the analyzed PGN when analysis completes
                   if (tabId && typeof window !== "undefined") {
                     sessionStorage.setItem(`${tabId}_chessComGameUrl`, game.url);
-                    // Determine which username is the user's account
-                    const accountUsername = selectedChessComUser && selectedChessComUser !== "all" 
-                      ? selectedChessComUser 
-                      : chessComUsernames.find(u => 
-                          u.toLowerCase() === game.white.username.toLowerCase() || 
-                          u.toLowerCase() === game.black.username.toLowerCase()
-                        ) || game.white.username;
                     sessionStorage.setItem(`${tabId}_chessComUsername`, accountUsername);
                   }
                 });
@@ -1123,6 +1129,18 @@ export default function DashboardPage() {
             onAnalyzeLichessGame={(game) => {
               if (game.pgn) {
                 const headers = createLichessGameHeaders(game);
+                // Determine which username is the user's account
+                const gameWhiteName = game.players.white.user?.name || "";
+                const gameBlackName = game.players.black.user?.name || "";
+                const accountUsername = selectedLichessUser && selectedLichessUser !== "all" 
+                  ? selectedLichessUser 
+                  : lichessUsernames.find(u => 
+                      u.toLowerCase() === gameWhiteName.toLowerCase() || 
+                      u.toLowerCase() === gameBlackName.toLowerCase()
+                    ) || gameWhiteName;
+                // Determine which color the user played
+                const isUserWhite = gameWhiteName.toLowerCase() === accountUsername.toLowerCase();
+                headers.orientation = isUserWhite ? "white" : "black";
                 createTab({
                   tab: {
                     name: `${headers.white} - ${headers.black}`,
@@ -1136,15 +1154,6 @@ export default function DashboardPage() {
                   // Store the game ID and username in sessionStorage so we can save the analyzed PGN when analysis completes
                   if (tabId && typeof window !== "undefined") {
                     sessionStorage.setItem(`${tabId}_lichessGameId`, game.id);
-                    // Determine which username is the user's account
-                    const gameWhiteName = game.players.white.user?.name || "";
-                    const gameBlackName = game.players.black.user?.name || "";
-                    const accountUsername = selectedLichessUser && selectedLichessUser !== "all" 
-                      ? selectedLichessUser 
-                      : lichessUsernames.find(u => 
-                          u.toLowerCase() === gameWhiteName.toLowerCase() || 
-                          u.toLowerCase() === gameBlackName.toLowerCase()
-                        ) || gameWhiteName;
                     sessionStorage.setItem(`${tabId}_lichessUsername`, accountUsername);
                   }
                 });
@@ -1427,6 +1436,13 @@ export default function DashboardPage() {
 
               // Apply analysis using the same function used in individual analysis
               addAnalysis(tree, analysis);
+
+              // Update tree headers with gameHeaders to ensure names are included
+              tree.headers = {
+                ...tree.headers,
+                ...gameHeaders,
+                fen: tree.headers.fen || gameHeaders.fen, // Preserve FEN from parsed PGN
+              };
 
               // Check if cancelled before saving
               if (isCancelled()) {
