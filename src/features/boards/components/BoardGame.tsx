@@ -372,7 +372,7 @@ function OpponentForm({
   );
 }
 
-function useClockTimer(
+export function useClockTimer(
   gameState: string,
   pos: any,
   whiteTime: number | null,
@@ -895,7 +895,8 @@ function BoardGame() {
     // The tree and headers.fen were already updated by applyFenString
     // Passing fen here could cause setHeaders to reset the tree if there's a race condition
     // We update all other headers but preserve the fen that was set by applyFenString
-    setHeaders({ ...headers, ...newHeaders });
+    // Ensure result is set to "*" to indicate game is in progress
+    setHeaders({ ...headers, ...newHeaders, result: "*" });
 
     setTabs((prev) =>
       prev.map((tab) => {

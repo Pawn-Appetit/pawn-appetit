@@ -51,12 +51,21 @@ export function useEngineMoves(
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Force re-request after error by incrementing this counter
   const [retryCounter, setRetryCounter] = useState(0);
+  
+  // Use refs for times to avoid triggering effect on time updates
+  const whiteTimeRef = useRef(whiteTime);
+  const blackTimeRef = useRef(blackTime);
+  useEffect(() => {
+    whiteTimeRef.current = whiteTime;
+    blackTimeRef.current = blackTime;
+  }, [whiteTime, blackTime]);
 
   const moves = useMemo(() => getMainLine(root, headers.variant === "Chess960"), [root, headers.variant]);
   const mainLine = useMemo(() => Array.from(treeIteratorMainLine(root)), [root]);
   const lastNode = useMemo(() => mainLine[mainLine.length - 1].node, [mainLine]);
 
   // Request engine moves when it's the engine's turn
+  // Use separate effect for position/turn changes vs time updates
   useEffect(() => {
     // Early return if game is not playing - don't make any requests
     if (gameState !== "playing" || headers.result !== "*") {
@@ -95,6 +104,18 @@ export function useEngineMoves(
           return;
         }
 
+        // Also check if we have a pending request for a different position/turn
+        // If so, clear it first to avoid conflicts
+        if (engineRequestRef.current && engineRequestRef.current !== requestKey) {
+          // Clear the old request - it's for a different position
+          engineRequestRef.current = null;
+          engineRequestDetailsRef.current = null;
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+          }
+        }
+
         // Mark this request as in progress BEFORE making the call
         // This prevents multiple calls from creating duplicate engines
         engineRequestRef.current = requestKey;
@@ -106,12 +127,13 @@ export function useEngineMoves(
         };
 
         // Calculate time for engine - use actual remaining time or fallback to timeControl seconds
+        // Use refs to get current time values without triggering effect on time updates
         const engineTime = currentTurn === "white" 
-          ? (whiteTime ?? (player.timeControl?.seconds ?? 0))
-          : (blackTime ?? (player.timeControl?.seconds ?? 0));
+          ? (whiteTimeRef.current ?? (player.timeControl?.seconds ?? 0))
+          : (blackTimeRef.current ?? (player.timeControl?.seconds ?? 0));
         const opponentTime = currentTurn === "white"
-          ? (blackTime ?? (players.black?.timeControl?.seconds ?? 0))
-          : (whiteTime ?? (players.white?.timeControl?.seconds ?? 0));
+          ? (blackTimeRef.current ?? (players.black?.timeControl?.seconds ?? 0))
+          : (whiteTimeRef.current ?? (players.white?.timeControl?.seconds ?? 0));
         
         // Only use PlayersTime if we have valid time values and timeControl is set
         // Otherwise use the engine's default go mode
@@ -192,7 +214,7 @@ export function useEngineMoves(
                 engineRequestDetailsRef.current = null;
                 appendMove({
                   payload: parseUci(bestUci)!,
-                  clock: (pos.turn === "white" ? whiteTime : blackTime) ?? undefined,
+                  clock: (pos.turn === "white" ? whiteTimeRef.current : blackTimeRef.current) ?? undefined,
                 });
               }
             }
@@ -242,7 +264,23 @@ export function useEngineMoves(
         timeoutRef.current = null;
       }
     };
-  }, [gameState, pos, players, headers.result, activeTab, root.fen, moves, whiteTime, blackTime, appendMove, t, retryCounter]);
+    // Depend on position/turn changes and key identifiers, but not time updates
+    // Time updates should not trigger new engine requests - we use refs for times
+  }, [
+    gameState,
+    pos, // Need pos to check turn and if position is valid
+    players.white.type,
+    players.black.type,
+    players.white.engine?.path,
+    players.black.engine?.path,
+    headers.result,
+    activeTab,
+    root.fen,
+    moves.join(","),
+    retryCounter,
+    appendMove,
+    t,
+  ]);
 
   // Listen for engine move responses
   // Throttle best-moves event processing to avoid stutter while dragging/moving pieces.
@@ -280,6 +318,12 @@ export function useEngineMoves(
         !pos.isEnd();
 
       if (shouldApplyMove) {
+        // Double-check that we still have an active request to prevent duplicate moves
+        if (!engineRequestRef.current) {
+          // Request was already cleared, ignore this response
+          return;
+        }
+
         const bestUci = payload.bestLines?.[0]?.uciMoves?.[0];
         if (!bestUci) {
           // Clear refs on error to allow retry
@@ -312,15 +356,22 @@ export function useEngineMoves(
           return;
         }
 
-        // Clear refs BEFORE applying move to prevent race conditions
+        // Clear refs BEFORE applying move to prevent race conditions and duplicate moves
+        const currentRequestKey = engineRequestRef.current;
         engineRequestRef.current = null;
         engineRequestDetailsRef.current = null;
         
         try {
           appendMove({
             payload: parsed,
-            clock: (pos.turn === "white" ? whiteTime : blackTime) ?? undefined,
+            clock: (pos.turn === "white" ? whiteTimeRef.current : blackTimeRef.current) ?? undefined,
           });
+          // After applying move, verify the request key hasn't changed
+          // This prevents applying moves from stale responses
+          if (engineRequestRef.current && engineRequestRef.current !== currentRequestKey) {
+            // A new request was made while we were applying the move, which is fine
+            // The move was already applied, so we just continue
+          }
         } catch (error) {
           // Clear refs on error to allow retry
           engineRequestRef.current = null;
@@ -329,36 +380,51 @@ export function useEngineMoves(
           setRetryCounter((prev) => prev + 1);
         }
       } else if (payload.progress === 100 && tabEndsWithTurn) {
-        // Clear the engine request ref when we receive a final response for this turn
-        // This allows new requests even if the payload doesn't match exactly (e.g. stale response or tab changed)
-        engineRequestRef.current = null;
-        engineRequestDetailsRef.current = null;
+        // Only clear the engine request ref if it matches this payload
+        // This prevents clearing requests for different positions/turns
+        if (engineRequestDetailsRef.current?.tab === payload.tab && 
+            engineRequestDetailsRef.current?.fen === payload.fen) {
+          engineRequestRef.current = null;
+          engineRequestDetailsRef.current = null;
+        }
       }
     };
 
-    const unlisten = events.bestMovesPayload.listen(({ payload }) => {
+    let isMounted = true;
+    const unlistenPromise = events.bestMovesPayload.listen(({ payload }) => {
+      if (!isMounted) return;
       // Always throttle to avoid stutter - even progress 100 events can arrive in bursts
       // We only need the latest payload, so accumulate and flush at ~10fps
       pending = payload;
       if (timer == null) {
         timer = window.setTimeout(() => {
           timer = null;
-          flush();
+          if (isMounted) {
+            flush();
+          }
         }, throttleMs);
       }
     });
+    
     return () => {
+      isMounted = false;
       pending = null;
       if (timer != null) {
         window.clearTimeout(timer);
         timer = null;
       }
-      // Use a small delay before unlistening to avoid Tauri callback errors
-      // This gives Rust time to finish sending any pending events
-      setTimeout(() => {
-        unlisten.then((f) => f()).catch(() => {});
-      }, 100);
+      // Clean up the listener immediately
+      // Use catch to handle cases where the callback might already be cleaned up
+      unlistenPromise.then((unlisten) => {
+        try {
+          unlisten();
+        } catch (e) {
+          // Ignore errors if callback was already cleaned up
+        }
+      }).catch(() => {
+        // Ignore errors if promise was already resolved/rejected
+      });
     };
-  }, [gameState, activeTab, appendMove, pos, players, whiteTime, blackTime, t]);
+  }, [gameState, activeTab, appendMove, pos, players, t]);
 }
 
