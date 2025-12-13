@@ -271,8 +271,8 @@ export function useEngineMoves(
     pos, // Need pos to check turn and if position is valid
     players.white.type,
     players.black.type,
-    players.white.engine?.path,
-    players.black.engine?.path,
+    players.white.type === "engine" ? players.white.engine?.path : undefined,
+    players.black.type === "engine" ? players.black.engine?.path : undefined,
     headers.result,
     activeTab,
     root.fen,
