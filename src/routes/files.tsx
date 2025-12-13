@@ -1,7 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import FilesPage from "@/features/files/FilesPage";
+import { createFileRoute, lazyRouteComponent } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/files")({
-  component: FilesPage,
+  component: lazyRouteComponent(() => import("@/features/files/FilesPage")),
   loader: ({ context: { loadDirs } }) => loadDirs(),
 });

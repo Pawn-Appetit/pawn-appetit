@@ -445,7 +445,8 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
     setScore: (score) =>
       set(
         produce((state) => {
-          state.dirty = true;
+          // Engine evaluations update frequently; marking the tree as dirty here can trigger
+          // auto-save loops and heavy IO while analyzing. Score is ephemeral UI state.
           const node = getNodeAtPath(state.root, state.position);
           if (node) {
             node.score = score;

@@ -5,7 +5,7 @@ import { getMatches } from "@tauri-apps/plugin-cli";
 import { attachConsole, error, info } from "@tauri-apps/plugin-log";
 import { useAtom, useAtomValue } from "jotai";
 import { ContextMenuProvider } from "mantine-contextmenu";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { activeTabAtom, fontSizeAtom, pieceSetAtom, tabsAtom } from "./state/atoms";
 import { ensurePieceSetCss } from "./utils/pieceSetCss";
@@ -387,7 +387,9 @@ export default function App() {
         <ContextMenuProvider>
           {IS_DEV && <EventMonitor />}
           <Notifications />
-          <RouterProvider router={router} />
+          <Suspense fallback={<AppLoading />}>
+            <RouterProvider router={router} />
+          </Suspense>
 
           {updateModalData?.versionInfo && (
             <UpdateNotificationModal

@@ -2,7 +2,7 @@ import { parseUci } from "chessops";
 import { INITIAL_FEN, makeFen } from "chessops/fen";
 import equal from "fast-deep-equal";
 import { useAtom, useAtomValue } from "jotai";
-import { startTransition, useContext, useEffect, useMemo } from "react";
+import { startTransition, useContext, useEffect, useMemo, useRef } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
@@ -120,6 +120,33 @@ function EngineListener({
       tab: activeTab!,
     }),
   );
+  const throttleMs = 100;
+  const pendingRef = useRef<{
+    ev: typeof settings extends any ? any : any;
+    progress: number;
+  } | null>(null);
+  const timerRef = useRef<number | null>(null);
+
+  const flushPending = () => {
+    const pending = pendingRef.current;
+    if (!pending) return;
+    pendingRef.current = null;
+    startTransition(() => {
+      setEngineVariation((prev) => {
+        const newMap = new Map(prev);
+        newMap.set(`${searchingFen}:${searchingMoves.join(",")}`, pending.ev);
+        if (threat) {
+          newMap.delete(`${fen}:${moves.join(",")}`);
+        } else if (finalFen) {
+          newMap.delete(`${swapMove(finalFen)}:`);
+        }
+        return newMap;
+      });
+      setProgress(pending.progress);
+      setScore(pending.ev[0].score);
+    });
+  };
+
   useEffect(() => {
     if (!settings.enabled) return;
     const unlisten = events.bestMovesPayload.listen(({ payload }) => {
@@ -132,23 +159,22 @@ function EngineListener({
         settings.enabled &&
         !isGameOver
       ) {
-        startTransition(() => {
-          setEngineVariation((prev) => {
-            const newMap = new Map(prev);
-            newMap.set(`${searchingFen}:${searchingMoves.join(",")}`, ev);
-            if (threat) {
-              newMap.delete(`${fen}:${moves.join(",")}`);
-            } else if (finalFen) {
-              newMap.delete(`${swapMove(finalFen)}:`);
-            }
-            return newMap;
-          });
-          setProgress(payload.progress);
-          setScore(ev[0].score);
-        });
+        // Throttle UI updates to keep analysis smooth (avoid dozens of renders/sec)
+        pendingRef.current = { ev, progress: payload.progress };
+        if (timerRef.current == null) {
+          timerRef.current = window.setTimeout(() => {
+            timerRef.current = null;
+            flushPending();
+          }, throttleMs);
+        }
       }
     });
     return () => {
+      if (timerRef.current != null) {
+        window.clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      pendingRef.current = null;
       unlisten.then((f) => f());
     };
   }, [

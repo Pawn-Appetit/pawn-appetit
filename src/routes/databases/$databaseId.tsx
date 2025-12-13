@@ -1,6 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import DatabaseView from "@/features/databases/DatabaseView";
+import { createFileRoute, lazyRouteComponent } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/databases/$databaseId")({
-  component: DatabaseView,
+  component: lazyRouteComponent(() => import("@/features/databases/DatabaseView")),
 });

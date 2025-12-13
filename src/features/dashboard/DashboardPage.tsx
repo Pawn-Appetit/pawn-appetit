@@ -13,6 +13,7 @@ import { useAtom, useAtomValue } from "jotai";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { commands, type GoMode } from "@/bindings";
+import { devLog } from "@/utils/devLog";
 import { lessons } from "@/features/learn/constants/lessons";
 import { practices } from "@/features/learn/constants/practices";
 import { activeTabAtom, enginesAtom, sessionsAtom, tabsAtom } from "@/state/atoms";
@@ -104,7 +105,7 @@ export default function DashboardPage() {
       // Load main account (with FIDE ID if available)
       const account = await loadMainAccount();
       if (account) {
-        console.log("[Dashboard] Loading main account data for:", account.name);
+        devLog("[Dashboard] Loading main account data for:", account.name);
         setMainAccountName(account.name);
         
         // Load display name for this account

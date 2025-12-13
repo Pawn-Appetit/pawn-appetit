@@ -1,5 +1,6 @@
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { devLog } from "@/utils/devLog";
 
 export interface MainAccount {
   name: string;
@@ -97,14 +98,14 @@ export async function saveAccountFideId(accountName: string, fideId: string | nu
     
     if (fideId) {
       fideIds[accountName] = fideId;
-      console.log("[MainAccount] Saving FIDE ID", fideId, "for account", accountName);
+      devLog("[MainAccount] Saving FIDE ID", fideId, "for account", accountName);
     } else {
       delete fideIds[accountName];
-      console.log("[MainAccount] Removing FIDE ID for account", accountName);
+      devLog("[MainAccount] Removing FIDE ID for account", accountName);
     }
     
     await writeTextFile(file, JSON.stringify(fideIds, null, 2));
-    console.log("[MainAccount] FIDE IDs saved:", Object.keys(fideIds));
+    devLog("[MainAccount] FIDE IDs saved:", Object.keys(fideIds));
   } catch (error) {
     console.error("Error saving account FIDE ID:", error);
     throw error;
@@ -117,7 +118,7 @@ export async function getAccountFideId(accountName: string): Promise<string | nu
     const file = await resolve(dir, FIDE_IDS_FILENAME);
     const text = await readTextFile(file);
     if (!text || text.trim() === "") {
-      console.log("[MainAccount] No FIDE IDs file found for account", accountName);
+      devLog("[MainAccount] No FIDE IDs file found for account", accountName);
       return null;
     }
     const fideIds = JSON.parse(text) as AccountFideIds;

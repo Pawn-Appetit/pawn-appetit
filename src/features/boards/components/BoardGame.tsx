@@ -738,39 +738,62 @@ function BoardGame() {
   }, [moves, root.fen]);
 
   useEffect(() => {
-    const unlisten = events.bestMovesPayload.listen(({ payload }) => {
+    // Throttle best-moves event processing to avoid stutter while dragging/moving pieces.
+    // We only need the latest payload at ~10fps.
+    const throttleMs = 100;
+    let pending: (typeof events.bestMovesPayload extends any ? any : any) | null = null;
+    let timer: number | null = null;
+
+    const flush = () => {
+      if (!pending) return;
+      const payload = pending;
+      pending = null;
+
       // Only process moves when game is actively playing
       if (gameState !== "playing" || !activeTab || !pos) {
         return;
       }
 
+      const expectedTab = activeTab + pos.turn;
+
       // Clear the engine request ref when we receive any response for this tab/turn
       // This allows new requests even if the payload doesn't match exactly
-      if (payload.tab === activeTab + pos.turn) {
+      if (payload.tab === expectedTab) {
         engineRequestRef.current = null;
       }
 
-      const ev = payload.bestLines;
-      // CRITICAL: The payload.fen is the INITIAL FEN (root.fen) that was sent to getBestMoves
-      // The backend sends proc.options.fen which is root.fen, not the final FEN after moves
-      // So we must compare with root.fen, not lastNode.fen
-      // The moves array in the payload should match the current moves array
-      // Using refs to avoid recreating the listener on every change
+      // Only act when the engine has finished calculating and the request matches exactly.
       if (
         payload.progress === 100 &&
         payload.engine === pos.turn &&
-        payload.tab === activeTab + pos.turn &&
+        payload.tab === expectedTab &&
         payload.fen === rootFenRef.current && // Backend sends root.fen in payload, not final FEN
-        equal(payload.moves, movesRef.current) && // Use ref to avoid listener recreation
+        equal(payload.moves, movesRef.current) &&
         !pos.isEnd()
       ) {
+        const ev = payload.bestLines;
         appendMove({
           payload: parseUci(ev[0].uciMoves[0])!,
           clock: (pos.turn === "white" ? whiteTime : blackTime) ?? undefined,
         });
       }
+    };
+
+    const unlisten = events.bestMovesPayload.listen(({ payload }) => {
+      pending = payload;
+      if (timer == null) {
+        timer = window.setTimeout(() => {
+          timer = null;
+          flush();
+        }, throttleMs);
+      }
     });
     return () => {
+      pending = null;
+      if (timer != null) {
+        window.clearTimeout(timer);
+        timer = null;
+      }
       unlisten.then((f) => f());
     };
   }, [gameState, activeTab, appendMove, pos, whiteTime, blackTime]);

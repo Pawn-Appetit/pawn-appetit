@@ -1,6 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import KeyboardShortcutsPage from "@/features/settings/KeyboardShortcutsPage";
+import { createFileRoute, lazyRouteComponent } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/settings/keyboard-shortcuts")({
-  component: KeyboardShortcutsPage,
+  component: lazyRouteComponent(() => import("@/features/settings/KeyboardShortcutsPage")),
 });

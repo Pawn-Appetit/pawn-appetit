@@ -5,7 +5,7 @@ import { IconZoomCheck } from "@tabler/icons-react";
 import cx from "clsx";
 import equal from "fast-deep-equal";
 import { useAtomValue } from "jotai";
-import React, { memo, Suspense, useContext, useEffect, useMemo, useRef } from "react";
+import React, { memo, Suspense, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import EvalChart from "@/components/EvalChart";
@@ -16,7 +16,7 @@ import { saveAnalyzedGame, saveGameStats } from "@/utils/analyzedGames";
 import { ANNOTATION_INFO, annotationColors, isBasicAnnotation } from "@/utils/annotation";
 import { getGameStats, getMainLine, getPGN } from "@/utils/chess";
 import { calculateEstimatedElo } from "@/utils/eloEstimation";
-import { updateGameRecord, type GameStats } from "@/utils/gameRecords";
+import { getGameRecordById, updateGameRecord, type GameStats } from "@/utils/gameRecords";
 import { label } from "./AnalysisPanel.css";
 import ReportModal from "./ReportModal";
 
@@ -36,7 +36,38 @@ function ReportPanel() {
 
   const [reportingMode, toggleReportingMode] = useToggle();
 
-  const stats = useMemo(() => getGameStats(root), [root]);
+  const [stats, setStats] = useState(() => getGameStats(root));
+
+  // Avoid recalculating stats on every tree mutation while the engine is actively analyzing.
+  // Compute on idle/debounced to keep the UI responsive.
+  useEffect(() => {
+    let cancelled = false;
+    let timeoutId: number | null = null;
+
+    const compute = () => {
+      if (cancelled) return;
+      try {
+        const next = getGameStats(root);
+        if (!cancelled) setStats(next);
+      } catch {
+        // ignore
+      }
+    };
+
+    if (!inProgress) {
+      compute();
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    timeoutId = window.setTimeout(compute, 250);
+
+    return () => {
+      cancelled = true;
+      if (timeoutId != null) window.clearTimeout(timeoutId);
+    };
+  }, [root, inProgress]);
 
   // Track if we've already saved the PGN for this analysis completion
   const hasSavedPgnRef = useRef(false);
@@ -166,9 +197,7 @@ function ReportPanel() {
 
           if (localGameId) {
             // Get the game record to determine user color
-            const { getRecentGames } = await import("@/utils/gameRecords");
-            const games = await getRecentGames(1000); // Get enough games to find ours
-            const gameRecord = games.find((g) => g.id === localGameId);
+            const gameRecord = await getGameRecordById(localGameId);
 
             if (gameRecord) {
               // Determine which color the user played
@@ -458,7 +487,16 @@ const GameStats = memo(
     const goToAnnotation = useStore(store, (s) => s.goToAnnotation);
     const headers = useStore(store, (s) => s.headers);
 
-    const rows = useMemo(() => {
+    type Row = {
+      annotation: string;
+      s: "??" | "?" | "?!" | "!!" | "!" | "!?" | "Best";
+      title: string;
+      color: string;
+      w: number;
+      b: number;
+    };
+
+    const rows: Row[] = useMemo(() => {
       return Object.keys(ANNOTATION_INFO)
         .filter((a) => isBasicAnnotation(a))
         .sort((a, b) => {
@@ -486,7 +524,7 @@ const GameStats = memo(
             w: whiteAnnotations[s],
             b: blackAnnotations[s],
           };
-        });
+        }) as Row[];
     }, [whiteAnnotations, blackAnnotations, t]);
 
     return (

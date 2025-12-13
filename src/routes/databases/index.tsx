@@ -1,6 +1,5 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, lazyRouteComponent, redirect } from "@tanstack/react-router";
 import { z } from "zod";
-import DatabasesPage from "@/features/databases/DatabasesPage";
 import { activeDatabaseViewStore } from "@/state/store/database";
 
 const searchSchema = z.object({
@@ -10,7 +9,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/databases/")({
-  component: DatabasesPage,
+  component: lazyRouteComponent(() => import("@/features/databases/DatabasesPage")),
   validateSearch: searchSchema,
   beforeLoad: async ({ search }) => {
     const { database } = activeDatabaseViewStore.getState();

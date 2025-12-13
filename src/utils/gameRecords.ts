@@ -144,6 +144,23 @@ export async function updateGameRecord(gameId: string, updates: Partial<GameReco
   }
 }
 
+/**
+ * Loads a single game record by id without slicing/validating the full list.
+ * Returns null if the file doesn't exist, is corrupted, or the record is not found.
+ */
+export async function getGameRecordById(gameId: string): Promise<GameRecord | null> {
+  const dir = await appDataDir();
+  const file = await resolve(dir, FILENAME);
+  try {
+    const text = await readTextFile(file);
+    const records: GameRecord[] = JSON.parse(text);
+    const found = records.find((r) => r?.id === gameId);
+    return found ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function deleteGameRecord(gameId: string): Promise<void> {
   const dir = await appDataDir();
   const file = await resolve(dir, FILENAME);
