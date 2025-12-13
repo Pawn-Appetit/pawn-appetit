@@ -1296,7 +1296,13 @@ export default function DashboardPage() {
             value: s.value?.toString() ?? "",
           }));
 
-          // Force Threads to 1 for batch analysis, regardless of engine configuration
+          // Detect available CPU threads and calculate parallel analysis count (half of available threads)
+          const availableThreads = navigator.hardwareConcurrency || 4;
+          const parallelAnalyses = Math.max(1, Math.floor(availableThreads / 2));
+          
+          console.log(`[AnalyzeAll] Detected ${availableThreads} CPU threads, running ${parallelAnalyses} analyses in parallel`);
+
+          // Force Threads to 1 for each individual analysis, regardless of engine configuration
           const threadsSetting = engineSettings.find((s) => s.name.toLowerCase() === "threads");
           if (threadsSetting) {
             threadsSetting.value = "1";
@@ -1322,30 +1328,13 @@ export default function DashboardPage() {
 
           let successCount = 0;
           let failCount = 0;
-          let currentAnalysisId: string | null = null;
+          const activeAnalysisIds = new Set<string>();
+          let completedCount = 0;
 
-          for (let i = 0; i < gamesToAnalyze.length; i++) {
-            // Check if analysis was cancelled
-            if (isCancelled()) {
-              // Stop the current engine if it's running
-              if (currentAnalysisId && defaultEngine) {
-                try {
-                  await commands.stopEngine(defaultEngine.path, currentAnalysisId);
-                } catch {
-                  // Ignore errors when stopping
-                }
-              }
-              notifications.show({
-                title: t("features.dashboard.analysisCancelled"),
-                message: `Analysis stopped. ${successCount} games analyzed successfully.`,
-                color: "yellow",
-              });
-              break;
-            }
-            onProgress(i, gamesToAnalyze.length);
-            const game = gamesToAnalyze[i];
-            let analysisCancelled = false;
-            let cancellationCheckInterval: NodeJS.Timeout | null = null;
+          // Process games in parallel batches
+          const processGame = async (game: typeof gamesToAnalyze[0], index: number): Promise<void> => {
+            const analysisId = `analyze_all_${analyzeAllGameType}_${index}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            activeAnalysisIds.add(analysisId);
             
             try {
               let tree: TreeState;
@@ -1380,28 +1369,13 @@ export default function DashboardPage() {
 
               // Check if cancelled before starting analysis
               if (isCancelled()) {
-                if (currentAnalysisId && defaultEngine) {
-                  try {
-                    await commands.stopEngine(defaultEngine.path, currentAnalysisId);
-                  } catch {
-                    // Ignore errors when stopping
-                  }
-                }
-                notifications.show({
-                  title: t("features.dashboard.analysisCancelled"),
-                  message: `Analysis stopped. ${successCount} games analyzed successfully.`,
-                  color: "yellow",
-                });
-                break;
+                activeAnalysisIds.delete(analysisId);
+                return;
               }
 
               // Analyze the game
-              currentAnalysisId = `analyze_all_${analyzeAllGameType}_${i}_${Date.now()}`;
-              
-              // Start analysis and check for cancellation periodically
-              
               const analysisPromise = commands.analyzeGame(
-                currentAnalysisId,
+                analysisId,
                 defaultEngine.path,
                 goMode,
                 {
@@ -1415,87 +1389,49 @@ export default function DashboardPage() {
               );
 
               // Check for cancellation while analysis is running
-              cancellationCheckInterval = setInterval(() => {
+              let analysisCancelled = false;
+              const cancellationCheckInterval = setInterval(() => {
                 if (isCancelled()) {
                   analysisCancelled = true;
-                  if (currentAnalysisId && defaultEngine) {
-                    commands.stopEngine(defaultEngine.path, currentAnalysisId).catch(() => {
-                      // Ignore errors when stopping
-                    });
-                  }
-                  if (cancellationCheckInterval) {
-                    clearInterval(cancellationCheckInterval);
-                    cancellationCheckInterval = null;
-                  }
+                  commands.stopEngine(defaultEngine.path, analysisId).catch(() => {
+                    // Ignore errors when stopping
+                  });
+                  clearInterval(cancellationCheckInterval);
                 }
-              }, 100); // Check every 100ms
+              }, 100);
 
               let analysisResult;
               try {
                 analysisResult = await analysisPromise;
               } catch (error) {
-                if (cancellationCheckInterval) {
-                  clearInterval(cancellationCheckInterval);
-                  cancellationCheckInterval = null;
-                }
+                clearInterval(cancellationCheckInterval);
                 if (analysisCancelled || isCancelled()) {
-                  notifications.show({
-                    title: t("features.dashboard.analysisCancelled"),
-                    message: `Analysis stopped. ${successCount} games analyzed successfully.`,
-                    color: "yellow",
-                  });
-                  break;
+                  activeAnalysisIds.delete(analysisId);
+                  return;
                 }
                 throw error;
               }
               
-              if (cancellationCheckInterval) {
-                clearInterval(cancellationCheckInterval);
-                cancellationCheckInterval = null;
-              }
+              clearInterval(cancellationCheckInterval);
 
-              // Check again if cancelled after analysis - if cancelled, don't process the result
+              // Check again if cancelled after analysis
               if (isCancelled() || analysisCancelled) {
-                if (currentAnalysisId && defaultEngine) {
-                  try {
-                    await commands.stopEngine(defaultEngine.path, currentAnalysisId);
-                  } catch {
-                    // Ignore errors when stopping
-                  }
-                }
-                notifications.show({
-                  title: t("features.dashboard.analysisCancelled"),
-                  message: `Analysis stopped. ${successCount} games analyzed successfully.`,
-                  color: "yellow",
-                });
-                break;
+                activeAnalysisIds.delete(analysisId);
+                return;
               }
 
               const analysis = unwrap(analysisResult);
 
               // Use the same addAnalysis function from the store to ensure consistency
-              // This ensures the same logic is used for both individual and batch analysis
               const { addAnalysis } = await import("@/state/store/tree");
 
               // Apply analysis using the same function used in individual analysis
-              // This ensures consistency and prevents PGN damage
               addAnalysis(tree, analysis);
 
               // Check if cancelled before saving
               if (isCancelled()) {
-                if (currentAnalysisId && defaultEngine) {
-                  try {
-                    await commands.stopEngine(defaultEngine.path, currentAnalysisId);
-                  } catch {
-                    // Ignore errors when stopping
-                  }
-                }
-                notifications.show({
-                  title: t("features.dashboard.analysisCancelled"),
-                  message: `Analysis stopped after ${successCount} games (${failCount} failed).`,
-                  color: "yellow",
-                });
-                break;
+                activeAnalysisIds.delete(analysisId);
+                return;
               }
 
               // Generate PGN with analysis
@@ -1509,26 +1445,24 @@ export default function DashboardPage() {
 
               // Validate and fix PGN before saving
               if (!analyzedPgn || analyzedPgn.trim().length === 0) {
-                info(`Generated PGN is empty for game ${i + 1}, skipping save`);
-                failCount++;
-                continue;
+                info(`Generated PGN is empty for game ${index + 1}, skipping save`);
+                activeAnalysisIds.delete(analysisId);
+                return;
               }
 
               // Ensure PGN has a result (required for valid PGN)
               const hasResult =
                 /\[Result\s+"[^"]+"\]/.test(analyzedPgn) || /\s+(1-0|0-1|1\/2-1\/2|\*)\s*$/.test(analyzedPgn);
               if (!hasResult && tree.headers?.result) {
-                // If result is missing but we have it in headers, append it
                 analyzedPgn = analyzedPgn.trim() + ` ${tree.headers.result}`;
               } else if (!hasResult) {
-                // If no result at all, use "*" (game in progress)
                 analyzedPgn = analyzedPgn.trim() + ` *`;
               }
 
-              // Only save if analysis was not cancelled - double check before saving
+              // Only save if analysis was not cancelled
               if (!isCancelled() && !analysisCancelled) {
                 // Save analyzed PGN to file
-                const fileName = `${gameHeaders.white}-${gameHeaders.black}-${i + 1}`.replace(/[<>:"/\\|?*]/g, "_");
+                const fileName = `${gameHeaders.white}-${gameHeaders.black}-${index + 1}`.replace(/[<>:"/\\|?*]/g, "_");
                 const filePath = await resolve(folderName, `${fileName}.pgn`);
 
                 await writeTextFile(filePath, analyzedPgn);
@@ -1596,12 +1530,10 @@ export default function DashboardPage() {
                   }
                   
                   // Update the games array to trigger re-render and stats recalculation
-                  // Only update if the game belongs to the selected user
                   setChessComGames((prev) => {
                     const updated = [...prev];
                     const index = updated.findIndex((g) => g.url === chessComGame.url);
                     if (index >= 0) {
-                      // Verify the game belongs to the selected user before updating (case-insensitive)
                       const gameWhiteName = (chessComGame.white.username || "").toLowerCase();
                       const gameBlackName = (chessComGame.black.username || "").toLowerCase();
                       const selectedUserLower = (selectedChessComUser || "").toLowerCase();
@@ -1613,7 +1545,6 @@ export default function DashboardPage() {
                       if (belongsToSelectedUser) {
                         updated[index] = { ...chessComGame };
                       } else {
-                        // If game doesn't belong to selected user, remove it from the list
                         updated.splice(index, 1);
                       }
                     }
@@ -1651,12 +1582,10 @@ export default function DashboardPage() {
                   }
                   
                   // Update the games array to trigger re-render and stats recalculation
-                  // Only update if the game belongs to the selected user
                   setLichessGames((prev) => {
                     const updated = [...prev];
                     const index = updated.findIndex((g) => g.id === lichessGame.id);
                     if (index >= 0) {
-                      // Verify the game belongs to the selected user before updating (case-insensitive)
                       const gameWhiteName = (lichessGame.players.white.user?.name || "").toLowerCase();
                       const gameBlackName = (lichessGame.players.black.user?.name || "").toLowerCase();
                       const selectedUserLower = (selectedLichessUser || "").toLowerCase();
@@ -1668,7 +1597,6 @@ export default function DashboardPage() {
                       if (belongsToSelectedUser) {
                         updated[index] = { ...lichessGame };
                       } else {
-                        // If game doesn't belong to selected user, remove it from the list
                         updated.splice(index, 1);
                       }
                     }
@@ -1679,42 +1607,66 @@ export default function DashboardPage() {
                 successCount++;
               }
             } catch (error) {
-              info(`Failed to analyze game ${i + 1}: ${error}`);
+              info(`Failed to analyze game ${index + 1}: ${error}`);
               failCount++;
+            } finally {
+              activeAnalysisIds.delete(analysisId);
+              completedCount++;
+              
+              // Update progress
+              onProgress(completedCount, gamesToAnalyze.length);
+              
+              // Update notifications less frequently
+              if (completedCount % 10 === 0 || completedCount === gamesToAnalyze.length) {
+                notifications.show({
+                  title: t("features.dashboard.analysisProgress"),
+                  message: `Analyzed ${completedCount}/${gamesToAnalyze.length} games (${successCount} success, ${failCount} failed)`,
+                  color: "blue",
+                });
+              }
             }
+          };
 
-            // Check if cancelled before updating progress
+          // Process games in parallel batches
+          for (let i = 0; i < gamesToAnalyze.length; i += parallelAnalyses) {
+            // Check if analysis was cancelled
             if (isCancelled()) {
-              if (currentAnalysisId && defaultEngine) {
+              // Stop all active engines
+              for (const analysisId of activeAnalysisIds) {
                 try {
-                  await commands.stopEngine(defaultEngine.path, currentAnalysisId);
+                  await commands.stopEngine(defaultEngine.path, analysisId);
                 } catch {
                   // Ignore errors when stopping
                 }
               }
               notifications.show({
                 title: t("features.dashboard.analysisCancelled"),
-                message: `Analysis stopped after ${successCount} games (${failCount} failed).`,
+                message: `Analysis stopped. ${successCount} games analyzed successfully.`,
                 color: "yellow",
               });
               break;
             }
 
-            // Update progress in modal
-            onProgress(i + 1, gamesToAnalyze.length);
-
-            // Update notifications less frequently
-            if ((i + 1) % 10 === 0 || i === gamesToAnalyze.length - 1) {
-              notifications.show({
-                title: t("features.dashboard.analysisProgress"),
-                message: `Analyzed ${i + 1}/${gamesToAnalyze.length} games (${successCount} success, ${failCount} failed)`,
-                color: "blue",
-              });
-            }
+            // Get batch of games to process in parallel
+            const batch = gamesToAnalyze.slice(i, i + parallelAnalyses);
+            
+            // Process batch in parallel
+            await Promise.all(
+              batch.map((game, batchIndex) => processGame(game, i + batchIndex))
+            );
           }
 
           // Only show completion message if not cancelled
           if (!isCancelled()) {
+            // Stop any remaining active engines
+            for (const analysisId of activeAnalysisIds) {
+              try {
+                await commands.stopEngine(defaultEngine.path, analysisId);
+              } catch {
+                // Ignore errors when stopping
+              }
+            }
+
             // Final progress update
             onProgress(gamesToAnalyze.length, gamesToAnalyze.length);
 
@@ -1730,10 +1682,10 @@ export default function DashboardPage() {
               color: "green",
             });
           } else {
-            // If cancelled, make sure engine is stopped
-            if (currentAnalysisId && defaultEngine) {
+            // If cancelled, make sure all engines are stopped
+            for (const analysisId of activeAnalysisIds) {
               try {
-                await commands.stopEngine(defaultEngine.path, currentAnalysisId);
+                await commands.stopEngine(defaultEngine.path, analysisId);
               } catch {
                 // Ignore errors when stopping
               }
