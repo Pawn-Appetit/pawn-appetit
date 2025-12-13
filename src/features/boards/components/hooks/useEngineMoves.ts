@@ -69,7 +69,9 @@ export function useEngineMoves(
   useEffect(() => {
     // Early return if game is not playing - don't make any requests
     if (gameState !== "playing" || headers.result !== "*") {
+      // Clear all refs and timeouts when game ends
       if (engineRequestRef.current) {
+        console.log(`[useEngineMoves] Clearing engine request - game ended or not playing`);
         engineRequestRef.current = null;
         engineRequestDetailsRef.current = null;
       }
@@ -164,15 +166,18 @@ export function useEngineMoves(
             },
           );
         
-        // Handle the promise directly - tauri-specta commands should resolve
-        // Add a timeout check separately
+        // Set a timeout (1 second) to detect if engine is stuck
+        // If no response after 1s, clear the request and force a retry
         timeoutRef.current = setTimeout(() => {
           if (engineRequestRef.current === requestKey) {
+            console.warn(`[useEngineMoves] Engine request timeout after 1s for ${requestKey}, forcing retry`);
             engineRequestRef.current = null;
             engineRequestDetailsRef.current = null;
+            // Force re-request by incrementing retry counter
+            setRetryCounter((prev) => prev + 1);
           }
           timeoutRef.current = null;
-        }, 5000);
+        }, 1000); // 1 second timeout
         
         requestPromise
           .then((res: any) => {
@@ -286,9 +291,18 @@ export function useEngineMoves(
   // Throttle best-moves event processing to avoid stutter while dragging/moving pieces.
   // We only need the latest payload at ~10fps (~100ms intervals).
   useEffect(() => {
+    // Early return if game is not playing - don't set up listener
+    if (gameState !== "playing" || headers.result !== "*") {
+      // Clear any pending requests when game ends
+      engineRequestRef.current = null;
+      engineRequestDetailsRef.current = null;
+      return;
+    }
+
     const throttleMs = 100;
     let pending: (typeof events.bestMovesPayload extends any ? any : any) | null = null;
     let timer: number | null = null;
+    let unlistenFn: (() => void) | null = null;
 
     const flush = () => {
       if (!pending) return;
@@ -296,7 +310,7 @@ export function useEngineMoves(
       pending = null;
 
       // Only process moves when game is actively playing
-      if (gameState !== "playing" || !activeTab || !pos) {
+      if (gameState !== "playing" || headers.result !== "*" || !activeTab || !pos) {
         return;
       }
 
@@ -315,13 +329,24 @@ export function useEngineMoves(
         tabMatches &&
         payload.engine === pos.turn &&
         isEngineTurn &&
-        !pos.isEnd();
+        !pos.isEnd() &&
+        headers.result === "*";
 
       if (shouldApplyMove) {
         // Double-check that we still have an active request to prevent duplicate moves
         if (!engineRequestRef.current) {
           // Request was already cleared, ignore this response
           return;
+        }
+
+        // Verify the request matches the current position
+        if (engineRequestDetailsRef.current) {
+          const requestDetails = engineRequestDetailsRef.current;
+          // Check if the request is for a different position (stale response)
+          if (requestDetails.fen !== root.fen || requestDetails.tab !== payload.tab) {
+            // This is a stale response, ignore it
+            return;
+          }
         }
 
         const bestUci = payload.bestLines?.[0]?.uciMoves?.[0];
@@ -366,12 +391,6 @@ export function useEngineMoves(
             payload: parsed,
             clock: (pos.turn === "white" ? whiteTimeRef.current : blackTimeRef.current) ?? undefined,
           });
-          // After applying move, verify the request key hasn't changed
-          // This prevents applying moves from stale responses
-          if (engineRequestRef.current && engineRequestRef.current !== currentRequestKey) {
-            // A new request was made while we were applying the move, which is fine
-            // The move was already applied, so we just continue
-          }
         } catch (error) {
           // Clear refs on error to allow retry
           engineRequestRef.current = null;
@@ -391,7 +410,9 @@ export function useEngineMoves(
     };
 
     let isMounted = true;
-    const unlistenPromise = events.bestMovesPayload.listen(({ payload }) => {
+    
+    // Set up the listener
+    events.bestMovesPayload.listen(({ payload }) => {
       if (!isMounted) return;
       // Always throttle to avoid stutter - even progress 100 events can arrive in bursts
       // We only need the latest payload, so accumulate and flush at ~10fps
@@ -404,6 +425,20 @@ export function useEngineMoves(
           }
         }, throttleMs);
       }
+    }).then((unlisten) => {
+      if (isMounted) {
+        unlistenFn = unlisten;
+      } else {
+        // Component unmounted while listener was being set up, clean up immediately
+        try {
+          unlisten();
+        } catch (e) {
+          // Ignore errors if callback was already cleaned up
+        }
+      }
+    }).catch((err) => {
+      // Ignore errors if listener setup fails
+      console.error("Failed to set up bestMovesPayload listener:", err);
     });
     
     return () => {
@@ -413,18 +448,16 @@ export function useEngineMoves(
         window.clearTimeout(timer);
         timer = null;
       }
-      // Clean up the listener immediately
-      // Use catch to handle cases where the callback might already be cleaned up
-      unlistenPromise.then((unlisten) => {
+      // Clean up the listener immediately if we have it
+      if (unlistenFn) {
         try {
-          unlisten();
+          unlistenFn();
         } catch (e) {
           // Ignore errors if callback was already cleaned up
         }
-      }).catch(() => {
-        // Ignore errors if promise was already resolved/rejected
-      });
+        unlistenFn = null;
+      }
     };
-  }, [gameState, activeTab, appendMove, pos, players, t]);
+  }, [gameState, headers.result, activeTab, appendMove, pos, players, root.fen, t]);
 }
 

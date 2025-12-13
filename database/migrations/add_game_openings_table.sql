@@ -12,3 +12,4 @@ CREATE TABLE IF NOT EXISTS game_openings (
 CREATE INDEX IF NOT EXISTS game_openings_opening_idx ON game_openings(opening_name);
 CREATE INDEX IF NOT EXISTS game_openings_game_idx ON game_openings(game_id);
 
+

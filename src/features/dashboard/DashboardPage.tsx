@@ -415,13 +415,19 @@ export default function DashboardPage() {
   const [selectedChessComUser, setSelectedChessComUser] = useState<string | null>("all");
 
   const [recentGames, setRecentGames] = useState<GameRecord[]>([]);
-  useEffect(() => {
-    const loadGames = async () => {
+  
+  const loadGames = useCallback(async () => {
+    try {
       const games = await getRecentGames(50);
       setRecentGames(games);
-    };
+    } catch (err) {
+      console.error("Failed to load recent games:", err);
+    }
+  }, []);
+  
+  useEffect(() => {
     loadGames();
-
+    
     // Listen for games:updated event to refresh local games after analysis
     const handleGamesUpdated = () => {
       loadGames();
@@ -431,7 +437,7 @@ export default function DashboardPage() {
     return () => {
       window.removeEventListener("games:updated", handleGamesUpdated);
     };
-  }, []);
+  }, [loadGames]);
 
   const [lichessGames, setLichessGames] = useState<
     Array<{

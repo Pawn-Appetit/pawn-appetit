@@ -1,7 +1,7 @@
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { ActionIcon, Box, Group, ScrollArea, Tabs } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,6 +9,7 @@ import { Mosaic, type MosaicNode } from "react-mosaic-component";
 import { match } from "ts-pattern";
 
 import { createTab, type Tab } from "@/utils/tabs";
+import { currentGameStateAtom } from "@/state/atoms";
 import * as classes from "./BoardsPage.css";
 import { BoardTab } from "./components/BoardTab";
 
@@ -69,9 +70,13 @@ export default function BoardsPage() {
     });
   }, [canCreateNewTab, showTabLimitNotification, t, setTabs, setActiveTab]);
 
-  // Check if active tab is play mode to hide tabs bar
+  // Check if active tab is play mode and if game is actually playing
   const activeTabData = tabs.find((tab) => tab.value === activeTab);
   const isPlayMode = activeTabData?.type === "play";
+  const gameState = useAtomValue(currentGameStateAtom);
+  
+  // Hide tabs only when playing or game over, show them during setup
+  const shouldHideTabs = isPlayMode && (gameState === "playing" || gameState === "gameOver");
 
   return (
     <DragDropContext
@@ -106,7 +111,7 @@ export default function BoardsPage() {
           width: "100%",
         }}
       >
-        {!isPlayMode && (
+        {!shouldHideTabs && (
           <Box p="md">
             <ScrollArea scrollbarSize={SCROLL_AREA_CONFIG.SCROLLBAR_SIZE} scrollbars="x">
               <Droppable droppableId={DROPPABLE_IDS.TABS} direction="horizontal">

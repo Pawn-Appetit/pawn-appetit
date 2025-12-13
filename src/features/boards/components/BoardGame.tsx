@@ -454,9 +454,31 @@ export function useClockTimer(
     posTurnRef.current = pos?.turn;
   }, [pos?.turn]);
   
+  // Keep gameState in a ref to check it inside the interval callback
+  const gameStateRef = useRef(gameState);
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [gameState]);
+
+  // Keep intervalId in a ref to access it inside the callback
+  const intervalIdRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  useEffect(() => {
+    intervalIdRef.current = intervalId;
+  }, [intervalId]);
+
   useEffect(() => {
     if (gameState === "playing" && pos && !intervalId) {
       const decrementTime = () => {
+        // Stop immediately if game is no longer playing
+        if (gameStateRef.current !== "playing") {
+          const currentIntervalId = intervalIdRef.current;
+          if (currentIntervalId) {
+            clearInterval(currentIntervalId);
+            setIntervalId(null);
+          }
+          return;
+        }
+
         // Use ref to avoid dependency on pos.turn in closure
         const currentTurn = posTurnRef.current;
         if (currentTurn === "white" && whiteTimeRef.current !== null) {
@@ -474,6 +496,7 @@ export function useClockTimer(
 
       const id = setInterval(decrementTime, CLOCK_UPDATE_INTERVAL);
       setIntervalId(id);
+      intervalIdRef.current = id;
     }
   }, [gameState, intervalId, pos, setWhiteTime, setBlackTime]);
 }

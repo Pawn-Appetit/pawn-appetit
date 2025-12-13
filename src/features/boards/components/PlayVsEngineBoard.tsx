@@ -7,16 +7,18 @@
  * - Right panel: clocks + controls + opening + PGN
  */
 import { Box, Button, Divider, Group, Paper, ScrollArea, Stack, Text } from "@mantine/core";
-import { IconArrowsExchange, IconEraser, IconFlag, IconPlus, IconRepeat, IconZoomCheck } from "@tabler/icons-react";
+import { IconArrowLeft, IconArrowsExchange, IconEraser, IconFlag, IconPlus, IconRepeat, IconZoomCheck } from "@tabler/icons-react";
 import { useAtom, useAtomValue } from "jotai";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "@tanstack/react-router";
 import { Mosaic } from "react-mosaic-component";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/TreeStateContext";
 import GameInfo from "@/components/GameInfo";
 import Clock from "@/components/Clock";
 import { activeTabAtom, currentGameStateAtom, currentPlayersAtom, tabsAtom } from "@/state/atoms";
+import { commands } from "@/bindings";
 import { INITIAL_FEN } from "chessops/fen";
 import { positionFromFen } from "@/utils/chessops";
 import { getPGN, getOpening, getMainLine } from "@/utils/chess";
@@ -30,10 +32,12 @@ import { createFullLayout, DEFAULT_MOSAIC_LAYOUT } from "../constants";
 
 function PlayVsEngineBoardContent() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const activeTab = useAtomValue(activeTabAtom);
+  const [, setActiveTab] = useAtom(activeTabAtom);
   const [gameState, setGameState] = useAtom(currentGameStateAtom);
   const [players] = useAtom(currentPlayersAtom);
-  const [, setTabs] = useAtom(tabsAtom);
+  const [tabs, setTabs] = useAtom(tabsAtom);
   const boardRef = useRef<HTMLDivElement | null>(null);
 
   const store = useContext(TreeStateContext)!;
@@ -341,6 +345,55 @@ function PlayVsEngineBoardContent() {
     await saveGame(result);
   };
 
+  const handleBack = useCallback(async () => {
+    // 1. Resign if game is playing
+    if (gameState === "playing" && root.children.length > 0) {
+      await resign();
+    } else if (gameState === "gameOver" && root.children.length > 0 && headers.result && headers.result !== "*") {
+      // If game is already over but not saved, save it
+      await saveGame(headers.result);
+    } else if (root.children.length > 0 && (gameState === "playing" || gameState === "gameOver")) {
+      // Fallback: save with loss for current player
+      const currentTurn = pos?.turn ?? "white";
+      const result = currentTurn === "white" ? "0-1" : "1-0";
+      await saveGame(result);
+    }
+
+    // 2. Close the tab
+    if (activeTab) {
+      // Kill engines for this tab
+      try {
+        await commands.killEngines(activeTab);
+      } catch (error) {
+        console.error(`Failed to kill engines for tab: ${activeTab}`, error);
+      }
+
+      // Remove the tab and update active tab
+      const index = tabs.findIndex((tab) => tab.value === activeTab);
+      if (index !== -1) {
+        const newTabs = tabs.filter((tab) => tab.value !== activeTab);
+        setTabs(newTabs);
+
+        // Set active tab to another tab if available
+        if (newTabs.length > 0) {
+          if (index === tabs.length - 1) {
+            // If we closed the last tab, select the previous one
+            setActiveTab(newTabs[index - 1]?.value || newTabs[0].value);
+          } else {
+            // Otherwise, select the next tab (or same index if available)
+            setActiveTab(newTabs[index]?.value || newTabs[0].value);
+          }
+        } else {
+          // No tabs left, set active tab to null
+          setActiveTab(null);
+        }
+      }
+    }
+
+    // 3. Navigate to dashboard
+    navigate({ to: "/" });
+  }, [gameState, root.children.length, headers.result, pos?.turn, activeTab, tabs, setTabs, setActiveTab, navigate, resign, saveGame]);
+
   if (gameState === "settingUp") {
     const fullLayout = createFullLayout();
     return (
@@ -384,7 +437,17 @@ function PlayVsEngineBoardContent() {
         {/* Left panel */}
         <Paper withBorder shadow="sm" p="md" style={{ minHeight: 0, overflow: "hidden" }}>
           <Stack gap="sm" style={{ height: "100%", minHeight: 0 }}>
-            <Text fw={700}>Game info</Text>
+            <Group justify="space-between" align="center">
+              <Text fw={700}>Game info</Text>
+              <Button
+                variant="subtle"
+                size="sm"
+                onClick={handleBack}
+                leftSection={<IconArrowLeft size={16} />}
+              >
+                Back
+              </Button>
+            </Group>
             
             {/* Clocks - Always show when game is playing or gameOver */}
             {(gameState === "playing" || gameState === "gameOver") && (
