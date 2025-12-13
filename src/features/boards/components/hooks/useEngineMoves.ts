@@ -1,6 +1,6 @@
 import { parseUci } from "chessops";
 import { useAtomValue } from "jotai";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { commands, events } from "@/bindings";
@@ -49,6 +49,8 @@ export function useEngineMoves(
     moves: string[];
   } | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Force re-request after error by incrementing this counter
+  const [retryCounter, setRetryCounter] = useState(0);
 
   const moves = useMemo(() => getMainLine(root, headers.variant === "Chess960"), [root, headers.variant]);
   const mainLine = useMemo(() => Array.from(treeIteratorMainLine(root)), [root]);
@@ -103,22 +105,34 @@ export function useEngineMoves(
           moves: moves,
         };
 
+        // Calculate time for engine - use actual remaining time or fallback to timeControl seconds
+        const engineTime = currentTurn === "white" 
+          ? (whiteTime ?? (player.timeControl?.seconds ?? 0))
+          : (blackTime ?? (player.timeControl?.seconds ?? 0));
+        const opponentTime = currentTurn === "white"
+          ? (blackTime ?? (players.black?.timeControl?.seconds ?? 0))
+          : (whiteTime ?? (players.white?.timeControl?.seconds ?? 0));
+        
+        // Only use PlayersTime if we have valid time values and timeControl is set
+        // Otherwise use the engine's default go mode
+        const goMode = player.timeControl && engineTime > 0 && opponentTime >= 0
+          ? {
+              t: "PlayersTime" as const,
+              c: {
+                white: currentTurn === "white" ? engineTime : opponentTime,
+                black: currentTurn === "white" ? opponentTime : engineTime,
+                winc: player.timeControl.increment ?? 0,
+                binc: player.timeControl.increment ?? 0,
+              },
+            }
+          : player.go;
+
         const requestPromise = commands
           .getBestMoves(
             currentTurn,
             engine.path,
             tabKey,
-            player.timeControl
-              ? {
-                  t: "PlayersTime",
-                  c: {
-                    white: whiteTime ?? 0,
-                    black: blackTime ?? 0,
-                    winc: player.timeControl.increment ?? 0,
-                    binc: player.timeControl.increment ?? 0,
-                  },
-                }
-              : player.go,
+            goMode,
             {
               fen: root.fen,
               moves: moves,
@@ -228,7 +242,7 @@ export function useEngineMoves(
         timeoutRef.current = null;
       }
     };
-  }, [gameState, pos, players, headers.result, activeTab, root.fen, moves, whiteTime, blackTime, appendMove, t]);
+  }, [gameState, pos, players, headers.result, activeTab, root.fen, moves, whiteTime, blackTime, appendMove, t, retryCounter]);
 
   // Listen for engine move responses
   // Throttle best-moves event processing to avoid stutter while dragging/moving pieces.
@@ -276,6 +290,8 @@ export function useEngineMoves(
           // Clear refs on error to allow retry
           engineRequestRef.current = null;
           engineRequestDetailsRef.current = null;
+          // Force re-request by incrementing retry counter
+          setRetryCounter((prev) => prev + 1);
           return;
         }
         const parsed = parseUci(bestUci);
@@ -288,6 +304,8 @@ export function useEngineMoves(
           // Clear refs on error to allow retry
           engineRequestRef.current = null;
           engineRequestDetailsRef.current = null;
+          // Force re-request by incrementing retry counter
+          setRetryCounter((prev) => prev + 1);
           return;
         }
 
@@ -304,6 +322,8 @@ export function useEngineMoves(
           // Clear refs on error to allow retry
           engineRequestRef.current = null;
           engineRequestDetailsRef.current = null;
+          // Force re-request by incrementing retry counter
+          setRetryCounter((prev) => prev + 1);
           return;
         }
 
@@ -322,9 +342,11 @@ export function useEngineMoves(
             message: t("features.engine.moveError", "Error applying engine move"),
             color: "red",
           });
-          // Don't clear refs on error - allow retry
+          // Clear refs on error to allow retry
           engineRequestRef.current = null;
           engineRequestDetailsRef.current = null;
+          // Force re-request by incrementing retry counter
+          setRetryCounter((prev) => prev + 1);
         }
       } else if (payload.progress === 100 && tabEndsWithTurn) {
         // Clear the engine request ref when we receive a final response for this turn
