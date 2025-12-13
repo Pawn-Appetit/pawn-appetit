@@ -203,14 +203,6 @@ const TabSwitch = function TabSwitch({ tab }: { tab: Tab }) {
     .with("new", () => <NewTab id={tab.value} />)
     .with("play", () => (
       <TreeStateProvider id={tab.value}>
-        {!isMobileLayout && (
-          <Mosaic<ViewId>
-            renderTile={(id) => fullLayout[id]}
-            value={windowsState.currentNode}
-            onChange={handleMosaicChange}
-            resize={resizeOptions}
-          />
-        )}
         <PlayVsEngineBoard />
       </TreeStateProvider>
     ))

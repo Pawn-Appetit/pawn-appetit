@@ -88,6 +88,11 @@ interface ChessboardProps {
   startGame?: () => void;
   gameState?: "settingUp" | "playing" | "gameOver";
   startGameDisabled?: boolean;
+  // Hide clock spaces for compact mode (e.g., PlayVsEngineBoard)
+  hideClockSpaces?: boolean;
+  // Hide eval bar and footer controls for game mode (e.g., PlayVsEngineBoard)
+  hideEvalBar?: boolean;
+  hideFooterControls?: boolean;
 }
 
 function Board({
@@ -122,6 +127,9 @@ function Board({
   startGame,
   gameState,
   startGameDisabled,
+  hideClockSpaces = false,
+  hideEvalBar = false,
+  hideFooterControls = false,
 }: ChessboardProps) {
   const { t } = useTranslation();
   const { layout } = useResponsiveLayout();
@@ -474,15 +482,17 @@ function Board({
           flexDirection: "column",
           width: "100%",
           height: "100%",
-          gap: "0.5rem",
+          gap: hideClockSpaces ? "0" : "0.5rem",
           flexWrap: "nowrap",
           overflow: "hidden",
           // Let the board use available space - responsive sizing is handled by the container
           maxWidth: "100%",
           maxHeight: "100%",
+          minHeight: 0,
+          minWidth: 0,
         }}
       >
-        {materialDiff && (
+        {!hideClockSpaces && materialDiff && (
           <Group ml="2.5rem" h="2.125rem">
             {hasClock && (
               <Clock
@@ -503,6 +513,10 @@ function Board({
           style={{
             position: "relative",
             flexWrap: "nowrap",
+            flex: hideClockSpaces ? "1 1 0" : undefined,
+            minHeight: 0,
+            minWidth: 0,
+            height: hideClockSpaces ? "100%" : undefined,
           }}
           gap="sm"
         >
@@ -513,15 +527,17 @@ function Board({
               </Box>
             </Box>
           )}
-          <Box
-            h="100%"
-            style={{
-              width: 25,
-            }}
-            onClick={() => setEvalOpen((prevState) => !prevState)}
-          >
-            <EvalBar score={currentNode.score?.value || null} orientation={orientation} />
-          </Box>
+          {!hideEvalBar && (
+            <Box
+              h="100%"
+              style={{
+                width: 25,
+              }}
+              onClick={() => setEvalOpen((prevState) => !prevState)}
+            >
+              <EvalBar score={currentNode.score?.value || null} orientation={orientation} />
+            </Box>
+          )}
           <Box
             style={
               isBasicAnnotation(currentNode.annotations[0])
@@ -641,8 +657,8 @@ function Board({
             />
           </Box>
         </Group>
-        <Group justify="space-between" h="2.125rem">
-          {materialDiff && (
+        <Group justify="space-between" h={hideClockSpaces ? "auto" : "2.125rem"}>
+          {!hideClockSpaces && materialDiff && (
             <Group ml="2.5rem">
               {hasClock && <Clock color={orientation} turn={turn} whiteTime={whiteTime} blackTime={blackTime} />}
               <ShowMaterial diff={materialDiff.diff} pieces={materialDiff.pieces} color={orientation} />
@@ -657,7 +673,7 @@ function Board({
 
           {moveInput && <MoveInput currentNode={currentNode} />}
 
-          {layout.chessBoard.layoutType !== "mobile" && (
+          {!hideFooterControls && layout.chessBoard.layoutType !== "mobile" && (
             <BoardControlsMenu
               viewPawnStructure={viewPawnStructure ?? localViewPawnStructure}
               setViewPawnStructure={setViewPawnStructure ?? setLocalViewPawnStructure}
@@ -682,7 +698,7 @@ function Board({
         </Group>
 
         {/* MoveControls with board controls menu */}
-        {layout.chessBoard.layoutType === "mobile" && (
+        {!hideFooterControls && layout.chessBoard.layoutType === "mobile" && (
           <MoveControls
             viewPawnStructure={viewPawnStructure ?? localViewPawnStructure}
             setViewPawnStructure={setViewPawnStructure ?? setLocalViewPawnStructure}

@@ -52,6 +52,10 @@ interface MobileBoardLayoutProps {
   startGame?: () => void;
   gameState?: "settingUp" | "playing" | "gameOver";
   startGameDisabled?: boolean;
+  // Hide clock spaces, eval bar and footer controls for compact mode (e.g., PlayVsEngineBoard)
+  hideClockSpaces?: boolean;
+  hideEvalBar?: boolean;
+  hideFooterControls?: boolean;
 }
 
 function MobileBoardLayout({
@@ -96,6 +100,9 @@ function MobileBoardLayout({
   startGame,
   gameState,
   startGameDisabled,
+  hideClockSpaces = false,
+  hideEvalBar = false,
+  hideFooterControls = false,
 }: MobileBoardLayoutProps) {
   const { t } = useTranslation();
   const [isInitializing, setIsInitializing] = useState(true);
@@ -201,6 +208,9 @@ function MobileBoardLayout({
         startGame={startGame}
         gameState={gameState}
         startGameDisabled={startGameDisabled}
+        hideClockSpaces={hideClockSpaces}
+        hideEvalBar={hideEvalBar}
+        hideFooterControls={hideFooterControls}
       />
 
       {editingMode && editingCard ? editingCard : <GameNotation topBar={topBar} />}

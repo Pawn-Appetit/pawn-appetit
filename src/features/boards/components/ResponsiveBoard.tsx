@@ -47,6 +47,11 @@ interface ResponsiveBoardProps {
   startGame?: () => void;
   gameState?: "settingUp" | "playing" | "gameOver";
   startGameDisabled?: boolean;
+  // Hide clock spaces for compact mode (e.g., PlayVsEngineBoard)
+  hideClockSpaces?: boolean;
+  // Hide eval bar and footer controls for game mode (e.g., PlayVsEngineBoard)
+  hideEvalBar?: boolean;
+  hideFooterControls?: boolean;
 }
 
 function ResponsiveBoard({
@@ -87,6 +92,9 @@ function ResponsiveBoard({
   startGame,
   gameState,
   startGameDisabled,
+  hideClockSpaces = false,
+  hideEvalBar = false,
+  hideFooterControls = false,
 }: ResponsiveBoardProps) {
   const { t } = useTranslation();
   const { layout } = useResponsiveLayout();
@@ -220,6 +228,9 @@ function ResponsiveBoard({
                 startGame={startGame}
                 gameState={gameState}
                 startGameDisabled={startGameDisabled}
+                hideClockSpaces={hideClockSpaces}
+                hideEvalBar={hideEvalBar}
+                hideFooterControls={hideFooterControls}
               />
             </Box>
           </Stack>
@@ -232,10 +243,29 @@ function ResponsiveBoard({
   return (
     <Box
       ref={containerRef}
-      style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}
+      style={{ 
+        width: "100%", 
+        height: "100%", 
+        display: "flex", 
+        justifyContent: "center", 
+        alignItems: "center",
+        minWidth: 0,
+        minHeight: 0,
+      }}
     >
       <ResponsiveLoadingWrapper isLoading={false}>
-        <Box style={boardContainerStyle}>
+        <Box 
+          style={{
+            ...boardContainerStyle,
+            width: hideClockSpaces ? "auto" : "100%",
+            height: "100%",
+            maxWidth: hideClockSpaces ? "100%" : "100%",
+            maxHeight: "100%",
+            minWidth: 0,
+            minHeight: 0,
+            aspectRatio: hideClockSpaces ? "1" : undefined,
+          }}
+        >
           <Board
             dirty={dirty}
             editingMode={editingMode}
@@ -268,6 +298,9 @@ function ResponsiveBoard({
             startGame={startGame}
             gameState={gameState}
             startGameDisabled={startGameDisabled}
+            hideClockSpaces={hideClockSpaces}
+            hideEvalBar={hideEvalBar}
+            hideFooterControls={hideFooterControls}
           />
         </Box>
       </ResponsiveLoadingWrapper>
