@@ -1,18 +1,16 @@
-use std::{
-    fs::create_dir_all,
-    io::{Cursor, Write},
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 use log::{info, warn};
 use reqwest::{Client, Url};
 use specta::Type;
 use tauri_specta::Event;
+use tokio::io::AsyncWriteExt;
 
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 
 use futures_util::StreamExt;
+use tauri::Manager;
 
 use crate::error::Error;
 
@@ -69,7 +67,7 @@ pub async fn download_file(
     
     info!("Downloading file from {} to {}", url, path.display());
     
-    validate_destination_path(&path)?;
+    validate_destination_path(&app, &path)?;
     
     let client = Client::builder()
         .timeout(std::time::Duration::from_secs(300))
@@ -121,10 +119,10 @@ async fn download_to_file(
     finalize: bool,
 ) -> Result<(), Error> {
     if let Some(parent) = path.parent() {
-        create_dir_all(parent)?;
+        tokio::fs::create_dir_all(parent).await?;
     }
     
-    let mut file = std::fs::File::create(path)?;
+    let mut file = tokio::fs::File::create(path).await?;
     let mut downloaded: u64 = 0;
     let mut stream = res.bytes_stream();
 
@@ -138,7 +136,7 @@ async fn download_to_file(
             ));
         }
         
-        file.write_all(&chunk)?;
+        file.write_all(&chunk).await?;
         
         let progress = content_length
             .map(|total| ((downloaded as f64 / total as f64) * 100.0).min(100.0) as f32)
@@ -152,7 +150,7 @@ async fn download_to_file(
         .emit(app)?;
     }
     
-    file.sync_all()?;
+    file.sync_all().await?;
 
     info!("Downloaded file to {}", path.display());
 
@@ -177,14 +175,20 @@ async fn download_and_extract(
     app: &tauri::AppHandle,
     finalize: bool,
 ) -> Result<(), Error> {
-    let mut file_data: Vec<u8> = if let Some(size) = content_length {
-        Vec::with_capacity(size.min(MAX_DOWNLOAD_SIZE) as usize)
-    } else {
-        Vec::new()
-    };
-    
+    // Production-grade: never load the full archive into RAM.
+    // Stream into a temp file, then extract on a blocking thread.
     let mut downloaded: u64 = 0;
     let mut stream = res.bytes_stream();
+
+    let (tmp_file, tmp_path) = tokio::task::spawn_blocking(|| {
+        let tmp = tempfile::NamedTempFile::new()?;
+        let (file, path) = tmp.keep().map_err(|e| e.error)?;
+        Ok::<_, std::io::Error>((file, path))
+    })
+    .await
+    .map_err(|e| Error::PackageManager(format!("Failed to create temp file: {}", e)))??;
+
+    let mut tmp_file = tokio::fs::File::from_std(tmp_file);
 
     while let Some(item) = stream.next().await {
         let chunk = item?;
@@ -195,8 +199,8 @@ async fn download_and_extract(
                 "Download size limit exceeded".to_string()
             ));
         }
-        
-        file_data.extend_from_slice(&chunk);
+
+        tmp_file.write_all(&chunk).await?;
         
         // Progress for download phase (0-50%)
         let progress = content_length
@@ -220,13 +224,27 @@ async fn download_and_extract(
     }
     .emit(app)?;
 
-    if url.ends_with(".zip") {
-        unzip_file(path, file_data)?;
-    } else if url.ends_with(".tar") || url.ends_with(".tar.gz") {
-        extract_tar_file(path, file_data)?;
-    } else {
-        std::fs::write(path, file_data)?;
-    }
+    tmp_file.sync_all().await?;
+    drop(tmp_file);
+
+    let dest = path.to_path_buf();
+    let tmp_path_clone = tmp_path.clone();
+    let url = url.to_string();
+    tokio::task::spawn_blocking(move || -> Result<(), Error> {
+        if url.ends_with(".zip") {
+            unzip_file_from_path(&dest, &tmp_path_clone)?;
+        } else if url.ends_with(".tar") || url.ends_with(".tar.gz") {
+            extract_tar_file_from_path(&dest, &tmp_path_clone, url.ends_with(".tar.gz"))?;
+        } else {
+            std::fs::create_dir_all(dest.parent().unwrap_or(Path::new(".")))?;
+            std::fs::copy(&tmp_path_clone, &dest)?;
+        }
+        Ok(())
+    })
+    .await
+    .map_err(|e| Error::PackageManager(format!("Extraction task failed: {}", e)))??;
+
+    let _ = std::fs::remove_file(&tmp_path);
     
     info!("Extraction complete");
 
@@ -242,29 +260,34 @@ async fn download_and_extract(
     Ok(())
 }
 
-fn validate_destination_path(path: &Path) -> Result<(), Error> {
-    let canonical = path.canonicalize().or_else(|_| {
-        if let Some(parent) = path.parent() {
-            if parent.exists() {
-                parent.canonicalize().map(|p| p.join(path.file_name().unwrap()))
-            } else {
-                Err(std::io::Error::new(
-                    std::io::ErrorKind::NotFound,
-                    "Parent directory does not exist",
-                ))
-            }
-        } else {
-            Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidInput,
-                "Invalid path",
-            ))
-        }
-    })?;
+fn validate_destination_path(app: &tauri::AppHandle, path: &Path) -> Result<(), Error> {
+    if !path.is_absolute() {
+        return Err(Error::PackageManager("Destination path must be absolute".to_string()));
+    }
 
-    let path_str = canonical.to_string_lossy();
-    if path_str.contains("..") {
+    // Reject any parent-dir traversal segments outright.
+    if path.components().any(|c| matches!(c, std::path::Component::ParentDir)) {
+        return Err(Error::PackageManager("Destination path contains '..'".to_string()));
+    }
+
+    // Only allow writes under app-specific directories.
+    let allowed_roots = [
+        app.path().app_data_dir(),
+        app.path().app_cache_dir(),
+        app.path().config_dir(),
+    ];
+
+    let mut allowed = false;
+    for root in allowed_roots.into_iter().flatten() {
+        if path.starts_with(&root) {
+            allowed = true;
+            break;
+        }
+    }
+
+    if !allowed {
         return Err(Error::PackageManager(
-            "Path contains '..'".to_string(),
+            "Destination must be inside the app data/cache/config directories".to_string(),
         ));
     }
 
@@ -299,16 +322,16 @@ fn is_private_or_localhost(host: &str) -> bool {
     }
 }
 
-pub fn unzip_file(path: &Path, file: Vec<u8>) -> Result<(), Error> {
-    let mut archive = zip::ZipArchive::new(Cursor::new(file))?;
-    
-    create_dir_all(path)?;
-    let base_path = path.canonicalize()?;
+fn unzip_file_from_path(dest_dir: &Path, archive_path: &Path) -> Result<(), Error> {
+    let file = std::fs::File::open(archive_path)?;
+    let mut archive = zip::ZipArchive::new(file)?;
+
+    std::fs::create_dir_all(dest_dir)?;
+    let base_path = dest_dir.canonicalize()?;
     let archive_len = archive.len();
-    
+
     for i in 0..archive_len {
         let mut file = archive.by_index(i)?;
-        
         let file_path = file.enclosed_name().ok_or_else(|| {
             Error::PackageManager(format!(
                 "Invalid file path in archive at index {}: {:?}",
@@ -316,43 +339,25 @@ pub fn unzip_file(path: &Path, file: Vec<u8>) -> Result<(), Error> {
                 file.name()
             ))
         })?;
-        
+
         let outpath = base_path.join(file_path);
-        
         if !outpath.starts_with(&base_path) {
-            warn!(
-                "Skipping potentially malicious file path: {:?}",
-                file.name()
-            );
+            warn!("Skipping potentially malicious file path: {:?}", file.name());
             continue;
         }
-        
+
         if file.is_dir() {
-            info!(
-                "Creating directory from archive: \"{}\"",
-                outpath.display()
-            );
-            create_dir_all(&outpath)?;
+            std::fs::create_dir_all(&outpath)?;
         } else {
-            let file_size = file.size();
-            info!(
-                "Extracting file {} of {}: \"{}\" ({} bytes)",
-                i + 1,
-                archive_len,
-                outpath.display(),
-                file_size
-            );
-            
             if let Some(p) = outpath.parent() {
                 if !p.exists() {
-                    create_dir_all(p)?;
+                    std::fs::create_dir_all(p)?;
                 }
             }
-            
             let mut outfile = std::fs::File::create(&outpath)?;
             std::io::copy(&mut file, &mut outfile)?;
             outfile.sync_all()?;
-            
+
             #[cfg(unix)]
             {
                 if let Some(mode) = file.unix_mode() {
@@ -362,41 +367,33 @@ pub fn unzip_file(path: &Path, file: Vec<u8>) -> Result<(), Error> {
             }
         }
     }
-    
+
     Ok(())
 }
 
-fn extract_tar_file(path: &Path, file: Vec<u8>) -> Result<(), Error> {
-    let mut archive = tar::Archive::new(Cursor::new(file));
-    
-    create_dir_all(path)?;
-    let base_path = path.canonicalize()?;
-    
+fn extract_tar_file_from_path(dest_dir: &Path, archive_path: &Path, is_gz: bool) -> Result<(), Error> {
+    use flate2::read::GzDecoder;
+    use std::io::Read;
+
+    std::fs::create_dir_all(dest_dir)?;
+    let base_path = dest_dir.canonicalize()?;
+
+    let file = std::fs::File::open(archive_path)?;
+    let reader: Box<dyn Read> = if is_gz {
+        Box::new(GzDecoder::new(file))
+    } else {
+        Box::new(file)
+    };
+
+    let mut archive = tar::Archive::new(reader);
     archive.set_overwrite(true);
     archive.set_preserve_permissions(true);
-    
+
+    // Extract safely: `Entry::unpack_in` prevents path traversal.
     for entry in archive.entries()? {
         let mut entry = entry?;
-        let entry_path = entry.path()?;
-        let full_path = base_path.join(&*entry_path);
-        
-        if !full_path.starts_with(&base_path) {
-            warn!(
-                "Skipping malicious tar path: {:?}",
-                entry_path
-            );
-            continue;
-        }
-        
-        info!(
-            "Extracting from tar: \"{}\" ({} bytes)",
-            full_path.display(),
-            entry.size()
-        );
-        
-        entry.unpack(&full_path)?;
+        entry.unpack_in(&base_path)?;
     }
-    
     Ok(())
 }
 

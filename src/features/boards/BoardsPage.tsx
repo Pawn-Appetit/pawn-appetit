@@ -17,7 +17,7 @@ import "@/styles/react-mosaic.css";
 import { TreeStateProvider } from "@/components/TreeStateContext";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import BoardAnalysis from "./components/BoardAnalysis";
-import BoardGame from "./components/BoardGame";
+import PlayVsEngineBoard from "./components/PlayVsEngineBoard";
 import BoardVariants from "./components/BoardVariants";
 import NewTab from "./components/NewTab";
 import Puzzles from "./components/puzzles/Puzzles";
@@ -211,7 +211,7 @@ const TabSwitch = function TabSwitch({ tab }: { tab: Tab }) {
             resize={resizeOptions}
           />
         )}
-        <BoardGame />
+        <PlayVsEngineBoard />
       </TreeStateProvider>
     ))
     .with("analysis", () => {

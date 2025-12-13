@@ -210,9 +210,47 @@ fn memory_size() -> u64 {
 #[tauri::command]
 #[specta::specta]
 async fn open_external_link(app: AppHandle, url: String) -> Result<(), String> {
+    let parsed = reqwest::Url::parse(&url)
+        .map_err(|e| format!("Invalid URL: {}", e))?;
+
+    match parsed.scheme() {
+        "http" | "https" => {}
+        _ => return Err("Only http/https URLs are allowed".to_string()),
+    }
+
+    if let Some(host) = parsed.host_str() {
+        if is_private_or_localhost(host) {
+            return Err("Refusing to open private/local URLs".to_string());
+        }
+    }
+
     tauri_plugin_opener::OpenerExt::opener(&app)
         .open_url(url, None::<String>)
         .map_err(|e| format!("Failed to open external link: {}", e))
+}
+
+fn is_private_or_localhost(host: &str) -> bool {
+    use std::net::IpAddr;
+
+    if host == "localhost" || host == "::1" {
+        return true;
+    }
+
+    if let Ok(ip) = host.parse::<IpAddr>() {
+        match ip {
+            IpAddr::V4(ipv4) => {
+                let o = ipv4.octets();
+                o[0] == 127
+                    || o[0] == 10
+                    || o[0] == 0
+                    || (o[0] == 172 && (16..=31).contains(&o[1]))
+                    || (o[0] == 192 && o[1] == 168)
+            }
+            IpAddr::V6(ipv6) => ipv6.is_loopback() || ipv6.is_unspecified(),
+        }
+    } else {
+        false
+    }
 }
 
 

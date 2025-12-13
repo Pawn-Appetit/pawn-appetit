@@ -361,7 +361,7 @@ test("should handle setScore", () => {
 
   expect(getNewState()).toStrictEqual({
     ...treeE4D5(),
-    dirty: true,
+    dirty: false,
     position: [0],
     root: {
       ...treeE4D5().root,

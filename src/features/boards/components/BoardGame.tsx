@@ -49,6 +49,7 @@ import {
   useMemo,
   useRef,
   useState,
+  startTransition,
 } from "react";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
@@ -80,6 +81,11 @@ import { createTab } from "@/utils/tabs";
 import { type GameHeaders, type TreeNode, treeIteratorMainLine } from "@/utils/treeReducer";
 import GameNotationWrapper from "./GameNotationWrapper";
 import ResponsiveBoard from "./ResponsiveBoard";
+// BoardGame is a generic game board component used for:
+// - Playing games (human vs human, or via PlayVsEngineBoard wrapper for engine games)
+// - Analysis mode (via BoardAnalysis component)
+// - Variants and puzzles
+// Engine-specific logic is handled by PlayVsEngineBoard, not here
 
 const DEFAULT_TIME_CONTROL: TimeControlField = {
   seconds: 180_000,
@@ -442,15 +448,23 @@ function useClockTimer(
   }, [gameState, intervalId]);
 
   // Start timer for current turn
+  // Optimize: Use refs to avoid re-creating interval on every render
+  const posTurnRef = useRef(pos?.turn);
+  useEffect(() => {
+    posTurnRef.current = pos?.turn;
+  }, [pos?.turn]);
+  
   useEffect(() => {
     if (gameState === "playing" && pos && !intervalId) {
       const decrementTime = () => {
-        if (pos.turn === "white" && whiteTime !== null) {
+        // Use ref to avoid dependency on pos.turn in closure
+        const currentTurn = posTurnRef.current;
+        if (currentTurn === "white" && whiteTimeRef.current !== null) {
           setWhiteTime((prev) => {
             const current = prev ?? 0;
             return current > 0 ? current - CLOCK_UPDATE_INTERVAL : 0;
           });
-        } else if (pos.turn === "black" && blackTime !== null) {
+        } else if (currentTurn === "black" && blackTimeRef.current !== null) {
           setBlackTime((prev) => {
             const current = prev ?? 0;
             return current > 0 ? current - CLOCK_UPDATE_INTERVAL : 0;
@@ -461,9 +475,25 @@ function useClockTimer(
       const id = setInterval(decrementTime, CLOCK_UPDATE_INTERVAL);
       setIntervalId(id);
     }
-  }, [gameState, intervalId, pos?.turn, setWhiteTime, setBlackTime, pos]);
+  }, [gameState, intervalId, pos, setWhiteTime, setBlackTime]);
 }
 
+/**
+ * BoardGame - Generic game board component for playing chess games.
+ * 
+ * Responsibilities:
+ * - Game setup UI (player selection, time controls, FEN input)
+ * - Game state management (playing, gameOver, settingUp)
+ * - Clock/timer management
+ * - Move controls and game info display
+ * - Human vs human gameplay
+ * 
+ * Does NOT handle:
+ * - Engine move requests/responses (handled by PlayVsEngineBoard)
+ * - Analysis engine evaluation (handled by BoardAnalysis via EvalListener)
+ * 
+ * When used via PlayVsEngineBoard, engine logic is added on top via useEngineMoves hook.
+ */
 function BoardGame() {
   const activeTab = useAtomValue(activeTabAtom);
   const { t } = useTranslation();
@@ -612,8 +642,11 @@ function BoardGame() {
   }, [inputColor, player1Settings, player2Settings]);
 
   const store = useContext(TreeStateContext)!;
+  // Use selectors that extract only the values we need for memoization
+  // This helps Zustand optimize re-renders by comparing primitive values
   const root = useStore(store, (s) => s.root);
   const headers = useStore(store, (s) => s.headers);
+  
   const setFen = useStore(store, (s) => s.setFen);
   const setHeaders = useStore(store, (s) => s.setHeaders);
   const setResult = useStore(store, (s) => s.setResult);
@@ -632,21 +665,58 @@ function BoardGame() {
     return enginesState === "hasData" ? loadableEngines.data.filter((e): e is LocalEngine => e.type === "local") : [];
   }, [loadableEngines, enginesState]);
 
-  const [whiteTime, setWhiteTime] = useState<number | null>(null);
-  const [blackTime, setBlackTime] = useState<number | null>(null);
-  const engineRequestRef = useRef<string | null>(null);
+  // Use GameTimeContext if available (from PlayVsEngineBoard), otherwise use local state
+  const [localWhiteTime, setLocalWhiteTime] = useState<number | null>(null);
+  const [localBlackTime, setLocalBlackTime] = useState<number | null>(null);
+  
+  // Try to use context, fallback to local state
+  let whiteTime: number | null = localWhiteTime;
+  let setWhiteTime: Dispatch<SetStateAction<number | null>> = setLocalWhiteTime;
+  let blackTime: number | null = localBlackTime;
+  let setBlackTime: Dispatch<SetStateAction<number | null>> = setLocalBlackTime;
+  
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { useGameTime } = require("./GameTimeContext");
+    const gameTime = useGameTime();
+    whiteTime = gameTime.whiteTime;
+    setWhiteTime = gameTime.setWhiteTime;
+    blackTime = gameTime.blackTime;
+    setBlackTime = gameTime.setBlackTime;
+  } catch {
+    // GameTimeContext not available, use local state (already set above)
+  }
 
   const changeToAnalysisMode = useCallback(() => {
     setTabs((prev) => prev.map((tab) => (tab.value === activeTab ? { ...tab, type: "analysis" } : tab)));
   }, [activeTab, setTabs]);
 
-  const mainLine = useMemo(() => Array.from(treeIteratorMainLine(root)), [root]);
-  const lastNode = useMemo(() => mainLine[mainLine.length - 1].node, [mainLine]);
-  const moves = useMemo(() => getMainLine(root, headers.variant === "Chess960"), [root, headers.variant]);
+  // Memoize expensive calculations based on stable primitive values (root.fen, variant)
+  // This prevents recalculation during engine analysis when only scores/annotations change
+  // Extract primitive values for stable dependency tracking
+  const rootFen = root.fen;
+  const variant = headers.variant;
+  
+  // Use rootFen as dependency instead of entire root object to avoid recalculation
+  // when only internal tree properties (scores, annotations) change during analysis
+  // Note: We still need root in dependencies for treeIteratorMainLine, but rootFen helps
+  // React optimize by providing a stable primitive value to compare
+  const mainLine = useMemo(() => {
+    return Array.from(treeIteratorMainLine(root));
+  }, [root, rootFen]); // Recalculate when root.fen changes (new position), not on every tree mutation
+  
+  const lastNode = useMemo(() => mainLine[mainLine.length - 1]?.node, [mainLine]);
+  const moves = useMemo(() => {
+    return getMainLine(root, variant === "Chess960");
+  }, [root, rootFen, variant]); // Recalculate only when root.fen or variant changes
 
   // Use root and position to ensure pos updates when moves are made
   const position = useStore(store, (s) => s.position);
-  const [pos, error] = useMemo(() => positionFromFen(lastNode.fen), [lastNode.fen]);
+  // Memoize position calculation - only recalculate when lastNode.fen changes
+  const [pos, error] = useMemo(() => {
+    if (!lastNode) return [null, null];
+    return positionFromFen(lastNode.fen);
+  }, [lastNode?.fen]);
 
   const activeTabData = tabs?.find((tab) => tab.value === activeTab);
 
@@ -664,139 +734,8 @@ function BoardGame() {
     }
   }, [pos, setGameState]);
 
-  useEffect(() => {
-    // Only request engine moves when game is actively playing
-    if (pos && gameState === "playing" && headers.result === "*") {
-      const currentTurn = pos.turn;
-      const player = currentTurn === "white" ? players.white : players.black;
-
-      if (player.type === "engine" && player.engine) {
-        const engine = player.engine;
-        const tabKey = activeTab + currentTurn;
-
-        // Create a unique key for this request to prevent duplicate calls
-        // Include engine path to ensure uniqueness per engine instance
-        const requestKey = `${tabKey}-${engine.path}-${root.fen}-${moves.join(",")}`;
-
-        // Skip if we're already processing this exact request
-        if (engineRequestRef.current === requestKey) {
-          return;
-        }
-
-        // Mark this request as in progress BEFORE making the call
-        // This prevents multiple calls from creating duplicate engines
-        engineRequestRef.current = requestKey;
-
-        // Let the Rust code handle engine reuse/creation
-        // The Rust manager checks if an engine exists and reuses it if options match
-        // If options don't match, it stops and reconfigures the existing engine
-        commands
-          .getBestMoves(
-            currentTurn,
-            engine.path,
-            tabKey,
-            player.timeControl
-              ? {
-                  t: "PlayersTime",
-                  c: {
-                    white: whiteTime ?? 0,
-                    black: blackTime ?? 0,
-                    winc: player.timeControl.increment ?? 0,
-                    binc: player.timeControl.increment ?? 0,
-                  },
-                }
-              : player.go,
-            {
-              fen: root.fen,
-              moves: moves,
-              extraOptions: (engine.settings || [])
-                .filter((s) => s.name !== "MultiPV")
-                .map((s) => ({ ...s, value: s.value?.toString() ?? "" })),
-            },
-          )
-          .catch(() => {
-            // Clear the ref on error so we can retry
-            engineRequestRef.current = null;
-          });
-      } else {
-        // Clear ref if it's not an engine turn
-        engineRequestRef.current = null;
-      }
-    } else if (gameState !== "playing" && activeTab) {
-      // Kill engines when game is not playing to prevent multiple instances
-      // But only if we're not transitioning to playing (handled by startGame)
-      engineRequestRef.current = null;
-    }
-  }, [gameState, pos, players, headers.result, activeTab, root.fen, moves, whiteTime, blackTime]);
-
-  // Store current moves and root.fen in refs to avoid recreating listener
-  const movesRef = useRef<string[]>(moves);
-  const rootFenRef = useRef<string>(root.fen);
-  useEffect(() => {
-    movesRef.current = moves;
-    rootFenRef.current = root.fen;
-  }, [moves, root.fen]);
-
-  useEffect(() => {
-    // Throttle best-moves event processing to avoid stutter while dragging/moving pieces.
-    // We only need the latest payload at ~10fps.
-    const throttleMs = 100;
-    let pending: (typeof events.bestMovesPayload extends any ? any : any) | null = null;
-    let timer: number | null = null;
-
-    const flush = () => {
-      if (!pending) return;
-      const payload = pending;
-      pending = null;
-
-      // Only process moves when game is actively playing
-      if (gameState !== "playing" || !activeTab || !pos) {
-        return;
-      }
-
-      const expectedTab = activeTab + pos.turn;
-
-      // Clear the engine request ref when we receive any response for this tab/turn
-      // This allows new requests even if the payload doesn't match exactly
-      if (payload.tab === expectedTab) {
-        engineRequestRef.current = null;
-      }
-
-      // Only act when the engine has finished calculating and the request matches exactly.
-      if (
-        payload.progress === 100 &&
-        payload.engine === pos.turn &&
-        payload.tab === expectedTab &&
-        payload.fen === rootFenRef.current && // Backend sends root.fen in payload, not final FEN
-        equal(payload.moves, movesRef.current) &&
-        !pos.isEnd()
-      ) {
-        const ev = payload.bestLines;
-        appendMove({
-          payload: parseUci(ev[0].uciMoves[0])!,
-          clock: (pos.turn === "white" ? whiteTime : blackTime) ?? undefined,
-        });
-      }
-    };
-
-    const unlisten = events.bestMovesPayload.listen(({ payload }) => {
-      pending = payload;
-      if (timer == null) {
-        timer = window.setTimeout(() => {
-          timer = null;
-          flush();
-        }, throttleMs);
-      }
-    });
-    return () => {
-      pending = null;
-      if (timer != null) {
-        window.clearTimeout(timer);
-        timer = null;
-      }
-      unlisten.then((f) => f());
-    };
-  }, [gameState, activeTab, appendMove, pos, whiteTime, blackTime]);
+  // Engine moves logic is handled by PlayVsEngineBoard component, not here
+  // This keeps BoardGame clean for other use cases (analysis, variants, puzzles)
 
   const movable = useMemo(() => {
     if (players.white.type === "human" && players.black.type === "human") return "turn";
@@ -882,10 +821,9 @@ function BoardGame() {
   }, [applyFenString, customFen]);
 
   const startGame = useCallback(() => {
-    // Clear any pending engine requests first
-    engineRequestRef.current = null;
-
+    console.log("[BoardGame] startGame called");
     // Kill any existing engines to start fresh (but don't wait)
+    // Note: When used via PlayVsEngineBoard, engine logic is handled by that component
     if (activeTab) {
       // Kill engines asynchronously without blocking
       Promise.all([
@@ -899,6 +837,10 @@ function BoardGame() {
     setGameState("playing");
 
     const newPlayers = getPlayers();
+    console.log("[BoardGame] startGame - new players:", {
+      white: { type: newPlayers.white.type, engine: newPlayers.white.type === "engine" ? newPlayers.white.engine?.name : null },
+      black: { type: newPlayers.black.type, engine: newPlayers.black.type === "engine" ? newPlayers.black.engine?.name : null },
+    });
 
     if (newPlayers.white.timeControl) {
       setWhiteTime(newPlayers.white.timeControl.seconds);

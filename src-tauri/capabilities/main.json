@@ -19,7 +19,6 @@
         "core:event:allow-emit",
         "core:path:default",
         "core:path:allow-resolve-directory",
-        "shell:default",
         "dialog:default",
         "os:default",
         "cli:default",
@@ -27,16 +26,8 @@
         "process:default",
         "log:default",
         "fs:default",
-        "fs:write-all",
+        "fs:allow-app-write-recursive",
         "window-state:default",
-        {
-            "identifier": "fs:scope-appdata-recursive",
-            "allow": [
-                {
-                    "path": "**"
-                }
-            ]
-        },
         {
             "identifier": "http:default",
             "allow": [
@@ -48,13 +39,6 @@
                 "https://www.chessdb.cn/**"
             ]
         },
-        {
-            "identifier": "opener:allow-open-path",
-            "allow": [
-                {
-                    "path": "**/*"
-                }
-            ]
-        }
+        "opener:allow-open-url"
     ]
 }

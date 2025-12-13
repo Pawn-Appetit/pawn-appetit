@@ -1641,7 +1641,7 @@ impl PgnGame {
             writeln!(writer, "[FEN \"{}\"]", fen)?;
         }
         writeln!(writer)?;
-        writer.write(self.moves.as_bytes())?;
+        writer.write_all(self.moves.as_bytes())?;
         match self.result.as_deref() {
             Some("1-0") => writeln!(writer, "1-0"),
             Some("0-1") => writeln!(writer, "0-1"),

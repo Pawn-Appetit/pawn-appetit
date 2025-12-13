@@ -13,6 +13,7 @@ import { TreeStateProvider } from "@/components/TreeStateContext";
 import { enginesAtom } from "@/state/atoms";
 import { positionFromFen } from "@/utils/chessops";
 import type { LocalEngine } from "@/utils/engines";
+import { notifications } from "@mantine/notifications";
 
 interface PracticeBoardProps {
   fen: string;
@@ -105,7 +106,22 @@ function PracticeBoard({
         ],
       };
 
-      commands.getBestMoves(engine.name, engine.path, engineTabRef.current, goMode, options);
+      commands
+        .getBestMoves(engine.name, engine.path, engineTabRef.current, goMode, options)
+        .then((res) => {
+          if (res.status === "error") {
+            engineThinkingRef.current = false;
+            notifications.show({
+              title: "Engine error",
+              message: typeof res.error === "string" ? res.error : "Unknown error",
+              color: "red",
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("Engine move failed:", error);
+          engineThinkingRef.current = false;
+        });
     } catch (error) {
       console.error("Engine move failed:", error);
       engineThinkingRef.current = false;
