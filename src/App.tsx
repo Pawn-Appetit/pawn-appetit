@@ -8,6 +8,7 @@ import { ContextMenuProvider } from "mantine-contextmenu";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { activeTabAtom, fontSizeAtom, pieceSetAtom, tabsAtom } from "./state/atoms";
+import { ensurePieceSetCss } from "./utils/pieceSetCss";
 
 import "@mantine/charts/styles.css";
 import "@mantine/core/styles.css";
@@ -207,47 +208,6 @@ function AppError({ error: errorMsg }: { error: string }) {
   );
 }
 
-const loadedPieceSets = new Set<string>();
-
-function preloadPieceSetCSS(pieceSet: string): Promise<void> {
-  if (loadedPieceSets.has(pieceSet)) {
-    return Promise.resolve();
-  }
-
-  const existingLink = document.getElementById(`piece-set-${pieceSet}`);
-  if (existingLink) {
-    loadedPieceSets.add(pieceSet);
-    return Promise.resolve();
-  }
-
-  return new Promise((resolve, reject) => {
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = `/pieces/${pieceSet}.css`;
-    link.id = `piece-set-${pieceSet}`;
-
-    const timeout = setTimeout(() => {
-      reject(new Error(`Timeout loading piece set CSS: ${pieceSet}`));
-    }, 5000);
-
-    link.onload = () => {
-      clearTimeout(timeout);
-      loadedPieceSets.add(pieceSet);
-      info(`Successfully loaded piece set CSS: ${pieceSet}`);
-      resolve();
-    };
-
-    link.onerror = () => {
-      clearTimeout(timeout);
-      const errorMsg = `Failed to load piece set CSS: ${pieceSet}`;
-      error(errorMsg);
-      reject(new Error(errorMsg));
-    };
-
-    document.head.appendChild(link);
-  });
-}
-
 function useAppInitialization() {
   const [initState, setInitState] = useState<InitializationState>("loading");
   const [initError, setInitError] = useState<string | null>(null);
@@ -314,15 +274,15 @@ function usePieceSetManager(pieceSet: string) {
   useEffect(() => {
     if (!pieceSet) return;
 
-    let mounted = true;
+    const controller = new AbortController();
 
-    preloadPieceSetCSS(pieceSet).catch((error) => {
-      // Piece set CSS preloading failed - non-critical
+    // Apply the new piece set in an atomic swap:
+    // keep old CSS until the new one is loaded and ready, then replace.
+    ensurePieceSetCss(pieceSet, { signal: controller.signal }).catch(() => {
+      // Non-critical: if it fails, keep the current pieces.
     });
 
-    return () => {
-      mounted = false;
-    };
+    return () => controller.abort();
   }, [pieceSet]);
 }
 
