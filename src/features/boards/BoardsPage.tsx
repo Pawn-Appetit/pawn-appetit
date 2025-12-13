@@ -69,6 +69,10 @@ export default function BoardsPage() {
     });
   }, [canCreateNewTab, showTabLimitNotification, t, setTabs, setActiveTab]);
 
+  // Check if active tab is play mode to hide tabs bar
+  const activeTabData = tabs.find((tab) => tab.value === activeTab);
+  const isPlayMode = activeTabData?.type === "play";
+
   return (
     <DragDropContext
       onDragEnd={({ destination, source }) => {
@@ -102,53 +106,63 @@ export default function BoardsPage() {
           width: "100%",
         }}
       >
-        <Box p="md">
-          <ScrollArea scrollbarSize={SCROLL_AREA_CONFIG.SCROLLBAR_SIZE} scrollbars="x">
-            <Droppable droppableId={DROPPABLE_IDS.TABS} direction="horizontal">
-              {(provided) => (
-                <div ref={provided.innerRef} {...provided.droppableProps} style={{ display: "flex" }}>
-                  {tabs.map((tab, i) => (
-                    <Draggable key={tab.value} draggableId={tab.value} index={i}>
-                      {(provided) => (
-                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                          <BoardTab
-                            tab={tab}
-                            setActiveTab={setActiveTab}
-                            closeTab={closeTab}
-                            renameTab={renameTab}
-                            duplicateTab={duplicateTab}
-                            selected={activeTab === tab.value}
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                  <Group gap="xs" wrap="nowrap">
-                    <ActionIcon
-                      variant="default"
-                      onClick={handleCreateTab}
-                      disabled={!canCreateNewTab()}
-                      size="lg"
-                      classNames={{
-                        root: classes.newTab,
-                      }}
-                      title={
-                        !canCreateNewTab()
-                          ? t("features.tabs.maxTabsReached", { max: MAX_TABS })
-                          : t("features.tabs.newTab")
-                      }
-                    >
-                      <IconPlus />
-                    </ActionIcon>
-                  </Group>
-                </div>
-              )}
-            </Droppable>
-          </ScrollArea>
-        </Box>
+        {!isPlayMode && (
+          <Box p="md">
+            <ScrollArea scrollbarSize={SCROLL_AREA_CONFIG.SCROLLBAR_SIZE} scrollbars="x">
+              <Droppable droppableId={DROPPABLE_IDS.TABS} direction="horizontal">
+                {(provided) => (
+                  <div ref={provided.innerRef} {...provided.droppableProps} style={{ display: "flex" }}>
+                    {tabs.map((tab, i) => (
+                      <Draggable key={tab.value} draggableId={tab.value} index={i}>
+                        {(provided) => (
+                          <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                            <BoardTab
+                              tab={tab}
+                              setActiveTab={setActiveTab}
+                              closeTab={closeTab}
+                              renameTab={renameTab}
+                              duplicateTab={duplicateTab}
+                              selected={activeTab === tab.value}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                    <Group gap="xs" wrap="nowrap">
+                      <ActionIcon
+                        variant="default"
+                        onClick={handleCreateTab}
+                        disabled={!canCreateNewTab()}
+                        size="lg"
+                        classNames={{
+                          root: classes.newTab,
+                        }}
+                        title={
+                          !canCreateNewTab()
+                            ? t("features.tabs.maxTabsReached", { max: MAX_TABS })
+                            : t("features.tabs.newTab")
+                        }
+                      >
+                        <IconPlus />
+                      </ActionIcon>
+                    </Group>
+                  </div>
+                )}
+              </Droppable>
+            </ScrollArea>
+          </Box>
+        )}
         {tabs.map((tab) => (
-          <Tabs.Panel key={tab.value} value={tab.value} h="100%" w="100%" px="md" pb="md">
+          <Tabs.Panel 
+            key={tab.value} 
+            value={tab.value} 
+            h="100%" 
+            w="100%" 
+            px={tab.type === "play" ? 0 : "md"} 
+            pb={tab.type === "play" ? 0 : "md"}
+            pt={tab.type === "play" ? 0 : undefined}
+          >
             <TabSwitch tab={tab} />
           </Tabs.Panel>
         ))}
