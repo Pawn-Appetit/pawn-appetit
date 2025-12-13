@@ -282,11 +282,6 @@ export function useEngineMoves(
       if (shouldApplyMove) {
         const bestUci = payload.bestLines?.[0]?.uciMoves?.[0];
         if (!bestUci) {
-          notifications.show({
-            title: t("common.error", "Error"),
-            message: t("features.engine.noMoves", "Engine did not return a move"),
-            color: "red",
-          });
           // Clear refs on error to allow retry
           engineRequestRef.current = null;
           engineRequestDetailsRef.current = null;
@@ -296,11 +291,6 @@ export function useEngineMoves(
         }
         const parsed = parseUci(bestUci);
         if (!parsed) {
-          notifications.show({
-            title: t("common.error", "Error"),
-            message: t("features.engine.invalidMove", "Engine returned an invalid move"),
-            color: "red",
-          });
           // Clear refs on error to allow retry
           engineRequestRef.current = null;
           engineRequestDetailsRef.current = null;
@@ -314,11 +304,6 @@ export function useEngineMoves(
         const legalDestinations = "from" in parsed ? dests.get(parsed.from) : null;
         const isLegal = "from" in parsed && legalDestinations?.has(parsed.to);
         if (!isLegal) {
-          notifications.show({
-            title: t("common.error", "Error"),
-            message: t("features.engine.invalidMove", "Engine returned an invalid move"),
-            color: "red",
-          });
           // Clear refs on error to allow retry
           engineRequestRef.current = null;
           engineRequestDetailsRef.current = null;
@@ -337,11 +322,6 @@ export function useEngineMoves(
             clock: (pos.turn === "white" ? whiteTime : blackTime) ?? undefined,
           });
         } catch (error) {
-          notifications.show({
-            title: t("common.error", "Error"),
-            message: t("features.engine.moveError", "Error applying engine move"),
-            color: "red",
-          });
           // Clear refs on error to allow retry
           engineRequestRef.current = null;
           engineRequestDetailsRef.current = null;
