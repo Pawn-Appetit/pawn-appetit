@@ -148,8 +148,10 @@ impl EngineProcess {
             GoMode::Time(time) => format!("go movetime {}\n", time),
             GoMode::Nodes(nodes) => format!("go nodes {}\n", nodes),
             GoMode::PlayersTime(super::types::PlayersTime { white, black, winc, binc }) => {
+                // Don't add movetime limit - let the engine use the available time
+                // The engine will manage its time based on wtime/btime
                 format!(
-                    "go wtime {} btime {} winc {} binc {} movetime 1000\n",
+                    "go wtime {} btime {} winc {} binc {}\n",
                     white, black, winc, binc
                 )
             }

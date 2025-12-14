@@ -26,7 +26,8 @@ const REQUIRED_DIRS: &[(BaseDirectory, &str)] = &[
 const REQUIRED_FILES: &[(BaseDirectory, &str, &str)] = &[
     (BaseDirectory::AppData, "engines/engines.json", "[]"),
     (BaseDirectory::AppData, "settings.json", "{}"),
-    (BaseDirectory::AppData, "telemetry.json", "{\"enabled\":true,\"last_sent\":null}"),
+    // Telemetry should be opt-in by default for production-grade privacy.
+    (BaseDirectory::AppData, "telemetry.json", "{\"enabled\":false,\"last_sent\":null}"),
 ];
 
 /// Ensures that all required directories exist, creating them if necessary

@@ -55,8 +55,7 @@ async function getDatabasesFromDatabasesSection(): Promise<PuzzleDatabaseInfo[]>
 }
 
 async function getFilesFromFilesSection(): Promise<PuzzleDatabaseInfo[]> {
-  const { readDir } = await import("@tauri-apps/plugin-fs");
-  const { BaseDirectory } = await import("@tauri-apps/plugin-fs");
+  const { readDir, exists } = await import("@tauri-apps/plugin-fs");
   const { processEntriesRecursively } = await import("@/features/files/utils/file");
 
   let localPuzzles: PuzzleDatabaseInfo[] = [];
@@ -64,7 +63,11 @@ async function getFilesFromFilesSection(): Promise<PuzzleDatabaseInfo[]> {
   try {
     const dirs = await loadDirectories();
     const documentsDir = dirs?.documentDir;
-    const entries = await readDir(documentsDir, { baseDir: BaseDirectory.AppLocalData });
+    // Use readDir without baseDir since documentsDir is an absolute path
+    if (!(await exists(documentsDir))) {
+      return [];
+    }
+    const entries = await readDir(documentsDir);
     const allEntries = await processEntriesRecursively(documentsDir, entries);
 
     // Get local .pgn puzzle files from document directory

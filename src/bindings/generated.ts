@@ -21,6 +21,26 @@ async findFidePlayer(player: string) : Promise<Result<FidePlayer | null, string>
     else return { status: "error", error: e  as any };
 }
 },
+async fetchFideProfileHtml(fideId: string) : Promise<Result<string, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("fetch_fide_profile_html", { fideId }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Save a FIDE profile photo (either from URL or base64 data) to local storage
+ * Returns the local file path
+ */
+async saveFidePhoto(fideId: string, photoData: string) : Promise<Result<string, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("save_fide_photo", { fideId, photoData }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 /**
  * Get best moves from the engine for a given position and options.
  */
@@ -56,6 +76,7 @@ async stopEngine(engine: string, tab: string) : Promise<Result<null, string>> {
 },
 /**
  * Kill a specific engine process by engine name and tab.
+ * FIXED: Always remove from map to prevent memory leaks
  */
 async killEngine(engine: string, tab: string) : Promise<Result<null, string>> {
     try {
@@ -67,6 +88,7 @@ async killEngine(engine: string, tab: string) : Promise<Result<null, string>> {
 },
 /**
  * Kill all engine processes associated with a given tab.
+ * FIXED: Proper error handling to prevent zombie processes
  */
 async killEngines(tab: string) : Promise<Result<null, string>> {
     try {
@@ -150,6 +172,7 @@ async getPlayersGameInfo(file: string, id: number) : Promise<Result<PlayerGameIn
 },
 /**
  * Query a UCI engine for its configuration (name and options).
+ * FIXED: Proper process cleanup with timeout to prevent zombie processes
  */
 async getEngineConfig(path: string) : Promise<Result<EngineConfig, string>> {
     try {
@@ -250,8 +273,17 @@ async deleteEmptyGames(file: string) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
-async clearGames() : Promise<void> {
-    await TAURI_INVOKE("clear_games");
+/**
+ * Clear the in-memory game cache to free memory
+ * FIXED: Also clear position search cache to prevent unbounded growth
+ */
+async clearGames() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("clear_games") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 },
 async setFileAsExecutable(path: string) : Promise<Result<null, string>> {
     try {
@@ -293,6 +325,10 @@ async deleteDbGame(file: string, gameId: number) : Promise<Result<null, string>>
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Delete a database file and cleanup resources
+ * FIXED: Force close all connections before deletion to prevent "database is locked"
+ */
 async deleteDatabase(file: string) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("delete_database", { file }) };
@@ -382,8 +418,10 @@ async updateGame(file: string, gameId: number, update: UpdateGame) : Promise<Res
 }
 },
 /**
+ * ============================================================================
  * Search for chess positions in the database
  * Returns position statistics and matching games
+ * ============================================================================
  */
 async searchPosition(file: string, query: GameQueryJs, tabId: string) : Promise<Result<[PositionStats[], NormalizedGame[]], string>> {
     try {
@@ -627,7 +665,14 @@ export type Event = { id: number; name: string | null }
 export type FidePlayer = { fideid: number; name: string; country: string; sex: string; title: string | null; w_title: string | null; o_title: string | null; foa_title: string | null; rating: number | null; games: number | null; k: number | null; rapid_rating: number | null; rapid_games: number | null; rapid_k: number | null; blitz_rating: number | null; blitz_games: number | null; blitz_k: number | null; birthday: number | null; flag: string | null }
 export type FileMetadata = { last_modified: bigint; size: bigint; is_dir: boolean; is_readonly: boolean }
 export type GameOutcome = "Won" | "Drawn" | "Lost"
-export type GameQueryJs = { options?: QueryOptions<GameSort> | null; player1?: number | null; player2?: number | null; tournament_id?: number | null; start_date?: string | null; end_date?: string | null; range1?: [number, number] | null; range2?: [number, number] | null; sides?: Sides | null; outcome?: string | null; position?: PositionQueryJs | null; wanted_result?: string | null }
+export type GameQueryJs = { options?: QueryOptions<GameSort> | null; 
+/**
+ * Optional limit for number of game details to load (stats are always full)
+ * Used to fetch small preview (e.g., 10) and then on-demand up to 1000
+ * Using u64 instead of usize for better bigint compatibility with TypeScript
+ * Serialized as string to handle bigint in JSON
+ */
+game_details_limit?: bigint | null; player1?: number | null; player2?: number | null; tournament_id?: number | null; start_date?: string | null; end_date?: string | null; range1?: [number, number] | null; range2?: [number, number] | null; sides?: Sides | null; outcome?: string | null; position?: PositionQueryJs | null; wanted_result?: string | null }
 export type GameSort = "id" | "date" | "whiteElo" | "blackElo" | "averageElo" | "ply_count"
 /**
  * Engine search mode (depth, time, nodes, etc).

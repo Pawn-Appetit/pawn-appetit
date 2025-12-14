@@ -3,7 +3,7 @@ import { useToggle } from "@mantine/hooks";
 import { IconPlus } from "@tabler/icons-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLoaderData } from "@tanstack/react-router";
-import { readDir } from "@tauri-apps/plugin-fs";
+import { exists, mkdir, readDir } from "@tauri-apps/plugin-fs";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import GenericHeader, { type SortState } from "@/components/GenericHeader";
@@ -18,9 +18,19 @@ const useFileDirectory = (dir: string) => {
   const { data, error, isLoading, refetch } = useQuery({
     queryKey: ["file-directory", dir],
     queryFn: async () => {
-      const entries = await readDir(dir);
-      const allEntries = processEntriesRecursively(dir, entries);
-      return allEntries;
+      try {
+        // Ensure directory exists before reading
+        if (!(await exists(dir))) {
+          await mkdir(dir, { recursive: true });
+          return [];
+        }
+        const entries = await readDir(dir);
+        const allEntries = await processEntriesRecursively(dir, entries);
+        return allEntries;
+      } catch (err) {
+        console.error("[FilesPage] Error reading directory:", dir, err);
+        throw err;
+      }
     },
   });
 

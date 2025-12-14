@@ -88,6 +88,7 @@
     "stalemate": "Stalemate",
     "white": "White",
     "black": "Black",
+    "draw": "Draw",
     "random": "Random",
     "any": "Any",
     "player": "Player",
@@ -350,6 +351,7 @@
   },
   "dashboard": {
     "noMainAccount": "No main account",
+    "estimatedElo": "Est. Elo",
     "suggestions": {
       "analyzeLastGame": "Analyze your last game",
       "exploreOpenings": "Explore popular openings"
@@ -372,9 +374,7 @@
       "moves": "Moves",
       "date": "Date",
       "account": "Account"
-    },
-    "suggestedForYou": "Suggested for you",
-    "dailyGoals": "Daily goals"
+    }
   },
   "databaseOptions": {
     "player": "Player",
@@ -560,11 +560,6 @@
       "helpTitle": "Show keyboard shortcuts help"
     },
     "dashboard": {
-      "welcome": {
-        "firstOpen": "Welcome to Pawn Appétit!",
-        "back": "Welcome back",
-        "desc": "Ready to make your next best move?"
-      },
       "cards": {
         "learn": {
           "title": "Learn Chess",
@@ -616,6 +611,87 @@
           "desc": "Upload and edit PGN files to analyze your own games or study specific positions with full control.",
           "button": "Import"
         }
+      },
+      "suggestedForYou": "Suggested for you",
+      "dailyGoals": "Daily goals",
+      "dayStreak": "day streak",
+      "thisWeek": "This week",
+      "tags": {
+        "lessons": "Lessons",
+        "openings": "Openings",
+        "endgames": "Endgames",
+        "tactics": "Tactics"
+      },
+      "start": "Start",
+      "streak": "Streak",
+      "achievement": "Achievement",
+      "startPuzzleStreak": "Start today's puzzle streak",
+      "keepStreak": "Keep the streak: solve more puzzles",
+      "win": "Win",
+      "loss": "Loss",
+      "analyzeAllGames": "Analyze All Games",
+      "selectAnalysisDepth_one": "Select analysis depth for {{count}} game. This will analyze games shown in the dashboard using the default engine.",
+      "selectAnalysisDepth_other": "Select analysis depth for {{count}} games. This will analyze games shown in the dashboard using the default engine.",
+      "analyze": "Analyze",
+      "onlyUnanalyzedGames": "Only unanalyzed games",
+      "allGamesReanalyze": "All games (re-analyze)",
+      "analysisDepth": "Analysis Depth",
+      "analyzingGames": "Analyzing {{current}} of {{total}} games...",
+      "stopAnalysis": "Stop Analysis",
+      "analysisSpeeds": {
+        "express": "Express / depth 8",
+        "swift": "Fast / depth 12",
+        "focused": "Intermediate / depth 16",
+        "advanced": "Advanced / depth 20",
+        "deepdive": "Deep / depth 24"
+      },
+      "deleteGame": "Delete game",
+      "allAccounts": "All Accounts",
+      "noEngineAvailable": "No Engine Available",
+      "noEngineAvailableMessage": "Please install an engine first in the Engines page.",
+      "analysisStarted": "Analysis Started",
+      "analysisCancelled": "Analysis Cancelled",
+      "analysisProgress": "Analysis Progress",
+      "analysisComplete": "Analysis Complete",
+      "newGame": "New Game",
+      "unknown": "Unknown",
+      "engine": "Engine",
+      "editProfile": {
+        "title": "Edit Profile",
+        "fideIdLabel": "FIDE ID",
+        "fideIdPlaceholder": "Enter your FIDE ID",
+        "invalidFideId": "FIDE ID must be a number",
+        "enterFideId": "Please enter a FIDE ID",
+        "playerNotFound": "Player not found. Please verify the FIDE ID.",
+        "searchError": "Error searching for player. Please try again.",
+        "search": "Search",
+        "name": "Name",
+        "firstName": "First Name",
+        "customName": "Display Name",
+        "customNamePlaceholder": "Enter your preferred name",
+        "customNameDescription": "This name will be shown in the dashboard",
+        "title": "FIDE Title",
+        "gender": "Gender",
+        "male": "Male",
+        "female": "Female",
+        "error": "Error",
+        "note": "Note: FIDE player search may not be available. You can still save the FIDE ID manually.",
+        "ratings": "FIDE Ratings",
+        "standard": "Standard",
+        "rapid": "Rapid",
+        "blitz": "Blitz"
+      },
+      "welcome": {
+        "firstOpen": "Welcome to Pawn Appétit!",
+        "back": "Welcome back",
+        "backWithName": {
+          "male": "Welcome back, {{name}}!",
+          "female": "Welcome back, {{name}}!"
+        },
+        "desc": "Ready to make your next best move?",
+        "fideTitle": "FIDE Title",
+        "worldRank": "World Rank",
+        "nationalRank": "National Rank"
       }
     },
     "tabs": {
@@ -1394,6 +1470,47 @@
       "cardWithShadow": "Card with shadow",
       "usingThemeColors": "Using theme colors and spacing"
     }
+  },
+  "playerStyle": {
+    "mixedStyle": "Mixed Style",
+    "mixedStyleDescription": "Versatile repertoire without a clear dominant style, adapts to different positions and opponents",
+    "noData": "No Data",
+    "noDataDescription": "There are not enough openings in the database to analyze this player's style",
+    "creativeGambiteer": "Creative Gambiteer",
+    "creativeGambiteerDescription": "Prefers creative gambits and offbeat lines to create early complications and surprise opponents",
+    "gambiteer": "Gambiteer",
+    "gambiteerDescription": "Frequently employs gambits and sacrificial opening lines to gain dynamic compensation and initiative",
+    "gambiteerSimpleDescription": "Often chooses gambits and speculative sacrifices in the opening phase to create tactical opportunities",
+    "gambiteerFallbackDescription": "Frequently uses gambits or speculative sacrifices in the opening to gain dynamic play and initiative",
+    "systemPlayer": "System Player",
+    "systemPlayerDescription": "Relies on set-up systems like London, Colle or Torre with repeatable plans and solid structures",
+    "classicalSolid": "Classical Solid",
+    "classicalSolidDescription": "Prefers solid defensive structures and small, long-term advantages over sharp tactical complications",
+    "positional": "Positional",
+    "positionalDescription": "Strategic, positional player with focus on pawn structures, long-term plans and key squares",
+    "positionalSimpleDescription": "Focuses on strategic planning, pawn structures and long-term positional advantages",
+    "positionalFallbackDescription": "Strategic, positional play with focus on structures, key squares and long-term advantages",
+    "hypermodernDynamic": "Hypermodern Dynamic",
+    "hypermodernDynamicDescription": "Dynamic, hypermodern style with Indian defenses, Benoni structures, Modern Defense, or sharp Sicilian variations",
+    "unconventionalOpenings": "Unconventional Openings",
+    "unconventionalOpeningsDescription": "Prefers rare and less theoretical openings to sidestep mainline theory and create unfamiliar positions",
+    "unconventional": "Unconventional",
+    "unconventionalDescription": "Uses offbeat and surprise openings as a main weapon to avoid theory and create original positions",
+    "unconventionalFallbackDescription": "Prefers unusual or rare openings to avoid theoretical preparation and create unique positions",
+    "dynamicTactician": "Dynamic Tactician",
+    "dynamicTacticianDescription": "Seeks complex, tactical positions with plenty of counterplay and dynamic piece activity",
+    "systematic": "Systematic",
+    "systematicDescription": "Prefers structured systems and set-up based openings with consistent plans and reliable structures",
+    "systematicFallbackDescription": "Relies on set-up based openings and systems with repeatable plans and solid foundations",
+    "tactical": "Tactical",
+    "tacticalDescription": "Looks for combinations and concrete tactical shots, prioritizing calculation and tactical opportunities",
+    "tacticalFallbackDescription": "Tactics and concrete calculation are a central part of the repertoire, seeking sharp positions",
+    "dynamic": "Dynamic",
+    "dynamicDescription": "Prefers sharp, unbalanced positions with active play and dynamic piece coordination",
+    "dynamicFallbackDescription": "Enjoys dynamic positions with active piece play and complex tactical possibilities",
+    "solid": "Solid",
+    "solidDescription": "Values safety and sound structures over sharp play, prioritizing solidity and long-term stability",
+    "solidFallbackDescription": "Safe and reliable repertoire with fewer risks, focusing on solid structures and defensive play"
   },
   "about": {
     "tauriVersion": "Tauri version: {{version}}"

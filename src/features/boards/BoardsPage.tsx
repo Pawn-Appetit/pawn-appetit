@@ -1,7 +1,7 @@
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { ActionIcon, Box, Group, ScrollArea, Tabs } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,6 +9,7 @@ import { Mosaic, type MosaicNode } from "react-mosaic-component";
 import { match } from "ts-pattern";
 
 import { createTab, type Tab } from "@/utils/tabs";
+import { currentGameStateAtom } from "@/state/atoms";
 import * as classes from "./BoardsPage.css";
 import { BoardTab } from "./components/BoardTab";
 
@@ -17,7 +18,7 @@ import "@/styles/react-mosaic.css";
 import { TreeStateProvider } from "@/components/TreeStateContext";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import BoardAnalysis from "./components/BoardAnalysis";
-import BoardGame from "./components/BoardGame";
+import PlayVsEngineBoard from "./components/PlayVsEngineBoard";
 import BoardVariants from "./components/BoardVariants";
 import NewTab from "./components/NewTab";
 import Puzzles from "./components/puzzles/Puzzles";
@@ -69,6 +70,14 @@ export default function BoardsPage() {
     });
   }, [canCreateNewTab, showTabLimitNotification, t, setTabs, setActiveTab]);
 
+  // Check if active tab is play mode and if game is actually playing
+  const activeTabData = tabs.find((tab) => tab.value === activeTab);
+  const isPlayMode = activeTabData?.type === "play";
+  const gameState = useAtomValue(currentGameStateAtom);
+  
+  // Hide tabs only when playing or game over, show them during setup
+  const shouldHideTabs = isPlayMode && (gameState === "playing" || gameState === "gameOver");
+
   return (
     <DragDropContext
       onDragEnd={({ destination, source }) => {
@@ -102,53 +111,63 @@ export default function BoardsPage() {
           width: "100%",
         }}
       >
-        <Box p="md">
-          <ScrollArea scrollbarSize={SCROLL_AREA_CONFIG.SCROLLBAR_SIZE} scrollbars="x">
-            <Droppable droppableId={DROPPABLE_IDS.TABS} direction="horizontal">
-              {(provided) => (
-                <div ref={provided.innerRef} {...provided.droppableProps} style={{ display: "flex" }}>
-                  {tabs.map((tab, i) => (
-                    <Draggable key={tab.value} draggableId={tab.value} index={i}>
-                      {(provided) => (
-                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                          <BoardTab
-                            tab={tab}
-                            setActiveTab={setActiveTab}
-                            closeTab={closeTab}
-                            renameTab={renameTab}
-                            duplicateTab={duplicateTab}
-                            selected={activeTab === tab.value}
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                  <Group gap="xs" wrap="nowrap">
-                    <ActionIcon
-                      variant="default"
-                      onClick={handleCreateTab}
-                      disabled={!canCreateNewTab()}
-                      size="lg"
-                      classNames={{
-                        root: classes.newTab,
-                      }}
-                      title={
-                        !canCreateNewTab()
-                          ? t("features.tabs.maxTabsReached", { max: MAX_TABS })
-                          : t("features.tabs.newTab")
-                      }
-                    >
-                      <IconPlus />
-                    </ActionIcon>
-                  </Group>
-                </div>
-              )}
-            </Droppable>
-          </ScrollArea>
-        </Box>
+        {!shouldHideTabs && (
+          <Box p="md">
+            <ScrollArea scrollbarSize={SCROLL_AREA_CONFIG.SCROLLBAR_SIZE} scrollbars="x">
+              <Droppable droppableId={DROPPABLE_IDS.TABS} direction="horizontal">
+                {(provided) => (
+                  <div ref={provided.innerRef} {...provided.droppableProps} style={{ display: "flex" }}>
+                    {tabs.map((tab, i) => (
+                      <Draggable key={tab.value} draggableId={tab.value} index={i}>
+                        {(provided) => (
+                          <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                            <BoardTab
+                              tab={tab}
+                              setActiveTab={setActiveTab}
+                              closeTab={closeTab}
+                              renameTab={renameTab}
+                              duplicateTab={duplicateTab}
+                              selected={activeTab === tab.value}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                    <Group gap="xs" wrap="nowrap">
+                      <ActionIcon
+                        variant="default"
+                        onClick={handleCreateTab}
+                        disabled={!canCreateNewTab()}
+                        size="lg"
+                        classNames={{
+                          root: classes.newTab,
+                        }}
+                        title={
+                          !canCreateNewTab()
+                            ? t("features.tabs.maxTabsReached", { max: MAX_TABS })
+                            : t("features.tabs.newTab")
+                        }
+                      >
+                        <IconPlus />
+                      </ActionIcon>
+                    </Group>
+                  </div>
+                )}
+              </Droppable>
+            </ScrollArea>
+          </Box>
+        )}
         {tabs.map((tab) => (
-          <Tabs.Panel key={tab.value} value={tab.value} h="100%" w="100%" px="md" pb="md">
+          <Tabs.Panel 
+            key={tab.value} 
+            value={tab.value} 
+            h="100%" 
+            w="100%" 
+            px={tab.type === "play" ? 0 : "md"} 
+            pb={tab.type === "play" ? 0 : "md"}
+            pt={tab.type === "play" ? 0 : undefined}
+          >
             <TabSwitch tab={tab} />
           </Tabs.Panel>
         ))}
@@ -203,15 +222,7 @@ const TabSwitch = function TabSwitch({ tab }: { tab: Tab }) {
     .with("new", () => <NewTab id={tab.value} />)
     .with("play", () => (
       <TreeStateProvider id={tab.value}>
-        {!isMobileLayout && (
-          <Mosaic<ViewId>
-            renderTile={(id) => fullLayout[id]}
-            value={windowsState.currentNode}
-            onChange={handleMosaicChange}
-            resize={resizeOptions}
-          />
-        )}
-        <BoardGame />
+        <PlayVsEngineBoard />
       </TreeStateProvider>
     ))
     .with("analysis", () => {

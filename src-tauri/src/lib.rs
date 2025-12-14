@@ -17,7 +17,7 @@ mod pgn;
 mod puzzle;
 mod telemetry;
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use chess::{BestMovesPayload, EngineProcess, ReportProgress};
 use dashmap::DashMap;
@@ -38,7 +38,7 @@ use crate::db::{
     delete_indexes, export_to_pgn, get_player, get_players_game_info, get_tournaments,
     search_position,
 };
-use crate::fide::{download_fide_db, find_fide_player};
+use crate::fide::{download_fide_db, find_fide_player, fetch_fide_profile_html, save_fide_photo};
 use crate::fs::{set_file_as_executable, DownloadProgress};
 use crate::lexer::lex_pgn;
 use crate::oauth::authenticate;
@@ -78,8 +78,9 @@ pub struct AppState {
         diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::SqliteConnection>>,
     >,
     line_cache: DashMap<(GameQueryJs, std::path::PathBuf), (Vec<PositionStats>, Vec<NormalizedGame>)>,
-    db_cache: Mutex<Vec<GameData>>,
-    #[derivative(Default(value = "Arc::new(Semaphore::new(2))"))]
+    // Cache for games loaded from database (en-croissant approach - more efficient)
+    db_cache: std::sync::Mutex<Vec<GameData>>,
+    #[derivative(Default(value = "Arc::new(Semaphore::new(10))"))]
     new_request: Arc<Semaphore>,
     pgn_offsets: DashMap<String, Vec<u64>>,
     fide_players: RwLock<Vec<FidePlayer>>,
@@ -98,6 +99,8 @@ pub async fn run() {
         .commands(tauri_specta::collect_commands!(
             app::platform::screen_capture,
             find_fide_player,
+            fetch_fide_profile_html,
+            save_fide_photo,
             get_best_moves,
             analyze_game,
             stop_engine,
@@ -207,7 +210,47 @@ fn memory_size() -> u64 {
 #[tauri::command]
 #[specta::specta]
 async fn open_external_link(app: AppHandle, url: String) -> Result<(), String> {
+    let parsed = reqwest::Url::parse(&url)
+        .map_err(|e| format!("Invalid URL: {}", e))?;
+
+    match parsed.scheme() {
+        "http" | "https" => {}
+        _ => return Err("Only http/https URLs are allowed".to_string()),
+    }
+
+    if let Some(host) = parsed.host_str() {
+        if is_private_or_localhost(host) {
+            return Err("Refusing to open private/local URLs".to_string());
+        }
+    }
+
     tauri_plugin_opener::OpenerExt::opener(&app)
         .open_url(url, None::<String>)
         .map_err(|e| format!("Failed to open external link: {}", e))
 }
+
+fn is_private_or_localhost(host: &str) -> bool {
+    use std::net::IpAddr;
+
+    if host == "localhost" || host == "::1" {
+        return true;
+    }
+
+    if let Ok(ip) = host.parse::<IpAddr>() {
+        match ip {
+            IpAddr::V4(ipv4) => {
+                let o = ipv4.octets();
+                o[0] == 127
+                    || o[0] == 10
+                    || o[0] == 0
+                    || (o[0] == 172 && (16..=31).contains(&o[1]))
+                    || (o[0] == 192 && o[1] == 168)
+            }
+            IpAddr::V6(ipv6) => ipv6.is_loopback() || ipv6.is_unspecified(),
+        }
+    } else {
+        false
+    }
+}
+
+

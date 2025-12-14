@@ -6,6 +6,8 @@ use tauri::{AppHandle, Manager};
 use tauri::path::BaseDirectory;
 use uuid::Uuid;
 use sysinfo::{System, SystemExt};
+use once_cell::sync::Lazy;
+use tokio::sync::Semaphore;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Type)]
 pub struct TelemetryConfig {
@@ -16,7 +18,8 @@ pub struct TelemetryConfig {
 impl Default for TelemetryConfig {
     fn default() -> Self {
         Self {
-            enabled: true,
+            // Production-grade privacy: opt-in by default.
+            enabled: false,
             initial_run_completed: false,
         }
     }
@@ -128,35 +131,33 @@ fn get_platform_info() -> String {
     format!("{} {} ({})", os_name, os_version, arch)
 }
 
-#[derive(Debug, Deserialize)]
-struct GeolocationResponse {
-    country: Option<String>,
-    #[serde(rename = "countryCode")]
-    country_code: Option<String>,
-}
+static TELEMETRY_CLIENT: Lazy<reqwest::Client> = Lazy::new(|| {
+    reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .build()
+        .expect("failed to build telemetry http client")
+});
+
+static TELEMETRY_SEMAPHORE: Lazy<Semaphore> = Lazy::new(|| Semaphore::new(2));
 
 async fn get_user_country_from_api() -> Option<String> {
-    let api_url = "http://ip-api.com/json/?fields=countryCode";
+    // Use HTTPS-only endpoint (avoids plaintext leakage + plays better with enterprise environments).
+    // ipapi.co returns the ISO country code as plain text at /country/
+    let api_url = "https://ipapi.co/country/";
 
-    if let Ok(response) = reqwest::Client::new()
-        .get(api_url)
-        .timeout(std::time::Duration::from_secs(5))
-        .send()
-        .await
-    {
-        if let Ok(text) = response.text().await {
-            if let Ok(geo) = serde_json::from_str::<GeolocationResponse>(&text) {
-                if let Some(country_code) = geo.country_code.or(geo.country) {
-                    if country_code.len() == 2 && country_code.chars().all(|c| c.is_ascii_uppercase()) {
-                        log::info!("Retrieved country from IP-API: {}", country_code);
-                        return Some(country_code);
-                    }
+    if let Ok(response) = TELEMETRY_CLIENT.get(api_url).send().await {
+        if response.status().is_success() {
+            if let Ok(text) = response.text().await {
+                let country = text.trim().to_uppercase();
+                if country.len() == 2 && country.chars().all(|c| c.is_ascii_uppercase()) {
+                    log::info!("Retrieved country from IP API: {}", country);
+                    return Some(country);
                 }
             }
         }
     }
 
-    log::warn!("Failed to get country from IP-API, falling back to locale detection");
+    log::warn!("Failed to get country from IP API, falling back to locale detection");
     None
 }
 
@@ -227,8 +228,11 @@ async fn get_user_country() -> Option<String> {
 }
 
 async fn track_event_to_supabase(event_name: &str, app: &AppHandle) -> Result<(), TelemetryError> {
-    let supabase_url = "https://jklxpooswizrhfdghcog.supabase.co";
-    let supabase_key = "sb_publishable_sLNbFdo6jEh5JYYiT9XgmQ_P8jx7z2V";
+    // Allow runtime override for production deployments.
+    let supabase_url = std::env::var("PAWN_APPETIT_SUPABASE_URL")
+        .unwrap_or_else(|_| "https://jklxpooswizrhfdghcog.supabase.co".to_string());
+    let supabase_key = std::env::var("PAWN_APPETIT_SUPABASE_ANON_KEY")
+        .unwrap_or_else(|_| "sb_publishable_sLNbFdo6jEh5JYYiT9XgmQ_P8jx7z2V".to_string());
 
     let country = get_user_country().await;
 
@@ -242,10 +246,10 @@ async fn track_event_to_supabase(event_name: &str, app: &AppHandle) -> Result<()
         country,
     };
 
-    let client = reqwest::Client::new();
-    let response = client
+    let supabase_key_header = supabase_key.clone();
+    let response = TELEMETRY_CLIENT
         .post(&format!("{}/rest/v1/telemetry_events", supabase_url))
-        .header("apikey", supabase_key)
+        .header("apikey", supabase_key_header)
         .header("Authorization", format!("Bearer {}", supabase_key))
         .header("Content-Type", "application/json")
         .header("Prefer", "return=minimal")
@@ -267,6 +271,10 @@ fn track_event_safe(app: &AppHandle, event_name: &str) {
     let event_name = event_name.to_string();
     
     tokio::spawn(async move {
+        let _permit = match TELEMETRY_SEMAPHORE.acquire().await {
+            Ok(p) => p,
+            Err(_) => return,
+        };
         if let Err(e) = track_event_to_supabase(&event_name, &app_handle).await {
             log::warn!("Failed to track '{}' event: {}. This is normal if analytics are disabled or not configured.", event_name, e);
         }

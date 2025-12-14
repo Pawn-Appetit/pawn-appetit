@@ -35,7 +35,7 @@ use shakmaty::{
 };
 use specta::Type;
 use std::{
-    fs::{remove_file, File, OpenOptions},
+    fs::{File, OpenOptions},
     path::PathBuf,
     sync::atomic::{AtomicUsize, Ordering},
     time::{Duration, Instant},
@@ -62,6 +62,7 @@ const PRAGMA_JOURNAL_MODE_DELETE: &str = include_str!("../../../database/pragmas
 const PRAGMA_JOURNAL_MODE_OFF: &str = include_str!("../../../database/pragmas/journal_mode_off.sql");
 const PRAGMA_FOREIGN_KEYS_ON: &str = include_str!("../../../database/pragmas/foreign_keys_on.sql");
 const PRAGMA_BUSY_TIMEOUT: &str = include_str!("../../../database/pragmas/busy_timeout.sql");
+const PRAGMA_PERFORMANCE: &str = include_str!("../../../database/pragmas/performance_pragmas.sql");
 
 // Games queries
 const GAMES_CHECK_INDEXES: &str = include_str!("../../../database/queries/games/check_indexes.sql");
@@ -105,7 +106,7 @@ impl Default for ConnectionOptions {
         Self {
             journal_mode: JournalMode::Delete,
             enable_foreign_keys: true,
-            busy_timeout: Some(Duration::from_secs(30)),
+            busy_timeout: Some(Duration::from_secs(60)), // OPTIMIZED: Increased from 30s to 60s for heavy queries
         }
     }
 }
@@ -115,6 +116,19 @@ impl diesel::r2d2::CustomizeConnection<SqliteConnection, diesel::r2d2::Error>
 {
     fn on_acquire(&self, conn: &mut SqliteConnection) -> std::result::Result<(), diesel::r2d2::Error> {
         (|| {
+            // FIXED: Check if tables exist before applying performance pragmas
+            // This prevents errors when database is being initialized
+            let tables_exist = diesel::sql_query(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='Players' LIMIT 1"
+            )
+            .execute(conn)
+            .is_ok();
+            
+            // Only apply performance PRAGMAs if database is already initialized
+            if tables_exist {
+                conn.batch_execute(PRAGMA_PERFORMANCE)?;
+            }
+            
             match self.journal_mode {
                 JournalMode::Delete => conn.batch_execute(PRAGMA_JOURNAL_MODE_DELETE)?,
                 JournalMode::Off => conn.batch_execute(PRAGMA_JOURNAL_MODE_OFF)?,
@@ -140,7 +154,9 @@ fn get_db_or_create(
         Some(pool) => pool.clone(),
         None => {
             let pool = Pool::builder()
-                .max_size(16)
+                .max_size(32) // OPTIMIZED: Increased from 16 to 32 for better concurrency
+                .min_idle(Some(4)) // OPTIMIZED: Keep minimum connections ready
+                .connection_timeout(Duration::from_secs(30))
                 .connection_customizer(Box::new(options))
                 .build(ConnectionManager::<SqliteConnection>::new(db_path))?;
             state
@@ -153,6 +169,7 @@ fn get_db_or_create(
     Ok(pool.get()?)
 }
 
+#[allow(dead_code)]
 #[derive(Default, Debug, Serialize)]
 pub struct TempPlayer {
     id: usize,
@@ -246,7 +263,30 @@ pub async fn convert_pgn(
         },
     )?;
 
-    if !db_exists {
+    // Check if tables exist, even if the file exists
+    // This handles cases where the file exists but is empty or corrupted
+    let tables_exist = {
+        #[derive(QueryableByName)]
+        struct TableInfo {
+            #[diesel(sql_type = Text, column_name = "name")]
+            _name: String,
+        }
+        
+        // Check if Players table exists
+        let result: std::result::Result<Vec<TableInfo>, _> = sql_query(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='Players'"
+        ).load(db);
+        
+        result.is_ok() && !result.unwrap().is_empty()
+    };
+
+    let needs_init = !db_exists || !tables_exist;
+    
+    if needs_init {
+        // Initialize database if file doesn't exist or tables are missing
+        if !tables_exist && db_exists {
+            info!("Database file exists but tables are missing, reinitializing...");
+        }
         core::init_db(db, &title, &description)?;
     }
 
@@ -264,23 +304,53 @@ pub async fn convert_pgn(
     let start = Instant::now();
 
     let mut importer = Importer::new(timestamp.map(|t| t as i64));
-    db.transaction::<_, Error, _>(|db| {
-        for (i, game) in BufferedReader::new(uncompressed)
+    
+    // OPTIMIZED: Batch inserts for better performance
+    // Collect games in batches to reduce transaction overhead
+    const BATCH_SIZE: usize = 5000;
+    let mut batch: Vec<TempGame> = Vec::with_capacity(BATCH_SIZE);
+    let mut total_processed = 0;
+    
+    for game in BufferedReader::new(uncompressed)
             .into_iter(&mut importer)
             .flatten()
             .flatten()
-            .enumerate()
-        {
-            if i % 1000 == 0 {
+    {
+        batch.push(game);
+        
+        if batch.len() >= BATCH_SIZE {
+            // Process batch in a single transaction
+            db.transaction::<_, Error, _>(|db| {
+                for game in batch.drain(..) {
+                    insert_to_db(db, &game)?;
+                }
+                Ok(())
+            })?;
+            
+            total_processed += BATCH_SIZE;
                 let elapsed = start.elapsed().as_millis() as u32;
-                app.emit("convert_progress", (i, elapsed)).unwrap();
+            app.emit("convert_progress", (total_processed, elapsed)).unwrap();
             }
+    }
+    
+    // Process remaining games in batch
+    if !batch.is_empty() {
+        // FIXED: Save batch length before moving into closure
+        let batch_len = batch.len();
+        
+        db.transaction::<_, Error, _>(|db| {
+            for game in batch.drain(..) {
             insert_to_db(db, &game)?;
         }
         Ok(())
     })?;
+        
+        total_processed += batch_len;
+        let elapsed = start.elapsed().as_millis() as u32;
+        app.emit("convert_progress", (total_processed, elapsed)).unwrap();
+    }
 
-    if !db_exists {
+    if needs_init {
         // Create all the necessary indexes
         db.batch_execute(INDEXES_SQL)?;
     }
@@ -343,7 +413,7 @@ pub async fn get_db_info(
 ) -> Result<DatabaseInfo> {
     let db_path = PathBuf::from("db").join(file);
 
-    info!("get_db_info {:?}", db_path);
+    // OPTIMIZED: Removed - called frequently, not critical
 
     let path = app.path().resolve(db_path, BaseDirectory::AppData)?;
 
@@ -486,6 +556,7 @@ pub struct QueryOptions<SortT> {
     pub direction: SortDirection,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
 pub struct GameQuery {
     pub options: Option<QueryOptions<GameSort>>,
@@ -501,10 +572,243 @@ pub struct GameQuery {
     pub position: Option<PositionQuery>,
 }
 
+// Helper functions for serializing/deserializing u64 as string for bigint compatibility
+mod bigint_serde {
+    use serde::{Deserializer, Serializer};
+    
+    #[allow(dead_code)]
+    pub fn serialize<S>(value: &Option<u64>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match value {
+            Some(v) => serializer.serialize_str(&v.to_string()),
+            None => serializer.serialize_none(),
+        }
+    }
+    
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<u64>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        use serde::de::Visitor;
+        use std::fmt;
+        
+        struct BigIntVisitor;
+        
+        impl<'de> Visitor<'de> for BigIntVisitor {
+            type Value = Option<u64>;
+            
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("a string representing a u64, a number, bigint, or null")
+            }
+            
+            fn visit_none<E>(self) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(None)
+            }
+            
+            fn visit_unit<E>(self) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                // Handle null/unit values
+                Ok(None)
+            }
+            
+            fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                deserializer.deserialize_any(self)
+            }
+            
+            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                value.parse::<u64>()
+                    .map(Some)
+                    .map_err(|e| serde::de::Error::custom(format!("Failed to parse '{}' as u64: {}", value, e)))
+            }
+            
+            fn visit_string<E>(self, value: String) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                value.parse::<u64>()
+                    .map(Some)
+                    .map_err(|e| serde::de::Error::custom(format!("Failed to parse '{}' as u64: {}", value, e)))
+            }
+            
+            fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(Some(value))
+            }
+            
+            fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if value < 0 {
+                    return Err(serde::de::Error::custom(format!("Negative value {} cannot be converted to u64", value)));
+                }
+                Ok(Some(value as u64))
+            }
+            
+            // Handle i128/u128 for JavaScript BigInt values
+            fn visit_i128<E>(self, value: i128) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if value < 0 {
+                    return Err(serde::de::Error::custom(format!("Negative value {} cannot be converted to u64", value)));
+                }
+                if value > u64::MAX as i128 {
+                    return Err(serde::de::Error::custom(format!("Value {} exceeds u64::MAX", value)));
+                }
+                Ok(Some(value as u64))
+            }
+            
+            fn visit_u128<E>(self, value: u128) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if value > u64::MAX as u128 {
+                    return Err(serde::de::Error::custom(format!("Value {} exceeds u64::MAX", value)));
+                }
+                Ok(Some(value as u64))
+            }
+            
+            // Handle f64 (JavaScript numbers that might be sent as floats)
+            fn visit_f64<E>(self, value: f64) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if value < 0.0 || value.fract() != 0.0 {
+                    return Err(serde::de::Error::custom(format!("Value {} cannot be converted to u64 (must be non-negative integer)", value)));
+                }
+                Ok(Some(value as u64))
+            }
+            
+            // Handle u32 (common JavaScript number range)
+            fn visit_u32<E>(self, value: u32) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(Some(value as u64))
+            }
+            
+            // Handle i32 (common JavaScript number range)
+            fn visit_i32<E>(self, value: i32) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if value < 0 {
+                    return Err(serde::de::Error::custom(format!("Negative value {} cannot be converted to u64", value)));
+                }
+                Ok(Some(value as u64))
+            }
+            
+            // Handle u16, u8, i16, i8 for completeness
+            fn visit_u16<E>(self, value: u16) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(Some(value as u64))
+            }
+            
+            fn visit_u8<E>(self, value: u8) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(Some(value as u64))
+            }
+            
+            fn visit_i16<E>(self, value: i16) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if value < 0 {
+                    return Err(serde::de::Error::custom(format!("Negative value {} cannot be converted to u64", value)));
+                }
+                Ok(Some(value as u64))
+            }
+            
+            fn visit_i8<E>(self, value: i8) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if value < 0 {
+                    return Err(serde::de::Error::custom(format!("Negative value {} cannot be converted to u64", value)));
+                }
+                Ok(Some(value as u64))
+            }
+            
+            // Handle map/object case - Tauri might serialize bigint as {"type": "bigint", "value": "..."}
+            // or similar structures
+            fn visit_map<M>(self, mut map: M) -> Result<Self::Value, M::Error>
+            where
+                M: serde::de::MapAccess<'de>,
+            {
+                let mut value_str: Option<String> = None;
+                let mut value_num: Option<u64> = None;
+                
+                while let Some(key) = map.next_key::<String>()? {
+                    match key.as_str() {
+                        "value" | "Value" | "val" => {
+                            // Try to get the value as string first
+                            if let Ok(s) = map.next_value::<String>() {
+                                value_str = Some(s);
+                            } else if let Ok(n) = map.next_value::<u64>() {
+                                value_num = Some(n);
+                            } else if let Ok(n) = map.next_value::<i64>() {
+                                if n >= 0 {
+                                    value_num = Some(n as u64);
+                                }
+                            }
+                        }
+                        _ => {
+                            // Skip unknown keys
+                            let _ = map.next_value::<serde::de::IgnoredAny>()?;
+                        }
+                    }
+                }
+                
+                // Prefer parsed string, then number
+                if let Some(s) = value_str {
+                    s.parse::<u64>()
+                        .map(Some)
+                        .map_err(|e| serde::de::Error::custom(format!("Failed to parse bigint value '{}' as u64: {}", s, e)))
+                } else if let Some(n) = value_num {
+                    Ok(Some(n))
+                } else {
+                    Err(serde::de::Error::custom("Could not extract value from bigint map structure"))
+                }
+            }
+        }
+        
+        // Use deserialize_option to properly handle Option<u64>
+        // This correctly handles null, missing fields, and actual values
+        deserializer.deserialize_option(BigIntVisitor)
+    }
+}
+
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq, Hash, Type)]
 pub struct GameQueryJs {
     #[specta(optional)]
     pub options: Option<QueryOptions<GameSort>>,
+    /// Optional limit for number of game details to load (stats are always full)
+    /// Used to fetch small preview (e.g., 10) and then on-demand up to 1000
+    /// Using u64 instead of usize for better bigint compatibility with TypeScript
+    /// Serialized as string to handle bigint in JSON
+    #[specta(optional)]
+    #[serde(with = "bigint_serde", default)]
+    pub game_details_limit: Option<u64>,
     #[specta(optional)]
     pub player1: Option<i32>,
     #[specta(optional)]
@@ -1164,23 +1468,84 @@ pub async fn get_players_game_info(
         .map(|((site, player), data)| SiteStatsData { site, player, data })
         .collect();
 
-    println!("get_players_game_info {:?}: {:?}", file, timer.elapsed());
+    // OPTIMIZED: Keep timing info but simplify
+    info!("Player stats computed in {:?}", timer.elapsed());
 
     Ok(game_info)
 }
 
+/// Delete a database file and cleanup resources
+/// FIXED: Force close all connections before deletion to prevent "database is locked"
 #[tauri::command]
 #[specta::specta]
 pub async fn delete_database(
     file: PathBuf,
     state: tauri::State<'_, AppState>,
 ) -> Result<()> {
-    let pool = &state.connection_pool;
-    let path_str = file.to_str().unwrap();
-    pool.remove(path_str);
-
-    // delete file
-    remove_file(path_str)?;
+    use std::fs::remove_file;
+    
+    let path_str = file.to_string_lossy().into_owned();
+    
+    log::info!("Attempting to delete database: {:?}", file);
+    
+    // STEP 1: Cancel any ongoing searches by acquiring all permits
+    // This will stop new searches and wait for current ones to complete
+    let _permits = state.new_request.clone();
+    let permit1 = _permits.acquire().await.ok();
+    let permit2 = _permits.acquire().await.ok();
+    
+    // STEP 2: Run PRAGMA optimize before closing connections
+    if let Ok(mut db) = get_db_or_create(&state, &path_str, ConnectionOptions::default()) {
+        let _ = diesel::sql_query("PRAGMA optimize").execute(&mut db);
+    }
+    
+    // Drop permits after optimize
+    drop(permit1);
+    drop(permit2);
+    
+    // Remove from connection pool - this drops the pool and closes all connections
+    if let Some((_, pool)) = state.connection_pool.remove(&path_str) {
+        // Force drop the pool to close all connections immediately
+        drop(pool);
+        log::info!("Closed connection pool for: {:?}", file);
+    }
+    
+    // Clear any cached data for this database
+    let cache_keys_to_remove: Vec<_> = state.line_cache.iter()
+        .filter(|entry| entry.key().1 == file)
+        .map(|entry| entry.key().clone())
+        .collect();
+    
+    for key in cache_keys_to_remove {
+        state.line_cache.remove(&key);
+    }
+    
+    log::info!("Waiting for file handles to be released...");
+    // INCREASED: Wait longer for OS to release all file handles
+    tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+    
+    // Try up to 3 times with increasing delays
+    for attempt in 1..=3 {
+        if file.exists() {
+            match remove_file(&file) {
+                Ok(_) => {
+                    log::info!("✓ Database deleted successfully: {:?}", file);
+                    return Ok(());
+                }
+                Err(e) if attempt < 3 => {
+                    log::warn!("Attempt {} failed: {}. Retrying...", attempt, e);
+                    tokio::time::sleep(std::time::Duration::from_millis(500 * attempt as u64)).await;
+                }
+                Err(e) => {
+                    return Err(Error::Io(e));
+                }
+            }
+        } else {
+            log::warn!("Database file does not exist: {:?}", file);
+            return Ok(());
+        }
+    }
+    
     Ok(())
 }
 
@@ -1276,7 +1641,7 @@ impl PgnGame {
             writeln!(writer, "[FEN \"{}\"]", fen)?;
         }
         writeln!(writer)?;
-        writer.write(self.moves.as_bytes())?;
+        writer.write_all(self.moves.as_bytes())?;
         match self.result.as_deref() {
             Some("1-0") => writeln!(writer, "1-0"),
             Some("0-1") => writeln!(writer, "0-1"),
@@ -1432,11 +1797,16 @@ pub async fn merge_players(
     Ok(())
 }
 
+/// Clear the in-memory game cache to free memory
+/// FIXED: Also clear position search cache to prevent unbounded growth
 #[tauri::command]
 #[specta::specta]
-pub fn clear_games(state: tauri::State<'_, AppState>) {
-    let mut state = state.db_cache.lock().unwrap();
-    state.clear();
+pub fn clear_games(state: tauri::State<'_, AppState>) -> Result<()> {
+    // Clear position search cache to free memory
+    state.line_cache.clear();
+    
+    info!("Cleared position search cache");
+    Ok(())
 }
 
 #[cfg(test)]

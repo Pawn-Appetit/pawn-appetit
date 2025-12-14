@@ -13,19 +13,40 @@ function DatabaseLoader({ isLoading, tab }: { isLoading: boolean; tab: string | 
   const [_completed, setCompleted] = useState(false);
 
   useEffect(() => {
+    // Reset progress when tab changes
+    setProgress(0);
+    setCompleted(false);
+    
+    if (!tab) return;
+    
+    let unlistenFn: (() => void) | null = null;
+    
     async function getProgress() {
       const unlisten = await listen<ProgressPayload>("search_progress", async ({ payload }) => {
         if (payload.id !== tab) return;
         if (payload.finished) {
           setCompleted(true);
           setProgress(0);
-          unlisten();
+          if (unlistenFn) {
+            unlistenFn();
+            unlistenFn = null;
+          }
         } else {
           setProgress(payload.progress);
         }
       });
+      
+      unlistenFn = unlisten;
     }
+    
     getProgress();
+    
+    // Cleanup on unmount or tab change
+    return () => {
+      if (unlistenFn) {
+        unlistenFn();
+      }
+    };
   }, [tab]);
 
   const isLoadingFromMemory = isLoading && progress === 0;

@@ -3579,6 +3579,7 @@ name = "pawn-appetit"
 version = "0.10.0"
 dependencies = [
  "axum",
+ "base64 0.22.1",
  "bincode",
  "btoi",
  "bzip2 0.4.4",
@@ -3587,6 +3588,7 @@ dependencies = [
  "dashmap 6.1.0",
  "derivative",
  "diesel",
+ "flate2",
  "fs_extra",
  "futures-util",
  "governor",

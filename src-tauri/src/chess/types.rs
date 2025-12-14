@@ -110,6 +110,7 @@ pub struct ReportProgress {
 }
 
 /// Cache key for analysis results (used for deduplication).
+#[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct AnalysisCacheKey {
     pub tab: String,

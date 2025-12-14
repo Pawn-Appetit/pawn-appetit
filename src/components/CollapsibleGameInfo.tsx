@@ -206,7 +206,7 @@ function CollapsibleGameInfo({
             ) : (
               <ContentEditable
                 className={cx(classes.contentEditable, !site && classes.contentEditablePlaceholder)}
-                data-placeholder="Unknown Site"
+                data-placeholder={t("gameInfo.unknownSite")}
                 html={site}
                 onChange={(e) =>
                   setHeaders({
@@ -248,7 +248,7 @@ function CollapsibleGameInfo({
           />
           <input
             className={classes.textInput}
-            placeholder="Unknown ELO"
+            placeholder={t("gameInfo.unknownElo")}
             value={headers.white_elo || ""}
             onChange={(n) =>
               setHeaders({
@@ -278,7 +278,7 @@ function CollapsibleGameInfo({
           />
           <input
             className={cx(classes.textInput, classes.right)}
-            placeholder="Unknown ELO"
+            placeholder={t("gameInfo.unknownElo")}
             value={headers.black_elo || ""}
             onChange={(n) =>
               setHeaders({

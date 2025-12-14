@@ -1,5 +1,6 @@
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import type { GameStats } from "@/utils/gameRecords";
 
 /**
  * Stores analyzed PGNs for Chess.com and Lichess games.
@@ -143,4 +144,51 @@ export async function clearAllAnalyzedGames(): Promise<void> {
   const dir = await appDataDir();
   const file = await resolve(dir, FILENAME);
   await writeTextFile(file, JSON.stringify({}));
+}
+
+/**
+ * Stores game stats (accuracy, ACPL, estimatedElo) for Chess.com and Lichess games.
+ * Key: game identifier (URL for Chess.com, ID for Lichess)
+ * Value: GameStats object
+ */
+interface GameStatsMap {
+  [gameId: string]: GameStats;
+}
+
+const STATS_FILENAME = "game_stats.json";
+
+/**
+ * Save game stats for a game
+ * @param gameId - Unique identifier (URL for Chess.com, ID for Lichess)
+ * @param stats - The game stats including estimatedElo
+ */
+export async function saveGameStats(gameId: string, stats: GameStats): Promise<void> {
+  const dir = await appDataDir();
+  const file = await resolve(dir, STATS_FILENAME);
+  let gameStats: GameStatsMap = {};
+  try {
+    const text = await readTextFile(file);
+    gameStats = JSON.parse(text);
+  } catch {
+    // file may not exist yet
+  }
+  gameStats[gameId] = stats;
+  await writeTextFile(file, JSON.stringify(gameStats, null, 2));
+}
+
+/**
+ * Get game stats for a game
+ * @param gameId - Unique identifier (URL for Chess.com, ID for Lichess)
+ * @returns The game stats if found, null otherwise
+ */
+export async function getGameStats(gameId: string): Promise<GameStats | null> {
+  try {
+    const dir = await appDataDir();
+    const file = await resolve(dir, STATS_FILENAME);
+    const text = await readTextFile(file);
+    const gameStats: GameStatsMap = JSON.parse(text);
+    return gameStats[gameId] || null;
+  } catch {
+    return null;
+  }
 }

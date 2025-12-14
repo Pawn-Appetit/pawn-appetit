@@ -149,7 +149,7 @@ function BoardVariants() {
 
       // Function to recursively find all positions with variations and generate puzzles
       // We traverse the tree and only generate puzzles at positions where there are actual variations
-      const MAX_DEPTH = 80; // súbelo si quieres recorrer líneas más largas
+      const MAX_DEPTH = 80; // increase if you want to traverse longer lines
 
       const generatePuzzlesFromNode = (node: TreeNode, depth = 0, puzzlePhaseStarted = false): void => {
         if (depth > MAX_DEPTH) return;
@@ -157,13 +157,13 @@ function BoardVariants() {
         const [pos] = positionFromFen(node.fen);
         if (!pos) return;
 
-        // 1) Detectar el inicio: primera posición con variantes
+        // 1) Detect the start: first position with variations
         if (!puzzlePhaseStarted && node.children.length >= 2) {
           puzzlePhaseStarted = true;
         }
 
-        // 2) Si ya estamos en la fase de puzzles y es turno del color del puzzle,
-        //    generamos un puzzle por cada jugada disponible desde esta posición.
+        // 2) If we're already in the puzzle phase and it's the puzzle color's turn,
+        //    generate a puzzle for each available move from this position.
         if (puzzlePhaseStarted && pos.turn === puzzleColor && node.children.length > 0) {
           for (const child of node.children) {
             if (!child.san) continue;
@@ -187,7 +187,7 @@ function BoardVariants() {
             puzzlePGN += `[Black "?"]\n`;
             puzzlePGN += `[Result "*"]\n`;
             puzzlePGN += `[SetUp "1"]\n`;
-            puzzlePGN += `[FEN "${node.fen}"]\n`; // posición antes de la jugada del puzzle
+            puzzlePGN += `[FEN "${node.fen}"]\n`; // position before the puzzle move
             puzzlePGN += `[Solution "${solutionMove}"]\n`;
             puzzlePGN += `\n${solutionMove} *\n\n`;
 
@@ -195,7 +195,7 @@ function BoardVariants() {
           }
         }
 
-        // 3) Seguir recorriendo el árbol
+        // 3) Continue traversing the tree
         for (const child of node.children) {
           generatePuzzlesFromNode(child, depth + 1, puzzlePhaseStarted);
         }

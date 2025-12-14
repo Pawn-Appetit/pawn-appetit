@@ -23,7 +23,7 @@ import {
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { remove } from "@tauri-apps/plugin-fs";
 import { useAtom, useAtomValue } from "jotai";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { DatabaseInfo } from "@/bindings";
 import { commands } from "@/bindings";
@@ -32,6 +32,7 @@ import { sessionsAtom } from "@/state/atoms";
 import { getChessComAccount, getStats } from "@/utils/chess.com/api";
 import { capitalize, parseDate } from "@/utils/format";
 import { getLichessAccount } from "@/utils/lichess/api";
+import { saveMainAccount, getAccountFideId } from "@/utils/mainAccount";
 import type { Session } from "@/utils/session";
 import LichessLogo from "../LichessLogo";
 
@@ -42,6 +43,23 @@ interface AccountsTableViewProps {
   sortBy?: SortState;
   isLoading?: boolean;
 }
+
+type StatItem = { value: number; label: string; diff?: number };
+type PlayerSessions = { name: string; sessions: Session[] };
+
+type Row = {
+  key: string | number;
+  name: string;
+  username: string;
+  type: "lichess" | "chesscom";
+  stats: StatItem[];
+  totalGames: number;
+  downloadedGames: number;
+  percentage: number;
+  updatedAt?: number;
+  session: Session;
+  database: DatabaseInfo | null;
+};
 
 function AccountsTableView({
   databases,
@@ -65,10 +83,19 @@ function AccountsTableView({
   useEffect(() => {
     if (mainAccount) {
       localStorage.setItem("mainAccount", mainAccount);
+      // Load FIDE ID for this account if it exists
+      getAccountFideId(mainAccount).then((fideId) => {
+        // Also save to new JSON format with FIDE ID if it exists
+        saveMainAccount({ name: mainAccount, fideId: fideId || undefined }).catch(console.error);
+      }).catch(() => {
+        // If no FIDE ID, just save the account name
+        saveMainAccount({ name: mainAccount }).catch(console.error);
+      });
     }
   }, [mainAccount]);
 
-  function bestRatingForSession(s: Session): number {
+  // Memoize rating calculation function to avoid recreation on every render
+  const bestRatingForSession = useCallback((s: Session): number => {
     if (s.lichess?.account?.perfs) {
       const p = s.lichess.account.perfs;
       const ratings = [p.bullet?.rating, p.blitz?.rating, p.rapid?.rating, p.classical?.rating].filter(
@@ -81,25 +108,37 @@ function AccountsTableView({
       if (arr.length) return Math.max(...arr.map((a) => a.value));
     }
     return -1;
-  }
+  }, []);
 
-  const playerNames = Array.from(
+  // Memoize player names extraction
+  const playerNames = useMemo<string[]>(
+    () =>
+      Array.from(
     new Set(
       sessions
         .map((s) => s.player ?? s.lichess?.username ?? s.chessCom?.username)
         .filter((n): n is string => typeof n === "string" && n.length > 0),
     ),
+      ),
+    [sessions],
   );
 
-  const playerSessions = playerNames.map((name) => ({
+  // Memoize player sessions grouping
+  const playerSessions = useMemo<PlayerSessions[]>(
+    () =>
+      playerNames.map((name) => ({
     name,
     sessions: sessions.filter(
       (s) => s.player === name || s.lichess?.username === name || s.chessCom?.username === name,
     ),
-  }));
+      })),
+    [playerNames, sessions],
+  );
 
+  // Memoize filtered and sorted results
+  const filteredAndSorted = useMemo<PlayerSessions[]>(() => {
   const q = query.trim().toLowerCase();
-  const filteredAndSorted = playerSessions
+    return playerSessions
     .filter(({ name, sessions }) => {
       if (!q) return true;
       const usernames = sessions
@@ -120,9 +159,10 @@ function AccountsTableView({
       }
       return sortBy.direction === "asc" ? comparison : -comparison;
     });
+  }, [playerSessions, query, sortBy, bestRatingForSession]);
 
-  const rows = filteredAndSorted.flatMap(({ name, sessions: playerSessions }) =>
-    playerSessions.map((session) => {
+  const rows: Row[] = filteredAndSorted.flatMap(({ name, sessions: playerSessions }) =>
+    playerSessions.map((session): Row => {
       const type = session.lichess ? "lichess" : "chesscom";
       const username = session.lichess?.username ?? session.chessCom?.username ?? "";
       // Try to find database with exact match first, then try case-insensitive match
@@ -135,7 +175,7 @@ function AccountsTableView({
       const downloadedGames = database?.type === "success" ? database.game_count : 0;
 
       let totalGames = 0;
-      const stats = [];
+      const stats: StatItem[] = [];
 
       if (session.lichess?.account) {
         const account = session.lichess.account;
@@ -160,7 +200,10 @@ function AccountsTableView({
           totalGames = Math.max(totalGames, downloadedGames);
         }
       } else if (session.chessCom?.stats) {
-        for (const stat of Object.values(session.chessCom.stats)) {
+        const chessComStats = Object.values(session.chessCom.stats ?? {}) as Array<{
+          record?: { win: number; loss: number; draw: number };
+        }>;
+        for (const stat of chessComStats) {
           if (stat.record) {
             totalGames += stat.record.win + stat.record.loss + stat.record.draw;
           }

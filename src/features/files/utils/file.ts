@@ -1,4 +1,4 @@
-import { BaseDirectory, basename, join } from "@tauri-apps/api/path";
+import { basename, join } from "@tauri-apps/api/path";
 import { type DirEntry, exists, readDir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { z } from "zod";
 import { commands } from "@/bindings";
@@ -91,9 +91,10 @@ export async function processEntriesRecursively(parent: string, entries: DirEntr
     }
     if (entry.isDirectory) {
       const dir = await join(parent, entry.name);
+      // Use readDir without baseDir since dir is an absolute path
       const newEntries = await processEntriesRecursively(
         dir,
-        await readDir(dir, { baseDir: BaseDirectory.AppLocalData }),
+        await readDir(dir),
       );
       allEntries.push({
         type: "directory",

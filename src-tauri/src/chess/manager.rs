@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use tauri_specta::Event;
-use log::{info, debug};
+use log::info;
 use tokio::sync::Mutex;
 
 use crate::error::Error;
@@ -69,7 +69,8 @@ impl<'a> EngineManager<'a> {
                 // Otherwise, stop and reconfigure the engine.
                 process.stop().await?;
             }
-            tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+            // OPTIMIZED: Reduced wait time from 50ms to 20ms for faster engine restart
+            tokio::time::sleep(std::time::Duration::from_millis(20)).await;
             {
                 let process = self.state.engine_processes.get_mut(&key).unwrap();
                 let mut process = process.lock().await;
@@ -94,10 +95,10 @@ impl<'a> EngineManager<'a> {
         let engines_map = self.state.engine_processes.clone();
         tokio::spawn(async move {
             info!("Engine loop started: tab={} engine={}", key_cloned.0, key_cloned.1);
-            // Limit event emission rate to avoid UI flooding.
-            let lim = governor::RateLimiter::direct(governor::Quota::per_second(nonzero_ext::nonzero!(5u32)));
+            // OPTIMIZED: Increased emission rate from 5 to 10 events/sec for more responsive UI
+            let lim = governor::RateLimiter::direct(governor::Quota::per_second(nonzero_ext::nonzero!(10u32)));
             while let Ok(Some(line)) = reader.next_line().await {
-                debug!("[engine-stdout tab={} engine={}] {}", key_cloned.0, key_cloned.1, line);
+                // REMOVED: Excessive logging that slows down engine communication
                 if let Some(proc_arc) = engines_map.get(&key_cloned) {
                     let mut proc = proc_arc.lock().await;
                     match vampirc_uci::parse_one(&line) {

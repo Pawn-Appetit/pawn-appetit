@@ -1,6 +1,6 @@
 import { Result } from "@badrap/result";
 import { useQuery } from "@tanstack/react-query";
-import { BaseDirectory, basename, extname, resolve, tempDir } from "@tauri-apps/api/path";
+import { BaseDirectory, basename, extname, join, tempDir } from "@tauri-apps/api/path";
 import { exists, mkdir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { platform } from "@tauri-apps/plugin-os";
 import { defaultGame, makePgn } from "chessops/pgn";
@@ -103,33 +103,41 @@ export async function createFile({
   pgn?: string;
   dir: string;
 }): Promise<Result<FileMetadata>> {
-  const file = await resolve(dir, `${filename}.pgn`);
-  if (await exists(file)) {
-    return Result.err(Error("File already exists"));
+  try {
+    const file = await join(dir, `${filename}.pgn`);
+    if (await exists(file)) {
+      return Result.err(Error("File already exists"));
+    }
+    const metadata = {
+      type: filetype,
+      tags: [],
+    };
+    // Ensure directory exists
+    if (!(await exists(dir))) {
+      await mkdir(dir, { recursive: true });
+    }
+    await writeTextFile(file, pgn || makePgn(defaultGame()));
+    await writeTextFile(file.replace(".pgn", ".info"), JSON.stringify(metadata));
+
+    const numGames = unwrap(await commands.countPgnGames(file));
+
+    return Result.ok({
+      type: "file",
+      name: filename,
+      path: file,
+      numGames,
+      metadata,
+      lastModified: new Date().getUTCSeconds(),
+    });
+  } catch (err) {
+    console.error("[createFile] Error creating file:", err);
+    return Result.err(err instanceof Error ? err : Error(String(err)));
   }
-  const metadata = {
-    type: filetype,
-    tags: [],
-  };
-  await mkdir(dir, { recursive: true });
-  await writeTextFile(file, pgn || makePgn(defaultGame()));
-  await writeTextFile(file.replace(".pgn", ".info"), JSON.stringify(metadata));
-
-  const numGames = unwrap(await commands.countPgnGames(file));
-
-  return Result.ok({
-    type: "file",
-    name: filename,
-    path: file,
-    numGames,
-    metadata,
-    lastModified: new Date().getUTCSeconds(),
-  });
 }
 
 export async function createTempImportFile(pgn: string): Promise<FileMetadata> {
-  const tempDirPath = await resolve(await tempDir(), "pawn-appetit");
-  const tempFilePath = await resolve(tempDirPath, `temp_import_${Date.now()}.pgn`);
+  const tempDirPath = await join(await tempDir(), "pawn-appetit");
+  const tempFilePath = await join(tempDirPath, `temp_import_${Date.now()}.pgn`);
 
   // Ensure temp directory exists
   try {

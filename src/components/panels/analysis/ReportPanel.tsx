@@ -1,20 +1,22 @@
-import { Grid, Group, Paper, ScrollArea, Stack, Text } from "@mantine/core";
+import { Box, Center, Group, Paper, ScrollArea, Stack, Table, Text, UnstyledButton } from "@mantine/core";
+import { IconStarFilled } from "@tabler/icons-react";
 import { useToggle } from "@mantine/hooks";
 import { IconZoomCheck } from "@tabler/icons-react";
 import cx from "clsx";
 import equal from "fast-deep-equal";
 import { useAtomValue } from "jotai";
-import React, { memo, Suspense, useContext, useEffect, useMemo, useRef } from "react";
+import React, { memo, Suspense, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import EvalChart from "@/components/EvalChart";
 import ProgressButton from "@/components/ProgressButtonWithOutState";
 import { TreeStateContext } from "@/components/TreeStateContext";
 import { activeTabAtom } from "@/state/atoms";
-import { saveAnalyzedGame } from "@/utils/analyzedGames";
+import { saveAnalyzedGame, saveGameStats } from "@/utils/analyzedGames";
 import { ANNOTATION_INFO, annotationColors, isBasicAnnotation } from "@/utils/annotation";
 import { getGameStats, getMainLine, getPGN } from "@/utils/chess";
-import { updateGameRecord } from "@/utils/gameRecords";
+import { calculateEstimatedElo } from "@/utils/eloEstimation";
+import { getGameRecordById, updateGameRecord, type GameStats } from "@/utils/gameRecords";
 import { label } from "./AnalysisPanel.css";
 import ReportModal from "./ReportModal";
 
@@ -34,7 +36,38 @@ function ReportPanel() {
 
   const [reportingMode, toggleReportingMode] = useToggle();
 
-  const stats = useMemo(() => getGameStats(root), [root]);
+  const [stats, setStats] = useState(() => getGameStats(root));
+
+  // Avoid recalculating stats on every tree mutation while the engine is actively analyzing.
+  // Compute on idle/debounced to keep the UI responsive.
+  useEffect(() => {
+    let cancelled = false;
+    let timeoutId: number | null = null;
+
+    const compute = () => {
+      if (cancelled) return;
+      try {
+        const next = getGameStats(root);
+        if (!cancelled) setStats(next);
+      } catch {
+        // ignore
+      }
+    };
+
+    if (!inProgress) {
+      compute();
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    timeoutId = window.setTimeout(compute, 250);
+
+    return () => {
+      cancelled = true;
+      if (timeoutId != null) window.clearTimeout(timeoutId);
+    };
+  }, [root, inProgress]);
 
   // Track if we've already saved the PGN for this analysis completion
   const hasSavedPgnRef = useRef(false);
@@ -155,12 +188,51 @@ function ReportPanel() {
             return;
           }
 
+          // Calculate stats from the analyzed game using the stats already calculated in the report
+          // We can use the stats from the root node which are already calculated
+          const reportStats = getGameStats(finalRoot);
+
           // Check if this tab is associated with a local game
           const localGameId = typeof window !== "undefined" ? sessionStorage.getItem(`${activeTab}_localGameId`) : null;
 
           if (localGameId) {
-            // Update the GameRecord with the new PGN that includes evaluations
-            await updateGameRecord(localGameId, { pgn: pgnWithEvals });
+            // Get the game record to determine user color
+            const gameRecord = await getGameRecordById(localGameId);
+
+            if (gameRecord) {
+              // Determine which color the user played
+              const isUserWhite = gameRecord.white.type === "human";
+              const userColor = isUserWhite ? "white" : "black";
+
+              // Get stats for the user's color from the report
+              const accuracy = userColor === "white" ? reportStats.whiteAccuracy : reportStats.blackAccuracy;
+              const acpl = userColor === "white" ? reportStats.whiteCPL : reportStats.blackCPL;
+
+              // Calculate estimated Elo
+              let calculatedStats: GameStats | null = null;
+              if (accuracy > 0 || acpl > 0) {
+                calculatedStats = {
+                  accuracy,
+                  acpl,
+                  estimatedElo: acpl > 0 ? calculateEstimatedElo(acpl) : undefined,
+                };
+              }
+
+              // Update the GameRecord with the new PGN and calculated stats
+              if (calculatedStats) {
+                await updateGameRecord(localGameId, {
+                  pgn: pgnWithEvals,
+                  stats: calculatedStats,
+                });
+              } else {
+                // If stats calculation failed, still update PGN
+                await updateGameRecord(localGameId, { pgn: pgnWithEvals });
+              }
+            } else {
+              // Fallback: just update PGN if game not found
+              await updateGameRecord(localGameId, { pgn: pgnWithEvals });
+            }
+
             // Trigger refresh of games list in dashboard
             if (typeof window !== "undefined") {
               window.dispatchEvent(new CustomEvent("games:updated"));
@@ -175,6 +247,40 @@ function ReportPanel() {
             if (chessComGameUrl) {
               // Save analyzed PGN for Chess.com game
               await saveAnalyzedGame(chessComGameUrl, pgnWithEvals);
+
+              // Calculate and save stats using the stats already calculated in the report
+              try {
+                // Get the username from sessionStorage to determine which color the user played
+                const chessComUsername =
+                  typeof window !== "undefined" ? sessionStorage.getItem(`${activeTab}_chessComUsername`) : null;
+
+                if (chessComUsername) {
+                  // Extract usernames from PGN headers
+                  const whiteMatch = pgnWithEvals.match(/\[White\s+"([^"]+)"/);
+                  const blackMatch = pgnWithEvals.match(/\[Black\s+"([^"]+)"/);
+                  const whiteName = whiteMatch ? whiteMatch[1] : "";
+                  const blackName = blackMatch ? blackMatch[1] : "";
+
+                  const isUserWhite = whiteName.toLowerCase() === chessComUsername.toLowerCase();
+                  const userColor = isUserWhite ? "white" : "black";
+
+                  // Use stats from the report (already calculated)
+                  const accuracy = userColor === "white" ? reportStats.whiteAccuracy : reportStats.blackAccuracy;
+                  const acpl = userColor === "white" ? reportStats.whiteCPL : reportStats.blackCPL;
+
+                  if (accuracy > 0 || acpl > 0) {
+                    const statsToSave: GameStats = {
+                      accuracy,
+                      acpl,
+                      estimatedElo: acpl > 0 ? calculateEstimatedElo(acpl) : undefined,
+                    };
+                    await saveGameStats(chessComGameUrl, statsToSave);
+                  }
+                }
+              } catch {
+                // Silently handle errors
+              }
+
               // Trigger refresh of Chess.com games list in dashboard
               if (typeof window !== "undefined") {
                 window.dispatchEvent(new CustomEvent("chesscom:games:updated"));
@@ -182,6 +288,40 @@ function ReportPanel() {
             } else if (lichessGameId) {
               // Save analyzed PGN for Lichess game
               await saveAnalyzedGame(lichessGameId, pgnWithEvals);
+
+              // Calculate and save stats using the stats already calculated in the report
+              try {
+                // Get the username from sessionStorage to determine which color the user played
+                const lichessUsername =
+                  typeof window !== "undefined" ? sessionStorage.getItem(`${activeTab}_lichessUsername`) : null;
+
+                if (lichessUsername) {
+                  // Extract usernames from PGN headers
+                  const whiteMatch = pgnWithEvals.match(/\[White\s+"([^"]+)"/);
+                  const blackMatch = pgnWithEvals.match(/\[Black\s+"([^"]+)"/);
+                  const whiteName = whiteMatch ? whiteMatch[1] : "";
+                  const blackName = blackMatch ? blackMatch[1] : "";
+
+                  const isUserWhite = whiteName.toLowerCase() === lichessUsername.toLowerCase();
+                  const userColor = isUserWhite ? "white" : "black";
+
+                  // Use stats from the report (already calculated)
+                  const accuracy = userColor === "white" ? reportStats.whiteAccuracy : reportStats.blackAccuracy;
+                  const acpl = userColor === "white" ? reportStats.whiteCPL : reportStats.blackCPL;
+
+                  if (accuracy > 0 || acpl > 0) {
+                    const statsToSave: GameStats = {
+                      accuracy,
+                      acpl,
+                      estimatedElo: acpl > 0 ? calculateEstimatedElo(acpl) : undefined,
+                    };
+                    await saveGameStats(lichessGameId, statsToSave);
+                  }
+                }
+              } catch {
+                // Silently handle errors
+              }
+
               // Trigger refresh of Lichess games list in dashboard
               if (typeof window !== "undefined") {
                 window.dispatchEvent(new CustomEvent("lichess:games:updated"));
@@ -256,95 +396,299 @@ function ReportPanel() {
 
 type Stats = ReturnType<typeof getGameStats>;
 
+// -----------------------------
+// CountPill (misma tipografía que tu componente original)
+// - Text size="sm"
+// - fw 700/400
+// - color se pasa por style (como en tu Grid.Col original)
+// -----------------------------
+function CountPill({
+  value,
+  color,
+  onClick,
+  className,
+}: {
+  value: number;
+  color?: string;
+  onClick?: () => void;
+  className?: string;
+}) {
+  const clickable = value > 0;
+
+  const inner = (
+    <Box
+      className={className}
+      style={{
+        height: "1.8rem",
+        minWidth: "6ch",
+        paddingInline: "1.2ch",
+        borderRadius: 999,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        border: "1px solid var(--mantine-color-dark-4)",
+        background: clickable ? "var(--mantine-color-dark-6)" : "transparent",
+      }}
+    >
+      <Text
+        size="sm"
+        fw={clickable ? 700 : 400}
+        style={{
+          lineHeight: 1,
+          color: clickable ? color : undefined, // ✅ igual que tu original
+        }}
+      >
+        {value}
+      </Text>
+    </Box>
+  );
+
+  if (!clickable) return inner;
+
+  return (
+    <UnstyledButton onClick={onClick} style={{ borderRadius: 999, cursor: "pointer" }}>
+      {inner}
+    </UnstyledButton>
+  );
+}
+
+// -----------------------------
+// TagGlyph (idéntico a tu estilo original)
+// - usa el MISMO svg con currentColor
+// - Text size="sm", lineHeight=1, sin monospace
+// -----------------------------
+function TagGlyph({ annotation }: { annotation: string }) {
+  return (
+    <Center>
+      {annotation === "Best" ? (
+        <svg viewBox="0 0 100 100" style={{ width: "1em", height: "1em", display: "block" }}>
+          <path
+            fill="currentColor"
+            d="M 50 15 L 55.9 38.1 L 80 38.1 L 60.5 52.4 L 66.4 75.5 L 50 61.2 L 33.6 75.5 L 39.5 52.4 L 20 38.1 L 44.1 38.1 Z"
+          />
+        </svg>
+      ) : (
+        <Text size="sm" style={{ lineHeight: 1 }}>
+          {annotation}
+        </Text>
+      )}
+    </Center>
+  );
+}
+
+// -----------------------------
+// GameStats (layout bueno + tipografía original)
+// -----------------------------
 const GameStats = memo(
   function GameStats({ whiteAnnotations, blackAnnotations }: Stats) {
     const { t } = useTranslation();
 
     const store = useContext(TreeStateContext)!;
     const goToAnnotation = useStore(store, (s) => s.goToAnnotation);
+    const headers = useStore(store, (s) => s.headers);
+
+    type Row = {
+      annotation: string;
+      s: "??" | "?" | "?!" | "!!" | "!" | "!?" | "Best";
+      title: string;
+      color: string;
+      w: number;
+      b: number;
+    };
+
+    const rows: Row[] = useMemo(() => {
+      return Object.keys(ANNOTATION_INFO)
+        .filter((a) => isBasicAnnotation(a))
+        .sort((a, b) => {
+          const order: Record<string, number> = {
+            "!!": 1,
+            "!": 2,
+            Best: 3,
+            "!?": 4,
+            "?!": 5,
+            "?": 6,
+            "??": 7,
+          };
+          return (order[a] || 99) - (order[b] || 99);
+        })
+        .map((annotation) => {
+          const s = annotation as "??" | "?" | "?!" | "!!" | "!" | "!?" | "Best";
+          const { name, translationKey } = ANNOTATION_INFO[s];
+          const title = translationKey ? t(`chess.annotate.${translationKey}`) : name;
+
+          return {
+            annotation,
+            s,
+            title,
+            color: annotationColors[s],
+            w: whiteAnnotations[s],
+            b: blackAnnotations[s],
+          };
+        }) as Row[];
+    }, [whiteAnnotations, blackAnnotations, t]);
 
     return (
-      <Paper withBorder>
-        <Grid columns={11} justify="space-between" p="md">
-          {Object.keys(ANNOTATION_INFO)
-            .filter((a) => isBasicAnnotation(a))
-            .sort((a, b) => {
-              // Order like Chess.com: Brilliant, Great, Best, Interesting, Dubious, Mistake, Blunder
-              const order: Record<string, number> = {
-                "!!": 1, // Brilliant
-                "!": 2, // Great
-                Best: 3, // Best
-                "!?": 4, // Interesting
-                "?!": 5, // Dubious
-                "?": 6, // Mistake
-                "??": 7, // Blunder
-              };
-              return (order[a] || 99) - (order[b] || 99);
-            })
-            .map((annotation) => {
-              const s = annotation as "??" | "?" | "?!" | "!!" | "!" | "!?" | "Best";
-              const { name, translationKey } = ANNOTATION_INFO[s];
-              const color = annotationColors[s];
-              const w = whiteAnnotations[s];
-              const b = blackAnnotations[s];
-              return (
-                <React.Fragment key={annotation}>
-                  <Grid.Col
-                    className={cx(w > 0 && label)}
-                    span={4}
-                    style={{ textAlign: "center", color: w > 0 ? color : undefined }}
-                    onClick={() => {
-                      if (w > 0) {
-                        goToAnnotation(s, "white");
-                      }
+      <Paper withBorder radius="lg" p="md">
+        {/* Header: auto | 1fr | auto */}
+        <Box
+          style={{
+            display: "grid",
+            gridTemplateColumns: "auto 1fr auto",
+            alignItems: "center",
+            gap: "1rem",
+            paddingInline: "0.25rem",
+            paddingBottom: "0.75rem",
+          }}
+        >
+          <Center>
+            <Text size="md" fw={700}>
+              {headers?.white || t("chess.white")}
+            </Text>
+          </Center>
+
+          <Center>
+            <Text size="sm" fw={600} c="dimmed">
+              Annotation
+            </Text>
+          </Center>
+
+          <Center>
+            <Text size="md" fw={700}>
+              {headers?.black || t("chess.black")}
+            </Text>
+          </Center>
+        </Box>
+
+        <Stack gap="sm">
+          {rows.map((r) => {
+            const total = r.w + r.b;
+            const wPct = total > 0 ? (r.w / total) * 100 : 0;
+            const bPct = total > 0 ? (r.b / total) * 100 : 0;
+
+            const hasAny = total > 0;
+
+            return (
+              <Paper
+                key={r.annotation}
+                withBorder
+                radius="md"
+                p="sm"
+                style={{
+                  background: "var(--mantine-color-dark-7)",
+                  borderColor: "var(--mantine-color-dark-4)",
+                }}
+              >
+                <Box
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "auto 1fr auto",
+                    alignItems: "center",
+                    gap: "1rem",
+                  }}
+                >
+                  {/* WHITE */}
+                  <Center
+                    style={{
+                      textAlign: "center",
+                      color: r.w > 0 ? r.color : undefined, // ✅ igual que tu original
                     }}
                   >
-                    {w}
-                  </Grid.Col>
-                  <Grid.Col span={1} style={{ color: w + b > 0 ? color : undefined }}>
-                    {annotation === "Best" ? (
-                      <svg
-                        viewBox="0 0 100 100"
-                        style={{ width: "1em", height: "1em", display: "inline-block", verticalAlign: "middle" }}
-                      >
-                        <path
-                          fill="currentColor"
-                          d="M 50 15 L 55.9 38.1 L 80 38.1 L 60.5 52.4 L 66.4 75.5 L 50 61.2 L 33.6 75.5 L 39.5 52.4 L 20 38.1 L 44.1 38.1 Z"
-                        />
-                      </svg>
-                    ) : (
-                      annotation
-                    )}
-                  </Grid.Col>
-                  <Grid.Col span={4} style={{ color: w + b > 0 ? color : undefined }}>
-                    {translationKey ? t(`chess.annotate.${translationKey}`) : name}
-                  </Grid.Col>
-                  <Grid.Col
-                    className={cx(b > 0 && label)}
-                    span={2}
-                    style={{ color: b > 0 ? color : undefined }}
-                    onClick={() => {
-                      if (b > 0) {
-                        goToAnnotation(s, "black");
-                      }
+                    <CountPill
+                      value={r.w}
+                      color={r.color}
+                      className={cx(r.w > 0 && label)}
+                      onClick={() => goToAnnotation(r.s, "white")}
+                    />
+                  </Center>
+
+                  {/* CENTER */}
+                  <Box style={{ minWidth: 0, color: hasAny ? r.color : undefined }}>
+                    <Group gap="sm" wrap="nowrap" style={{ minWidth: 0, marginBottom: "0.45rem" }}>
+                      <Box style={{ color: hasAny ? r.color : undefined }}>
+                        <TagGlyph annotation={r.annotation} />
+                      </Box>
+
+                      <Box
+                        style={{
+                          width: "0.45rem",
+                          height: "1.1rem",
+                          borderRadius: 999,
+                          backgroundColor: hasAny ? r.color : "var(--mantine-color-gray-7)",
+                          opacity: hasAny ? 0.95 : 0.35,
+                          flex: "0 0 auto",
+                        }}
+                      />
+
+                      <Text size="sm" truncate style={{ width: "100%" }}>
+                        {r.title}
+                      </Text>
+                    </Group>
+
+                    {/* Barra W vs B */}
+                    <Box
+                      style={{
+                        position: "relative",
+                        height: "0.6rem",
+                        borderRadius: 999,
+                        overflow: "hidden",
+                        background: "var(--mantine-color-dark-6)",
+                        border: "1px solid var(--mantine-color-dark-4)",
+                      }}
+                    >
+                      <Box
+                        style={{
+                          position: "absolute",
+                          insetInlineStart: 0,
+                          top: 0,
+                          bottom: 0,
+                          width: `${wPct}%`,
+                          background: hasAny ? r.color : "transparent",
+                          opacity: 0.55,
+                        }}
+                      />
+                      <Box
+                        style={{
+                          position: "absolute",
+                          insetInlineEnd: 0,
+                          top: 0,
+                          bottom: 0,
+                          width: `${bPct}%`,
+                          background: hasAny ? r.color : "transparent",
+                          opacity: 0.25,
+                        }}
+                      />
+                    </Box>
+                  </Box>
+
+                  {/* BLACK */}
+                  <Center
+                    style={{
+                      textAlign: "center",
+                      color: r.b > 0 ? r.color : undefined, // ✅ igual que tu original
                     }}
                   >
-                    {b}
-                  </Grid.Col>
-                </React.Fragment>
-              );
-            })}
-        </Grid>
+                    <CountPill
+                      value={r.b}
+                      color={r.color}
+                      className={cx(r.b > 0 && label)}
+                      onClick={() => goToAnnotation(r.s, "black")}
+                    />
+                  </Center>
+                </Box>
+              </Paper>
+            );
+          })}
+        </Stack>
       </Paper>
     );
   },
-  (prev, next) => {
-    return equal(prev.whiteAnnotations, next.whiteAnnotations) && equal(prev.blackAnnotations, next.blackAnnotations);
-  },
+  (prev, next) => equal(prev.whiteAnnotations, next.whiteAnnotations) && equal(prev.blackAnnotations, next.blackAnnotations),
 );
+
 
 function AccuracyCard({ color, cpl, accuracy }: { color: string; cpl: number; accuracy: number }) {
   const { t } = useTranslation();
+  const estimatedElo = cpl > 0 ? calculateEstimatedElo(cpl) : undefined;
 
   return (
     <Paper withBorder p="xs">
@@ -352,6 +696,11 @@ function AccuracyCard({ color, cpl, accuracy }: { color: string; cpl: number; ac
         <Stack gap={0} align="start">
           <Text c="dimmed">{color}</Text>
           <Text fz="sm">{cpl.toFixed(1)} ACPL</Text>
+          {estimatedElo !== undefined && (
+            <Text fz="sm" c="dimmed">
+              {Math.round(estimatedElo)} {t("dashboard.estimatedElo")}
+            </Text>
+          )}
         </Stack>
         <Stack gap={0} align="center">
           <Text fz="xl" lh="normal">
@@ -365,4 +714,5 @@ function AccuracyCard({ color, cpl, accuracy }: { color: string; cpl: number; ac
     </Paper>
   );
 }
+
 export default ReportPanel;

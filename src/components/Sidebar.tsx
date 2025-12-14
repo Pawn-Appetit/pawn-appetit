@@ -165,6 +165,7 @@ export function SideBar() {
                   <Menu.Item
                     key={link.key}
                     component={Link}
+                    
                     to={link.props.url}
                     leftSection={
                       <IconComponent size={layout.sidebar.position === "footer" ? "2.0rem" : "1.2rem"} stroke={1.5} />

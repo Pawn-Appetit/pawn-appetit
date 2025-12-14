@@ -18,6 +18,7 @@ import { IconGripVertical, IconPlayerPause, IconPlayerPlay, IconSettings, IconTa
 import { parseUci } from "chessops";
 import { INITIAL_FEN, makeFen } from "chessops/fen";
 import equal from "fast-deep-equal";
+import { currentThemeIdAtom } from "@/features/themes/state/themeAtoms";
 import { useAtom, useAtomValue } from "jotai";
 import { memo, useCallback, useDeferredValue, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -104,7 +105,6 @@ function BestMovesComponent({ id, engine, fen, moves, halfMoves, dragHandleProps
     for (const uci of moves) {
       const move = parseUci(uci);
       if (!move) {
-        console.log("Invalid move", uci);
         break;
       }
       pos.play(move);
@@ -297,6 +297,8 @@ function EngineTop({
   error: any;
 }) {
   const { t } = useTranslation();
+  const currentThemeId = useAtomValue(currentThemeIdAtom);
+  const isAcademiaMaya = currentThemeId === "academia-maya";
   const isComputed = engineVariations && engineVariations.length > 0;
   const depth = isComputed ? engineVariations[0].depth : 0;
 
@@ -317,7 +319,13 @@ function EngineTop({
         {!isGameOver && engineVariations && engineVariations.length > 0 && (
           <>
             <Stack align="center" gap={0}>
-              <Text size="0.7rem" tt="uppercase" fw={700} className={classes.subtitle}>
+              <Text 
+                size="0.7rem" 
+                tt="uppercase" 
+                fw={700} 
+                className={classes.subtitle}
+                c={isAcademiaMaya ? "gray.3" : undefined}
+              >
                 Eval
               </Text>
               <Text fw="bold" fz="md">
@@ -325,7 +333,13 @@ function EngineTop({
               </Text>
             </Stack>
             <Stack align="center" gap={0}>
-              <Text size="0.7rem" tt="uppercase" fw={700} className={classes.subtitle}>
+              <Text 
+                size="0.7rem" 
+                tt="uppercase" 
+                fw={700} 
+                className={classes.subtitle}
+                c={isAcademiaMaya ? "gray.3" : undefined}
+              >
                 Depth
               </Text>
               <Text fw="bold" fz="md">

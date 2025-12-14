@@ -15,6 +15,12 @@ export const contentEditable = style({
     backgroundColor: "transparent",
     userSelect: "none",
   },
+  [vars.lightSelector]: {
+    color: vars.colors.gray[9],
+  },
+  [vars.darkSelector]: {
+    color: vars.colors.gray[0],
+  },
 });
 
 export const contentEditablePlaceholder = style({
@@ -23,7 +29,12 @@ export const contentEditablePlaceholder = style({
     fontStyle: "italic",
     cursor: "text",
   },
-  color: vars.colors.gray[6],
+  [vars.lightSelector]: {
+    color: vars.colors.gray[7],
+  },
+  [vars.darkSelector]: {
+    color: vars.colors.gray[2],
+  },
 });
 
 export const textInput = style({

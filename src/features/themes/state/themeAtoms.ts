@@ -1,7 +1,8 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { primaryColorAtom } from "@/state/atoms";
+import { primaryColorAtom, pieceSetAtom } from "@/state/atoms";
 import { genID } from "@/utils/tabs";
+import i18n from "@/i18n";
 import { builtInThemes, getBuiltInThemeById } from "../data/builtInThemes";
 import type { Theme, ThemeExport, ThemeOperations } from "../types/theme";
 import { themeSchema } from "../types/theme";
@@ -294,6 +295,18 @@ export const setCurrentThemeAtom = atom(null, (get, set, themeId: string) => {
     set(currentThemeIdAtom, themeId);
     // Update primary color to match the new theme
     set(primaryColorAtom, theme.primaryColor);
+    
+    // Academia Maya theme specific settings
+    if (themeId === "academia-maya") {
+      // Set pieces to merida
+      set(pieceSetAtom, "merida");
+      // Set language to Spanish
+      i18n.changeLanguage("es-ES");
+      localStorage.setItem("lang", "es-ES");
+      // Trigger language change event
+      window.dispatchEvent(new Event("languageChanged"));
+    }
+    
     return theme;
   }
 

@@ -43,7 +43,7 @@ function Databases() {
 
   const players = Array.from(
     new Set(sessions.map((s) => s.player || s.lichess?.username || s.chessCom?.username || "")),
-  );
+  ).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
   const playerDbNames = players.map((name) => ({
     name,
     databases: sessions

@@ -1,6 +1,6 @@
 use log::info;
 use serde::{Deserialize, Serialize};
-use shakmaty::{fen::Fen, san::San, Chess, EnPassantMode, Position, Setup};
+use shakmaty::{fen::Fen, san::San, CastlingMode, Chess, EnPassantMode, Position, Setup};
 
 use lazy_static::lazy_static;
 use specta::Type;
@@ -50,7 +50,12 @@ struct FischerRandomRecord {
 #[specta::specta]
 pub fn get_opening_from_fen(fen: &str) -> Result<String, Error> {
     let fen: Fen = fen.parse()?;
-    get_opening_from_setup(fen.into_setup())
+    // Normalize the FEN by converting to Chess position and back to Setup
+    // This ensures consistent comparison with how openings are stored (using EnPassantMode::Legal)
+    // This way, the opening is determined by the resulting position (FEN), not by move order
+    let chess: Chess = fen.into_position(CastlingMode::Standard)?;
+    let setup = chess.into_setup(EnPassantMode::Legal);
+    get_opening_from_setup(setup)
 }
 
 #[tauri::command]
@@ -106,8 +111,6 @@ pub async fn search_opening_name(query: String) -> Result<Vec<OutOpening>, Error
 
 lazy_static! {
     static ref OPENINGS: Vec<Opening> = {
-        info!("Initializing openings table...");
-
         let mut positions = vec![
             Opening {
                 eco: "Extra".to_string(),
