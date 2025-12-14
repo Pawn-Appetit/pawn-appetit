@@ -92,10 +92,7 @@ export async function processEntriesRecursively(parent: string, entries: DirEntr
     if (entry.isDirectory) {
       const dir = await join(parent, entry.name);
       // Use readDir without baseDir since dir is an absolute path
-      const newEntries = await processEntriesRecursively(
-        dir,
-        await readDir(dir),
-      );
+      const newEntries = await processEntriesRecursively(dir, await readDir(dir));
       allEntries.push({
         type: "directory",
         name: entry.name,

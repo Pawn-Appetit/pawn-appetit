@@ -43,13 +43,13 @@ import {
   type Dispatch,
   type SetStateAction,
   Suspense,
+  startTransition,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
-  startTransition,
 } from "react";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
@@ -81,6 +81,7 @@ import { createTab } from "@/utils/tabs";
 import { type GameHeaders, type TreeNode, treeIteratorMainLine } from "@/utils/treeReducer";
 import GameNotationWrapper from "./GameNotationWrapper";
 import ResponsiveBoard from "./ResponsiveBoard";
+
 // BoardGame is a generic game board component used for:
 // - Playing games (human vs human, or via PlayVsEngineBoard wrapper for engine games)
 // - Analysis mode (via BoardAnalysis component)
@@ -453,7 +454,7 @@ export function useClockTimer(
   useEffect(() => {
     posTurnRef.current = pos?.turn;
   }, [pos?.turn]);
-  
+
   // Keep gameState in a ref to check it inside the interval callback
   const gameStateRef = useRef(gameState);
   useEffect(() => {
@@ -503,18 +504,18 @@ export function useClockTimer(
 
 /**
  * BoardGame - Generic game board component for playing chess games.
- * 
+ *
  * Responsibilities:
  * - Game setup UI (player selection, time controls, FEN input)
  * - Game state management (playing, gameOver, settingUp)
  * - Clock/timer management
  * - Move controls and game info display
  * - Human vs human gameplay
- * 
+ *
  * Does NOT handle:
  * - Engine move requests/responses (handled by PlayVsEngineBoard)
  * - Analysis engine evaluation (handled by BoardAnalysis via EvalListener)
- * 
+ *
  * When used via PlayVsEngineBoard, engine logic is added on top via useEngineMoves hook.
  */
 function BoardGame() {
@@ -669,7 +670,7 @@ function BoardGame() {
   // This helps Zustand optimize re-renders by comparing primitive values
   const root = useStore(store, (s) => s.root);
   const headers = useStore(store, (s) => s.headers);
-  
+
   const setFen = useStore(store, (s) => s.setFen);
   const setHeaders = useStore(store, (s) => s.setHeaders);
   const setResult = useStore(store, (s) => s.setResult);
@@ -691,13 +692,13 @@ function BoardGame() {
   // Use GameTimeContext if available (from PlayVsEngineBoard), otherwise use local state
   const [localWhiteTime, setLocalWhiteTime] = useState<number | null>(null);
   const [localBlackTime, setLocalBlackTime] = useState<number | null>(null);
-  
+
   // Try to use context, fallback to local state
   let whiteTime: number | null = localWhiteTime;
   let setWhiteTime: Dispatch<SetStateAction<number | null>> = setLocalWhiteTime;
   let blackTime: number | null = localBlackTime;
   let setBlackTime: Dispatch<SetStateAction<number | null>> = setLocalBlackTime;
-  
+
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { useGameTime } = require("./GameTimeContext");
@@ -719,7 +720,7 @@ function BoardGame() {
   // Extract primitive values for stable dependency tracking
   const rootFen = root.fen;
   const variant = headers.variant;
-  
+
   // Use rootFen as dependency instead of entire root object to avoid recalculation
   // when only internal tree properties (scores, annotations) change during analysis
   // Note: We still need root in dependencies for treeIteratorMainLine, but rootFen helps
@@ -727,7 +728,7 @@ function BoardGame() {
   const mainLine = useMemo(() => {
     return Array.from(treeIteratorMainLine(root));
   }, [root, rootFen]); // Recalculate when root.fen changes (new position), not on every tree mutation
-  
+
   const lastNode = useMemo(() => mainLine[mainLine.length - 1]?.node, [mainLine]);
   const moves = useMemo(() => {
     return getMainLine(root, variant === "Chess960");
@@ -861,8 +862,14 @@ function BoardGame() {
 
     const newPlayers = getPlayers();
     console.log("[BoardGame] startGame - new players:", {
-      white: { type: newPlayers.white.type, engine: newPlayers.white.type === "engine" ? newPlayers.white.engine?.name : null },
-      black: { type: newPlayers.black.type, engine: newPlayers.black.type === "engine" ? newPlayers.black.engine?.name : null },
+      white: {
+        type: newPlayers.white.type,
+        engine: newPlayers.white.type === "engine" ? newPlayers.white.engine?.name : null,
+      },
+      black: {
+        type: newPlayers.black.type,
+        engine: newPlayers.black.type === "engine" ? newPlayers.black.engine?.name : null,
+      },
     });
 
     if (newPlayers.white.timeControl) {

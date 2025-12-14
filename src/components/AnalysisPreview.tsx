@@ -1,19 +1,27 @@
 import { Box, Center, Group, Paper, Popover, Stack, Text, useMantineTheme } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
-import { parsePGN, getGameStats } from "@/utils/chess";
-import { TreeStateProvider } from "@/components/TreeStateContext";
-import EvalChart from "@/components/EvalChart";
-import { ANNOTATION_INFO, annotationColors, isBasicAnnotation } from "@/utils/annotation";
-import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import EvalChart from "@/components/EvalChart";
+import { TreeStateProvider } from "@/components/TreeStateContext";
+import { ANNOTATION_INFO, annotationColors, isBasicAnnotation } from "@/utils/annotation";
+import { getGameStats, parsePGN } from "@/utils/chess";
 
 interface AnalysisPreviewProps {
   pgn: string | null;
   children: React.ReactNode;
 }
 
-function GameStatsPreview({ whiteAnnotations, blackAnnotations, headers }: { whiteAnnotations: any; blackAnnotations: any; headers?: any }) {
+function GameStatsPreview({
+  whiteAnnotations,
+  blackAnnotations,
+  headers,
+}: {
+  whiteAnnotations: any;
+  blackAnnotations: any;
+  headers?: any;
+}) {
   const { t } = useTranslation();
 
   const rows = useMemo(() => {
@@ -62,7 +70,7 @@ function GameStatsPreview({ whiteAnnotations, blackAnnotations, headers }: { whi
       >
         <Center>
           <Text size="md" fw={700}>
-            {(headers?.white && headers.white.trim() !== "") ? headers.white : t("chess.white")}
+            {headers?.white && headers.white.trim() !== "" ? headers.white : t("chess.white")}
           </Text>
         </Center>
 
@@ -74,7 +82,7 @@ function GameStatsPreview({ whiteAnnotations, blackAnnotations, headers }: { whi
 
         <Center>
           <Text size="md" fw={700}>
-            {(headers?.black && headers.black.trim() !== "") ? headers.black : t("chess.black")}
+            {headers?.black && headers.black.trim() !== "" ? headers.black : t("chess.black")}
           </Text>
         </Center>
       </Box>
@@ -272,7 +280,9 @@ function AnalysisPreviewContent({ pgn }: { pgn: string }) {
   if (isLoading || !parsedGame || !stats) {
     return (
       <Box w={500} h={200} style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Text size="sm" c="dimmed">Loading...</Text>
+        <Text size="sm" c="dimmed">
+          Loading...
+        </Text>
       </Box>
     );
   }
@@ -284,8 +294,8 @@ function AnalysisPreviewContent({ pgn }: { pgn: string }) {
           <Paper withBorder p="xs">
             <EvalChart isAnalysing={false} startAnalysis={() => {}} />
           </Paper>
-          <GameStatsPreview 
-            whiteAnnotations={stats.whiteAnnotations} 
+          <GameStatsPreview
+            whiteAnnotations={stats.whiteAnnotations}
             blackAnnotations={stats.blackAnnotations}
             headers={parsedGame.headers}
           />
@@ -303,14 +313,7 @@ export function AnalysisPreview({ pgn, children }: AnalysisPreviewProps) {
   }
 
   return (
-    <Popover
-      width={550}
-      position="right"
-      withArrow
-      shadow="md"
-      withinPortal
-      opened={opened}
-    >
+    <Popover width={550} position="right" withArrow shadow="md" withinPortal opened={opened}>
       <Popover.Target>
         <Box onMouseEnter={open} onMouseLeave={close}>
           {children}
@@ -322,4 +325,3 @@ export function AnalysisPreview({ pgn, children }: AnalysisPreviewProps) {
     </Popover>
   );
 }
-

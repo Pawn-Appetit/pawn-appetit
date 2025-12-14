@@ -1,9 +1,9 @@
 import { Badge, Box, Button, Card, Group, Image, Stack, Text, Title } from "@mantine/core";
 import { IconChess, IconUpload } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
-import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { useAtomValue } from "jotai";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { currentThemeIdAtom } from "@/features/themes/state/themeAtoms";
 
 interface WelcomeCardProps {
@@ -24,12 +24,19 @@ interface WelcomeCardProps {
   };
 }
 
-export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirstName, playerGender, fideInfo }: WelcomeCardProps) {
+export function WelcomeCard({
+  isFirstOpen,
+  onPlayChess,
+  onImportGame,
+  playerFirstName,
+  playerGender,
+  fideInfo,
+}: WelcomeCardProps) {
   const { t } = useTranslation();
   const currentThemeId = useAtomValue(currentThemeIdAtom);
   const [imageError, setImageError] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | undefined>(undefined);
-  
+
   // Convert file path to URL if needed (for local files)
   // If it's already a URL (http/https) or tauri://, use it directly
   useEffect(() => {
@@ -72,7 +79,7 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
 
   // Determine welcome message based on first open, player name, title, and gender
   let welcomeMessage: string;
-  
+
   if (isFirstOpen) {
     welcomeMessage = t("features.dashboard.welcome.firstOpen");
   } else if (playerFirstName) {
@@ -80,12 +87,12 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
     // If there's a FIDE title, include it in the greeting
     if (fideInfo?.title) {
       const nameWithTitle = `${fideInfo.title} ${playerFirstName}`;
-      welcomeMessage = t(`features.dashboard.welcome.backWithName.${genderKey}`, { 
-        name: nameWithTitle
+      welcomeMessage = t(`features.dashboard.welcome.backWithName.${genderKey}`, {
+        name: nameWithTitle,
       });
     } else {
-      welcomeMessage = t(`features.dashboard.welcome.backWithName.${genderKey}`, { 
-        name: playerFirstName 
+      welcomeMessage = t(`features.dashboard.welcome.backWithName.${genderKey}`, {
+        name: playerFirstName,
       });
     }
   } else {
@@ -94,7 +101,7 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
 
   return (
     <Card shadow="sm" p="lg" radius="md" withBorder>
-      <Group align="flex-start" justify="space-between" wrap="nowrap" gap="xl">
+      <Group align="center" justify="space-between" wrap="nowrap" gap="xl">
         {/* Left column: FIDE profile photo - only show if it exists */}
         {photoUrl ? (
           <Box
@@ -120,7 +127,7 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
             />
           </Box>
         ) : null}
-        
+
         {/* Central column: Information and actions */}
         <Stack gap="md" style={{ flex: 1, minWidth: 0 }}>
           <Stack gap={4}>
@@ -131,7 +138,7 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
               {t("features.dashboard.welcome.desc")}
             </Text>
           </Stack>
-          
+
           {/* FIDE Information */}
           {fideInfo && (fideInfo.title || fideInfo.age || fideInfo.worldRank || fideInfo.nationalRank) && (
             <Group gap="md" wrap="wrap">
@@ -157,7 +164,7 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
               )}
             </Group>
           )}
-          
+
           {/* Ratings FIDE */}
           {fideInfo && (fideInfo.standardRating || fideInfo.rapidRating || fideInfo.blitzRating) && (
             <Group gap="xl" align="flex-start">
@@ -193,7 +200,7 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
               )}
             </Group>
           )}
-          
+
           {/* Action buttons */}
           <Group gap="xs" mt="xs">
             <Button radius="md" onClick={onPlayChess} leftSection={<IconChess size={18} />}>
@@ -204,13 +211,13 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame, playerFirs
             </Button>
           </Group>
         </Stack>
-        
+
         {/* Columna derecha: Imagen de fondo del tema */}
         <Box style={{ flexShrink: 0 }}>
-          <Image 
-            src={backgroundImageSrc} 
-            alt={backgroundImageAlt} 
-            radius="lg" 
+          <Image
+            src={backgroundImageSrc}
+            alt={backgroundImageAlt}
+            radius="lg"
             onError={handleImageError}
             width={280}
             height={280}

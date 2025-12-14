@@ -103,5 +103,3 @@ export async function applyPieceSetPreviewCss(
   const styleEl = getStyleEl();
   styleEl.textContent = css;
 }
-
-

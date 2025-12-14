@@ -479,6 +479,3 @@ export function analyzeOpeningCharacteristics(openingName: string): OpeningChara
 export function isGambitName(name: string): boolean {
   return analyzeOpeningCharacteristics(name).isGambit;
 }
-
-
-

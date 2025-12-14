@@ -13,18 +13,18 @@
  * - extraction.ts: Extraction of ECOs from player game info
  */
 
-export type { StyleVector, PlayerStyleLabel } from "./types";
 export { extractEcosFromPlayerInfo } from "./extraction";
-export { styleFromEcoList } from "./styleVector";
 export { getPlayerStyleLabel } from "./styleLabel";
+export { styleFromEcoList } from "./styleVector";
+export type { PlayerStyleLabel, StyleVector } from "./types";
 
 /**
  * High-level helper: analyze player style from PlayerGameInfo.
  * Analyzes only the most common openings (top 10 or 50% of games) to focus on core repertoire.
  */
 import { extractEcosFromPlayerInfo } from "./extraction";
-import { styleFromEcoList } from "./styleVector";
 import { getPlayerStyleLabel } from "./styleLabel";
+import { styleFromEcoList } from "./styleVector";
 import type { PlayerStyleLabel } from "./types";
 
 export function analyzePlayerStyle(
@@ -42,4 +42,3 @@ export function analyzePlayerStyle(
   const vector = styleFromEcoList(openings);
   return getPlayerStyleLabel(vector);
 }
-

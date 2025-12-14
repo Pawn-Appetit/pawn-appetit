@@ -2,16 +2,16 @@ import { AreaChart } from "@mantine/charts";
 import { Alert, Box, Grid, Group, Paper, Popover, SegmentedControl, Stack, Text, useMantineTheme } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
+import equal from "fast-deep-equal";
 import React, { useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
-import { parsePGN, getGameStats } from "@/utils/chess";
-import { positionFromFen } from "@/utils/chessops";
-import { TreeStateProvider, TreeStateContext } from "@/components/TreeStateContext";
+import { TreeStateContext, TreeStateProvider } from "@/components/TreeStateContext";
 import { ANNOTATION_INFO, annotationColors, isBasicAnnotation } from "@/utils/annotation";
+import { getGameStats, parsePGN } from "@/utils/chess";
+import { positionFromFen } from "@/utils/chessops";
 import { skipWhile, takeWhile } from "@/utils/misc";
 import { type ListNode, type TreeNode, treeIteratorMainLine } from "@/utils/treeReducer";
-import equal from "fast-deep-equal";
 
 interface ReportPreviewProps {
   pgn: string | null;
@@ -227,7 +227,9 @@ function ReportPreviewContent({ pgn }: { pgn: string }) {
   if (isLoading || !parsedGame || !stats) {
     return (
       <Box w={500} h={300} style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Text size="sm" c="dimmed">Loading...</Text>
+        <Text size="sm" c="dimmed">
+          Loading...
+        </Text>
       </Box>
     );
   }
@@ -240,7 +242,7 @@ function ReportPreviewContent({ pgn }: { pgn: string }) {
           <Paper withBorder p="xs">
             <EvalChartCompact />
           </Paper>
-          
+
           {/* Stats - compact version */}
           <Paper withBorder p="xs">
             <Grid columns={11} justify="space-between" gutter={4}>
@@ -266,20 +268,24 @@ function ReportPreviewContent({ pgn }: { pgn: string }) {
                   const w = stats.whiteAnnotations[s];
                   const b = stats.blackAnnotations[s];
                   const total = w + b;
-                  
+
                   return (
                     <React.Fragment key={annotation}>
-                      <Grid.Col
-                        span={4}
-                        style={{ textAlign: "center", color: w > 0 ? color : undefined }}
-                      >
-                        <Text size="xs" fw={w > 0 ? 700 : 400}>{w}</Text>
+                      <Grid.Col span={4} style={{ textAlign: "center", color: w > 0 ? color : undefined }}>
+                        <Text size="xs" fw={w > 0 ? 700 : 400}>
+                          {w}
+                        </Text>
                       </Grid.Col>
                       <Grid.Col span={1} style={{ color: total > 0 ? color : undefined, textAlign: "center" }}>
                         {annotation === "Best" ? (
                           <svg
                             viewBox="0 0 100 100"
-                            style={{ width: "0.8em", height: "0.8em", display: "inline-block", verticalAlign: "middle" }}
+                            style={{
+                              width: "0.8em",
+                              height: "0.8em",
+                              display: "inline-block",
+                              verticalAlign: "middle",
+                            }}
                           >
                             <path
                               fill="currentColor"
@@ -290,16 +296,15 @@ function ReportPreviewContent({ pgn }: { pgn: string }) {
                           <Text size="xs">{annotation}</Text>
                         )}
                       </Grid.Col>
-                      <Grid.Col span={4} style={{ color: total > 0 ? color : undefined, textAlign: "center"  }}>
+                      <Grid.Col span={4} style={{ color: total > 0 ? color : undefined, textAlign: "center" }}>
                         <Text size="xs" truncate>
                           {translationKey ? t(`chess.annotate.${translationKey}`) : ANNOTATION_INFO[s].name}
                         </Text>
                       </Grid.Col>
-                      <Grid.Col
-                        span={2}
-                        style={{ textAlign: "center", color: b > 0 ? color : undefined }}
-                      >
-                        <Text size="xs" fw={b > 0 ? 700 : 400}>{b}</Text>
+                      <Grid.Col span={2} style={{ textAlign: "center", color: b > 0 ? color : undefined }}>
+                        <Text size="xs" fw={b > 0 ? 700 : 400}>
+                          {b}
+                        </Text>
                       </Grid.Col>
                     </React.Fragment>
                   );
@@ -320,14 +325,7 @@ export function ReportPreview({ pgn, children }: ReportPreviewProps & { children
   }
 
   return (
-    <Popover
-      width={550}
-      position="right"
-      withArrow
-      shadow="md"
-      withinPortal
-      opened={opened}
-    >
+    <Popover width={550} position="right" withArrow shadow="md" withinPortal opened={opened}>
       <Popover.Target>
         <Box onMouseEnter={open} onMouseLeave={close}>
           {children}
@@ -339,4 +337,3 @@ export function ReportPreview({ pgn, children }: ReportPreviewProps & { children
     </Popover>
   );
 }
-

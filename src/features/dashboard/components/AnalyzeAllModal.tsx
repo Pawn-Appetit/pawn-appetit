@@ -32,7 +32,14 @@ interface AnalyzeAllModalProps {
   analyzeMode?: "all" | "unanalyzed";
 }
 
-export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount, unanalyzedGameCount, analyzeMode = "unanalyzed" }: AnalyzeAllModalProps) {
+export function AnalyzeAllModal({
+  opened,
+  onClose,
+  onAnalyze,
+  gameCount,
+  unanalyzedGameCount,
+  analyzeMode = "unanalyzed",
+}: AnalyzeAllModalProps) {
   const { t } = useTranslation();
   const ANALYSIS_OPTIONS = getAnalysisOptions(t);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -49,16 +56,12 @@ export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount, unanaly
 
   // Calculate the actual game count based on selected mode - use useMemo to update when form values change
   const actualGameCount = useMemo(() => {
-    return form.values.analyzeMode === "unanalyzed" 
-      ? (unanalyzedGameCount ?? gameCount)
-      : gameCount;
+    return form.values.analyzeMode === "unanalyzed" ? (unanalyzedGameCount ?? gameCount) : gameCount;
   }, [form.values.analyzeMode, unanalyzedGameCount, gameCount]);
 
   const handleSubmit = async () => {
     const selectedOption = ANALYSIS_OPTIONS[form.values.speed];
-    const countToAnalyze = form.values.analyzeMode === "unanalyzed" 
-      ? (unanalyzedGameCount ?? gameCount)
-      : gameCount;
+    const countToAnalyze = form.values.analyzeMode === "unanalyzed" ? (unanalyzedGameCount ?? gameCount) : gameCount;
     setIsAnalyzing(true);
     setProgress({ current: 0, total: countToAnalyze });
     cancelledRef.current = false;
@@ -118,7 +121,9 @@ export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount, unanaly
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack gap="md">
           <Text size="sm" c="dimmed">
-            {t(`features.dashboard.selectAnalysisDepth_${actualGameCount === 1 ? "one" : "other"}`, { count: actualGameCount })}
+            {t(`features.dashboard.selectAnalysisDepth_${actualGameCount === 1 ? "one" : "other"}`, {
+              count: actualGameCount,
+            })}
           </Text>
 
           <Radio.Group
@@ -132,7 +137,11 @@ export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount, unanaly
             </Stack>
           </Radio.Group>
 
-          <Radio.Group label={t("features.dashboard.analysisDepth")} {...form.getInputProps("speed")} disabled={isAnalyzing}>
+          <Radio.Group
+            label={t("features.dashboard.analysisDepth")}
+            {...form.getInputProps("speed")}
+            disabled={isAnalyzing}
+          >
             <Stack gap="xs">
               {Object.entries(ANALYSIS_OPTIONS).map(([key, option]) => (
                 <Radio key={key} value={key} label={option.label} />

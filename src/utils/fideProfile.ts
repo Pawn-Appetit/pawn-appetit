@@ -68,7 +68,7 @@ export async function loadFideProfileById(fideId: string): Promise<FideProfile |
         name: profile.name,
         title: profile.title,
         standardRating: profile.standardRating,
-        photo: profile.photo ? "present" : "missing"
+        photo: profile.photo ? "present" : "missing",
       });
     }
     return profile;
@@ -87,7 +87,7 @@ export async function loadFideProfileById(fideId: string): Promise<FideProfile |
 export async function saveFideProfile(profile: FideProfile): Promise<void> {
   try {
     const dir = await appDataDir();
-    
+
     // Save to new multiple profiles file
     const profilesFile = await resolve(dir, PROFILES_FILENAME);
     let profiles: FideProfiles = {};
@@ -99,17 +99,17 @@ export async function saveFideProfile(profile: FideProfile): Promise<void> {
     } catch {
       // File doesn't exist, start with empty object
     }
-    
+
     const profileWithTimestamp = {
       ...profile,
       updatedAt: new Date().toISOString(),
     };
-    
+
     profiles[profile.fideId] = profileWithTimestamp;
     console.log("[FideProfile] Saving profile for FIDE ID:", profile.fideId, "to", PROFILES_FILENAME);
     await writeTextFile(profilesFile, JSON.stringify(profiles, null, 2));
     console.log("[FideProfile] Profile saved successfully");
-    
+
     // Also save to legacy file for backward compatibility
     const legacyFile = await resolve(dir, FILENAME);
     await writeTextFile(legacyFile, JSON.stringify(profileWithTimestamp, null, 2));
@@ -133,7 +133,7 @@ export async function deleteFideProfileById(fideId: string): Promise<void> {
   try {
     const dir = await appDataDir();
     const profilesFile = await resolve(dir, PROFILES_FILENAME);
-    
+
     let profiles: FideProfiles = {};
     try {
       const text = await readTextFile(profilesFile);
@@ -144,7 +144,7 @@ export async function deleteFideProfileById(fideId: string): Promise<void> {
       // File doesn't exist, nothing to delete
       return;
     }
-    
+
     delete profiles[fideId];
     await writeTextFile(profilesFile, JSON.stringify(profiles, null, 2));
   } catch (error) {

@@ -2,8 +2,8 @@
  * Extract ECO codes from opening names using multiple strategies.
  */
 
-import { SPECIFIC_OPENING_MAP } from "./openingsMap";
 import { isGambitName } from "./characteristics";
+import { SPECIFIC_OPENING_MAP } from "./openingsMap";
 
 /**
  * Extract ECO code from a full opening name using multiple strategies.
@@ -205,6 +205,3 @@ export function extractEcoFromOpening(openingName: string): string | null {
 
   return null;
 }
-
-
-

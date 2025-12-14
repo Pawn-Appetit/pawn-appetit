@@ -18,12 +18,12 @@ import { IconGripVertical, IconPlayerPause, IconPlayerPlay, IconSettings, IconTa
 import { parseUci } from "chessops";
 import { INITIAL_FEN, makeFen } from "chessops/fen";
 import equal from "fast-deep-equal";
-import { currentThemeIdAtom } from "@/features/themes/state/themeAtoms";
 import { useAtom, useAtomValue } from "jotai";
 import { memo, useCallback, useDeferredValue, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import type { BestMoves } from "@/bindings";
+import { currentThemeIdAtom } from "@/features/themes/state/themeAtoms";
 import {
   activeTabAtom,
   currentThreatAtom,
@@ -319,10 +319,10 @@ function EngineTop({
         {!isGameOver && engineVariations && engineVariations.length > 0 && (
           <>
             <Stack align="center" gap={0}>
-              <Text 
-                size="0.7rem" 
-                tt="uppercase" 
-                fw={700} 
+              <Text
+                size="0.7rem"
+                tt="uppercase"
+                fw={700}
                 className={classes.subtitle}
                 c={isAcademiaMaya ? "gray.3" : undefined}
               >
@@ -333,10 +333,10 @@ function EngineTop({
               </Text>
             </Stack>
             <Stack align="center" gap={0}>
-              <Text 
-                size="0.7rem" 
-                tt="uppercase" 
-                fw={700} 
+              <Text
+                size="0.7rem"
+                tt="uppercase"
+                fw={700}
                 className={classes.subtitle}
                 c={isAcademiaMaya ? "gray.3" : undefined}
               >

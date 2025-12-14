@@ -4,7 +4,7 @@
  * Returns labels with translation keys for i18n support.
  */
 
-import type { StyleVector, PlayerStyleLabel } from "./types";
+import type { PlayerStyleLabel, StyleVector } from "./types";
 
 export function getPlayerStyleLabel(vector: StyleVector): PlayerStyleLabel {
   const totalRaw = Object.values(vector).reduce((sum, val) => sum + val, 0);
@@ -256,12 +256,11 @@ export function getPlayerStyleLabel(vector: StyleVector): PlayerStyleLabel {
     },
   };
 
-  return styleMap[primaryKey] ?? {
-    label: "playerStyle.mixedStyle",
-    description: "playerStyle.mixedStyleDescription",
-    color: "gray",
-  };
+  return (
+    styleMap[primaryKey] ?? {
+      label: "playerStyle.mixedStyle",
+      description: "playerStyle.mixedStyleDescription",
+      color: "gray",
+    }
+  );
 }
-
-
-

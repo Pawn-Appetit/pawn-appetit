@@ -12,8 +12,8 @@ interface RatingHistory {
 }
 
 interface FidePlayerData {
-  name: string; 
-  firstName: string; 
+  name: string;
+  firstName: string;
   gender: "male" | "female";
   title?: string;
   standardRating?: number;
@@ -38,7 +38,17 @@ interface UserProfileCardProps {
   platform?: "lichess" | "chesscom" | null; // Platform of the main account
 }
 
-export function UserProfileCard({ name, handle, title, ratingHistory, onFideUpdate, currentFideId, fidePlayer, customName, platform }: UserProfileCardProps) {
+export function UserProfileCard({
+  name,
+  handle,
+  title,
+  ratingHistory,
+  onFideUpdate,
+  currentFideId,
+  fidePlayer,
+  customName,
+  platform,
+}: UserProfileCardProps) {
   const [editModalOpened, setEditModalOpened] = useState(false);
 
   const handleSave = (fideId: string, fidePlayer: FidePlayerData | null, displayName?: string) => {
@@ -52,14 +62,14 @@ export function UserProfileCard({ name, handle, title, ratingHistory, onFideUpda
 
   // Determine which title to display (FIDE title has priority if it exists)
   const displayTitle = fidePlayer?.title || title;
-  
+
   // Determine which ratings to display
   // Priority: Online account ratings (Chess.com/Lichess) > FIDE ratings
   // This ensures that when the main account is from Chess.com or Lichess,
   // we show the actual online ratings, not FIDE ratings
   // Only show classical if platform is Lichess (Chess.com doesn't have classical)
   const displayRatings = {
-    classical: platform === "lichess" ? (ratingHistory.classical || fidePlayer?.standardRating) : undefined,
+    classical: platform === "lichess" ? ratingHistory.classical || fidePlayer?.standardRating : undefined,
     rapid: ratingHistory.rapid || fidePlayer?.rapidRating,
     blitz: ratingHistory.blitz || fidePlayer?.blitzRating,
     bullet: ratingHistory.bullet,
@@ -90,13 +100,10 @@ export function UserProfileCard({ name, handle, title, ratingHistory, onFideUpda
                 </Box>
               )}
               <Group gap={6} wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
-                <Text fw={700} truncate>{displayName}</Text>
-                <ActionIcon
-                  variant="subtle"
-                  size="sm"
-                  onClick={() => setEditModalOpened(true)}
-                  title="Edit profile"
-                >
+                <Text fw={700} truncate>
+                  {displayName}
+                </Text>
+                <ActionIcon variant="subtle" size="sm" onClick={() => setEditModalOpened(true)} title="Edit profile">
                   <IconEdit size={16} />
                 </ActionIcon>
               </Group>

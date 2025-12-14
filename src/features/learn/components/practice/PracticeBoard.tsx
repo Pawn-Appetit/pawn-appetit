@@ -1,5 +1,6 @@
 import type { DrawShape } from "@lichess-org/chessground/draw";
 import { Box, Paper } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import { makeSquare, type NormalMove, parseSquare, parseUci } from "chessops";
 import { chessgroundDests } from "chessops/compat";
 import { makeFen } from "chessops/fen";
@@ -13,7 +14,6 @@ import { TreeStateProvider } from "@/components/TreeStateContext";
 import { enginesAtom } from "@/state/atoms";
 import { positionFromFen } from "@/utils/chessops";
 import type { LocalEngine } from "@/utils/engines";
-import { notifications } from "@mantine/notifications";
 
 interface PracticeBoardProps {
   fen: string;

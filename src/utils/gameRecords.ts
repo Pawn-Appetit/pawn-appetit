@@ -1,5 +1,5 @@
 import { appDataDir, resolve } from "@tauri-apps/api/path";
-import { readTextFile, writeTextFile, exists, mkdir } from "@tauri-apps/plugin-fs";
+import { exists, mkdir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { error, info } from "@tauri-apps/plugin-log";
 import { getGameStats, parsePGN } from "@/utils/chess";
 import { calculateEstimatedElo } from "@/utils/eloEstimation";
@@ -33,16 +33,16 @@ export async function saveGameRecord(record: GameRecord) {
   try {
     const dir = await appDataDir();
     info(`[gameRecords] Saving game record to directory: ${dir}`);
-    
+
     // Ensure directory exists
     if (!(await exists(dir))) {
       await mkdir(dir, { recursive: true });
       info(`[gameRecords] Created directory: ${dir}`);
     }
-    
+
     const file = await resolve(dir, FILENAME);
     info(`[gameRecords] Game records file path: ${file}`);
-    
+
     let records: GameRecord[] = [];
     try {
       if (await exists(file)) {
@@ -56,13 +56,13 @@ export async function saveGameRecord(record: GameRecord) {
       error(`[gameRecords] Failed to read existing game records: ${err}`);
       // Continue with empty array
     }
-    
+
     records.unshift(record);
     info(`[gameRecords] Saving ${records.length} game records (added new record with id: ${record.id})`);
-    
+
     await writeTextFile(file, JSON.stringify(records));
     info(`[gameRecords] Successfully saved game records to ${file}`);
-    
+
     if (typeof window !== "undefined") {
       try {
         window.dispatchEvent(new Event("games:updated"));
@@ -81,20 +81,20 @@ export async function getRecentGames(limit = 20): Promise<GameRecord[]> {
   try {
     const dir = await appDataDir();
     info(`[gameRecords] Loading games from directory: ${dir}`);
-    
+
     const file = await resolve(dir, FILENAME);
     info(`[gameRecords] Game records file path: ${file}`);
-    
+
     // Check if file exists
     if (!(await exists(file))) {
       info(`[gameRecords] Game records file does not exist at ${file}`);
       return [];
     }
-    
+
     try {
       const text = await readTextFile(file);
       info(`[gameRecords] Read ${text.length} characters from game records file`);
-      
+
       const records: GameRecord[] = JSON.parse(text);
       info(`[gameRecords] Parsed ${records.length} game records from file`);
 
@@ -125,7 +125,7 @@ export async function getRecentGames(limit = 20): Promise<GameRecord[]> {
       info(`[gameRecords] Found ${validRecords.length} valid game records (filtered from ${records.length} total)`);
       const limited = validRecords.slice(0, limit);
       info(`[gameRecords] Returning ${limited.length} game records (limited to ${limit})`);
-      
+
       return limited;
     } catch (err) {
       error(`[gameRecords] Failed to read or parse game records from ${file}: ${err}`);

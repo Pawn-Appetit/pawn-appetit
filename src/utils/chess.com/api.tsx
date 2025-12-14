@@ -150,7 +150,6 @@ export async function fetchLastChessComGames(
         }
       } catch (e) {
         error(`Error fetching games from ${archiveUrl}: ${e}`);
-        continue;
       }
     }
 

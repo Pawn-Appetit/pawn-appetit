@@ -32,7 +32,7 @@ export async function saveMainAccount(account: MainAccount): Promise<void> {
     await writeTextFile(file, JSON.stringify(accountWithTimestamp, null, 2));
     // Also save to localStorage for backward compatibility
     localStorage.setItem("mainAccount", account.name);
-    
+
     // Trigger custom event for dashboard to listen
     window.dispatchEvent(new CustomEvent("mainAccountChanged", { detail: account }));
   } catch (error) {
@@ -55,7 +55,7 @@ export async function loadMainAccount(): Promise<MainAccount | null> {
       return null;
     }
     const account = JSON.parse(text) as MainAccount;
-    
+
     // Load FIDE ID from account_fide_ids.json if not in main_account.json
     if (!account.fideId) {
       const fideId = await getAccountFideId(account.name);
@@ -63,7 +63,7 @@ export async function loadMainAccount(): Promise<MainAccount | null> {
         account.fideId = fideId;
       }
     }
-    
+
     return account;
   } catch (error) {
     // File doesn't exist, try localStorage
@@ -85,7 +85,7 @@ export async function saveAccountFideId(accountName: string, fideId: string | nu
   try {
     const dir = await appDataDir();
     const file = await resolve(dir, FIDE_IDS_FILENAME);
-    
+
     let fideIds: AccountFideIds = {};
     try {
       const text = await readTextFile(file);
@@ -95,7 +95,7 @@ export async function saveAccountFideId(accountName: string, fideId: string | nu
     } catch {
       // File doesn't exist, start with empty object
     }
-    
+
     if (fideId) {
       fideIds[accountName] = fideId;
       devLog("[MainAccount] Saving FIDE ID", fideId, "for account", accountName);
@@ -103,7 +103,7 @@ export async function saveAccountFideId(accountName: string, fideId: string | nu
       delete fideIds[accountName];
       devLog("[MainAccount] Removing FIDE ID for account", accountName);
     }
-    
+
     await writeTextFile(file, JSON.stringify(fideIds, null, 2));
     devLog("[MainAccount] FIDE IDs saved:", Object.keys(fideIds));
   } catch (error) {
@@ -135,7 +135,7 @@ export async function saveAccountDisplayName(accountName: string, displayName: s
   try {
     const dir = await appDataDir();
     const file = await resolve(dir, DISPLAY_NAMES_FILENAME);
-    
+
     let displayNames: AccountDisplayNames = {};
     try {
       const text = await readTextFile(file);
@@ -145,13 +145,13 @@ export async function saveAccountDisplayName(accountName: string, displayName: s
     } catch {
       // File doesn't exist, start with empty object
     }
-    
+
     if (displayName) {
       displayNames[accountName] = displayName;
     } else {
       delete displayNames[accountName];
     }
-    
+
     await writeTextFile(file, JSON.stringify(displayNames, null, 2));
   } catch (error) {
     console.error("Error saving account display name:", error);
@@ -180,7 +180,7 @@ export async function updateMainAccountFideId(fideId: string | null): Promise<vo
     if (account) {
       // Save FIDE ID for this account
       await saveAccountFideId(account.name, fideId);
-      
+
       // Also update main account if it's the current one
       if (fideId) {
         account.fideId = fideId;

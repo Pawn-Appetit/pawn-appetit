@@ -3,16 +3,16 @@ import { IconMoodEmpty } from "@tabler/icons-react";
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { remove } from "@tauri-apps/plugin-fs";
 import { useAtom } from "jotai";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { DatabaseInfo } from "@/bindings";
 import { commands } from "@/bindings";
 import type { SortState } from "@/components/GenericHeader";
 import { sessionsAtom } from "@/state/atoms";
 import { getChessComAccount, getStats } from "@/utils/chess.com/api";
 import { getLichessAccount } from "@/utils/lichess/api";
+import { getAccountFideId, saveMainAccount } from "@/utils/mainAccount";
 import type { Session } from "@/utils/session";
 import { AccountCard } from "../AccountCard";
-import { saveMainAccount, getAccountFideId } from "@/utils/mainAccount";
 
 function AccountCards({
   databases,
@@ -28,23 +28,31 @@ function AccountCards({
   isLoading?: boolean;
 }) {
   const [sessions, setSessions] = useAtom(sessionsAtom);
-  
+
   // Memoize player names extraction to avoid recalculation on every render
-  const playerNames = useMemo(() => Array.from(
-    new Set(
-      sessions
-        .map((s) => s.player ?? s.lichess?.username ?? s.chessCom?.username)
-        .filter((n): n is string => typeof n === "string" && n.length > 0),
-    ),
-  ), [sessions]);
+  const playerNames = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          sessions
+            .map((s) => s.player ?? s.lichess?.username ?? s.chessCom?.username)
+            .filter((n): n is string => typeof n === "string" && n.length > 0),
+        ),
+      ),
+    [sessions],
+  );
 
   // Memoize player sessions grouping
-  const playerSessions = useMemo(() => playerNames.map((name) => ({
-    name,
-    sessions: sessions.filter(
-      (s) => s.player === name || s.lichess?.username === name || s.chessCom?.username === name,
-    ),
-  })), [playerNames, sessions]);
+  const playerSessions = useMemo(
+    () =>
+      playerNames.map((name) => ({
+        name,
+        sessions: sessions.filter(
+          (s) => s.player === name || s.lichess?.username === name || s.chessCom?.username === name,
+        ),
+      })),
+    [playerNames, sessions],
+  );
 
   // Memoize rating calculation functions to avoid recreation on every render
   const bestRatingForSession = useCallback((s: Session): number => {
@@ -62,35 +70,38 @@ function AccountCards({
     return -1;
   }, []);
 
-  const bestRatingForPlayer = useCallback((sessions: Session[]): number => {
-    const vals = sessions.map(bestRatingForSession).filter((v) => v >= 0);
-    return vals.length ? Math.max(...vals) : -1;
-  }, [bestRatingForSession]);
+  const bestRatingForPlayer = useCallback(
+    (sessions: Session[]): number => {
+      const vals = sessions.map(bestRatingForSession).filter((v) => v >= 0);
+      return vals.length ? Math.max(...vals) : -1;
+    },
+    [bestRatingForSession],
+  );
 
   // Memoize filtered and sorted results to avoid expensive operations on every render
   const filteredAndSorted = useMemo(() => {
-  const q = query.trim().toLowerCase();
+    const q = query.trim().toLowerCase();
     return playerSessions
-    .filter(({ name, sessions }) => {
-      if (!q) return true;
-      const usernames = sessions
-        .map((s) => s.lichess?.username || s.chessCom?.username || "")
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return name.toLowerCase().includes(q) || usernames.includes(q);
-    })
-    .sort((a, b) => {
-      let comparison = 0;
-      if (sortBy.field === "name") {
-        comparison = a.name.toLowerCase().localeCompare(b.name.toLowerCase());
-      } else if (sortBy.field === "elo") {
-        const ra = bestRatingForPlayer(a.sessions);
-        const rb = bestRatingForPlayer(b.sessions);
-        comparison = ra - rb;
-      }
-      return sortBy.direction === "asc" ? comparison : -comparison;
-    });
+      .filter(({ name, sessions }) => {
+        if (!q) return true;
+        const usernames = sessions
+          .map((s) => s.lichess?.username || s.chessCom?.username || "")
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return name.toLowerCase().includes(q) || usernames.includes(q);
+      })
+      .sort((a, b) => {
+        let comparison = 0;
+        if (sortBy.field === "name") {
+          comparison = a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+        } else if (sortBy.field === "elo") {
+          const ra = bestRatingForPlayer(a.sessions);
+          const rb = bestRatingForPlayer(b.sessions);
+          comparison = ra - rb;
+        }
+        return sortBy.direction === "asc" ? comparison : -comparison;
+      });
   }, [playerSessions, query, sortBy, bestRatingForPlayer]);
 
   const [mainAccount, setMainAccount] = useState<string | null>(null);
@@ -104,13 +115,15 @@ function AccountCards({
     if (mainAccount) {
       localStorage.setItem("mainAccount", mainAccount);
       // Load FIDE ID for this account if it exists
-      getAccountFideId(mainAccount).then((fideId) => {
-        // Also save to new JSON format with FIDE ID if it exists
-        saveMainAccount({ name: mainAccount, fideId: fideId || undefined }).catch(console.error);
-      }).catch(() => {
-        // If no FIDE ID, just save the account name
-        saveMainAccount({ name: mainAccount }).catch(console.error);
-      });
+      getAccountFideId(mainAccount)
+        .then((fideId) => {
+          // Also save to new JSON format with FIDE ID if it exists
+          saveMainAccount({ name: mainAccount, fideId: fideId || undefined }).catch(console.error);
+        })
+        .catch(() => {
+          // If no FIDE ID, just save the account name
+          saveMainAccount({ name: mainAccount }).catch(console.error);
+        });
     }
   }, [mainAccount]);
 

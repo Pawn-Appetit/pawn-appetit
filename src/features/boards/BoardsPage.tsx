@@ -7,9 +7,8 @@ import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Mosaic, type MosaicNode } from "react-mosaic-component";
 import { match } from "ts-pattern";
-
-import { createTab, type Tab } from "@/utils/tabs";
 import { currentGameStateAtom } from "@/state/atoms";
+import { createTab, type Tab } from "@/utils/tabs";
 import * as classes from "./BoardsPage.css";
 import { BoardTab } from "./components/BoardTab";
 
@@ -18,9 +17,9 @@ import "@/styles/react-mosaic.css";
 import { TreeStateProvider } from "@/components/TreeStateContext";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import BoardAnalysis from "./components/BoardAnalysis";
-import PlayVsEngineBoard from "./components/PlayVsEngineBoard";
 import BoardVariants from "./components/BoardVariants";
 import NewTab from "./components/NewTab";
+import PlayVsEngineBoard from "./components/PlayVsEngineBoard";
 import Puzzles from "./components/puzzles/Puzzles";
 import ReportProgressSubscriber from "./components/ReportProgressSubscriber";
 import {
@@ -74,7 +73,7 @@ export default function BoardsPage() {
   const activeTabData = tabs.find((tab) => tab.value === activeTab);
   const isPlayMode = activeTabData?.type === "play";
   const gameState = useAtomValue(currentGameStateAtom);
-  
+
   // Hide tabs only when playing or game over, show them during setup
   const shouldHideTabs = isPlayMode && (gameState === "playing" || gameState === "gameOver");
 
@@ -159,12 +158,12 @@ export default function BoardsPage() {
           </Box>
         )}
         {tabs.map((tab) => (
-          <Tabs.Panel 
-            key={tab.value} 
-            value={tab.value} 
-            h="100%" 
-            w="100%" 
-            px={tab.type === "play" ? 0 : "md"} 
+          <Tabs.Panel
+            key={tab.value}
+            value={tab.value}
+            h="100%"
+            w="100%"
+            px={tab.type === "play" ? 0 : "md"}
             pb={tab.type === "play" ? 0 : "md"}
             pt={tab.type === "play" ? 0 : undefined}
           >

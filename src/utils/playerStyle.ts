@@ -6,16 +6,16 @@
  * to maintain backward compatibility with existing imports.
  */
 
-// Re-export all types and functions from the modular implementation
-export type { StyleVector, PlayerStyleLabel } from "./playerStyle/types";
 export { extractEcosFromPlayerInfo } from "./playerStyle/extraction";
-export { styleFromEcoList } from "./playerStyle/styleVector";
 export { getPlayerStyleLabel } from "./playerStyle/styleLabel";
+export { styleFromEcoList } from "./playerStyle/styleVector";
+// Re-export all types and functions from the modular implementation
+export type { PlayerStyleLabel, StyleVector } from "./playerStyle/types";
 
 // Import dependencies for analyzePlayerStyle
 import { extractEcosFromPlayerInfo } from "./playerStyle/extraction";
-import { styleFromEcoList } from "./playerStyle/styleVector";
 import { getPlayerStyleLabel } from "./playerStyle/styleLabel";
+import { styleFromEcoList } from "./playerStyle/styleVector";
 import type { PlayerStyleLabel } from "./playerStyle/types";
 
 /**

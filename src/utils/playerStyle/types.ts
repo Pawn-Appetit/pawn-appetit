@@ -29,6 +29,3 @@ export type OpeningCharacteristics = {
   isOffbeat: boolean;
   isDynamic: boolean;
 };
-
-
-

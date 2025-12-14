@@ -16,11 +16,11 @@ function DatabaseLoader({ isLoading, tab }: { isLoading: boolean; tab: string | 
     // Reset progress when tab changes
     setProgress(0);
     setCompleted(false);
-    
+
     if (!tab) return;
-    
+
     let unlistenFn: (() => void) | null = null;
-    
+
     async function getProgress() {
       const unlisten = await listen<ProgressPayload>("search_progress", async ({ payload }) => {
         if (payload.id !== tab) return;
@@ -35,12 +35,12 @@ function DatabaseLoader({ isLoading, tab }: { isLoading: boolean; tab: string | 
           setProgress(payload.progress);
         }
       });
-      
+
       unlistenFn = unlisten;
     }
-    
+
     getProgress();
-    
+
     // Cleanup on unmount or tab change
     return () => {
       if (unlistenFn) {

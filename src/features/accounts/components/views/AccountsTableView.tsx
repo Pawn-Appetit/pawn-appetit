@@ -32,7 +32,7 @@ import { sessionsAtom } from "@/state/atoms";
 import { getChessComAccount, getStats } from "@/utils/chess.com/api";
 import { capitalize, parseDate } from "@/utils/format";
 import { getLichessAccount } from "@/utils/lichess/api";
-import { saveMainAccount, getAccountFideId } from "@/utils/mainAccount";
+import { getAccountFideId, saveMainAccount } from "@/utils/mainAccount";
 import type { Session } from "@/utils/session";
 import LichessLogo from "../LichessLogo";
 
@@ -84,13 +84,15 @@ function AccountsTableView({
     if (mainAccount) {
       localStorage.setItem("mainAccount", mainAccount);
       // Load FIDE ID for this account if it exists
-      getAccountFideId(mainAccount).then((fideId) => {
-        // Also save to new JSON format with FIDE ID if it exists
-        saveMainAccount({ name: mainAccount, fideId: fideId || undefined }).catch(console.error);
-      }).catch(() => {
-        // If no FIDE ID, just save the account name
-        saveMainAccount({ name: mainAccount }).catch(console.error);
-      });
+      getAccountFideId(mainAccount)
+        .then((fideId) => {
+          // Also save to new JSON format with FIDE ID if it exists
+          saveMainAccount({ name: mainAccount, fideId: fideId || undefined }).catch(console.error);
+        })
+        .catch(() => {
+          // If no FIDE ID, just save the account name
+          saveMainAccount({ name: mainAccount }).catch(console.error);
+        });
     }
   }, [mainAccount]);
 
@@ -114,11 +116,11 @@ function AccountsTableView({
   const playerNames = useMemo<string[]>(
     () =>
       Array.from(
-    new Set(
-      sessions
-        .map((s) => s.player ?? s.lichess?.username ?? s.chessCom?.username)
-        .filter((n): n is string => typeof n === "string" && n.length > 0),
-    ),
+        new Set(
+          sessions
+            .map((s) => s.player ?? s.lichess?.username ?? s.chessCom?.username)
+            .filter((n): n is string => typeof n === "string" && n.length > 0),
+        ),
       ),
     [sessions],
   );
@@ -127,38 +129,38 @@ function AccountsTableView({
   const playerSessions = useMemo<PlayerSessions[]>(
     () =>
       playerNames.map((name) => ({
-    name,
-    sessions: sessions.filter(
-      (s) => s.player === name || s.lichess?.username === name || s.chessCom?.username === name,
-    ),
+        name,
+        sessions: sessions.filter(
+          (s) => s.player === name || s.lichess?.username === name || s.chessCom?.username === name,
+        ),
       })),
     [playerNames, sessions],
   );
 
   // Memoize filtered and sorted results
   const filteredAndSorted = useMemo<PlayerSessions[]>(() => {
-  const q = query.trim().toLowerCase();
+    const q = query.trim().toLowerCase();
     return playerSessions
-    .filter(({ name, sessions }) => {
-      if (!q) return true;
-      const usernames = sessions
-        .map((s) => s.lichess?.username || s.chessCom?.username || "")
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return name.toLowerCase().includes(q) || usernames.includes(q);
-    })
-    .sort((a, b) => {
-      let comparison = 0;
-      if (sortBy.field === "name") {
-        comparison = a.name.toLowerCase().localeCompare(b.name.toLowerCase());
-      } else if (sortBy.field === "elo") {
-        const ra = a.sessions.map(bestRatingForSession).reduce((max, v) => (v > max ? v : max), -1);
-        const rb = b.sessions.map(bestRatingForSession).reduce((max, v) => (v > max ? v : max), -1);
-        comparison = ra - rb;
-      }
-      return sortBy.direction === "asc" ? comparison : -comparison;
-    });
+      .filter(({ name, sessions }) => {
+        if (!q) return true;
+        const usernames = sessions
+          .map((s) => s.lichess?.username || s.chessCom?.username || "")
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return name.toLowerCase().includes(q) || usernames.includes(q);
+      })
+      .sort((a, b) => {
+        let comparison = 0;
+        if (sortBy.field === "name") {
+          comparison = a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+        } else if (sortBy.field === "elo") {
+          const ra = a.sessions.map(bestRatingForSession).reduce((max, v) => (v > max ? v : max), -1);
+          const rb = b.sessions.map(bestRatingForSession).reduce((max, v) => (v > max ? v : max), -1);
+          comparison = ra - rb;
+        }
+        return sortBy.direction === "asc" ? comparison : -comparison;
+      });
   }, [playerSessions, query, sortBy, bestRatingForSession]);
 
   const rows: Row[] = filteredAndSorted.flatMap(({ name, sessions: playerSessions }) =>

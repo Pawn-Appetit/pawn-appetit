@@ -1,7 +1,7 @@
 import { Box, Flex, Select, Text } from "@mantine/core";
 import { useAtom } from "jotai";
+import { memo, startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useEffect, useMemo, memo, startTransition, useRef, useState } from "react";
 import PieceComponent from "@/components/Piece";
 import { pieceSetAtom } from "@/state/atoms";
 import { ensurePieceSetCss } from "@/utils/pieceSetCss";
@@ -68,10 +68,7 @@ export default function PiecesSelect() {
   const [previewPieceSet, setPreviewPieceSet] = useState<string | null>(null);
   const hoverTimeoutRef = useRef<number | null>(null);
 
-  const selectedLabel = useMemo(
-    () => pieceSets.find((p) => p.value === pieceSet)?.label || pieceSet,
-    [pieceSet],
-  );
+  const selectedLabel = useMemo(() => pieceSets.find((p) => p.value === pieceSet)?.label || pieceSet, [pieceSet]);
 
   const handleOptionClick = (value: string) => {
     // Warm cache in the background; the App-level manager will swap atomically.

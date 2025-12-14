@@ -1,8 +1,8 @@
 import type { NormalizedGame, Outcome } from "@/bindings";
 import type { ChessComGame } from "@/utils/chess.com/api";
 import { formatDateToPGN, parseDate } from "@/utils/format";
-import { getTimeControl } from "@/utils/timeControl";
 import type { GameRecord } from "@/utils/gameRecords";
+import { getTimeControl } from "@/utils/timeControl";
 
 interface GameHeaders {
   id: number;

@@ -243,18 +243,18 @@ function ResponsiveBoard({
   return (
     <Box
       ref={containerRef}
-      style={{ 
-        width: "100%", 
-        height: "100%", 
-        display: "flex", 
-        justifyContent: "center", 
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        justifyContent: "center",
         alignItems: "center",
         minWidth: 0,
         minHeight: 0,
       }}
     >
       <ResponsiveLoadingWrapper isLoading={false}>
-        <Box 
+        <Box
           style={{
             ...boardContainerStyle,
             width: hideClockSpaces ? "auto" : "100%",

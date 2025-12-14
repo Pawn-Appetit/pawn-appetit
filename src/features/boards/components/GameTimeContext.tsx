@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
+import { createContext, type Dispatch, type ReactNode, type SetStateAction, useContext, useState } from "react";
 
 interface GameTimeContextValue {
   whiteTime: number | null;
@@ -27,4 +27,3 @@ export function useGameTime() {
   }
   return context;
 }
-

@@ -18,17 +18,17 @@ interface SuggestionsCardProps {
 
 export function SuggestionsCard({ suggestions, onSuggestionClick }: SuggestionsCardProps) {
   const { t } = useTranslation();
-  
+
   const getTagTranslation = (tag: string) => {
     const tagMap: Record<string, string> = {
-      "Lessons": t("features.dashboard.tags.lessons"),
-      "Openings": t("features.dashboard.tags.openings"),
-      "Endgames": t("features.dashboard.tags.endgames"),
-      "Tactics": t("features.dashboard.tags.tactics"),
+      Lessons: t("features.dashboard.tags.lessons"),
+      Openings: t("features.dashboard.tags.openings"),
+      Endgames: t("features.dashboard.tags.endgames"),
+      Tactics: t("features.dashboard.tags.tactics"),
     };
     return tagMap[tag] || tag;
   };
-  
+
   return (
     <Card withBorder p="lg" radius="md" h="100%">
       <Group justify="space-between" mb="sm">

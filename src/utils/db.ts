@@ -212,7 +212,7 @@ export async function searchPosition(options: LocalOptions, tab: string) {
   if (!fen) {
     throw new Error("Missing FEN for local database search");
   }
-  
+
   // Ensure gameDetailsLimit is a valid number between 1 and 1000
   const parsedLimit =
     typeof options.gameDetailsLimit === "number" && Number.isFinite(options.gameDetailsLimit)
@@ -256,50 +256,48 @@ export async function searchPosition(options: LocalOptions, tab: string) {
   // Helper to safely stringify payload for logging (BigInt is not JSON serializable)
   const safeStringify = (obj: any) => {
     try {
-      return JSON.stringify(obj, (key, value) => 
-        typeof value === 'bigint' ? value.toString() : value
-      );
+      return JSON.stringify(obj, (key, value) => (typeof value === "bigint" ? value.toString() : value));
     } catch (e) {
       return String(obj);
     }
   };
 
-  console.debug("[db] searchPosition payload", { 
-    tab, 
-    path: options.path, 
-    fen, 
-    type, 
+  console.debug("[db] searchPosition payload", {
+    tab,
+    path: options.path,
+    fen,
+    type,
     gameDetailsLimitValue,
-    payload: safeStringify(payload)
+    payload: safeStringify(payload),
   });
 
   try {
     const res = await commands.searchPosition(options.path!, payload, tab);
-    
+
     if (res.status === "error") {
-      console.error("[db] searchPosition error response", { 
-        error: res.error, 
-        path: options.path, 
-        fen, 
+      console.error("[db] searchPosition error response", {
+        error: res.error,
+        path: options.path,
+        fen,
         type,
-        payload: safeStringify(payload)
+        payload: safeStringify(payload),
       });
       if (res.error !== "Search stopped") {
         unwrap(res);
       }
       return Promise.reject(res.error);
     }
-    
+
     return res.data;
   } catch (error) {
     // Don't try to stringify the error or payload in catch - it might contain BigInt
-    console.error("[db] searchPosition exception", { 
+    console.error("[db] searchPosition exception", {
       error: error instanceof Error ? error.message : String(error),
       errorType: error instanceof Error ? error.constructor.name : typeof error,
-      path: options.path, 
-      fen, 
+      path: options.path,
+      fen,
       type,
-      gameDetailsLimit: gameDetailsLimitValue
+      gameDetailsLimit: gameDetailsLimitValue,
     });
     throw error;
   }

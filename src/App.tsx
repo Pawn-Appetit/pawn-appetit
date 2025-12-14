@@ -357,7 +357,7 @@ export default function App() {
         } catch (e) {
           // Only log error if component is still mounted
           if (mounted) {
-          error(`Failed to detach console: ${e}`);
+            error(`Failed to detach console: ${e}`);
           }
         }
       }

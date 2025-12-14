@@ -6,14 +6,11 @@ import { IconBolt, IconChess, IconClock, IconStopwatch } from "@tabler/icons-rea
 import { useNavigate } from "@tanstack/react-router";
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { mkdir, writeTextFile } from "@tauri-apps/plugin-fs";
-import { loadFideProfile, loadFideProfileById, saveFideProfile, deleteFideProfile, deleteFideProfileById, type FideProfile } from "@/utils/fideProfile";
-import { loadMainAccount, saveMainAccount, updateMainAccountFideId, getAccountFideId, getAccountDisplayName, saveAccountDisplayName } from "@/utils/mainAccount";
 import { info } from "@tauri-apps/plugin-log";
 import { useAtom, useAtomValue } from "jotai";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { commands, type GoMode } from "@/bindings";
-import { devLog } from "@/utils/devLog";
 import { lessons } from "@/features/learn/constants/lessons";
 import { practices } from "@/features/learn/constants/practices";
 import { activeTabAtom, enginesAtom, sessionsAtom, tabsAtom } from "@/state/atoms";
@@ -21,13 +18,36 @@ import { useUserStatsStore } from "@/state/userStatsStore";
 import { type Achievement, getAchievements } from "@/utils/achievements";
 import { getAllAnalyzedGames, saveAnalyzedGame, saveGameStats } from "@/utils/analyzedGames";
 import { getGameStats, getMainLine, getPGN, parsePGN } from "@/utils/chess";
-import { type ChessComGame } from "@/utils/chess.com/api";
+import type { ChessComGame } from "@/utils/chess.com/api";
 import { type DailyGoal, getDailyGoals } from "@/utils/dailyGoals";
+import { getDatabases, query_games } from "@/utils/db";
+import { devLog } from "@/utils/devLog";
 import { calculateEstimatedElo } from "@/utils/eloEstimation";
 import type { LocalEngine } from "@/utils/engines";
+import {
+  deleteFideProfile,
+  deleteFideProfileById,
+  type FideProfile,
+  loadFideProfile,
+  loadFideProfileById,
+  saveFideProfile,
+} from "@/utils/fideProfile";
 import { createFile } from "@/utils/files";
-import { deleteGameRecord, type GameRecord, type GameStats, getRecentGames, updateGameRecord } from "@/utils/gameRecords";
-import { getDatabases, query_games } from "@/utils/db";
+import {
+  deleteGameRecord,
+  type GameRecord,
+  type GameStats,
+  getRecentGames,
+  updateGameRecord,
+} from "@/utils/gameRecords";
+import {
+  getAccountDisplayName,
+  getAccountFideId,
+  loadMainAccount,
+  saveAccountDisplayName,
+  saveMainAccount,
+  updateMainAccountFideId,
+} from "@/utils/mainAccount";
 import { getPuzzleStats, getTodayPuzzleCount } from "@/utils/puzzleStreak";
 import { createTab, genID, type Tab } from "@/utils/tabs";
 import type { TreeState } from "@/utils/treeReducer";
@@ -40,8 +60,8 @@ import { QuickActionsGrid } from "./components/QuickActionsGrid";
 import { type Suggestion, SuggestionsCard } from "./components/SuggestionsCard";
 import { UserProfileCard } from "./components/UserProfileCard";
 import { WelcomeCard } from "./components/WelcomeCard";
-import { getChessTitle } from "./utils/chessTitle";
 import { calculateOnlineRating } from "./utils/calculateOnlineRating";
+import { getChessTitle } from "./utils/chessTitle";
 import {
   convertNormalizedToChessComGame,
   convertNormalizedToLichessGame,
@@ -78,12 +98,12 @@ export default function DashboardPage() {
   const [analyzeAllModalOpened, setAnalyzeAllModalOpened] = useState(false);
   const [analyzeAllGameType, setAnalyzeAllGameType] = useState<"local" | "chesscom" | "lichess" | null>(null);
   const [unanalyzedGameCount, setUnanalyzedGameCount] = useState<number | null>(null);
-  
+
   // FIDE player information
   const [fideId, setFideId] = useState<string | null>(null);
-  const [fidePlayer, setFidePlayer] = useState<{ 
-    name: string; 
-    firstName: string; 
+  const [fidePlayer, setFidePlayer] = useState<{
+    name: string;
+    firstName: string;
     gender: "male" | "female";
     title?: string;
     standardRating?: number;
@@ -95,7 +115,7 @@ export default function DashboardPage() {
     age?: number;
     birthYear?: number;
   } | null>(null);
-  
+
   // Display name - independent of FIDE ID
   const [displayName, setDisplayName] = useState<string>("");
 
@@ -107,9 +127,9 @@ export default function DashboardPage() {
       if (account) {
         devLog("[Dashboard] Loading main account data for:", account.name);
         setMainAccountName(account.name);
-        
+
         // Load display name for this account
-        const accountDisplayName = account.displayName || await getAccountDisplayName(account.name);
+        const accountDisplayName = account.displayName || (await getAccountDisplayName(account.name));
         if (accountDisplayName) {
           setDisplayName(accountDisplayName);
         } else {
@@ -121,37 +141,44 @@ export default function DashboardPage() {
             setDisplayName("");
           }
         }
-        
+
         // Load FIDE ID for this account (from account_fide_ids.json or from account.fideId)
-        const accountFideId = account.fideId || await getAccountFideId(account.name);
+        const accountFideId = account.fideId || (await getAccountFideId(account.name));
         console.log("[Dashboard] FIDE ID for account:", account.name, "is:", accountFideId);
-        
+
         if (accountFideId) {
           console.log("[Dashboard] Found FIDE ID", accountFideId, "for account", account.name);
           setFideId(accountFideId);
-          
+
           // Load profile by FIDE ID (supports multiple profiles - each account can have its own FIDE profile)
           // Retry logic to handle potential file write delays
           let profile: FideProfile | null = null;
           for (let attempt = 0; attempt < 3; attempt++) {
             if (attempt > 0) {
-              await new Promise(resolve => setTimeout(resolve, 100 * attempt));
+              await new Promise((resolve) => setTimeout(resolve, 100 * attempt));
             }
             profile = await loadFideProfileById(accountFideId);
             if (profile) {
               break;
             }
           }
-          
-          console.log("[Dashboard] Loaded FIDE profile for ID", accountFideId, ":", profile ? {
-            name: profile.name,
-            title: profile.title,
-            standardRating: profile.standardRating,
-            rapidRating: profile.rapidRating,
-            blitzRating: profile.blitzRating,
-            photo: profile.photo ? "present" : "missing"
-          } : "not found after retries");
-          
+
+          console.log(
+            "[Dashboard] Loaded FIDE profile for ID",
+            accountFideId,
+            ":",
+            profile
+              ? {
+                  name: profile.name,
+                  title: profile.title,
+                  standardRating: profile.standardRating,
+                  rapidRating: profile.rapidRating,
+                  blitzRating: profile.blitzRating,
+                  photo: profile.photo ? "present" : "missing",
+                }
+              : "not found after retries",
+          );
+
           if (profile) {
             const playerData = {
               name: profile.name,
@@ -173,11 +200,11 @@ export default function DashboardPage() {
               standardRating: playerData.standardRating,
               rapidRating: playerData.rapidRating,
               blitzRating: playerData.blitzRating,
-              photo: playerData.photo ? "present" : "missing"
+              photo: playerData.photo ? "present" : "missing",
             });
             // Force a new object reference to ensure React detects the change
             setFidePlayer({ ...playerData });
-            
+
             // If there's no saved displayName but there's a firstName from FIDE, use it as fallback
             if (!accountDisplayName && profile.firstName) {
               setDisplayName(profile.firstName);
@@ -203,7 +230,7 @@ export default function DashboardPage() {
           setMainAccountName(stored);
           // Save to new format
           await saveMainAccount({ name: stored });
-          
+
           // Load display name for this account
           const accountDisplayName = await getAccountDisplayName(stored);
           if (accountDisplayName) {
@@ -216,7 +243,7 @@ export default function DashboardPage() {
               setDisplayName("");
             }
           }
-          
+
           // Try to load FIDE ID for this account
           const fideId = await getAccountFideId(stored);
           if (fideId) {
@@ -227,14 +254,14 @@ export default function DashboardPage() {
             let profile: FideProfile | null = null;
             for (let attempt = 0; attempt < 3; attempt++) {
               if (attempt > 0) {
-                await new Promise(resolve => setTimeout(resolve, 100 * attempt));
+                await new Promise((resolve) => setTimeout(resolve, 100 * attempt));
               }
               profile = await loadFideProfileById(fideId);
               if (profile) {
                 break;
               }
             }
-            
+
             if (profile) {
               const playerData = {
                 name: profile.name,
@@ -256,7 +283,7 @@ export default function DashboardPage() {
                 standardRating: playerData.standardRating,
                 rapidRating: playerData.rapidRating,
                 blitzRating: playerData.blitzRating,
-                photo: playerData.photo ? "present" : "missing"
+                photo: playerData.photo ? "present" : "missing",
               });
               // Force a new object reference to ensure React detects the change
               setFidePlayer({ ...playerData });
@@ -282,29 +309,29 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadMainAccountData();
-    
+
     // Listen for main account changes
     const handleMainAccountChange = (event: CustomEvent) => {
       loadMainAccountData();
     };
-    
+
     window.addEventListener("mainAccountChanged", handleMainAccountChange as EventListener);
-    
+
     // Also listen to localStorage changes (for backward compatibility)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "mainAccount") {
         loadMainAccountData();
       }
     };
-    
+
     window.addEventListener("storage", handleStorageChange);
-    
+
     return () => {
       window.removeEventListener("mainAccountChanged", handleMainAccountChange as EventListener);
       window.removeEventListener("storage", handleStorageChange);
     };
   }, [loadMainAccountData]);
-  
+
   // Also listen for changes in mainAccountName from localStorage (polling as fallback)
   useEffect(() => {
     const checkMainAccountChange = () => {
@@ -313,11 +340,11 @@ export default function DashboardPage() {
         loadMainAccountData();
       }
     };
-    
+
     // Check periodically to catch changes (fallback if events don't work)
     // Reduced frequency to avoid performance issues
     const interval = setInterval(checkMainAccountChange, 1000);
-    
+
     return () => clearInterval(interval);
   }, [mainAccountName, loadMainAccountData]);
 
@@ -325,25 +352,21 @@ export default function DashboardPage() {
   // This ensures we get the correct session for the main account
   const mainSession = useMemo(() => {
     if (!mainAccountName) return undefined;
-    
+
     // First, try to find by exact username match (most reliable)
     const usernameMatch = sessions.find(
-      (s) =>
-        s.lichess?.username === mainAccountName ||
-        s.chessCom?.username === mainAccountName,
+      (s) => s.lichess?.username === mainAccountName || s.chessCom?.username === mainAccountName,
     );
-    
+
     if (usernameMatch) {
       return usernameMatch;
     }
-    
+
     // If no username match, try by player name
-    const playerMatches = sessions.filter(
-      (s) => s.player === mainAccountName,
-    );
-    
+    const playerMatches = sessions.filter((s) => s.player === mainAccountName);
+
     if (playerMatches.length === 0) return undefined;
-    
+
     // If multiple player name matches, take the most recent one (by updatedAt)
     return playerMatches.reduce((latest, current) => {
       return current.updatedAt > latest.updatedAt ? current : latest;
@@ -352,7 +375,7 @@ export default function DashboardPage() {
 
   // Calculate average online rating based on time controls with more than 10 games
   const averageOnlineRating = calculateOnlineRating(mainSession);
-  
+
   let user = {
     name: mainAccountName ?? t("dashboard.noMainAccount"),
     handle: "",
@@ -415,7 +438,7 @@ export default function DashboardPage() {
   const [selectedChessComUser, setSelectedChessComUser] = useState<string | null>("all");
 
   const [recentGames, setRecentGames] = useState<GameRecord[]>([]);
-  
+
   const loadGames = useCallback(async () => {
     try {
       const games = await getRecentGames(50);
@@ -424,10 +447,10 @@ export default function DashboardPage() {
       console.error("Failed to load recent games:", err);
     }
   }, []);
-  
+
   useEffect(() => {
     loadGames();
-    
+
     // Listen for games:updated event to refresh local games after analysis
     const handleGamesUpdated = () => {
       loadGames();
@@ -459,18 +482,18 @@ export default function DashboardPage() {
     const loadGamesFromDatabase = async () => {
       const usersToFetch =
         selectedLichessUser === "all" ? lichessUsernames : selectedLichessUser ? [selectedLichessUser] : [];
-      
+
       // Clear games and set loading immediately when filter changes
       setLichessGames([]);
       setIsLoadingLichessGames(true);
-      
+
       if (usersToFetch.length > 0) {
         // Small delay to ensure React renders the loader
         await new Promise((resolve) => setTimeout(resolve, 50));
         try {
           // Get all databases
           const databases = await getDatabases();
-          
+
           // Find databases for the selected users
           const allGames: Array<{
             id: string;
@@ -489,9 +512,10 @@ export default function DashboardPage() {
           for (const username of usersToFetch) {
             // Find database for this user (format: {username}_lichess.db3)
             const dbInfo = databases.find(
-              (db) => db.type === "success" && 
-              (db.filename === `${username}_lichess.db3` || 
-               db.filename.toLowerCase() === `${username}_lichess.db3`.toLowerCase())
+              (db) =>
+                db.type === "success" &&
+                (db.filename === `${username}_lichess.db3` ||
+                  db.filename.toLowerCase() === `${username}_lichess.db3`.toLowerCase()),
             );
 
             if (dbInfo && dbInfo.type === "success") {
@@ -510,7 +534,7 @@ export default function DashboardPage() {
                 if (queryResult.data) {
                   // Convert NormalizedGame to LichessGame format
                   const convertedGames = queryResult.data.map(convertNormalizedToLichessGame);
-                  
+
                   // Filter games to only include those that belong to the selected user
                   const filteredGames = convertedGames.filter((game) => {
                     if (selectedLichessUser === "all") return true;
@@ -573,27 +597,28 @@ export default function DashboardPage() {
     const loadGamesFromDatabase = async () => {
       const usersToFetch =
         selectedChessComUser === "all" ? chessComUsernames : selectedChessComUser ? [selectedChessComUser] : [];
-      
+
       // Clear games and set loading immediately when filter changes
       setChessComGames([]);
       setIsLoadingChessComGames(true);
-      
+
       if (usersToFetch.length > 0) {
         // Small delay to ensure React renders the loader
         await new Promise((resolve) => setTimeout(resolve, 50));
         try {
           // Get all databases
           const databases = await getDatabases();
-          
+
           // Find databases for the selected users
           const allGames: ChessComGame[] = [];
 
           for (const username of usersToFetch) {
             // Find database for this user (format: {username}_chesscom.db3)
             const dbInfo = databases.find(
-              (db) => db.type === "success" && 
-              (db.filename === `${username}_chesscom.db3` || 
-               db.filename.toLowerCase() === `${username}_chesscom.db3`.toLowerCase())
+              (db) =>
+                db.type === "success" &&
+                (db.filename === `${username}_chesscom.db3` ||
+                  db.filename.toLowerCase() === `${username}_chesscom.db3`.toLowerCase()),
             );
 
             if (dbInfo && dbInfo.type === "success") {
@@ -612,7 +637,7 @@ export default function DashboardPage() {
                 if (queryResult.data) {
                   // Convert NormalizedGame to ChessComGame format
                   const convertedGames = queryResult.data.map(convertNormalizedToChessComGame);
-                  
+
                   // Filter games to only include those that belong to the selected user
                   const filteredGames = convertedGames.filter((game) => {
                     if (selectedChessComUser === "all") return true;
@@ -987,8 +1012,13 @@ export default function DashboardPage() {
             customName={displayName}
             platform={platform}
             onFideUpdate={async (newFideId, newFidePlayer, newDisplayName) => {
-              console.log("[Dashboard] onFideUpdate called:", { newFideId, newFidePlayer, newDisplayName, mainAccountName });
-              
+              console.log("[Dashboard] onFideUpdate called:", {
+                newFideId,
+                newFidePlayer,
+                newDisplayName,
+                mainAccountName,
+              });
+
               // Save display name if provided (can be empty string)
               if (newDisplayName !== undefined && mainAccountName) {
                 setDisplayName(newDisplayName);
@@ -997,7 +1027,7 @@ export default function DashboardPage() {
                 // Also save to localStorage for backward compatibility
                 localStorage.setItem("pawn-appetit.displayName", newDisplayName);
               }
-              
+
               if (newFidePlayer && newFideId) {
                 // Save FIDE profile first
                 const profileToSave = {
@@ -1018,12 +1048,12 @@ export default function DashboardPage() {
                 };
                 console.log("[Dashboard] Saving FIDE profile:", profileToSave);
                 await saveFideProfile(profileToSave);
-                
+
                 // Update main account with FIDE ID after profile is saved
                 if (mainAccountName) {
                   await updateMainAccountFideId(newFideId);
                 }
-                
+
                 // Update state after saving - this triggers re-render
                 // Force a new object reference to ensure React detects the change
                 setFideId(newFideId);
@@ -1033,18 +1063,18 @@ export default function DashboardPage() {
                 if (mainAccountName) {
                   await updateMainAccountFideId(null);
                 }
-                
+
                 // Delete the specific FIDE profile if we have a FIDE ID
                 if (fideId) {
                   await deleteFideProfileById(fideId);
                 } else {
                   await deleteFideProfile();
                 }
-                
+
                 setFideId(null);
                 setFidePlayer(null);
               }
-              
+
               // Note: We don't need to reload here since we've already updated the state
               // The state updates will trigger a re-render with the new data
             }}
@@ -1105,12 +1135,14 @@ export default function DashboardPage() {
               if (game.pgn) {
                 const headers = createChessComGameHeaders(game);
                 // Determine which username is the user's account
-                const accountUsername = selectedChessComUser && selectedChessComUser !== "all" 
-                  ? selectedChessComUser 
-                  : chessComUsernames.find(u => 
-                      u.toLowerCase() === game.white.username.toLowerCase() || 
-                      u.toLowerCase() === game.black.username.toLowerCase()
-                    ) || game.white.username;
+                const accountUsername =
+                  selectedChessComUser && selectedChessComUser !== "all"
+                    ? selectedChessComUser
+                    : chessComUsernames.find(
+                        (u) =>
+                          u.toLowerCase() === game.white.username.toLowerCase() ||
+                          u.toLowerCase() === game.black.username.toLowerCase(),
+                      ) || game.white.username;
                 // Determine which color the user played
                 const isUserWhite = game.white.username.toLowerCase() === accountUsername.toLowerCase();
                 headers.orientation = isUserWhite ? "white" : "black";
@@ -1139,12 +1171,14 @@ export default function DashboardPage() {
                 // Determine which username is the user's account
                 const gameWhiteName = game.players.white.user?.name || "";
                 const gameBlackName = game.players.black.user?.name || "";
-                const accountUsername = selectedLichessUser && selectedLichessUser !== "all" 
-                  ? selectedLichessUser 
-                  : lichessUsernames.find(u => 
-                      u.toLowerCase() === gameWhiteName.toLowerCase() || 
-                      u.toLowerCase() === gameBlackName.toLowerCase()
-                    ) || gameWhiteName;
+                const accountUsername =
+                  selectedLichessUser && selectedLichessUser !== "all"
+                    ? selectedLichessUser
+                    : lichessUsernames.find(
+                        (u) =>
+                          u.toLowerCase() === gameWhiteName.toLowerCase() ||
+                          u.toLowerCase() === gameBlackName.toLowerCase(),
+                      ) || gameWhiteName;
                 // Determine which color the user played
                 const isUserWhite = gameWhiteName.toLowerCase() === accountUsername.toLowerCase();
                 headers.orientation = isUserWhite ? "white" : "black";
@@ -1259,8 +1293,8 @@ export default function DashboardPage() {
 
           // Get all analyzed games to filter out already analyzed ones if needed
           const analyzedGames = await getAllAnalyzedGames();
-          
-          let allGames =
+
+          const allGames =
             analyzeAllGameType === "local"
               ? recentGames.filter((g) => g.pgn || g.moves.length > 0)
               : analyzeAllGameType === "chesscom"
@@ -1315,8 +1349,10 @@ export default function DashboardPage() {
           // Detect available CPU threads and calculate parallel analysis count (half of available threads)
           const availableThreads = navigator.hardwareConcurrency || 4;
           const parallelAnalyses = Math.max(1, Math.floor(availableThreads / 2));
-          
-          console.log(`[AnalyzeAll] Detected ${availableThreads} CPU threads, running ${parallelAnalyses} analyses in parallel`);
+
+          console.log(
+            `[AnalyzeAll] Detected ${availableThreads} CPU threads, running ${parallelAnalyses} analyses in parallel`,
+          );
 
           // Force Threads to 1 for each individual analysis, regardless of engine configuration
           const threadsSetting = engineSettings.find((s) => s.name.toLowerCase() === "threads");
@@ -1348,10 +1384,10 @@ export default function DashboardPage() {
           let completedCount = 0;
 
           // Process games in parallel batches
-          const processGame = async (game: typeof gamesToAnalyze[0], index: number): Promise<void> => {
+          const processGame = async (game: (typeof gamesToAnalyze)[0], index: number): Promise<void> => {
             const analysisId = `analyze_all_${analyzeAllGameType}_${index}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
             activeAnalysisIds.add(analysisId);
-            
+
             try {
               let tree: TreeState;
               let moves: string[];
@@ -1427,7 +1463,7 @@ export default function DashboardPage() {
                 }
                 throw error;
               }
-              
+
               clearInterval(cancellationCheckInterval);
 
               // Check again if cancelled after analysis
@@ -1496,15 +1532,15 @@ export default function DashboardPage() {
                 // Update the game object with the analyzed PGN and stats
                 if (analyzeAllGameType === "local") {
                   const gameRecord = game as GameRecord;
-                  
+
                   // Determine which color the user played
                   const isUserWhite = gameRecord.white.type === "human";
                   const userColor = isUserWhite ? "white" : "black";
-                  
+
                   // Get stats for the user's color from the report
                   const accuracy = userColor === "white" ? reportStats.whiteAccuracy : reportStats.blackAccuracy;
                   const acpl = userColor === "white" ? reportStats.whiteCPL : reportStats.blackCPL;
-                  
+
                   // Calculate estimated Elo
                   let calculatedStats: GameStats | null = null;
                   if (accuracy > 0 || acpl > 0) {
@@ -1514,7 +1550,7 @@ export default function DashboardPage() {
                       estimatedElo: acpl > 0 ? calculateEstimatedElo(acpl) : undefined,
                     };
                   }
-                  
+
                   // Update the game record with analyzed PGN and stats
                   if (calculatedStats) {
                     await updateGameRecord(gameRecord.id, { pgn: analyzedPgn, stats: calculatedStats });
@@ -1526,23 +1562,23 @@ export default function DashboardPage() {
                   chessComGame.pgn = analyzedPgn;
                   // Persist the analyzed PGN
                   await saveAnalyzedGame(chessComGame.url, analyzedPgn);
-                  
+
                   // Calculate and save stats
                   const whiteUsername = chessComGame.white.username.toLowerCase();
                   const blackUsername = chessComGame.black.username.toLowerCase();
-                  const accountUsername = selectedChessComUser && selectedChessComUser !== "all" 
-                    ? selectedChessComUser.toLowerCase()
-                    : chessComUsernames.find(u => 
-                        u.toLowerCase() === whiteUsername || 
-                        u.toLowerCase() === blackUsername
-                      )?.toLowerCase() || whiteUsername;
-                  
+                  const accountUsername =
+                    selectedChessComUser && selectedChessComUser !== "all"
+                      ? selectedChessComUser.toLowerCase()
+                      : chessComUsernames
+                          .find((u) => u.toLowerCase() === whiteUsername || u.toLowerCase() === blackUsername)
+                          ?.toLowerCase() || whiteUsername;
+
                   const isUserWhite = whiteUsername === accountUsername;
                   const userColor = isUserWhite ? "white" : "black";
-                  
+
                   const accuracy = userColor === "white" ? reportStats.whiteAccuracy : reportStats.blackAccuracy;
                   const acpl = userColor === "white" ? reportStats.whiteCPL : reportStats.blackCPL;
-                  
+
                   if (accuracy > 0 || acpl > 0) {
                     const stats: GameStats = {
                       accuracy,
@@ -1551,7 +1587,7 @@ export default function DashboardPage() {
                     };
                     await saveGameStats(chessComGame.url, stats);
                   }
-                  
+
                   // Update the games array to trigger re-render and stats recalculation
                   setChessComGames((prev) => {
                     const updated = [...prev];
@@ -1578,23 +1614,23 @@ export default function DashboardPage() {
                   lichessGame.pgn = analyzedPgn;
                   // Persist the analyzed PGN
                   await saveAnalyzedGame(lichessGame.id, analyzedPgn);
-                  
+
                   // Calculate and save stats
                   const whiteUsername = (lichessGame.players.white.user?.name || "").toLowerCase();
                   const blackUsername = (lichessGame.players.black.user?.name || "").toLowerCase();
-                  const accountUsername = selectedLichessUser && selectedLichessUser !== "all" 
-                    ? selectedLichessUser.toLowerCase()
-                    : lichessUsernames.find(u => 
-                        u.toLowerCase() === whiteUsername || 
-                        u.toLowerCase() === blackUsername
-                      )?.toLowerCase() || whiteUsername;
-                  
+                  const accountUsername =
+                    selectedLichessUser && selectedLichessUser !== "all"
+                      ? selectedLichessUser.toLowerCase()
+                      : lichessUsernames
+                          .find((u) => u.toLowerCase() === whiteUsername || u.toLowerCase() === blackUsername)
+                          ?.toLowerCase() || whiteUsername;
+
                   const isUserWhite = whiteUsername === accountUsername;
                   const userColor = isUserWhite ? "white" : "black";
-                  
+
                   const accuracy = userColor === "white" ? reportStats.whiteAccuracy : reportStats.blackAccuracy;
                   const acpl = userColor === "white" ? reportStats.whiteCPL : reportStats.blackCPL;
-                  
+
                   if (accuracy > 0 || acpl > 0) {
                     const stats: GameStats = {
                       accuracy,
@@ -1603,7 +1639,7 @@ export default function DashboardPage() {
                     };
                     await saveGameStats(lichessGame.id, stats);
                   }
-                  
+
                   // Update the games array to trigger re-render and stats recalculation
                   setLichessGames((prev) => {
                     const updated = [...prev];
@@ -1635,10 +1671,10 @@ export default function DashboardPage() {
             } finally {
               activeAnalysisIds.delete(analysisId);
               completedCount++;
-              
+
               // Update progress
               onProgress(completedCount, gamesToAnalyze.length);
-              
+
               // Update notifications less frequently
               if (completedCount % 10 === 0 || completedCount === gamesToAnalyze.length) {
                 notifications.show({
@@ -1672,11 +1708,9 @@ export default function DashboardPage() {
 
             // Get batch of games to process in parallel
             const batch = gamesToAnalyze.slice(i, i + parallelAnalyses);
-            
+
             // Process batch in parallel
-            await Promise.all(
-              batch.map((game, batchIndex) => processGame(game, i + batchIndex))
-            );
+            await Promise.all(batch.map((game, batchIndex) => processGame(game, i + batchIndex)));
           }
 
           // Only show completion message if not cancelled

@@ -3,8 +3,8 @@ import { IconSortAscending, IconSortDescending } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { currentThemeIdAtom } from "@/features/themes/state/themeAtoms";
 import { AnalysisPreview } from "@/components/AnalysisPreview";
+import { currentThemeIdAtom } from "@/features/themes/state/themeAtoms";
 import { getAnalyzedGame, getGameStats as getSavedGameStats } from "@/utils/analyzedGames";
 
 interface LichessGame {
@@ -36,7 +36,14 @@ interface LichessGamesTabProps {
   onAnalyzeAll?: () => void;
 }
 
-export function LichessGamesTab({ games, lichessUsernames, selectedUser, isLoading = false, onAnalyzeGame, onAnalyzeAll }: LichessGamesTabProps) {
+export function LichessGamesTab({
+  games,
+  lichessUsernames,
+  selectedUser,
+  isLoading = false,
+  onAnalyzeGame,
+  onAnalyzeAll,
+}: LichessGamesTabProps) {
   const { t } = useTranslation();
   const currentThemeId = useAtomValue(currentThemeIdAtom);
   const isAcademiaMaya = currentThemeId === "academia-maya";
@@ -115,7 +122,7 @@ export function LichessGamesTab({ games, lichessUsernames, selectedUser, isLoadi
         try {
           // Load saved stats only (no calculation)
           const savedStats = await getSavedGameStats(game.id);
-          
+
           if (savedStats && savedStats.acpl > 0) {
             statsMap.set(game.id, savedStats);
           }
@@ -159,8 +166,8 @@ export function LichessGamesTab({ games, lichessUsernames, selectedUser, isLoadi
 
   // Sort and paginate games
   const sortedAndPaginatedGames = useMemo(() => {
-    let sortedGames = [...games];
-    
+    const sortedGames = [...games];
+
     if (sortBy === "elo") {
       sortedGames.sort((a, b) => {
         const statsA = gameStats.get(a.id);
@@ -174,7 +181,7 @@ export function LichessGamesTab({ games, lichessUsernames, selectedUser, isLoadi
         return sortDirection === "asc" ? a.createdAt - b.createdAt : b.createdAt - a.createdAt;
       });
     }
-    
+
     const start = (page - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     return sortedGames.slice(start, end);
@@ -182,22 +189,22 @@ export function LichessGamesTab({ games, lichessUsernames, selectedUser, isLoadi
 
   // Calculate averages for footer
   const averages = useMemo(() => {
-    const gamesWithStats = games.filter(g => {
+    const gamesWithStats = games.filter((g) => {
       const stats = gameStats.get(g.id);
       return stats && stats.acpl > 0;
     });
-    
+
     if (gamesWithStats.length === 0) {
       return { accuracy: 0, acpl: 0, elo: 0 };
     }
-    
+
     let totalAccuracy = 0;
     let totalAcpl = 0;
     let totalElo = 0;
     let count = 0;
     let eloCount = 0;
-    
-    gamesWithStats.forEach(g => {
+
+    gamesWithStats.forEach((g) => {
       const stats = gameStats.get(g.id);
       if (stats && stats.acpl > 0) {
         totalAccuracy += stats.accuracy;
@@ -209,7 +216,7 @@ export function LichessGamesTab({ games, lichessUsernames, selectedUser, isLoadi
         count++;
       }
     });
-    
+
     return {
       accuracy: count > 0 ? totalAccuracy / count : 0,
       acpl: count > 0 ? totalAcpl / count : 0,
@@ -256,28 +263,20 @@ export function LichessGamesTab({ games, lichessUsernames, selectedUser, isLoadi
               <Table.Th>Result</Table.Th>
               <Table.Th>Accuracy</Table.Th>
               <Table.Th>ACPL</Table.Th>
-              <Table.Th 
-                style={{ cursor: "pointer", userSelect: "none" }}
-                onClick={() => handleSort("elo")}
-              >
+              <Table.Th style={{ cursor: "pointer", userSelect: "none" }} onClick={() => handleSort("elo")}>
                 <Group gap="xs" wrap="nowrap">
                   {t("dashboard.estimatedElo")}
-                  {sortBy === "elo" && (
-                    sortDirection === "asc" ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
-                  )}
+                  {sortBy === "elo" &&
+                    (sortDirection === "asc" ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />)}
                 </Group>
               </Table.Th>
               <Table.Th>Moves</Table.Th>
               <Table.Th>Account</Table.Th>
-              <Table.Th 
-                style={{ cursor: "pointer", userSelect: "none" }}
-                onClick={() => handleSort("date")}
-              >
+              <Table.Th style={{ cursor: "pointer", userSelect: "none" }} onClick={() => handleSort("date")}>
                 <Group gap="xs" wrap="nowrap">
                   Date
-                  {sortBy === "date" && (
-                    sortDirection === "asc" ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
-                  )}
+                  {sortBy === "date" &&
+                    (sortDirection === "asc" ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />)}
                 </Group>
               </Table.Th>
               <Table.Th>
@@ -291,137 +290,139 @@ export function LichessGamesTab({ games, lichessUsernames, selectedUser, isLoadi
           </Table.Thead>
           <Table.Tbody>
             {sortedAndPaginatedGames.map((g) => {
-            // If a specific user is selected, use that user to determine account vs opponent
-            // Otherwise, use the lichessUsernames list
-            const gameWhiteName = g.players.white.user?.name || "";
-            const gameBlackName = g.players.black.user?.name || "";
-            const accountUsername = selectedUser && selectedUser !== "all" 
-              ? selectedUser 
-              : lichessUsernames.find(u => 
-                  u.toLowerCase() === gameWhiteName.toLowerCase() || 
-                  u.toLowerCase() === gameBlackName.toLowerCase()
-                ) || gameWhiteName;
-            
-            const isUserWhite = (gameWhiteName || "").toLowerCase() === (accountUsername || "").toLowerCase();
-            const opponent = isUserWhite ? g.players.black : g.players.white;
-            const userAccount = isUserWhite ? g.players.white : g.players.black;
-            const color = isUserWhite ? t("chess.white") : t("chess.black");
-            const stats = gameStats.get(g.id);
-            
-            // Translate status
-            const getTranslatedStatus = (status: string) => {
-              if (status === "white") return t("chess.white");
-              if (status === "black") return t("chess.black");
-              if (status === "draw") return t("chess.draw");
-              return status;
-            };
-            
-            // Determine if user won
-            const userWon = g.winner === (isUserWhite ? "white" : "black");
-            
-            // Get color for result badge - different colors for Academia Maya
-            const getResultColor = () => {
-              if (isAcademiaMaya) {
-                if (userWon) return "green"; // Green for victory in Academia Maya
-                if (g.winner) return "red"; // Red for defeat
-                return "gray"; // Gray for draw
-              } else {
-                // Default colors for other themes
-                if (userWon) return "teal";
-                if (g.winner) return "red";
-                return "gray";
-              }
-            };
+              // If a specific user is selected, use that user to determine account vs opponent
+              // Otherwise, use the lichessUsernames list
+              const gameWhiteName = g.players.white.user?.name || "";
+              const gameBlackName = g.players.black.user?.name || "";
+              const accountUsername =
+                selectedUser && selectedUser !== "all"
+                  ? selectedUser
+                  : lichessUsernames.find(
+                      (u) =>
+                        u.toLowerCase() === gameWhiteName.toLowerCase() ||
+                        u.toLowerCase() === gameBlackName.toLowerCase(),
+                    ) || gameWhiteName;
 
-            return (
-              <Table.Tr key={g.id}>
-                <Table.Td>
-                  <Group gap="xs">
-                    <Avatar size={24} radius="xl">
-                      {opponent.user?.name[0].toUpperCase()}
-                    </Avatar>
-                    <Text>{opponent.user?.name}</Text>
-                  </Group>
-                </Table.Td>
-                <Table.Td>
-                  <Badge variant="light">{color}</Badge>
-                </Table.Td>
-                <Table.Td>
-                  <Badge color={getResultColor()}>
-                    {getTranslatedStatus(g.status)}
-                  </Badge>
-                </Table.Td>
-                <Table.Td>
-                  {stats ? (
-                    <Text size="xs" fw={500}>
-                      {stats.accuracy.toFixed(1)}%
-                    </Text>
-                  ) : (
-                    <Text size="xs" c="dimmed">
-                      -
-                    </Text>
-                  )}
-                </Table.Td>
-                <Table.Td>
-                  {stats ? (
-                    <Text size="xs" fw={500}>
-                      {stats.acpl.toFixed(1)}
-                    </Text>
-                  ) : (
-                    <Text size="xs" c="dimmed">
-                      -
-                    </Text>
-                  )}
-                </Table.Td>
-                <Table.Td>
-                  {stats && stats.estimatedElo !== undefined ? (
-                    <Text size="xs" fw={500}>
-                      {stats.estimatedElo}
-                    </Text>
-                  ) : (
-                    <Text size="xs" c="dimmed">
-                      -
-                    </Text>
-                  )}
-                </Table.Td>
-                <Table.Td>
-                  <Text size="xs">{getMoveCount(g)}</Text>
-                </Table.Td>
-                <Table.Td>
-                  <Text size="xs">{userAccount.user?.name}</Text>
-                </Table.Td>
-                <Table.Td c="dimmed">
-                  {t("formatters.dateFormat", {
-                    date: new Date(g.createdAt),
-                    interpolation: { escapeValue: false },
-                  })}
-                </Table.Td>
-                <Table.Td>
-                  <Group gap="xs" wrap="nowrap">
-                    <AnalysisPreview pgn={analyzedPgns.get(g.id) || g.pgn || null}>
-                      <Button size="xs" variant="light" onClick={() => onAnalyzeGame(g)} disabled={!g.pgn}>
-                        Analyze
+              const isUserWhite = (gameWhiteName || "").toLowerCase() === (accountUsername || "").toLowerCase();
+              const opponent = isUserWhite ? g.players.black : g.players.white;
+              const userAccount = isUserWhite ? g.players.white : g.players.black;
+              const color = isUserWhite ? t("chess.white") : t("chess.black");
+              const stats = gameStats.get(g.id);
+
+              // Translate status
+              const getTranslatedStatus = (status: string) => {
+                if (status === "white") return t("chess.white");
+                if (status === "black") return t("chess.black");
+                if (status === "draw") return t("chess.draw");
+                return status;
+              };
+
+              // Determine if user won
+              const userWon = g.winner === (isUserWhite ? "white" : "black");
+
+              // Get color for result badge - different colors for Academia Maya
+              const getResultColor = () => {
+                if (isAcademiaMaya) {
+                  if (userWon) return "green"; // Green for victory in Academia Maya
+                  if (g.winner) return "red"; // Red for defeat
+                  return "gray"; // Gray for draw
+                } else {
+                  // Default colors for other themes
+                  if (userWon) return "teal";
+                  if (g.winner) return "red";
+                  return "gray";
+                }
+              };
+
+              return (
+                <Table.Tr key={g.id}>
+                  <Table.Td>
+                    <Group gap="xs">
+                      <Avatar size={24} radius="xl">
+                        {opponent.user?.name[0].toUpperCase()}
+                      </Avatar>
+                      <Text>{opponent.user?.name}</Text>
+                    </Group>
+                  </Table.Td>
+                  <Table.Td>
+                    <Badge variant="light">{color}</Badge>
+                  </Table.Td>
+                  <Table.Td>
+                    <Badge color={getResultColor()}>{getTranslatedStatus(g.status)}</Badge>
+                  </Table.Td>
+                  <Table.Td>
+                    {stats ? (
+                      <Text size="xs" fw={500}>
+                        {stats.accuracy.toFixed(1)}%
+                      </Text>
+                    ) : (
+                      <Text size="xs" c="dimmed">
+                        -
+                      </Text>
+                    )}
+                  </Table.Td>
+                  <Table.Td>
+                    {stats ? (
+                      <Text size="xs" fw={500}>
+                        {stats.acpl.toFixed(1)}
+                      </Text>
+                    ) : (
+                      <Text size="xs" c="dimmed">
+                        -
+                      </Text>
+                    )}
+                  </Table.Td>
+                  <Table.Td>
+                    {stats && stats.estimatedElo !== undefined ? (
+                      <Text size="xs" fw={500}>
+                        {stats.estimatedElo}
+                      </Text>
+                    ) : (
+                      <Text size="xs" c="dimmed">
+                        -
+                      </Text>
+                    )}
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="xs">{getMoveCount(g)}</Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="xs">{userAccount.user?.name}</Text>
+                  </Table.Td>
+                  <Table.Td c="dimmed">
+                    {t("formatters.dateFormat", {
+                      date: new Date(g.createdAt),
+                      interpolation: { escapeValue: false },
+                    })}
+                  </Table.Td>
+                  <Table.Td>
+                    <Group gap="xs" wrap="nowrap">
+                      <AnalysisPreview pgn={analyzedPgns.get(g.id) || g.pgn || null}>
+                        <Button size="xs" variant="light" onClick={() => onAnalyzeGame(g)} disabled={!g.pgn}>
+                          Analyze
+                        </Button>
+                      </AnalysisPreview>
+                      <Button
+                        size="xs"
+                        variant="light"
+                        component="a"
+                        href={`https://lichess.org/${g.id}`}
+                        target="_blank"
+                      >
+                        View Online
                       </Button>
-                    </AnalysisPreview>
-                    <Button
-                      size="xs"
-                      variant="light"
-                      component="a"
-                      href={`https://lichess.org/${g.id}`}
-                      target="_blank"
-                    >
-                      View Online
-                    </Button>
-                  </Group>
-                </Table.Td>
-              </Table.Tr>
-            );
+                    </Group>
+                  </Table.Td>
+                </Table.Tr>
+              );
             })}
           </Table.Tbody>
           <Table.Tfoot>
             <Table.Tr>
               <Table.Td colSpan={3}>
-                <Text size="xs" fw={600}>Average</Text>
+                <Text size="xs" fw={600}>
+                  Average
+                </Text>
               </Table.Td>
               <Table.Td>
                 <Text size="xs" fw={500}>

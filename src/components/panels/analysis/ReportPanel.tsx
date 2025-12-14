@@ -1,7 +1,6 @@
 import { Box, Center, Group, Paper, ScrollArea, Stack, Table, Text, UnstyledButton } from "@mantine/core";
-import { IconStarFilled } from "@tabler/icons-react";
 import { useToggle } from "@mantine/hooks";
-import { IconZoomCheck } from "@tabler/icons-react";
+import { IconStarFilled, IconZoomCheck } from "@tabler/icons-react";
 import cx from "clsx";
 import equal from "fast-deep-equal";
 import { useAtomValue } from "jotai";
@@ -16,7 +15,7 @@ import { saveAnalyzedGame, saveGameStats } from "@/utils/analyzedGames";
 import { ANNOTATION_INFO, annotationColors, isBasicAnnotation } from "@/utils/annotation";
 import { getGameStats, getMainLine, getPGN } from "@/utils/chess";
 import { calculateEstimatedElo } from "@/utils/eloEstimation";
-import { getGameRecordById, updateGameRecord, type GameStats } from "@/utils/gameRecords";
+import { type GameStats, getGameRecordById, updateGameRecord } from "@/utils/gameRecords";
 import { label } from "./AnalysisPanel.css";
 import ReportModal from "./ReportModal";
 
@@ -682,9 +681,9 @@ const GameStats = memo(
       </Paper>
     );
   },
-  (prev, next) => equal(prev.whiteAnnotations, next.whiteAnnotations) && equal(prev.blackAnnotations, next.blackAnnotations),
+  (prev, next) =>
+    equal(prev.whiteAnnotations, next.whiteAnnotations) && equal(prev.blackAnnotations, next.blackAnnotations),
 );
-
 
 function AccuracyCard({ color, cpl, accuracy }: { color: string; cpl: number; accuracy: number }) {
   const { t } = useTranslation();

@@ -6,6 +6,7 @@ import { memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
+import type { NormalizedGame } from "@/bindings";
 import { TreeStateContext } from "@/components/TreeStateContext";
 import {
   currentDbTabAtom,
@@ -16,7 +17,6 @@ import {
   masterOptionsAtom,
   referenceDbAtom,
 } from "@/state/atoms";
-import { type NormalizedGame } from "@/bindings";
 import { type Opening, searchPosition } from "@/utils/db";
 import { convertToNormalized, getLichessGames, getMasterGames } from "@/utils/lichess/api";
 import type { LichessGamesOptions, MasterGamesOptions } from "@/utils/lichess/explorer";
@@ -117,18 +117,19 @@ function DatabasePanel() {
       const fenChanged = fen !== prevFenRef.current;
       if (fenChanged) {
         prevFenRef.current = fen;
-        
+
         // Cancel any ongoing queries immediately when FEN changes
         queryClient.cancelQueries({ queryKey: ["database-opening"] });
-        
+
         setLocalOptions((q) => {
           // Update FEN immediately and ensure sort is by averageElo
-          const updated = q.fen !== fen 
-            ? { ...q, fen, sort: "averageElo" as const, direction: "desc" as const }
-            : { ...q, sort: "averageElo" as const, direction: "desc" as const };
+          const updated =
+            q.fen !== fen
+              ? { ...q, fen, sort: "averageElo" as const, direction: "desc" as const }
+              : { ...q, sort: "averageElo" as const, direction: "desc" as const };
           return updated;
         });
-        
+
         // Always set limit to 1000 when FEN changes
         setGameLimit(1000);
       }
@@ -152,25 +153,28 @@ function DatabasePanel() {
 
   // Memoize dbType to avoid recreating on every render
   // IMPORTANT: Always use localOptions.fen (updated immediately) for local DB to ensure synchronization
-  const dbType: DBType = useMemo(() => match(db)
-    .with("local", (v) => ({
-      type: v,
-      options: localOptions, // localOptions.fen is updated immediately when FEN changes
-    }))
-    .with("lch_all", (v) => ({
-      type: v,
-      options: lichessOptions,
-      fen: debouncedFen,
-    }))
-    .with("lch_master", (v) => ({
-      type: v,
-      options: masterOptions,
-      fen: debouncedFen,
-    }))
-    .exhaustive(), [db, localOptions, lichessOptions, masterOptions, debouncedFen]);
+  const dbType: DBType = useMemo(
+    () =>
+      match(db)
+        .with("local", (v) => ({
+          type: v,
+          options: localOptions, // localOptions.fen is updated immediately when FEN changes
+        }))
+        .with("lch_all", (v) => ({
+          type: v,
+          options: lichessOptions,
+          fen: debouncedFen,
+        }))
+        .with("lch_master", (v) => ({
+          type: v,
+          options: masterOptions,
+          fen: debouncedFen,
+        }))
+        .exhaustive(),
+    [db, localOptions, lichessOptions, masterOptions, debouncedFen],
+  );
 
-  const queryEnabled = tabType !== "options"
-    && (db !== "local" || (!!localOptions.fen && !!localOptions.path));
+  const queryEnabled = tabType !== "options" && (db !== "local" || (!!localOptions.fen && !!localOptions.path));
 
   const {
     data: openingData,
@@ -178,7 +182,9 @@ function DatabasePanel() {
     error,
   } = useQuery<OpeningData, Error, OpeningData, readonly unknown[]>({
     // Use localOptions.fen directly for queryKey to ensure it matches what's sent to backend
-    queryKey: ["database-opening", db, 
+    queryKey: [
+      "database-opening",
+      db,
       db === "local" ? localOptions.fen : debouncedFen, // include fen for all DBs to refetch on board move
       db === "local" ? localOptions.type : null,
       db === "local" ? localOptions.player : null,
@@ -188,9 +194,11 @@ function DatabasePanel() {
       db === "local" ? localOptions.result : null,
       db === "local" ? localOptions.sort : null,
       db === "local" ? localOptions.direction : null,
-      tabValue, gameLimit],
+      tabValue,
+      gameLimit,
+    ],
     queryFn: () => fetchOpening(dbType, tabValue, gameLimit) as Promise<OpeningData>,
-    enabled: queryEnabled && (db !== "local" || !!localOptions.fen && !!localOptions.path),
+    enabled: queryEnabled && (db !== "local" || (!!localOptions.fen && !!localOptions.path)),
     staleTime: 0, // Always refetch when FEN or parameters change to show latest results
     gcTime: 10000, // Keep in cache for 10 seconds (reduced from 30)
     refetchOnMount: true, // Refetch when component mounts to ensure fresh data

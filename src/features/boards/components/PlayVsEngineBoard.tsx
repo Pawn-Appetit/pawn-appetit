@@ -7,28 +7,36 @@
  * - Right panel: clocks + controls + opening + PGN
  */
 import { Box, Button, Divider, Group, Paper, ScrollArea, Stack, Text } from "@mantine/core";
-import { IconArrowLeft, IconArrowsExchange, IconEraser, IconFlag, IconPlus, IconRepeat, IconZoomCheck } from "@tabler/icons-react";
+import {
+  IconArrowLeft,
+  IconArrowsExchange,
+  IconEraser,
+  IconFlag,
+  IconPlus,
+  IconRepeat,
+  IconZoomCheck,
+} from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
+import { INITIAL_FEN } from "chessops/fen";
 import { useAtom, useAtomValue } from "jotai";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "@tanstack/react-router";
 import { Mosaic } from "react-mosaic-component";
 import { useStore } from "zustand";
-import { TreeStateContext } from "@/components/TreeStateContext";
-import GameInfo from "@/components/GameInfo";
-import Clock from "@/components/Clock";
-import { activeTabAtom, currentGameStateAtom, currentPlayersAtom, tabsAtom } from "@/state/atoms";
 import { commands } from "@/bindings";
-import { INITIAL_FEN } from "chessops/fen";
+import Clock from "@/components/Clock";
+import GameInfo from "@/components/GameInfo";
+import { TreeStateContext } from "@/components/TreeStateContext";
+import { activeTabAtom, currentGameStateAtom, currentPlayersAtom, tabsAtom } from "@/state/atoms";
+import { getMainLine, getOpening, getPGN } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
-import { getPGN, getOpening, getMainLine } from "@/utils/chess";
-import { treeIteratorMainLine } from "@/utils/treeReducer";
 import { type GameRecord, saveGameRecord } from "@/utils/gameRecords";
-import { useEngineMoves } from "./hooks/useEngineMoves";
-import { GameTimeProvider, useGameTime } from "./GameTimeContext";
-import ResponsiveBoard from "./ResponsiveBoard";
-import BoardGame, { useClockTimer } from "./BoardGame";
+import { treeIteratorMainLine } from "@/utils/treeReducer";
 import { createFullLayout, DEFAULT_MOSAIC_LAYOUT } from "../constants";
+import BoardGame, { useClockTimer } from "./BoardGame";
+import { GameTimeProvider, useGameTime } from "./GameTimeContext";
+import { useEngineMoves } from "./hooks/useEngineMoves";
+import ResponsiveBoard from "./ResponsiveBoard";
 
 function PlayVsEngineBoardContent() {
   const { t } = useTranslation();
@@ -61,7 +69,15 @@ function PlayVsEngineBoardContent() {
         setBlackTime(players.black.timeControl.seconds);
       }
     }
-  }, [gameState, players.white.timeControl, players.black.timeControl, whiteTime, blackTime, setWhiteTime, setBlackTime]);
+  }, [
+    gameState,
+    players.white.timeControl,
+    players.black.timeControl,
+    whiteTime,
+    blackTime,
+    setWhiteTime,
+    setBlackTime,
+  ]);
 
   const mainLine = useMemo(() => Array.from(treeIteratorMainLine(root)), [root]);
   const lastNode = useMemo(() => mainLine[mainLine.length - 1].node, [mainLine]);
@@ -87,7 +103,7 @@ function PlayVsEngineBoardContent() {
 
   // Calculate opening dynamically based on current position
   const [openingLabel, setOpeningLabel] = useState<string>("");
-  
+
   useEffect(() => {
     getOpening(root, position).then((v) => {
       // If we found an opening, update it
@@ -120,79 +136,82 @@ function PlayVsEngineBoardContent() {
   const gameSavedRef = useRef<string | null>(null);
 
   // Function to save the current game to local games
-  const saveGame = useCallback(async (result: string) => {
-    // Only save if there are moves in the game
-    if (root.children.length === 0) {
-      return;
-    }
-
-    // Create a unique key for this game to avoid duplicate saves
-    const gameKey = `${root.fen}-${result}-${root.children.length}`;
-    if (gameSavedRef.current === gameKey) {
-      // Already saved this game
-      return;
-    }
-
-    try {
-      // Get the initial FEN from headers (set when game started)
-      const initialFen = headers.fen || INITIAL_FEN;
-
-      // Get the last node for final FEN
-      const mainLineArray = Array.from(treeIteratorMainLine(root));
-      const lastNode = mainLineArray[mainLineArray.length - 1].node;
-
-      // Get UCI moves for the moves array
-      const uciMoves = getMainLine(root, headers.variant === "Chess960");
-
-      // Get PGN
-      const gamePgn = getPGN(root, {
-        headers,
-        comments: true,
-        extraMarkups: true,
-        glyphs: true,
-        variations: true,
-      });
-
-      // Build time control string
-      let timeControlStr: string | undefined;
-      if (headers.time_control) {
-        timeControlStr = headers.time_control;
-      } else if (headers.white_time_control || headers.black_time_control) {
-        timeControlStr = `${headers.white_time_control || ""},${headers.black_time_control || ""}`;
+  const saveGame = useCallback(
+    async (result: string) => {
+      // Only save if there are moves in the game
+      if (root.children.length === 0) {
+        return;
       }
 
-      // Create game record
-      const record: GameRecord = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        white: {
-          type: players.white.type,
-          name: players.white.type === "human" ? players.white.name : players.white.engine?.name,
-          engine: players.white.type === "engine" ? players.white.engine?.path : undefined,
-        },
-        black: {
-          type: players.black.type,
-          name: players.black.type === "human" ? players.black.name : players.black.engine?.name,
-          engine: players.black.type === "engine" ? players.black.engine?.path : undefined,
-        },
-        result: result,
-        timeControl: timeControlStr,
-        timestamp: Date.now(),
-        moves: uciMoves,
-        variant: headers.variant ?? undefined,
-        fen: lastNode.fen, // Final FEN position
-        initialFen: initialFen !== INITIAL_FEN ? initialFen : undefined, // Initial FEN if different from standard
-        pgn: gamePgn, // Full PGN
-      };
+      // Create a unique key for this game to avoid duplicate saves
+      const gameKey = `${root.fen}-${result}-${root.children.length}`;
+      if (gameSavedRef.current === gameKey) {
+        // Already saved this game
+        return;
+      }
 
-      // Save the game record
-      await saveGameRecord(record);
-      
-      // Mark as saved
-      gameSavedRef.current = gameKey;
-    } catch (error) {
-      console.error("[PlayVsEngineBoard] Error saving game:", error);
-    }
-  }, [root, headers, players]);
+      try {
+        // Get the initial FEN from headers (set when game started)
+        const initialFen = headers.fen || INITIAL_FEN;
+
+        // Get the last node for final FEN
+        const mainLineArray = Array.from(treeIteratorMainLine(root));
+        const lastNode = mainLineArray[mainLineArray.length - 1].node;
+
+        // Get UCI moves for the moves array
+        const uciMoves = getMainLine(root, headers.variant === "Chess960");
+
+        // Get PGN
+        const gamePgn = getPGN(root, {
+          headers,
+          comments: true,
+          extraMarkups: true,
+          glyphs: true,
+          variations: true,
+        });
+
+        // Build time control string
+        let timeControlStr: string | undefined;
+        if (headers.time_control) {
+          timeControlStr = headers.time_control;
+        } else if (headers.white_time_control || headers.black_time_control) {
+          timeControlStr = `${headers.white_time_control || ""},${headers.black_time_control || ""}`;
+        }
+
+        // Create game record
+        const record: GameRecord = {
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          white: {
+            type: players.white.type,
+            name: players.white.type === "human" ? players.white.name : players.white.engine?.name,
+            engine: players.white.type === "engine" ? players.white.engine?.path : undefined,
+          },
+          black: {
+            type: players.black.type,
+            name: players.black.type === "human" ? players.black.name : players.black.engine?.name,
+            engine: players.black.type === "engine" ? players.black.engine?.path : undefined,
+          },
+          result: result,
+          timeControl: timeControlStr,
+          timestamp: Date.now(),
+          moves: uciMoves,
+          variant: headers.variant ?? undefined,
+          fen: lastNode.fen, // Final FEN position
+          initialFen: initialFen !== INITIAL_FEN ? initialFen : undefined, // Initial FEN if different from standard
+          pgn: gamePgn, // Full PGN
+        };
+
+        // Save the game record
+        await saveGameRecord(record);
+
+        // Mark as saved
+        gameSavedRef.current = gameKey;
+      } catch (error) {
+        console.error("[PlayVsEngineBoard] Error saving game:", error);
+      }
+    },
+    [root, headers, players],
+  );
 
   // Reset saved game ref when a new game starts
   useEffect(() => {
@@ -214,30 +233,30 @@ function PlayVsEngineBoardContent() {
 
   const handleNewGame = async () => {
     console.log("[PlayVsEngineBoard] handleNewGame called, current gameState:", gameState);
-    
+
     // Save the current game before going to setup (if there are moves and game is playing)
     if (root.children.length > 0 && (gameState === "playing" || gameState === "gameOver")) {
       // Determine result: loss for the player whose turn it is (or was playing)
       const currentTurn = pos?.turn ?? "white";
       const result = currentTurn === "white" ? "0-1" : "1-0";
-      
+
       // Set result temporarily for saving
       const previousResult = headers.result;
       setHeaders({
         ...headers,
         result,
       });
-      
+
       // Save the game
       await saveGame(result);
-      
+
       // Restore previous result (or "*") for cleanup
       setHeaders({
         ...headers,
         result: "*",
       });
     }
-    
+
     // Clear times
     setWhiteTime(null);
     setBlackTime(null);
@@ -257,17 +276,17 @@ function PlayVsEngineBoardContent() {
       // Determine result: loss for the player whose turn it is
       const currentTurn = pos?.turn ?? "white";
       const result = currentTurn === "white" ? "0-1" : "1-0";
-      
+
       // Set result temporarily for saving
       const previousResult = headers.result;
       setHeaders({
         ...headers,
         result,
       });
-      
+
       // Save the game
       await saveGame(result);
-      
+
       // Restore previous result (or "*") for the new game
       setHeaders({
         ...headers,
@@ -279,30 +298,30 @@ function PlayVsEngineBoardContent() {
     // If headers.fen is not set or is the same as current position, use INITIAL_FEN
     // When a game starts, headers.fen is set to the starting FEN
     const initialFen = headers.fen || INITIAL_FEN;
-    
+
     // Reset board to initial position
     setFen(initialFen);
-    
+
     // Reset times with the same time controls
     if (players.white.timeControl) {
       setWhiteTime(players.white.timeControl.seconds);
     } else {
       setWhiteTime(null);
     }
-    
+
     if (players.black.timeControl) {
       setBlackTime(players.black.timeControl.seconds);
     } else {
       setBlackTime(null);
     }
-    
+
     // Clear result and update headers with initial FEN
     setHeaders({
       ...headers,
       fen: initialFen,
       result: "*",
     });
-    
+
     // Set game state to playing to start the new game
     setGameState("playing");
   };
@@ -324,11 +343,7 @@ function PlayVsEngineBoardContent() {
     if (gameState !== "playing") return;
 
     const humanColor =
-      players.white.type === "human"
-        ? "white"
-        : players.black.type === "human"
-          ? "black"
-          : (pos?.turn ?? "white");
+      players.white.type === "human" ? "white" : players.black.type === "human" ? "black" : (pos?.turn ?? "white");
 
     const result = humanColor === "white" ? "0-1" : "1-0";
 
@@ -392,7 +407,19 @@ function PlayVsEngineBoardContent() {
 
     // 3. Navigate to dashboard
     navigate({ to: "/" });
-  }, [gameState, root.children.length, headers.result, pos?.turn, activeTab, tabs, setTabs, setActiveTab, navigate, resign, saveGame]);
+  }, [
+    gameState,
+    root.children.length,
+    headers.result,
+    pos?.turn,
+    activeTab,
+    tabs,
+    setTabs,
+    setActiveTab,
+    navigate,
+    resign,
+    saveGame,
+  ]);
 
   if (gameState === "settingUp") {
     const fullLayout = createFullLayout();
@@ -439,16 +466,11 @@ function PlayVsEngineBoardContent() {
           <Stack gap="sm" style={{ height: "100%", minHeight: 0 }}>
             <Group justify="space-between" align="center">
               <Text fw={700}>Game info</Text>
-              <Button
-                variant="subtle"
-                size="sm"
-                onClick={handleBack}
-                leftSection={<IconArrowLeft size={16} />}
-              >
+              <Button variant="subtle" size="sm" onClick={handleBack} leftSection={<IconArrowLeft size={16} />}>
                 Back
               </Button>
             </Group>
-            
+
             {/* Clocks - Always show when game is playing or gameOver */}
             {(gameState === "playing" || gameState === "gameOver") && (
               <>
@@ -472,7 +494,7 @@ function PlayVsEngineBoardContent() {
                 <Divider />
               </>
             )}
-            
+
             <ScrollArea style={{ flex: 1 }} type="auto">
               <GameInfo headers={headers} />
             </ScrollArea>
@@ -558,7 +580,12 @@ function PlayVsEngineBoardContent() {
                 </Group>
 
                 <Group grow>
-                  <Button color="red" onClick={resign} disabled={gameState !== "playing"} leftSection={<IconFlag size={16} />}>
+                  <Button
+                    color="red"
+                    onClick={resign}
+                    disabled={gameState !== "playing"}
+                    leftSection={<IconFlag size={16} />}
+                  >
                     Resign
                   </Button>
                   <Button variant="default" onClick={clearShapes} leftSection={<IconEraser size={16} />}>

@@ -408,7 +408,7 @@ function getVariationPGN(
       const isFirstInContinuation = !!node.san;
       const isBlackMove = mainChild.halfMoves % 2 === 0;
       const shouldUseIsFirst = isFirstInContinuation && isBlackMove;
-      
+
       // Add the move text for the main child with correct numbering
       pgn += getMoveText(mainChild, {
         glyphs,
@@ -672,17 +672,9 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
       for (const child of newTree.root.children) {
         variationParentNode.children.push(child);
       }
-      // IMPORTANT: After processing a variation, the main line should continue from the current root
-      // The root remains the same (it's the node after the move where the variation was attached)
-      // Subsequent moves in the main line will be added as children of the current root
-      // No need to change root or variationParentNode here - the loop will continue and process
-      // the next tokens (which should be moves in the main line after the variation)
-      // Note: i was already incremented to skip the closing paren, so we continue without incrementing
-      continue;
     } else if (token.type === "ParenClose") {
       // Should not normally happen in normal parsing mode, but handle it
       i++;
-      continue;
     } else if (token.type === "Nag") {
       const nagAnnotation = NAG_INFO.get(token.value) || "";
       if (nagAnnotation && ANNOTATION_INFO[nagAnnotation]) {

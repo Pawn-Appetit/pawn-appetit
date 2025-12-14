@@ -131,5 +131,3 @@ export function ensurePieceSetCss(pieceSet: string, options: ApplyOptions = {}):
   inflight.set(key, promise);
   return promise;
 }
-
-

@@ -45,13 +45,7 @@ function GameInfo({
 
       <Group w="100%" wrap="nowrap">
         {!simplified && (
-          <Text
-            c="dimmed"
-            tt="uppercase"
-            fw="bold"
-            onClick={() => setWhiteOpened(true)}
-            className={classes.colorHover}
-          >
+          <Text c="dimmed" tt="uppercase" fw="bold" onClick={() => setWhiteOpened(true)} className={classes.colorHover}>
             {t("chess.white")}
           </Text>
         )}

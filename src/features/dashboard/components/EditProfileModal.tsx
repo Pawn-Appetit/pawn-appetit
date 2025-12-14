@@ -1,28 +1,38 @@
 import { Alert, Button, Group, Modal, Stack, TextInput } from "@mantine/core";
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { fetchFidePlayer, type FidePlayer } from "@/utils/fide";
+import { type FidePlayer, fetchFidePlayer } from "@/utils/fide";
 
 interface EditProfileModalProps {
   opened: boolean;
   onClose: () => void;
-  onSave: (fideId: string, fidePlayer: { 
-    name: string; 
-    firstName: string; 
-    gender: "male" | "female";
-    title?: string;
-    standardRating?: number;
-    rapidRating?: number;
-    blitzRating?: number;
-    worldRank?: number;
-    nationalRank?: number;
-    photo?: string;
-  } | null, displayName?: string) => void;
+  onSave: (
+    fideId: string,
+    fidePlayer: {
+      name: string;
+      firstName: string;
+      gender: "male" | "female";
+      title?: string;
+      standardRating?: number;
+      rapidRating?: number;
+      blitzRating?: number;
+      worldRank?: number;
+      nationalRank?: number;
+      photo?: string;
+    } | null,
+    displayName?: string,
+  ) => void;
   currentFideId?: string;
   currentDisplayName?: string;
 }
 
-export function EditProfileModal({ opened, onClose, onSave, currentFideId, currentDisplayName }: EditProfileModalProps) {
+export function EditProfileModal({
+  opened,
+  onClose,
+  onSave,
+  currentFideId,
+  currentDisplayName,
+}: EditProfileModalProps) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [fidePlayer, setFidePlayer] = useState<FidePlayer | null>(null);
@@ -37,53 +47,65 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
   }, []);
 
   // Handle input changes (typing or pasting)
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = e.currentTarget.value;
-    const cleanedValue = cleanFideId(rawValue);
-    setFideIdValue(cleanedValue);
-    setError(null);
-  }, [cleanFideId]);
-
-  // Additional handler to capture changes that onChange might miss (especially after pasting)
-  const handleInput = useCallback((e: React.FormEvent<HTMLInputElement>) => {
-    const rawValue = e.currentTarget.value;
-    const cleanedValue = cleanFideId(rawValue);
-    // Only update if the value is different to avoid infinite loops
-    if (cleanedValue !== fideIdValue) {
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const rawValue = e.currentTarget.value;
+      const cleanedValue = cleanFideId(rawValue);
       setFideIdValue(cleanedValue);
       setError(null);
-    }
-  }, [cleanFideId, fideIdValue]);
+    },
+    [cleanFideId],
+  );
+
+  // Additional handler to capture changes that onChange might miss (especially after pasting)
+  const handleInput = useCallback(
+    (e: React.FormEvent<HTMLInputElement>) => {
+      const rawValue = e.currentTarget.value;
+      const cleanedValue = cleanFideId(rawValue);
+      // Only update if the value is different to avoid infinite loops
+      if (cleanedValue !== fideIdValue) {
+        setFideIdValue(cleanedValue);
+        setError(null);
+      }
+    },
+    [cleanFideId, fideIdValue],
+  );
 
   // Handle paste - prevent default behavior and insert the cleaned value
-  const handlePaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const pastedText = e.clipboardData.getData("text");
-    const cleanedValue = cleanFideId(pastedText);
-    
-    // Update state immediately - this should cause a re-render
-    // and enable the button automatically
-    setFideIdValue(cleanedValue);
-    setError(null);
-  }, [cleanFideId]);
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent<HTMLInputElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const pastedText = e.clipboardData.getData("text");
+      const cleanedValue = cleanFideId(pastedText);
+
+      // Update state immediately - this should cause a re-render
+      // and enable the button automatically
+      setFideIdValue(cleanedValue);
+      setError(null);
+    },
+    [cleanFideId],
+  );
 
   // Validate FIDE ID
-  const validateFideId = useCallback((fideId: string): string | null => {
-    if (!fideId.trim()) {
-      return null; // FIDE ID is optional
-    }
-    if (!/^\d+$/.test(fideId)) {
-      return t("features.dashboard.editProfile.invalidFideId");
-    }
-    return null;
-  }, [t]);
+  const validateFideId = useCallback(
+    (fideId: string): string | null => {
+      if (!fideId.trim()) {
+        return null; // FIDE ID is optional
+      }
+      if (!/^\d+$/.test(fideId)) {
+        return t("features.dashboard.editProfile.invalidFideId");
+      }
+      return null;
+    },
+    [t],
+  );
 
   // Search for FIDE player
   const handleSearch = useCallback(async () => {
     const fideId = fideIdValue.trim();
-    
+
     // Validate format
     const validationError = validateFideId(fideId);
     if (validationError) {
@@ -102,7 +124,7 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
 
     try {
       const player = await fetchFidePlayer(fideId);
-      
+
       if (player) {
         setFidePlayer(player);
       } else {
@@ -120,7 +142,7 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
   const handleSave = useCallback(() => {
     const fideId = fideIdValue.trim();
     const finalDisplayName = customName.trim();
-    
+
     // Always save the displayName, even if there's no FIDE ID or FIDE player
     if (fidePlayer && fideId) {
       // If there's a FIDE player, save both
@@ -144,7 +166,7 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
       // If there's no FIDE ID, only save the displayName
       onSave("", null, finalDisplayName);
     }
-    
+
     // Reset state when closing
     handleClose();
   }, [fideIdValue, fidePlayer, customName, onSave, t]);
@@ -173,19 +195,14 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
   const canSearch = useMemo(() => {
     return fideIdValue.trim().length > 0 && !loading;
   }, [fideIdValue, loading]);
-  
+
   const canSave = useMemo(() => {
     // Allow saving if there's a displayName or FIDE ID
     return (customName.trim().length > 0 || fideIdValue.trim().length > 0) && !loading;
   }, [customName, fideIdValue, loading]);
 
   return (
-    <Modal
-      opened={opened}
-      onClose={handleClose}
-      title={t("features.dashboard.editProfile.title")}
-      size="md"
-    >
+    <Modal opened={opened} onClose={handleClose} title={t("features.dashboard.editProfile.title")} size="md">
       <Stack gap="md">
         <TextInput
           label={t("features.dashboard.editProfile.customName")}
@@ -194,7 +211,7 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
           value={customName}
           onChange={(e) => setCustomName(e.currentTarget.value)}
         />
-        
+
         <TextInput
           ref={inputRef}
           label={t("features.dashboard.editProfile.fideIdLabel")}
@@ -206,7 +223,7 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
           error={error && !loading ? error : validateFideId(fideIdValue)}
           disabled={loading}
         />
-        
+
         {error && loading === false && (
           <Alert color="red" title={t("features.dashboard.editProfile.error")}>
             {error}
@@ -215,21 +232,17 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
 
         {fidePlayer && (
           <Stack gap="xs">
-            <TextInput
-              label={t("features.dashboard.editProfile.name")}
-              value={fidePlayer.name}
-              disabled
-            />
+            <TextInput label={t("features.dashboard.editProfile.name")} value={fidePlayer.name} disabled />
             {fidePlayer.title && (
-              <TextInput
-                label={t("features.dashboard.editProfile.title")}
-                value={fidePlayer.title}
-                disabled
-              />
+              <TextInput label={t("features.dashboard.editProfile.title")} value={fidePlayer.title} disabled />
             )}
             <TextInput
               label={t("features.dashboard.editProfile.gender")}
-              value={fidePlayer.gender === "male" ? t("features.dashboard.editProfile.male") : t("features.dashboard.editProfile.female")}
+              value={
+                fidePlayer.gender === "male"
+                  ? t("features.dashboard.editProfile.male")
+                  : t("features.dashboard.editProfile.female")
+              }
               disabled
             />
             {fidePlayer.standardRating && (
@@ -260,18 +273,10 @@ export function EditProfileModal({ opened, onClose, onSave, currentFideId, curre
           <Button variant="subtle" onClick={handleClose} disabled={loading}>
             {t("common.cancel")}
           </Button>
-          <Button 
-            onClick={handleSearch} 
-            loading={loading} 
-            disabled={!canSearch}
-          >
+          <Button onClick={handleSearch} loading={loading} disabled={!canSearch}>
             {t("features.dashboard.editProfile.search")}
           </Button>
-          <Button 
-            onClick={handleSave} 
-            disabled={!canSave}
-            variant={fidePlayer ? "filled" : "light"}
-          >
+          <Button onClick={handleSave} disabled={!canSave} variant={fidePlayer ? "filled" : "light"}>
             {t("common.save")}
           </Button>
         </Group>

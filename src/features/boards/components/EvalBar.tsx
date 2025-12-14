@@ -10,7 +10,7 @@ function EvalBar({ score, orientation }: { score: ScoreValue | null; orientation
   const theme = useMantineTheme();
   const { t } = useTranslation();
   const currentThemeId = useAtomValue(currentThemeIdAtom);
-  
+
   // Colors for Academia Maya theme - more contrasting
   const isAcademiaMaya = currentThemeId === "academia-maya";
   const blackColor = isAcademiaMaya ? "#1a1a1a" : theme.colors.dark[4];

@@ -1,30 +1,29 @@
+import { notifications } from "@mantine/notifications";
 import { parseUci } from "chessops";
 import { useAtomValue } from "jotai";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { commands, events } from "@/bindings";
-import { notifications } from "@mantine/notifications";
-import { activeTabAtom, currentGameStateAtom, currentPlayersAtom } from "@/state/atoms";
 import { TreeStateContext } from "@/components/TreeStateContext";
-import { useContext } from "react";
+import { activeTabAtom, currentGameStateAtom, currentPlayersAtom } from "@/state/atoms";
 import { getMainLine } from "@/utils/chess";
-import { positionFromFen } from "@/utils/chessops";
+import type { positionFromFen } from "@/utils/chessops";
 import type { TreeNode } from "@/utils/treeReducer";
 import { treeIteratorMainLine } from "@/utils/treeReducer";
 
 /**
  * useEngineMoves - Hook for engine move requests and responses in play vs engine mode.
- * 
+ *
  * This hook is ONLY used by PlayVsEngineBoard component, not by BoardGame or BoardAnalysis.
- * 
+ *
  * Responsibilities:
  * - Requests engine moves when it's the engine's turn
  * - Listens for bestMovesPayload events and applies engine moves
  * - Manages engine request state (prevents duplicate requests)
  * - Handles engine errors and timeouts
  * - Verifies move legality before applying
- * 
+ *
  * This hook is separate from analysis engine evaluation (handled by EvalListener in BoardAnalysis).
  */
 export function useEngineMoves(
@@ -51,7 +50,7 @@ export function useEngineMoves(
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Force re-request after error by incrementing this counter
   const [retryCounter, setRetryCounter] = useState(0);
-  
+
   // Use refs for times to avoid triggering effect on time updates
   const whiteTimeRef = useRef(whiteTime);
   const blackTimeRef = useRef(blackTime);
@@ -130,42 +129,38 @@ export function useEngineMoves(
 
         // Calculate time for engine - use actual remaining time or fallback to timeControl seconds
         // Use refs to get current time values without triggering effect on time updates
-        const engineTime = currentTurn === "white" 
-          ? (whiteTimeRef.current ?? (player.timeControl?.seconds ?? 0))
-          : (blackTimeRef.current ?? (player.timeControl?.seconds ?? 0));
-        const opponentTime = currentTurn === "white"
-          ? (blackTimeRef.current ?? (players.black?.timeControl?.seconds ?? 0))
-          : (whiteTimeRef.current ?? (players.white?.timeControl?.seconds ?? 0));
-        
+        const engineTime =
+          currentTurn === "white"
+            ? (whiteTimeRef.current ?? player.timeControl?.seconds ?? 0)
+            : (blackTimeRef.current ?? player.timeControl?.seconds ?? 0);
+        const opponentTime =
+          currentTurn === "white"
+            ? (blackTimeRef.current ?? players.black?.timeControl?.seconds ?? 0)
+            : (whiteTimeRef.current ?? players.white?.timeControl?.seconds ?? 0);
+
         // Only use PlayersTime if we have valid time values and timeControl is set
         // Otherwise use the engine's default go mode
-        const goMode = player.timeControl && engineTime > 0 && opponentTime >= 0
-          ? {
-              t: "PlayersTime" as const,
-              c: {
-                white: currentTurn === "white" ? engineTime : opponentTime,
-                black: currentTurn === "white" ? opponentTime : engineTime,
-                winc: player.timeControl.increment ?? 0,
-                binc: player.timeControl.increment ?? 0,
-              },
-            }
-          : player.go;
+        const goMode =
+          player.timeControl && engineTime > 0 && opponentTime >= 0
+            ? {
+                t: "PlayersTime" as const,
+                c: {
+                  white: currentTurn === "white" ? engineTime : opponentTime,
+                  black: currentTurn === "white" ? opponentTime : engineTime,
+                  winc: player.timeControl.increment ?? 0,
+                  binc: player.timeControl.increment ?? 0,
+                },
+              }
+            : player.go;
 
-        const requestPromise = commands
-          .getBestMoves(
-            currentTurn,
-            engine.path,
-            tabKey,
-            goMode,
-            {
-              fen: root.fen,
-              moves: moves,
-              extraOptions: (engine.settings || [])
-                .filter((s) => s.name !== "MultiPV")
-                .map((s) => ({ ...s, value: s.value?.toString() ?? "" })),
-            },
-          );
-        
+        const requestPromise = commands.getBestMoves(currentTurn, engine.path, tabKey, goMode, {
+          fen: root.fen,
+          moves: moves,
+          extraOptions: (engine.settings || [])
+            .filter((s) => s.name !== "MultiPV")
+            .map((s) => ({ ...s, value: s.value?.toString() ?? "" })),
+        });
+
         // Set a timeout (1 second) to detect if engine is stuck
         // If no response after 1s, clear the request and force a retry
         timeoutRef.current = setTimeout(() => {
@@ -178,7 +173,7 @@ export function useEngineMoves(
           }
           timeoutRef.current = null;
         }, 1000); // 1 second timeout
-        
+
         requestPromise
           .then((res: any) => {
             // Clear timeout if promise resolves
@@ -186,17 +181,17 @@ export function useEngineMoves(
               clearTimeout(timeoutRef.current);
               timeoutRef.current = null;
             }
-            
+
             // Check if game is still playing before processing response
             if (gameState !== "playing" || headers.result !== "*") {
               return;
             }
-            
+
             // Check if this request is still active (not superseded by another request)
             if (engineRequestRef.current !== requestKey) {
               return;
             }
-            
+
             // IMPORTANT: tauri-specta commands resolve to Result; errors do NOT necessarily throw.
             // If we don't handle the error branch here, `engineRequestRef` can get stuck and the engine will never move.
             if (res.status === "error") {
@@ -230,7 +225,7 @@ export function useEngineMoves(
               clearTimeout(timeoutRef.current);
               timeoutRef.current = null;
             }
-            
+
             // Only show error if request is still active and game is still playing
             if (engineRequestRef.current === requestKey && gameState === "playing" && headers.result === "*") {
               engineRequestRef.current = null;
@@ -242,7 +237,7 @@ export function useEngineMoves(
               });
             }
           });
-        
+
         // Return cleanup function to cancel timeout if effect re-runs or component unmounts
         return () => {
           if (timeoutRef.current) {
@@ -261,7 +256,7 @@ export function useEngineMoves(
         engineRequestDetailsRef.current = null;
       }
     }
-    
+
     // Always return cleanup function to cancel any pending timeouts
     return () => {
       if (timeoutRef.current) {
@@ -385,7 +380,7 @@ export function useEngineMoves(
         const currentRequestKey = engineRequestRef.current;
         engineRequestRef.current = null;
         engineRequestDetailsRef.current = null;
-        
+
         try {
           appendMove({
             payload: parsed,
@@ -401,8 +396,10 @@ export function useEngineMoves(
       } else if (payload.progress === 100 && tabEndsWithTurn) {
         // Only clear the engine request ref if it matches this payload
         // This prevents clearing requests for different positions/turns
-        if (engineRequestDetailsRef.current?.tab === payload.tab && 
-            engineRequestDetailsRef.current?.fen === payload.fen) {
+        if (
+          engineRequestDetailsRef.current?.tab === payload.tab &&
+          engineRequestDetailsRef.current?.fen === payload.fen
+        ) {
           engineRequestRef.current = null;
           engineRequestDetailsRef.current = null;
         }
@@ -410,37 +407,40 @@ export function useEngineMoves(
     };
 
     let isMounted = true;
-    
+
     // Set up the listener
-    events.bestMovesPayload.listen(({ payload }) => {
-      if (!isMounted) return;
-      // Always throttle to avoid stutter - even progress 100 events can arrive in bursts
-      // We only need the latest payload, so accumulate and flush at ~10fps
-      pending = payload;
-      if (timer == null) {
-        timer = window.setTimeout(() => {
-          timer = null;
-          if (isMounted) {
-            flush();
-          }
-        }, throttleMs);
-      }
-    }).then((unlisten) => {
-      if (isMounted) {
-        unlistenFn = unlisten;
-      } else {
-        // Component unmounted while listener was being set up, clean up immediately
-        try {
-          unlisten();
-        } catch (e) {
-          // Ignore errors if callback was already cleaned up
+    events.bestMovesPayload
+      .listen(({ payload }) => {
+        if (!isMounted) return;
+        // Always throttle to avoid stutter - even progress 100 events can arrive in bursts
+        // We only need the latest payload, so accumulate and flush at ~10fps
+        pending = payload;
+        if (timer == null) {
+          timer = window.setTimeout(() => {
+            timer = null;
+            if (isMounted) {
+              flush();
+            }
+          }, throttleMs);
         }
-      }
-    }).catch((err) => {
-      // Ignore errors if listener setup fails
-      console.error("Failed to set up bestMovesPayload listener:", err);
-    });
-    
+      })
+      .then((unlisten) => {
+        if (isMounted) {
+          unlistenFn = unlisten;
+        } else {
+          // Component unmounted while listener was being set up, clean up immediately
+          try {
+            unlisten();
+          } catch (e) {
+            // Ignore errors if callback was already cleaned up
+          }
+        }
+      })
+      .catch((err) => {
+        // Ignore errors if listener setup fails
+        console.error("Failed to set up bestMovesPayload listener:", err);
+      });
+
     return () => {
       isMounted = false;
       pending = null;
@@ -460,4 +460,3 @@ export function useEngineMoves(
     };
   }, [gameState, headers.result, activeTab, appendMove, pos, players, root.fen, t]);
 }
-

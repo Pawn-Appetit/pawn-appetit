@@ -4,8 +4,8 @@
  * When counts are provided, each opening is weighted by its frequency in the player's repertoire.
  */
 
-import type { StyleVector } from "./types";
 import { analyzeOpeningCharacteristics } from "./characteristics";
+import type { StyleVector } from "./types";
 
 export function styleFromEcoList(
   openings: Array<{ eco: string; openingName: string; count?: number }> | string[],
@@ -191,7 +191,7 @@ export function styleFromEcoList(
         v.offbeat += 1 * weight;
       }
 
-      if (num >= 6 && num <= 9 || lowerOpening.includes("modern") || lowerOpening.includes("pirc")) {
+      if ((num >= 6 && num <= 9) || lowerOpening.includes("modern") || lowerOpening.includes("pirc")) {
         v.posicional += 1 * weight;
         if (characteristics.isHypermodern) {
           v.hipermoderno += 1 * weight;
@@ -226,7 +226,7 @@ export function styleFromEcoList(
         v.hipermoderno += 3 * weight;
       }
 
-      if (num >= 70 && num <= 79 || lowerOpening.includes("dragon")) {
+      if ((num >= 70 && num <= 79) || lowerOpening.includes("dragon")) {
         v.tactico += 1 * weight;
         v.dinamico += 1 * weight;
         // Hyperaccelerated Dragon variant
@@ -236,7 +236,7 @@ export function styleFromEcoList(
       }
 
       // Only add offbeat if it's truly offbeat and NOT hypermodern
-      if ((num >= 30 && num <= 39 || characteristics.isOffbeat) && !characteristics.isHypermodern) {
+      if (((num >= 30 && num <= 39) || characteristics.isOffbeat) && !characteristics.isHypermodern) {
         v.offbeat += 1 * weight;
       }
 
@@ -486,6 +486,3 @@ export function styleFromEcoList(
 
   return v;
 }
-
-
-

@@ -74,11 +74,7 @@ function normalizeScores(prev: ScoreValue, next: ScoreValue, color: Color) {
 
 export function getAccuracy(prev: ScoreValue, next: ScoreValue, color: Color): number {
   const { prevCP, nextCP } = normalizeScores(prev, next, color);
-  return minMax(
-    103.1668 * Math.exp(-0.04354 * (getWinChance(prevCP) - getWinChance(nextCP))) - 3.1669 + 1,
-    0,
-    100,
-  );
+  return minMax(103.1668 * Math.exp(-0.04354 * (getWinChance(prevCP) - getWinChance(nextCP))) - 3.1669 + 1, 0, 100);
 }
 
 export function getCPLoss(prev: ScoreValue, next: ScoreValue, color: Color): number {
@@ -217,17 +213,7 @@ function isBrilliantStrict(args: {
   move?: string;
   currentBestMoves?: BestMoves[];
 }): boolean {
-  const {
-    prevCP,
-    playedCP,
-    bestCP,
-    secondCP,
-    isBestBySan,
-    isNearBest,
-    isSacrifice,
-    move,
-    currentBestMoves,
-  } = args;
+  const { prevCP, playedCP, bestCP, secondCP, isBestBySan, isNearBest, isSacrifice, move, currentBestMoves } = args;
 
   // CLAVE: sin sacrificio => NO hay "!!" (evita Rc1+ / Qc5+)
   // Esto alinea con la definición pública más común (Chess.com: “good piece sacrifice”). :contentReference[oaicite:2]{index=2}
@@ -247,10 +233,9 @@ function isBrilliantStrict(args: {
 
   const gapNeed = brilliantGapThreshold(prevCP, bestCP ?? playedCP);
 
-  const gapVsSecond =
-    bestCP != null && secondCP != null ? bestCP - secondCP : 0;
+  const gapVsSecond = bestCP != null && secondCP != null ? bestCP - secondCP : 0;
 
-  const forcedCapture = forcedRecaptureSignal(move, currentBestMoves, "white" /* placeholder */ as any, /* not used */);
+  const forcedCapture = forcedRecaptureSignal(move, currentBestMoves, "white" /* placeholder */ as any /* not used */);
 
   // Nota: forcedRecaptureSignal necesita color; arriba no lo pasamos por evitar “as any”.
   // Mejor: lo calculamos afuera en getAnnotation donde sí tenemos color real.
