@@ -17,16 +17,16 @@ name = "pawn_appetit_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.5.1", features = [] }
+tauri-build = { version = "2.5.3", features = [] }
 
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "2.9.2", features = ["protocol-asset"] }
+tauri = { version = "2.9.5", features = ["protocol-asset"] }
 zip = "2.4.2"
 tokio = { version = "1.48", features = ["full"] }
 futures-util = "0.3.31"
-reqwest = { version = "0.12.24", features = ["stream", "blocking", "json", "rustls-tls"], default-features = false }
+reqwest = { version = "0.12.26", features = ["stream", "blocking", "json", "rustls-tls"], default-features = false }
 shakmaty = "0.27.3"
 pgn-reader = "0.26.0"
 csv = "1.4.0"
@@ -35,7 +35,7 @@ btoi = "0.4.3"
 rusqlite = { version = "0.28.0", features = ["bundled"] }
 bzip2 = "0.4.4"
 zstd = "0.13"
-diesel = { version = "2.3.3", features = [
+diesel = { version = "2.3.5", features = [
     "sqlite",
     "returning_clauses_for_sqlite_3_35",
     "r2d2",
@@ -57,7 +57,7 @@ tauri-specta = { version = "^2.0.0-rc.20", features = ["derive", "typescript"] }
 strsim = "0.11.1"
 bincode = "2.0.1"
 thiserror = "1.0.69"
-log = "0.4.28"
+log = "0.4.29"
 oauth2 = "4.4.2"
 axum = "0.6.20"
 tar = "0.4.44"
@@ -78,7 +78,7 @@ tauri-plugin-window-state = "2"
 tauri-plugin-opener = "2"
 regex = "1.12.2"
 postgrest = "1.6"
-uuid = { version = "1.18.1", features = ["v4"] }
+uuid = { version = "1.19.0", features = ["v4"] }
 fs_extra = "1.3.0"
 
 [features]
