@@ -21,9 +21,11 @@ interface EditProfileModalProps {
       photo?: string;
     } | null,
     displayName?: string,
+    lichessToken?: string,
   ) => void;
   currentFideId?: string;
   currentDisplayName?: string;
+  currentLichessToken?: string;
 }
 
 export function EditProfileModal({
@@ -32,6 +34,7 @@ export function EditProfileModal({
   onSave,
   currentFideId,
   currentDisplayName,
+  currentLichessToken,
 }: EditProfileModalProps) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
@@ -39,14 +42,16 @@ export function EditProfileModal({
   const [error, setError] = useState<string | null>(null);
   const [fideIdValue, setFideIdValue] = useState("");
   const [customName, setCustomName] = useState("");
+  const [lichessToken, setLichessToken] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const lichessTokenInputRef = useRef<HTMLInputElement>(null);
 
   // Clean the value so it only contains numbers
   const cleanFideId = useCallback((value: string): string => {
     return value.replace(/\D/g, "");
   }, []);
 
-  // Handle input changes (typing or pasting)
+  // Handle input changes (typing or pasting) for FIDE ID
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const rawValue = e.currentTarget.value;
@@ -57,7 +62,7 @@ export function EditProfileModal({
     [cleanFideId],
   );
 
-  // Additional handler to capture changes that onChange might miss (especially after pasting)
+  // Additional handler to capture changes that onChange might miss (especially after pasting) for FIDE ID
   const handleInput = useCallback(
     (e: React.FormEvent<HTMLInputElement>) => {
       const rawValue = e.currentTarget.value;
@@ -71,7 +76,7 @@ export function EditProfileModal({
     [cleanFideId, fideIdValue],
   );
 
-  // Handle paste - prevent default behavior and insert the cleaned value
+  // Handle paste - prevent default behavior and insert the cleaned value for FIDE ID
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLInputElement>) => {
       e.preventDefault();
@@ -86,6 +91,41 @@ export function EditProfileModal({
       setError(null);
     },
     [cleanFideId],
+  );
+
+  // Handle input changes (typing or pasting) for Lichess Token
+  const handleLichessTokenInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const rawValue = e.currentTarget.value;
+      setLichessToken(rawValue);
+    },
+    [],
+  );
+
+  // Additional handler to capture changes that onChange might miss (especially after pasting) for Lichess Token
+  const handleLichessTokenInput = useCallback(
+    (e: React.FormEvent<HTMLInputElement>) => {
+      const rawValue = e.currentTarget.value;
+      // Only update if the value is different to avoid infinite loops
+      if (rawValue !== lichessToken) {
+        setLichessToken(rawValue);
+      }
+    },
+    [lichessToken],
+  );
+
+  // Handle paste - prevent default behavior and insert the value for Lichess Token
+  const handleLichessTokenPaste = useCallback(
+    (e: React.ClipboardEvent<HTMLInputElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const pastedText = e.clipboardData.getData("text");
+
+      // Update state immediately - this should cause a re-render
+      setLichessToken(pastedText);
+    },
+    [],
   );
 
   // Validate FIDE ID
@@ -142,6 +182,7 @@ export function EditProfileModal({
   const handleSave = useCallback(() => {
     const fideId = fideIdValue.trim();
     const finalDisplayName = customName.trim();
+    const finalLichessToken = lichessToken.trim();
 
     // Always save the displayName, even if there's no FIDE ID or FIDE player
     if (fidePlayer && fideId) {
@@ -158,18 +199,18 @@ export function EditProfileModal({
         nationalRank: fidePlayer.nationalRank,
         photo: fidePlayer.photo,
       };
-      onSave(fideId, playerData, finalDisplayName);
+      onSave(fideId, playerData, finalDisplayName, finalLichessToken || undefined);
     } else if (fideId) {
       // If there's only a FIDE ID but no player (failed or not performed search), save only the ID
-      onSave(fideId, null, finalDisplayName);
+      onSave(fideId, null, finalDisplayName, finalLichessToken || undefined);
     } else {
       // If there's no FIDE ID, only save the displayName
-      onSave("", null, finalDisplayName);
+      onSave("", null, finalDisplayName, finalLichessToken || undefined);
     }
 
     // Reset state when closing
     handleClose();
-  }, [fideIdValue, fidePlayer, customName, onSave, t]);
+  }, [fideIdValue, fidePlayer, customName, lichessToken, onSave, t]);
 
   // Close modal and reset state
   const handleClose = useCallback(() => {
@@ -177,7 +218,8 @@ export function EditProfileModal({
     setFideIdValue(currentFideId || "");
     setFidePlayer(null);
     setError(null);
-  }, [onClose, currentFideId]);
+    setLichessToken(currentLichessToken || "");
+  }, [onClose, currentFideId, currentLichessToken]);
 
   // Synchronize when the modal opens or currentFideId changes
   useEffect(() => {
@@ -186,9 +228,10 @@ export function EditProfileModal({
       setFideIdValue(initialValue);
       setFidePlayer(null);
       setCustomName(currentDisplayName || "");
+      setLichessToken(currentLichessToken || "");
       setError(null);
     }
-  }, [opened, currentFideId, currentDisplayName]);
+  }, [opened, currentFideId, currentDisplayName, currentLichessToken]);
 
   // Enable search button if there's a valid value
   // Use useMemo to ensure it recalculates when fideIdValue changes
@@ -210,6 +253,17 @@ export function EditProfileModal({
           description={t("features.dashboard.editProfile.customNameDescription")}
           value={customName}
           onChange={(e) => setCustomName(e.currentTarget.value)}
+        />
+
+        <TextInput
+          ref={lichessTokenInputRef}
+          label={t("features.dashboard.editProfile.lichessToken")}
+          placeholder={t("features.dashboard.editProfile.lichessTokenPlaceholder")}
+          description={t("features.dashboard.editProfile.lichessTokenDescription")}
+          value={lichessToken}
+          onChange={handleLichessTokenInputChange}
+          onInput={handleLichessTokenInput}
+          onPaste={handleLichessTokenPaste}
         />
 
         <TextInput

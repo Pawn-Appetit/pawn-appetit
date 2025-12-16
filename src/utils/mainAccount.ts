@@ -6,6 +6,7 @@ export interface MainAccount {
   name: string;
   fideId?: string;
   displayName?: string;
+  lichessToken?: string;
   updatedAt?: string;
 }
 
