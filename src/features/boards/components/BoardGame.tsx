@@ -25,7 +25,6 @@ import {
   IconArrowsExchange,
   IconCheck,
   IconCpu,
-  IconPlayerStop,
   IconPlus,
   IconPuzzle,
   IconUser,
@@ -33,10 +32,8 @@ import {
 } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { save } from "@tauri-apps/plugin-dialog";
-import { parseUci } from "chessops";
 import { INITIAL_FEN } from "chessops/fen";
-import { makeSan, parseSan } from "chessops/san";
-import equal from "fast-deep-equal";
+import { makeSan } from "chessops/san";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   type ChangeEvent,
@@ -53,7 +50,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
-import { commands, events, type GoMode, type Outcome } from "@/bindings";
+import { commands, type GoMode, type Outcome } from "@/bindings";
 import GameInfo from "@/components/GameInfo";
 import MoveControls from "@/components/MoveControls";
 import EngineSettingsForm from "@/components/panels/analysis/EngineSettingsForm";
@@ -68,7 +65,7 @@ import {
   loadableEnginesAtom,
   tabsAtom,
 } from "@/state/atoms";
-import { getLastMainlinePosition, getMainLine, getMoveText, getPGN, getVariationLine } from "@/utils/chess";
+import { getMainLine, getMoveText, getPGN } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import type { TimeControlField } from "@/utils/clock";
 import { getDocumentDir } from "@/utils/documentDir";
@@ -80,6 +77,7 @@ import { createTab } from "@/utils/tabs";
 import { type GameHeaders, type TreeNode, treeIteratorMainLine } from "@/utils/treeReducer";
 import GameNotationWrapper from "./GameNotationWrapper";
 import ResponsiveBoard from "./ResponsiveBoard";
+import { useGameTime } from "./GameTimeContext";
 
 const DEFAULT_TIME_CONTROL: TimeControlField = {
   seconds: 180_000,
@@ -101,6 +99,18 @@ function EnginesSelect({ engine, setEngine, engines = [], enginesState }: Engine
   const { t } = useTranslation();
   const navigate = useNavigate();
 
+  const engineOptions = useMemo(
+    () => engines?.map((engine) => ({ label: engine.name, value: engine.path })),
+    [engines],
+  );
+
+  const handleEngineChange = useCallback(
+    (path: string | null) => {
+      setEngine(engines?.find((engine) => engine.path === path) ?? null);
+    },
+    [engines, setEngine],
+  );
+
   useEffect(() => {
     if (engines.length > 0 && engine === null) {
       setEngine(engines[0]);
@@ -119,18 +129,6 @@ function EnginesSelect({ engine, setEngine, engines = [], enginesState }: Engine
       </Stack>
     );
   }
-
-  const engineOptions = useMemo(
-    () => engines?.map((engine) => ({ label: engine.name, value: engine.path })),
-    [engines],
-  );
-
-  const handleEngineChange = useCallback(
-    (path: string | null) => {
-      setEngine(engines?.find((engine) => engine.path === path) ?? null);
-    },
-    [engines, setEngine],
-  );
 
   return (
     <Suspense>
@@ -632,9 +630,24 @@ function BoardGame() {
     return enginesState === "hasData" ? loadableEngines.data.filter((e): e is LocalEngine => e.type === "local") : [];
   }, [loadableEngines, enginesState]);
 
-  const [whiteTime, setWhiteTime] = useState<number | null>(null);
-  const [blackTime, setBlackTime] = useState<number | null>(null);
-  const engineRequestRef = useRef<string | null>(null);
+  // Use GameTimeContext if available (from PlayVsEngineBoard), otherwise use local state
+  const [localWhiteTime, setLocalWhiteTime] = useState<number | null>(null);
+  const [localBlackTime, setLocalBlackTime] = useState<number | null>(null);
+
+  // Try to use context, fallback to local state
+  let whiteTime: number | null = localWhiteTime;
+  let setWhiteTime: Dispatch<SetStateAction<number | null>> = setLocalWhiteTime;
+  let blackTime: number | null = localBlackTime;
+  let setBlackTime: Dispatch<SetStateAction<number | null>> = setLocalBlackTime;
+
+  const gameTime = useGameTime();
+
+  if (gameTime) {
+    whiteTime = gameTime.whiteTime;
+    setWhiteTime = gameTime.setWhiteTime;
+    blackTime = gameTime.blackTime;
+    setBlackTime = gameTime.setBlackTime;
+  }
 
   const changeToAnalysisMode = useCallback(() => {
     setTabs((prev) => prev.map((tab) => (tab.value === activeTab ? { ...tab, type: "analysis" } : tab)));
@@ -1011,6 +1024,7 @@ function BoardGame() {
     setFen,
     setGameState,
     setHeaders,
+    setWhiteTime,
     t,
   ]);
 
