@@ -43,7 +43,7 @@ import {
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
 import { blindfold, chessboard } from "@/styles/Chessboard.css";
-import { ANNOTATION_INFO, annotationColors, isBasicAnnotation } from "@/utils/annotation";
+import { annotationColors, isBasicAnnotation } from "@/utils/annotation";
 import { getMaterialDiff, getVariationLine } from "@/utils/chess";
 import { chessopsError, forceEnPassant, positionFromFen } from "@/utils/chessops";
 import { getDocumentDir } from "@/utils/documentDir";

@@ -1,6 +1,7 @@
-import { ActionIcon, AppShellSection, Group, Menu, Stack, Tooltip } from "@mantine/core";
+import { ActionIcon, AppShellSection, Divider, Group, Menu, Stack, Tooltip } from "@mantine/core";
 import {
   type Icon,
+  IconChartLine,
   IconChess,
   IconCpu,
   IconDatabase,
@@ -8,6 +9,7 @@ import {
   IconKeyboard,
   IconLayoutDashboard,
   IconMenu2,
+  IconPlayerPlay,
   IconPuzzle,
   IconSchool,
   IconSettings,
@@ -19,7 +21,14 @@ import cx from "clsx";
 import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
-import { activeTabAtom, hideDashboardOnStartupAtom, tabsAtom } from "@/state/atoms";
+import {
+  activeTabAtom,
+  showAnalyzeInSidebarAtom,
+  showDashboardOnStartupAtom,
+  showPlayInSidebarAtom,
+  showPuzzlesInSidebarAtom,
+  tabsAtom,
+} from "@/state/atoms";
 import { createTab } from "@/utils/tabs";
 import * as classes from "./Sidebar.css";
 
@@ -47,10 +56,18 @@ function NavbarLink({ url, icon: Icon, label }: NavbarLinkProps) {
   );
 }
 
-function PuzzlesNavLink({ icon: Icon, label }: { icon: Icon; label: string }) {
+function QuickActionLink({
+  icon: Icon,
+  label,
+  tabName,
+  tabType,
+}: {
+  icon: Icon;
+  label: string;
+  tabName: string;
+  tabType: "play" | "analysis" | "puzzles";
+}) {
   const navigate = useNavigate();
-  const { t } = useTranslation();
-  const matchesRoute = useMatchRoute();
   const { layout } = useResponsiveLayout();
   const [, setTabs] = useAtom(tabsAtom);
   const [, setActiveTab] = useAtom(activeTabAtom);
@@ -58,7 +75,7 @@ function PuzzlesNavLink({ icon: Icon, label }: { icon: Icon; label: string }) {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     createTab({
-      tab: { name: t("features.tabs.puzzle.title"), type: "puzzles" },
+      tab: { name: tabName, type: tabType },
       setTabs,
       setActiveTab,
     });
@@ -67,15 +84,9 @@ function PuzzlesNavLink({ icon: Icon, label }: { icon: Icon; label: string }) {
 
   return (
     <Tooltip label={label} position={layout.sidebar.position === "footer" ? "top" : "right"}>
-      <a
-        href="/boards"
-        onClick={handleClick}
-        className={cx(classes.link, {
-          [classes.active]: matchesRoute({ to: "/boards", fuzzy: true }),
-        })}
-      >
+      <Link to="/boards" onClick={handleClick} className={cx(classes.link)}>
         <Icon size={layout.sidebar.position === "footer" ? "2.0rem" : "1.5rem"} stroke={1.5} />
-      </a>
+      </Link>
     </Tooltip>
   );
 }
@@ -96,35 +107,109 @@ export const linksdata = [
 ];
 
 export function SideBar() {
-  const navigate = useNavigate();
   const matchesRoute = useMatchRoute();
   const { t } = useTranslation();
-  const [hideDashboardOnStartup] = useAtom(hideDashboardOnStartupAtom);
-  const [, setTabs] = useAtom(tabsAtom);
-  const [, setActiveTab] = useAtom(activeTabAtom);
+  const [showDashboardOnStartup] = useAtom(showDashboardOnStartupAtom);
+  const [showPlayInSidebar] = useAtom(showPlayInSidebarAtom);
+  const [showAnalyzeInSidebar] = useAtom(showAnalyzeInSidebarAtom);
+  const [showPuzzlesInSidebar] = useAtom(showPuzzlesInSidebarAtom);
   const { layout } = useResponsiveLayout();
 
   const mainLinks = linksdata
     .filter((link) => {
-      if (hideDashboardOnStartup && link.url === "/") return false;
+      if (!showDashboardOnStartup && link.url === "/") return false;
       return link;
     })
     .map((link) => {
-      if ((link as any).isPuzzles) {
-        return <PuzzlesNavLink icon={link.icon} label={t(`features.sidebar.${link.label}`)} key={link.label} />;
-      }
       return <NavbarLink {...link} label={t(`features.sidebar.${link.label}`)} key={link.label} />;
     });
 
+  // Create quick action links based on settings
+  const quickActionLinks: React.ReactNode[] = [];
+  if (showPlayInSidebar) {
+    quickActionLinks.push(
+      <QuickActionLink
+        key="quick-play"
+        icon={IconPlayerPlay}
+        label={t("features.sidebar.quickPlay")}
+        tabName="Play"
+        tabType="play"
+      />,
+    );
+  }
+  if (showAnalyzeInSidebar) {
+    quickActionLinks.push(
+      <QuickActionLink
+        key="quick-analyze"
+        icon={IconChartLine}
+        label={t("features.sidebar.quickAnalyze")}
+        tabName={t("features.tabs.analysisBoard.title")}
+        tabType="analysis"
+      />,
+    );
+  }
+  if (showPuzzlesInSidebar) {
+    quickActionLinks.push(
+      <QuickActionLink
+        key="quick-puzzles"
+        icon={IconPuzzle}
+        label={t("features.sidebar.quickPuzzles")}
+        tabName={t("features.tabs.puzzle.title")}
+        tabType="puzzles"
+      />,
+    );
+  }
+
+  const allMainLinks = [...mainLinks, ...quickActionLinks];
+
   if (layout.sidebar.position === "footer") {
     // Show only first 4 links on mobile
-    const visibleLinks = mainLinks.slice(0, 4);
+    const visibleLinks = allMainLinks.slice(0, 4);
 
-    // Remaining links go in burger menu
-    const burgerMenuLinks = [
-      ...mainLinks.slice(4),
-      <NavbarLink key="settings" icon={IconSettings} label={t("features.sidebar.settings")} url="/settings" />,
-    ];
+    // For burger menu, we need to render Menu.Items directly
+    const renderBurgerMenuItem = (link: React.ReactNode, index: number) => {
+      if (!link || typeof link !== "object" || !("props" in link)) {
+        return null;
+      }
+
+      const linkProps = link.props as {
+        icon: Icon;
+        label: string;
+        url?: string;
+        onClick?: (e: React.MouseEvent) => void;
+      };
+      const IconComponent = linkProps.icon;
+      const linkKey = (link as { key?: string }).key || `menu-item-${index}`;
+
+      // If there's no URL, it's a quick action - use onClick
+      if (!linkProps.url) {
+        return (
+          <Menu.Item
+            key={linkKey}
+            onClick={(e) => {
+              if (linkProps.onClick) {
+                linkProps.onClick(e);
+              }
+            }}
+            leftSection={<IconComponent size="1.2rem" stroke={1.5} />}
+          >
+            {linkProps.label}
+          </Menu.Item>
+        );
+      }
+
+      // Regular navigation link
+      return (
+        <Menu.Item
+          key={linkKey}
+          component={Link}
+          to={linkProps.url}
+          leftSection={<IconComponent size="1.2rem" stroke={1.5} />}
+        >
+          {linkProps.label}
+        </Menu.Item>
+      );
+    };
 
     return (
       <AppShellSection grow>
@@ -139,43 +224,15 @@ export function SideBar() {
               </Tooltip>
             </Menu.Target>
             <Menu.Dropdown>
-              {burgerMenuLinks.map((link) => {
-                const IconComponent = link.props.icon;
-                const isPuzzles = link.props.url === "" || (link.key as string) === "puzzles";
-                if (isPuzzles) {
-                  return (
-                    <Menu.Item
-                      key={link.key}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        createTab({
-                          tab: { name: t("features.tabs.puzzle.title"), type: "puzzles" },
-                          setTabs,
-                          setActiveTab,
-                        });
-                        navigate({ to: "/boards" });
-                      }}
-                      leftSection={
-                        <IconComponent size={layout.sidebar.position === "footer" ? "2.0rem" : "1.2rem"} stroke={1.5} />
-                      }
-                    >
-                      {link.props.label}
-                    </Menu.Item>
-                  );
-                }
-                return (
-                  <Menu.Item
-                    key={link.key}
-                    component={Link}
-                    to={link.props.url}
-                    leftSection={
-                      <IconComponent size={layout.sidebar.position === "footer" ? "2.0rem" : "1.2rem"} stroke={1.5} />
-                    }
-                  >
-                    {link.props.label}
-                  </Menu.Item>
-                );
-              })}
+              {allMainLinks.slice(4).map((link, index) => renderBurgerMenuItem(link, index))}
+              <Menu.Item
+                key="settings"
+                component={Link}
+                to="/settings"
+                leftSection={<IconSettings size="1.2rem" stroke={1.5} />}
+              >
+                {t("features.sidebar.settings")}
+              </Menu.Item>
             </Menu.Dropdown>
           </Menu>
         </Group>
@@ -184,12 +241,13 @@ export function SideBar() {
   }
 
   // Desktop layout
-
   return (
     <>
       <AppShellSection grow>
         <Stack justify="center" gap={0}>
           {mainLinks}
+          {quickActionLinks.length && <Divider />}
+          {quickActionLinks}
         </Stack>
       </AppShellSection>
       <AppShellSection visibleFrom="sm">

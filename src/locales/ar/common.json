@@ -232,8 +232,8 @@
     "appearance": {
       "custom": "مخصص",
       "auto": "تلقائي",
-      "hideDashboardOnStartup": "إخفاء لوحة التحكم عند بدء التشغيل",
-      "hideDashboardOnStartupDesc": "افتح اللوحات بدلًا من لوحة التحكم عند بدء التطبيق"
+      "showDashboardOnStartup": "إظهار لوحة التحكم عند بدء التشغيل",
+      "showDashboardOnStartupDesc": "إظهار لوحة التحكم عند بدء التطبيق"
     }
   },
   "formatters": {

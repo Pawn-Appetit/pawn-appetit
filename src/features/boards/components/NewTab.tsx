@@ -1,9 +1,8 @@
 import { Box, Button, Card, SimpleGrid, Stack, Text } from "@mantine/core";
 import { modals } from "@mantine/modals";
-import { IconChess, IconFileImport, IconPuzzle } from "@tabler/icons-react";
+import { IconChartLine, IconFileImport, IconPlayerPlay, IconPuzzle } from "@tabler/icons-react";
 import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
-import Chessboard from "@/components/icons/Chessboard";
 import { tabsAtom } from "@/state/atoms";
 import type { Tab } from "@/utils/tabs";
 
@@ -14,7 +13,7 @@ export default function NewTabHome({ id }: { id: string }) {
 
   const cards = [
     {
-      icon: <IconChess size={60} />,
+      icon: <IconPlayerPlay size={60} />,
       title: t("features.tabs.playChess.title"),
       description: t("features.tabs.playChess.desc"),
       label: t("features.tabs.playChess.button"),
@@ -29,7 +28,7 @@ export default function NewTabHome({ id }: { id: string }) {
       },
     },
     {
-      icon: <Chessboard size={60} />,
+      icon: <IconChartLine size={60} />,
       title: t("features.tabs.analysisBoard.title"),
       description: t("features.tabs.analysisBoard.desc"),
       label: t("features.tabs.analysisBoard.button"),
