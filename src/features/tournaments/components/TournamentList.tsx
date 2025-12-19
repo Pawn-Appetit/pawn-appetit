@@ -142,11 +142,7 @@ export function TournamentList({ lichessToken, accountName, onRefresh }: Tournam
                 >
                   {t("features.tournaments.browse.schedule", "Schedule")}
                 </Button>
-                <ActionIcon
-                  color="red"
-                  variant="light"
-                  onClick={() => handleDelete(template.id)}
-                >
+                <ActionIcon color="red" variant="light" onClick={() => handleDelete(template.id)}>
                   <IconTrash size={16} />
                 </ActionIcon>
               </Group>
@@ -174,4 +170,3 @@ export function TournamentList({ lichessToken, accountName, onRefresh }: Tournam
     </>
   );
 }
-

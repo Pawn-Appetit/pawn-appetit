@@ -1,9 +1,9 @@
 import { ActionIcon, Button, Divider, Group, Modal, Stack, Text, TextInput } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconCheck, IconCopy, IconShare } from "@tabler/icons-react";
+import { fetch } from "@tauri-apps/plugin-http";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { fetch } from "@tauri-apps/plugin-http";
 import type { TournamentTemplate } from "@/utils/tournamentTemplates";
 
 interface ScheduleTournamentModalProps {
@@ -83,12 +83,12 @@ export function ScheduleTournamentModal({
       body.append("berserkable", template.berserkable.toString());
       body.append("streakable", template.streakable.toString());
       body.append("hasChat", template.hasChat.toString());
-      
+
       // Add start time - Lichess API expects ISO 8601 format or milliseconds
       // Try ISO format first, if that doesn't work, try milliseconds
       const isoString = startTime.toISOString();
       body.append("startDate", isoString);
-      
+
       if (template.position) {
         body.append("position", template.position);
       }
@@ -98,7 +98,7 @@ export function ScheduleTournamentModal({
       if (template.teamBattleByTeam) {
         body.append("teamBattleByTeam", template.teamBattleByTeam);
       }
-      
+
       // Add team restriction if specified
       // Lichess API expects the team ID in a specific format
       if (template.teamRestriction && template.teamRestriction.trim()) {
@@ -134,19 +134,19 @@ export function ScheduleTournamentModal({
       }
 
       const result = await response.json();
-      
+
       // Extract tournament ID and URL from response
       // Lichess API returns an object with 'id' field, URL is https://lichess.org/tournament/{id}
       let url: string;
       let id: string | null = null;
-      
+
       if (result.id) {
         id = result.id;
         url = `https://lichess.org/tournament/${result.id}`;
       } else if (result.url) {
         url = result.url;
         // Try to extract ID from URL
-        const urlMatch = result.url.match(/\/tournament\/([^\/]+)/);
+        const urlMatch = result.url.match(/\/tournament\/([^/]+)/);
         if (urlMatch) {
           id = urlMatch[1];
         }
@@ -159,7 +159,7 @@ export function ScheduleTournamentModal({
           url = "";
         }
       }
-      
+
       setTournamentUrl(url);
       setTournamentId(id);
 
@@ -169,7 +169,7 @@ export function ScheduleTournamentModal({
       // Don't close the modal - let user see the ID and URL
     } catch (error) {
       console.error("Error scheduling tournament:", error);
-      
+
       // Try to parse error message for better user feedback
       let errorMessage = t("features.tournaments.schedule.error", "Failed to schedule tournament");
       if (error instanceof Error) {
@@ -178,7 +178,7 @@ export function ScheduleTournamentModal({
           if (errorData["conditions.teamMember.teamId"]) {
             errorMessage = t(
               "features.tournaments.schedule.invalidTeamId",
-              "Invalid team ID. Please verify that the team ID is correct and that you have access to it."
+              "Invalid team ID. Please verify that the team ID is correct and that you have access to it.",
             );
           } else if (errorData.error) {
             errorMessage = errorData.error.message || error.message;
@@ -189,7 +189,7 @@ export function ScheduleTournamentModal({
           errorMessage = error.message;
         }
       }
-      
+
       notifications.show({
         title: t("common.error", "Error"),
         message: errorMessage,
@@ -202,7 +202,7 @@ export function ScheduleTournamentModal({
 
   const handleCopyUrl = async () => {
     if (!tournamentUrl) return;
-    
+
     try {
       await navigator.clipboard.writeText(tournamentUrl);
       setCopied(true);
@@ -219,7 +219,7 @@ export function ScheduleTournamentModal({
 
   const handleShare = async () => {
     if (!tournamentUrl) return;
-    
+
     try {
       await navigator.clipboard.writeText(tournamentUrl);
       setShared(true);
@@ -236,7 +236,7 @@ export function ScheduleTournamentModal({
 
   const handleCopyId = async () => {
     if (!tournamentId) return;
-    
+
     try {
       await navigator.clipboard.writeText(tournamentId);
       setCopied(true);
@@ -271,7 +271,10 @@ export function ScheduleTournamentModal({
         {!tournamentUrl ? (
           <>
             <Text size="sm" c="dimmed">
-              {t("features.tournaments.schedule.description", "Select the date and time when the tournament should start")}
+              {t(
+                "features.tournaments.schedule.description",
+                "Select the date and time when the tournament should start",
+              )}
             </Text>
 
             <TextInput
@@ -290,7 +293,7 @@ export function ScheduleTournamentModal({
             <Text size="sm" c="dimmed">
               {t("features.tournaments.schedule.shareUrl", "Share this URL to invite players:")}
             </Text>
-            
+
             <Group gap="xs">
               <TextInput
                 value={tournamentUrl}
@@ -371,12 +374,9 @@ export function ScheduleTournamentModal({
             </Button>
           </>
         ) : (
-          <Button onClick={handleClose}>
-            {t("common.close", "Close")}
-          </Button>
+          <Button onClick={handleClose}>{t("common.close", "Close")}</Button>
         )}
       </Group>
     </Modal>
   );
 }
-

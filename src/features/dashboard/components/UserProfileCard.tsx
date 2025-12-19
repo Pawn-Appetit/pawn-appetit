@@ -31,7 +31,12 @@ interface UserProfileCardProps {
   handle: string;
   title: string;
   ratingHistory: RatingHistory;
-  onFideUpdate?: (fideId: string, fidePlayer: FidePlayerData | null, displayName?: string, lichessToken?: string) => void;
+  onFideUpdate?: (
+    fideId: string,
+    fidePlayer: FidePlayerData | null,
+    displayName?: string,
+    lichessToken?: string,
+  ) => void;
   currentFideId?: string;
   fidePlayer?: FidePlayerData | null;
   customName?: string; // Custom name to display
@@ -53,7 +58,12 @@ export function UserProfileCard({
 }: UserProfileCardProps) {
   const [editModalOpened, setEditModalOpened] = useState(false);
 
-  const handleSave = (fideId: string, fidePlayer: FidePlayerData | null, displayName?: string, lichessToken?: string) => {
+  const handleSave = (
+    fideId: string,
+    fidePlayer: FidePlayerData | null,
+    displayName?: string,
+    lichessToken?: string,
+  ) => {
     if (onFideUpdate) {
       onFideUpdate(fideId, fidePlayer, displayName, lichessToken);
     }

@@ -2,6 +2,7 @@ import { Box, Button, Card, Group, Stack, Tabs, Text, Title } from "@mantine/cor
 import { IconDownload, IconPlus, IconSearch } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import GenericHeader from "@/components/GenericHeader";
 import { loadMainAccount } from "@/utils/mainAccount";
 import { CreateTournamentForm } from "./components/CreateTournamentForm";
 import { TournamentList } from "./components/TournamentList";
@@ -52,10 +53,14 @@ export default function TournamentsPage() {
   }, []);
 
   return (
-    <Box p="md" style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <Stack gap="md" style={{ flex: 1, minHeight: 0 }}>
-        <Title order={2}>{t("features.sidebar.tournaments", "Tournaments")}</Title>
+    <>
+      <GenericHeader
+        title={t("features.sidebar.tournaments", "Tournaments")}
+        pageKey="tournaments"
+        showViewToggle={false}
+      />
 
+      <Box px="md" pb="md">
         <Tabs value={activeTab} onChange={(v) => setActiveTab(v || "import")}>
           <Tabs.List>
             <Tabs.Tab value="import" leftSection={<IconDownload size={16} />}>
@@ -104,15 +109,11 @@ export default function TournamentsPage() {
           </Tabs.Panel>
 
           <Tabs.Panel value="search" pt="md">
-            <TournamentList 
-              lichessToken={lichessToken} 
-              accountName={accountName}
-              key={refreshKey} 
-            />
+            <TournamentList lichessToken={lichessToken} accountName={accountName} key={refreshKey} />
           </Tabs.Panel>
 
           <Tabs.Panel value="create" pt="md">
-            <CreateTournamentForm 
+            <CreateTournamentForm
               lichessToken={lichessToken}
               accountName={accountName}
               onTemplateSaved={() => {
@@ -124,8 +125,7 @@ export default function TournamentsPage() {
             />
           </Tabs.Panel>
         </Tabs>
-      </Stack>
-    </Box>
+      </Box>
+    </>
   );
 }
-

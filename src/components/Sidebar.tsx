@@ -91,7 +91,6 @@ export const linksdata = [
   },
   { icon: IconFiles, label: "files", url: "/files" },
   { icon: IconUsers, label: "accounts", url: "/accounts" },
-  { icon: IconPuzzle, label: "puzzles", url: "", isPuzzles: true },
   { icon: IconTrophy, label: "tournaments", url: "/tournaments" },
   { icon: IconSchool, label: "learn", url: "/learn" },
 ];

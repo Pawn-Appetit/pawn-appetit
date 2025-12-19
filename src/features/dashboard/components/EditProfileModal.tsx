@@ -94,13 +94,10 @@ export function EditProfileModal({
   );
 
   // Handle input changes (typing or pasting) for Lichess Token
-  const handleLichessTokenInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const rawValue = e.currentTarget.value;
-      setLichessToken(rawValue);
-    },
-    [],
-  );
+  const handleLichessTokenInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.currentTarget.value;
+    setLichessToken(rawValue);
+  }, []);
 
   // Additional handler to capture changes that onChange might miss (especially after pasting) for Lichess Token
   const handleLichessTokenInput = useCallback(
@@ -115,18 +112,15 @@ export function EditProfileModal({
   );
 
   // Handle paste - prevent default behavior and insert the value for Lichess Token
-  const handleLichessTokenPaste = useCallback(
-    (e: React.ClipboardEvent<HTMLInputElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
+  const handleLichessTokenPaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-      const pastedText = e.clipboardData.getData("text");
+    const pastedText = e.clipboardData.getData("text");
 
-      // Update state immediately - this should cause a re-render
-      setLichessToken(pastedText);
-    },
-    [],
-  );
+    // Update state immediately - this should cause a re-render
+    setLichessToken(pastedText);
+  }, []);
 
   // Validate FIDE ID
   const validateFideId = useCallback(

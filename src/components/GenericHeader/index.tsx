@@ -27,9 +27,9 @@ type ViewMode = "grid" | "table";
 type GenericHeaderProps = {
   title: string;
   folder?: string;
-  searchPlaceholder: string;
-  query: string;
-  setQuery: (query: string) => void;
+  searchPlaceholder?: string;
+  query?: string;
+  setQuery?: (query: string) => void;
   sortOptions?: SortOption[];
   currentSort?: SortState;
   onSortChange?: (sort: SortState) => void;
@@ -129,18 +129,20 @@ export default function GenericHeader({
         {folder && <OpenFolderButton base="AppDir" folder={folder} />}
       </Group>
       <Group wrap="wrap" gap="xs" justify="space-between" px="md" pb="md">
-        <Group wrap="wrap" style={{ flex: 1, minWidth: 0 }}>
-          <TextInput
-            aria-label={searchPlaceholder}
-            placeholder={searchPlaceholder}
-            leftSection={<IconSearch size="1rem" />}
-            value={query}
-            onChange={(e) => setQuery(e.currentTarget.value)}
-            style={{ flex: 1, minWidth: 250, maxWidth: 250 }}
-            size="xs"
-          />
-          {filters}
-        </Group>
+        {searchPlaceholder && (
+          <Group wrap="wrap" style={{ flex: 1, minWidth: 0 }}>
+            <TextInput
+              aria-label={searchPlaceholder}
+              placeholder={searchPlaceholder}
+              leftSection={<IconSearch size="1rem" />}
+              value={query}
+              onChange={(e) => setQuery?.(e.currentTarget.value)}
+              style={{ flex: 1, minWidth: 250, maxWidth: 250 }}
+              size="xs"
+            />
+            {filters}
+          </Group>
+        )}
         <Group wrap="nowrap" gap="xs">
           {actions}
           {sortOptions && sortOptions.length > 0 && currentSort && (

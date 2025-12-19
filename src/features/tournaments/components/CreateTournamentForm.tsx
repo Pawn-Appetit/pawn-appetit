@@ -1,15 +1,4 @@
-import {
-  Button,
-  Card,
-  Checkbox,
-  Group,
-  NumberInput,
-  Select,
-  Stack,
-  Text,
-  Textarea,
-  TextInput,
-} from "@mantine/core";
+import { Button, Card, Checkbox, Group, NumberInput, Select, Stack, Text, Textarea, TextInput } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
@@ -69,7 +58,10 @@ export function CreateTournamentForm({ lichessToken, accountName, onTemplateSave
     if (!accountName) {
       notifications.show({
         title: t("common.error", "Error"),
-        message: t("features.tournaments.createTab.noAccount", "No account selected. Please select a main account first."),
+        message: t(
+          "features.tournaments.createTab.noAccount",
+          "No account selected. Please select a main account first.",
+        ),
         color: "red",
       });
       return;
@@ -79,7 +71,7 @@ export function CreateTournamentForm({ lichessToken, accountName, onTemplateSave
     try {
       // Save as template instead of creating directly
       await saveTournamentTemplate(formData, accountName);
-      
+
       notifications.show({
         title: t("common.success", "Success"),
         message: t("features.tournaments.createTab.templateSaved", "Tournament template saved successfully!"),
@@ -90,7 +82,7 @@ export function CreateTournamentForm({ lichessToken, accountName, onTemplateSave
       if (onTemplateSaved) {
         onTemplateSaved();
       }
-      
+
       // Dispatch event for other components
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("tournament-template-saved"));
@@ -133,15 +125,17 @@ export function CreateTournamentForm({ lichessToken, accountName, onTemplateSave
     }
   };
 
-
   return (
-    <Card withBorder p="md">
+    <Card withBorder p="md" style={{ height: "calc(100vh - 190px)", overflowY: "auto" }}>
       <Stack gap="md">
         <Text size="lg" fw={600}>
           {t("features.tournaments.createTab.title", "Create Tournament Template")}
         </Text>
         <Text size="sm" c="dimmed">
-          {t("features.tournaments.createTab.description", "Create a new tournament template (schedule it later from the Search tab)")}
+          {t(
+            "features.tournaments.createTab.description",
+            "Create a new tournament template (schedule it later from the Search tab)",
+          )}
         </Text>
 
         <TextInput
@@ -230,14 +224,20 @@ export function CreateTournamentForm({ lichessToken, accountName, onTemplateSave
 
         <TextInput
           label={t("features.tournaments.createTab.fields.position", "Starting Position (FEN)")}
-          placeholder={t("features.tournaments.createTab.fields.positionPlaceholder", "Optional: Starting FEN position")}
+          placeholder={t(
+            "features.tournaments.createTab.fields.positionPlaceholder",
+            "Optional: Starting FEN position",
+          )}
           value={formData.position}
           onChange={(e) => setFormData({ ...formData, position: e.currentTarget.value })}
         />
 
         <TextInput
           label={t("features.tournaments.createTab.fields.password", "Password (Private Tournament)")}
-          placeholder={t("features.tournaments.createTab.fields.passwordPlaceholder", "Optional: Set password for private tournament")}
+          placeholder={t(
+            "features.tournaments.createTab.fields.passwordPlaceholder",
+            "Optional: Set password for private tournament",
+          )}
           type="password"
           value={formData.password}
           onChange={(e) => setFormData({ ...formData, password: e.currentTarget.value })}
@@ -245,16 +245,28 @@ export function CreateTournamentForm({ lichessToken, accountName, onTemplateSave
 
         <TextInput
           label={t("features.tournaments.createTab.fields.teamBattle", "Team Battle (Team ID)")}
-          placeholder={t("features.tournaments.createTab.fields.teamBattlePlaceholder", "Optional: Team ID for team battle")}
-          description={t("features.tournaments.createTab.fields.teamBattleDescription", "Create a team battle tournament where players compete in teams")}
+          placeholder={t(
+            "features.tournaments.createTab.fields.teamBattlePlaceholder",
+            "Optional: Team ID for team battle",
+          )}
+          description={t(
+            "features.tournaments.createTab.fields.teamBattleDescription",
+            "Create a team battle tournament where players compete in teams",
+          )}
           value={formData.teamBattleByTeam}
           onChange={(e) => setFormData({ ...formData, teamBattleByTeam: e.currentTarget.value })}
         />
 
         <TextInput
           label={t("features.tournaments.createTab.fields.teamRestriction", "Restrict to Team (Team ID)")}
-          placeholder={t("features.tournaments.createTab.fields.teamRestrictionPlaceholder", "Optional: Only allow members of this team to join")}
-          description={t("features.tournaments.createTab.fields.teamRestrictionDescription", "Enter team ID (e.g., 'torneos-para-pensar' from https://lichess.org/team/torneos-para-pensar) to restrict access to team members only")}
+          placeholder={t(
+            "features.tournaments.createTab.fields.teamRestrictionPlaceholder",
+            "Optional: Only allow members of this team to join",
+          )}
+          description={t(
+            "features.tournaments.createTab.fields.teamRestrictionDescription",
+            "Enter team ID (e.g., 'torneos-para-pensar' from https://lichess.org/team/torneos-para-pensar) to restrict access to team members only",
+          )}
           value={formData.teamRestriction}
           onChange={(e) => setFormData({ ...formData, teamRestriction: e.currentTarget.value })}
         />
@@ -375,4 +387,3 @@ export function CreateTournamentForm({ lichessToken, accountName, onTemplateSave
     </Card>
   );
 }
-

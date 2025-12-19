@@ -76,8 +76,8 @@ import { type GameRecord, saveGameRecord } from "@/utils/gameRecords";
 import { createTab } from "@/utils/tabs";
 import { type GameHeaders, type TreeNode, treeIteratorMainLine } from "@/utils/treeReducer";
 import GameNotationWrapper from "./GameNotationWrapper";
-import ResponsiveBoard from "./ResponsiveBoard";
 import { useGameTime } from "./GameTimeContext";
+import ResponsiveBoard from "./ResponsiveBoard";
 
 // BoardGame is a generic game board component used for:
 // - Playing games (human vs human, or via PlayVsEngineBoard wrapper for engine games)
