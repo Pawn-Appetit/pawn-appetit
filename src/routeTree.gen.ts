@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TournamentsRouteImport } from './routes/tournaments'
 import { Route as FilesRouteImport } from './routes/files'
 import { Route as EnginesRouteImport } from './routes/engines'
 import { Route as BoardsRouteImport } from './routes/boards'
@@ -24,6 +25,11 @@ import { Route as LearnPracticeRouteImport } from './routes/learn/practice'
 import { Route as LearnLessonsRouteImport } from './routes/learn/lessons'
 import { Route as DatabasesDatabaseIdRouteImport } from './routes/databases/$databaseId'
 
+const TournamentsRoute = TournamentsRouteImport.update({
+  id: '/tournaments',
+  path: '/tournaments',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FilesRoute = FilesRouteImport.update({
   id: '/files',
   path: '/files',
@@ -104,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/boards': typeof BoardsRoute
   '/engines': typeof EnginesRoute
   '/files': typeof FilesRoute
+  '/tournaments': typeof TournamentsRoute
   '/databases/$databaseId': typeof DatabasesDatabaseIdRoute
   '/learn/lessons': typeof LearnLessonsRoute
   '/learn/practice': typeof LearnPracticeRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/boards': typeof BoardsRoute
   '/engines': typeof EnginesRoute
   '/files': typeof FilesRoute
+  '/tournaments': typeof TournamentsRoute
   '/databases/$databaseId': typeof DatabasesDatabaseIdRoute
   '/learn/lessons': typeof LearnLessonsRoute
   '/learn/practice': typeof LearnPracticeRoute
@@ -135,6 +143,7 @@ export interface FileRoutesById {
   '/boards': typeof BoardsRoute
   '/engines': typeof EnginesRoute
   '/files': typeof FilesRoute
+  '/tournaments': typeof TournamentsRoute
   '/databases/$databaseId': typeof DatabasesDatabaseIdRoute
   '/learn/lessons': typeof LearnLessonsRoute
   '/learn/practice': typeof LearnPracticeRoute
@@ -153,6 +162,7 @@ export interface FileRouteTypes {
     | '/boards'
     | '/engines'
     | '/files'
+    | '/tournaments'
     | '/databases/$databaseId'
     | '/learn/lessons'
     | '/learn/practice'
@@ -167,6 +177,7 @@ export interface FileRouteTypes {
     | '/boards'
     | '/engines'
     | '/files'
+    | '/tournaments'
     | '/databases/$databaseId'
     | '/learn/lessons'
     | '/learn/practice'
@@ -183,6 +194,7 @@ export interface FileRouteTypes {
     | '/boards'
     | '/engines'
     | '/files'
+    | '/tournaments'
     | '/databases/$databaseId'
     | '/learn/lessons'
     | '/learn/practice'
@@ -200,12 +212,20 @@ export interface RootRouteChildren {
   BoardsRoute: typeof BoardsRoute
   EnginesRoute: typeof EnginesRoute
   FilesRoute: typeof FilesRoute
+  TournamentsRoute: typeof TournamentsRoute
   DatabasesDatabaseIdRoute: typeof DatabasesDatabaseIdRoute
   DatabasesIndexRoute: typeof DatabasesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tournaments': {
+      id: '/tournaments'
+      path: '/tournaments'
+      fullPath: '/tournaments'
+      preLoaderRoute: typeof TournamentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/files': {
       id: '/files'
       path: '/files'
@@ -345,6 +365,7 @@ const rootRouteChildren: RootRouteChildren = {
   BoardsRoute: BoardsRoute,
   EnginesRoute: EnginesRoute,
   FilesRoute: FilesRoute,
+  TournamentsRoute: TournamentsRoute,
   DatabasesDatabaseIdRoute: DatabasesDatabaseIdRoute,
   DatabasesIndexRoute: DatabasesIndexRoute,
 }

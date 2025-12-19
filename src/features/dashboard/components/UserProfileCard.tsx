@@ -31,11 +31,12 @@ interface UserProfileCardProps {
   handle: string;
   title: string;
   ratingHistory: RatingHistory;
-  onFideUpdate?: (fideId: string, fidePlayer: FidePlayerData | null, displayName?: string) => void;
+  onFideUpdate?: (fideId: string, fidePlayer: FidePlayerData | null, displayName?: string, lichessToken?: string) => void;
   currentFideId?: string;
   fidePlayer?: FidePlayerData | null;
   customName?: string; // Custom name to display
   platform?: "lichess" | "chesscom" | null; // Platform of the main account
+  currentLichessToken?: string;
 }
 
 export function UserProfileCard({
@@ -48,12 +49,13 @@ export function UserProfileCard({
   fidePlayer,
   customName,
   platform,
+  currentLichessToken,
 }: UserProfileCardProps) {
   const [editModalOpened, setEditModalOpened] = useState(false);
 
-  const handleSave = (fideId: string, fidePlayer: FidePlayerData | null, displayName?: string) => {
+  const handleSave = (fideId: string, fidePlayer: FidePlayerData | null, displayName?: string, lichessToken?: string) => {
     if (onFideUpdate) {
-      onFideUpdate(fideId, fidePlayer, displayName);
+      onFideUpdate(fideId, fidePlayer, displayName, lichessToken);
     }
   };
 
@@ -168,6 +170,7 @@ export function UserProfileCard({
         onSave={handleSave}
         currentFideId={currentFideId}
         currentDisplayName={customName}
+        currentLichessToken={currentLichessToken}
       />
     </>
   );

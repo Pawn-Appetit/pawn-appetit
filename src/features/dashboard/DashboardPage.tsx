@@ -118,6 +118,8 @@ export default function DashboardPage() {
 
   // Display name - independent of FIDE ID
   const [displayName, setDisplayName] = useState<string>("");
+  // Lichess token for main account
+  const [lichessToken, setLichessToken] = useState<string>("");
 
   // Function to load main account and FIDE data
   const loadMainAccountData = useCallback(async () => {
@@ -140,6 +142,13 @@ export default function DashboardPage() {
           } else {
             setDisplayName("");
           }
+        }
+
+        // Load Lichess token for this account
+        if (account.lichessToken) {
+          setLichessToken(account.lichessToken);
+        } else {
+          setLichessToken("");
         }
 
         // Load FIDE ID for this account (from account_fide_ids.json or from account.fideId)
@@ -1011,11 +1020,12 @@ export default function DashboardPage() {
             ratingHistory={ratingHistory}
             customName={displayName}
             platform={platform}
-            onFideUpdate={async (newFideId, newFidePlayer, newDisplayName) => {
+            onFideUpdate={async (newFideId, newFidePlayer, newDisplayName, newLichessToken) => {
               console.log("[Dashboard] onFideUpdate called:", {
                 newFideId,
                 newFidePlayer,
                 newDisplayName,
+                newLichessToken,
                 mainAccountName,
               });
 
@@ -1026,6 +1036,17 @@ export default function DashboardPage() {
                 await saveAccountDisplayName(mainAccountName, newDisplayName);
                 // Also save to localStorage for backward compatibility
                 localStorage.setItem("pawn-appetit.displayName", newDisplayName);
+              }
+
+              // Save Lichess token if provided
+              if (newLichessToken !== undefined && mainAccountName) {
+                setLichessToken(newLichessToken);
+                // Load current account and update with token
+                const account = await loadMainAccount();
+                if (account) {
+                  account.lichessToken = newLichessToken || undefined;
+                  await saveMainAccount(account);
+                }
               }
 
               if (newFidePlayer && newFideId) {
@@ -1080,6 +1101,7 @@ export default function DashboardPage() {
             }}
             fidePlayer={fidePlayer}
             currentFideId={fideId || undefined}
+            currentLichessToken={lichessToken}
           />
         </Grid.Col>
 
