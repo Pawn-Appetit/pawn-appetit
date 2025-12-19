@@ -25,7 +25,6 @@ import {
   IconArrowsExchange,
   IconCheck,
   IconCpu,
-  IconPlayerStop,
   IconPlus,
   IconPuzzle,
   IconUser,
@@ -33,17 +32,14 @@ import {
 } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { save } from "@tauri-apps/plugin-dialog";
-import { parseUci } from "chessops";
 import { INITIAL_FEN } from "chessops/fen";
-import { makeSan, parseSan } from "chessops/san";
-import equal from "fast-deep-equal";
+import { makeSan } from "chessops/san";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   type ChangeEvent,
   type Dispatch,
   type SetStateAction,
   Suspense,
-  startTransition,
   useCallback,
   useContext,
   useEffect,
@@ -54,7 +50,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
-import { commands, events, type GoMode, type Outcome } from "@/bindings";
+import { commands, type GoMode, type Outcome } from "@/bindings";
 import GameInfo from "@/components/GameInfo";
 import MoveControls from "@/components/MoveControls";
 import EngineSettingsForm from "@/components/panels/analysis/EngineSettingsForm";
@@ -69,7 +65,7 @@ import {
   loadableEnginesAtom,
   tabsAtom,
 } from "@/state/atoms";
-import { getLastMainlinePosition, getMainLine, getMoveText, getPGN, getVariationLine } from "@/utils/chess";
+import { getMainLine, getMoveText, getPGN } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import type { TimeControlField } from "@/utils/clock";
 import { getDocumentDir } from "@/utils/documentDir";
@@ -81,6 +77,7 @@ import { createTab } from "@/utils/tabs";
 import { type GameHeaders, type TreeNode, treeIteratorMainLine } from "@/utils/treeReducer";
 import GameNotationWrapper from "./GameNotationWrapper";
 import ResponsiveBoard from "./ResponsiveBoard";
+import { useGameTime } from "./GameTimeContext";
 
 // BoardGame is a generic game board component used for:
 // - Playing games (human vs human, or via PlayVsEngineBoard wrapper for engine games)
@@ -108,6 +105,18 @@ function EnginesSelect({ engine, setEngine, engines = [], enginesState }: Engine
   const { t } = useTranslation();
   const navigate = useNavigate();
 
+  const engineOptions = useMemo(
+    () => engines?.map((engine) => ({ label: engine.name, value: engine.path })),
+    [engines],
+  );
+
+  const handleEngineChange = useCallback(
+    (path: string | null) => {
+      setEngine(engines?.find((engine) => engine.path === path) ?? null);
+    },
+    [engines, setEngine],
+  );
+
   useEffect(() => {
     if (engines.length > 0 && engine === null) {
       setEngine(engines[0]);
@@ -126,18 +135,6 @@ function EnginesSelect({ engine, setEngine, engines = [], enginesState }: Engine
       </Stack>
     );
   }
-
-  const engineOptions = useMemo(
-    () => engines?.map((engine) => ({ label: engine.name, value: engine.path })),
-    [engines],
-  );
-
-  const handleEngineChange = useCallback(
-    (path: string | null) => {
-      setEngine(engines?.find((engine) => engine.path === path) ?? null);
-    },
-    [engines, setEngine],
-  );
 
   return (
     <Suspense>
@@ -699,16 +696,13 @@ function BoardGame() {
   let blackTime: number | null = localBlackTime;
   let setBlackTime: Dispatch<SetStateAction<number | null>> = setLocalBlackTime;
 
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { useGameTime } = require("./GameTimeContext");
-    const gameTime = useGameTime();
+  const gameTime = useGameTime();
+
+  if (gameTime) {
     whiteTime = gameTime.whiteTime;
     setWhiteTime = gameTime.setWhiteTime;
     blackTime = gameTime.blackTime;
     setBlackTime = gameTime.setBlackTime;
-  } catch {
-    // GameTimeContext not available, use local state (already set above)
   }
 
   const changeToAnalysisMode = useCallback(() => {
@@ -1007,6 +1001,7 @@ function BoardGame() {
     setFen,
     setGameState,
     setHeaders,
+    setWhiteTime,
     t,
   ]);
 
