@@ -246,7 +246,7 @@ export function SideBar() {
       <AppShellSection grow>
         <Stack justify="center" gap={0}>
           {mainLinks}
-          {quickActionLinks.length && <Divider />}
+          {!!quickActionLinks.length && <Divider />}
           {quickActionLinks}
         </Stack>
       </AppShellSection>
