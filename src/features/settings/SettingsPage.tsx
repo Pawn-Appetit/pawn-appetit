@@ -19,7 +19,6 @@ import {
   enableBoardScrollAtom,
   eraseDrawablesOnClickAtom,
   forcedEnPassantAtom,
-  hideDashboardOnStartupAtom,
   minimumGamesAtom,
   moveInputAtom,
   moveMethodAtom,
@@ -29,10 +28,14 @@ import {
   percentageCoverageAtom,
   practiceAnimationSpeedAtom,
   previewBoardOnHoverAtom,
+  showAnalyzeInSidebarAtom,
   showArrowsAtom,
   showConsecutiveArrowsAtom,
   showCoordinatesAtom,
+  showDashboardOnStartupAtom,
   showDestsAtom,
+  showPlayInSidebarAtom,
+  showPuzzlesInSidebarAtom,
   snapArrowsAtom,
   spellCheckAtom,
   storedDocumentDirAtom,
@@ -639,18 +642,69 @@ export default function Page() {
       },
       {
         id: "hide-dashboard",
-        title: t("settings.appearance.hideDashboardOnStartup"),
-        description: t("settings.appearance.hideDashboardOnStartupDesc"),
+        title: t("settings.appearance.showDashboardOnStartup"),
+        description: t("settings.appearance.showDashboardOnStartupDesc"),
         tab: "appearance",
         component: (
           <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
             <div>
-              <Text>{t("settings.appearance.hideDashboardOnStartup")}</Text>
+              <Text>{t("settings.appearance.showDashboardOnStartup")}</Text>
               <Text size="xs" c="dimmed">
-                {t("settings.appearance.hideDashboardOnStartupDesc")}
+                {t("settings.appearance.showDashboardOnStartupDesc")}
               </Text>
             </div>
-            <SettingsSwitch atom={hideDashboardOnStartupAtom} />
+            <SettingsSwitch atom={showDashboardOnStartupAtom} />
+          </Group>
+        ),
+      },
+      {
+        id: "show-play-sidebar",
+        title: t("settings.appearance.showPlayInSidebar"),
+        description: t("settings.appearance.showPlayInSidebarDesc"),
+        tab: "appearance",
+        component: (
+          <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
+            <div>
+              <Text>{t("settings.appearance.showPlayInSidebar")}</Text>
+              <Text size="xs" c="dimmed">
+                {t("settings.appearance.showPlayInSidebarDesc")}
+              </Text>
+            </div>
+            <SettingsSwitch atom={showPlayInSidebarAtom} />
+          </Group>
+        ),
+      },
+      {
+        id: "show-analyze-sidebar",
+        title: t("settings.appearance.showAnalyzeInSidebar"),
+        description: t("settings.appearance.showAnalyzeInSidebarDesc"),
+        tab: "appearance",
+        component: (
+          <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
+            <div>
+              <Text>{t("settings.appearance.showAnalyzeInSidebar")}</Text>
+              <Text size="xs" c="dimmed">
+                {t("settings.appearance.showAnalyzeInSidebarDesc")}
+              </Text>
+            </div>
+            <SettingsSwitch atom={showAnalyzeInSidebarAtom} />
+          </Group>
+        ),
+      },
+      {
+        id: "show-puzzles-sidebar",
+        title: t("settings.appearance.showPuzzlesInSidebar"),
+        description: t("settings.appearance.showPuzzlesInSidebarDesc"),
+        tab: "appearance",
+        component: (
+          <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
+            <div>
+              <Text>{t("settings.appearance.showPuzzlesInSidebar")}</Text>
+              <Text size="xs" c="dimmed">
+                {t("settings.appearance.showPuzzlesInSidebarDesc")}
+              </Text>
+            </div>
+            <SettingsSwitch atom={showPuzzlesInSidebarAtom} />
           </Group>
         ),
       },
