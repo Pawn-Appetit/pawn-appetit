@@ -7,8 +7,6 @@ concurrency:
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    paths-ignore:
-      - '**/*.md'
   workflow_dispatch:
 
 jobs:
