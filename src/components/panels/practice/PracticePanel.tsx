@@ -42,6 +42,7 @@ function PracticePanel() {
   const fen = useStore(store, (s) => s.currentNode().fen);
   const root = useStore(store, (s) => s.root);
   const headers = useStore(store, (s) => s.headers);
+  const position = useStore(store, (s) => s.position);
   const goToMove = useStore(store, (s) => s.goToMove);
   const goToNext = useStore(store, (s) => s.goToNext);
 
@@ -118,16 +119,39 @@ function PracticePanel() {
 
     const animationDelay = speedToDelay[practiceAnimationSpeed] || 500;
 
-    // Always start from the initial board position (root)
-    goToMove([]);
+    // Optimization: Check if current position is a prefix of target position
+    // If yes, only animate the remaining moves instead of starting from the beginning
+    let startPosition = position;
+    let isCurrentPositionValid = true;
+
+    // Check if current position is a valid prefix of target position
+    if (startPosition.length > targetPosition.length) {
+      // Current position is beyond target, need to start from root
+      isCurrentPositionValid = false;
+    } else {
+      // Check if current position matches the beginning of target position
+      for (let i = 0; i < startPosition.length; i++) {
+        if (startPosition[i] !== targetPosition[i]) {
+          isCurrentPositionValid = false;
+          break;
+        }
+      }
+    }
+
+    // If current position is not valid, start from root
+    if (!isCurrentPositionValid) {
+      startPosition = [];
+      goToMove([]);
+    }
+
     setIsAnimating(true);
 
     // Animate through each move with a delay, following the exact path
-    let currentStep = 0;
+    let currentStep = startPosition.length;
 
     animationIntervalRef.current = window.setInterval(() => {
       if (currentStep < targetPosition.length) {
-        // Build the path incrementally from the root
+        // Build the path incrementally from the starting position
         const nextPosition = targetPosition.slice(0, currentStep + 1);
         goToMove(nextPosition);
 
@@ -150,7 +174,7 @@ function PracticePanel() {
         setInvisible(true);
       }
     }, animationDelay);
-  }, [deck.positions, root, practiceAnimationSpeed, goToMove, setInvisible]);
+  }, [deck.positions, root, position, practiceAnimationSpeed, goToMove, setInvisible]);
 
   // Auto-advance to next practice position after successful attempt
   const lastLogEntry = deck.logs[deck.logs.length - 1];
