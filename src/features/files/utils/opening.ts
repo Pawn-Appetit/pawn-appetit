@@ -63,12 +63,12 @@ export function getStats(positions: Position[]) {
   for (const card of positions) {
     if (card.card.reps === 0) {
       stats.unseen++;
-    } else if (card.card.due < new Date()) {
+    } else if (new Date(card.card.due) <= new Date()) {
       stats.due++;
     } else {
       stats.practiced++;
     }
-    if (!stats.nextDue || card.card.due < stats.nextDue) {
+    if (!stats.nextDue || new Date(card.card.due) < new Date(stats.nextDue)) {
       stats.nextDue = card.card.due;
     }
   }
