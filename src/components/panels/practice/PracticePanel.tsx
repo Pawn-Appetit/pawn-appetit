@@ -409,10 +409,10 @@ function PositionsModal({
                   <Text tt="uppercase" fw="bold" fz="sm">
                     Status
                   </Text>
-                  <Badge color={c.card.reps === 0 ? "gray" : c.card.due < new Date() ? "yellow" : "blue"}>
+                  <Badge color={c.card.reps === 0 ? "gray" : new Date(c.card.due) <= new Date() ? "yellow" : "blue"}>
                     {c.card.reps === 0
                       ? t("features.board.practice.unseen")
-                      : c.card.due < new Date()
+                      : new Date(c.card.due) <= new Date()
                         ? t("features.board.practice.due")
                         : t("features.board.practice.practiced")}
                   </Badge>
