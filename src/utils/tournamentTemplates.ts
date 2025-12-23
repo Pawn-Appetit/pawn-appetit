@@ -39,7 +39,7 @@ export interface TournamentTemplate {
 const FILENAME = "tournament_templates.json";
 
 export async function saveTournamentTemplate(
-  template: Omit<TournamentTemplate, "id" | "createdAt">,
+  template: Omit<TournamentTemplate, "id" | "createdAt" | "accountName">,
   accountName: string,
 ): Promise<TournamentTemplate> {
   try {
