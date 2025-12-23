@@ -1,5 +1,9 @@
 name: Test Build
 
+concurrency:
+  group: test-build-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   pull_request:
     types: [opened, synchronize, reopened]
