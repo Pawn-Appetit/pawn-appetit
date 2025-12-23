@@ -8,7 +8,7 @@ on:
 jobs:
   test-build:
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:
           - platform: macos-latest    # Arm based Macs (M1 and above)
