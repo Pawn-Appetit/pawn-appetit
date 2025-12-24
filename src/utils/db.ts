@@ -83,11 +83,10 @@ const PUZZLE_DATABASES: DownloadablePuzzleDatabase[] = [
   },
   {
     title: "Lichess Puzzles 2025",
-    description: "Latest puzzles from Lichess.org in database format",
-    puzzleCount: 0, // Will be determined during import
-    storageSize: BigInt(0), // Will be determined during download
-    // CSV file from Lichess database - will be downloaded and imported automatically
-    downloadLink: "https://database.lichess.org/lichess_db_puzzle.csv.zst",
+    description: "Latest puzzles from Lichess.org organized by themes in database format",
+    puzzleCount: 5600086, 
+    storageSize: BigInt(3542036480), // 3,459,020 KB = 3,542,036,480 bytes 
+    downloadLink: "https://pub-ea015655e3e044baaea19e7e0bf574f9.r2.dev/Lichess%20Puzzles%202025.db3",
   },
 ];
 

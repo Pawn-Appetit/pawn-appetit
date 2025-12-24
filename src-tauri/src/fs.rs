@@ -91,14 +91,14 @@ pub async fn download_file(
     if !res.status().is_success() {
         let status = res.status();
         let error_msg = if status == 403 {
-            "Download failed: Access denied (403). The server refused to authorize the request."
+            format!("Download failed: Access denied (403). The server refused to authorize the request. URL: {}", url)
         } else if status == 404 {
-            "Download failed: File not found (404). The file may have been moved or deleted."
+            format!("Download failed: File not found (404). The file may have been moved or deleted. URL: {}", url)
         } else {
-            &format!("Download failed: {}", status)
+            format!("Download failed: {}. URL: {}", status, url)
         };
         
-        return Err(Error::PackageManager(error_msg.to_string()));
+        return Err(Error::PackageManager(error_msg));
     }
     
     let response_to_use = res;

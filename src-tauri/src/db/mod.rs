@@ -1730,10 +1730,9 @@ pub async fn export_position_games_to_pgn(
     app: tauri::AppHandle,
     state: tauri::State<'_, AppState>,
 ) -> Result<()> {
-    use crate::db::position_cache::{get_cached_position, normalize_db_path};
+    use crate::db::position_cache::get_cached_position;
     
     // Get cached game IDs for this position
-    let db_path_str = normalize_db_path(&file);
     let game_ids = match get_cached_position(&app, &fen, &file)? {
         Some((_, ids)) => ids,
         None => return Err(Error::PackageManager("Position not found in cache".to_string())),
@@ -2038,10 +2037,8 @@ pub async fn precache_openings(
     let processed = Arc::new(Mutex::new(0usize));
     let errors = Arc::new(Mutex::new(0usize));
     
-    // Clone the AppState Arc before spawning tasks (required for 'static lifetime)
-    let state_arc = state.inner().clone();
-    // Explicitly drop the state reference to help the borrow checker
-    // (state will be dropped automatically at the end of the function anyway)
+    // Get a reference to AppState (Tauri manages it internally, likely with Arc)
+    let state_arc = state.inner();
     
     info!("Starting to pre-cache {} openings for database: {:?}", total, database_path);
     
@@ -2059,7 +2056,7 @@ pub async fn precache_openings(
         let processed_clone = processed.clone();
         let errors_clone = errors.clone();
         let semaphore_clone = semaphore.clone();
-        let state_inner = state_arc.clone();
+        let state_inner = state_arc;
         let total_for_closure = total;
         
         async move {

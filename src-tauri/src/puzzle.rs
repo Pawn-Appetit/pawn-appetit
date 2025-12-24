@@ -1327,59 +1327,81 @@ fn validate_sqlite_database(file_path: &PathBuf) -> Result<(), Error> {
         )));
     }
     
-    // Verify it's a valid SQLite database by checking the magic header
-    let mut file = File::open(file_path)?;
-    let mut header = [0u8; 16];
-    
-    // Try to read the header, but handle cases where file might be too small
-    match file.read_exact(&mut header) {
+    // First, try to open it as a SQLite database - this is the most reliable check
+    // If Diesel can open it, it's valid
+    match diesel::SqliteConnection::establish(&file_path.to_string_lossy()) {
         Ok(_) => {
-            // SQLite database files start with "SQLite format 3\000"
-            let sqlite_magic = b"SQLite format 3\000";
-            if &header[..16] != sqlite_magic {
-                // Check if it might be HTML (common error page)
-                let header_str = String::from_utf8_lossy(&header);
-                if header_str.trim_start().starts_with("<!DOCTYPE") 
-                    || header_str.trim_start().starts_with("<html")
-                    || header_str.trim_start().starts_with("<!doctype")
-                    || header_str.trim_start().starts_with("<HTML") {
-                    // Read more of the file to get better diagnostic info
-                    let mut sample = vec![0u8; 512.min(metadata.len() as usize)];
-                    file.seek(SeekFrom::Start(0))?;
-                    file.read_exact(&mut sample[..])?;
-                    let sample_str = String::from_utf8_lossy(&sample);
-                    
-                    return Err(Error::UnsupportedFileFormat(format!(
-                        "Downloaded file appears to be an HTML page ({} bytes), not a database file. Please verify the link allows direct download. First 200 chars: {}",
-                        metadata.len(),
-                        sample_str.chars().take(200).collect::<String>()
-                    )));
-                }
-                
-                // Show first few bytes for debugging
-                let header_hex: String = header.iter().take(32).map(|b| format!("{:02x}", b)).collect::<Vec<_>>().join(" ");
-                return Err(Error::UnsupportedFileFormat(format!(
-                    "File is not a valid SQLite database. Expected SQLite format, but file header does not match. File size: {} bytes. First 32 bytes (hex): {}. File may be corrupted or in wrong format.",
-                    metadata.len(),
-                    header_hex
-                )));
-            }
-        }
-        Err(e) if e.kind() == std::io::ErrorKind::UnexpectedEof => {
-            return Err(Error::IoError(std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
-                format!("File is too small to be a valid SQLite database: {}", file_path.display()),
-            )));
+            // Successfully opened, it's a valid SQLite database
+            return Ok(());
         }
         Err(e) => {
-            return Err(Error::IoError(std::io::Error::new(
-                e.kind(),
-                format!("Failed to read file header: {}", e),
+            // If opening fails, check the header to provide better error messages
+            let mut file = File::open(file_path)?;
+            let mut header = [0u8; 16];
+            
+            // Try to read the header
+            if let Ok(_) = file.read_exact(&mut header) {
+                // SQLite database files start with "SQLite format 3\000" (16 bytes)
+                // Using explicit array to ensure correct size
+                let sqlite_magic: [u8; 16] = [
+                    b'S', b'Q', b'L', b'i', b't', b'e', b' ', b'f', 
+                    b'o', b'r', b'm', b'a', b't', b' ', b'3', 0u8
+                ];
+                
+                // Check if header matches
+                if header == sqlite_magic {
+                    // Header matches but Diesel can't open it - might be corrupted or locked
+                    return Err(Error::UnsupportedFileFormat(format!(
+                        "File has correct SQLite header but cannot be opened as a database. This may indicate the file is corrupted, locked, or in use. Error: {}",
+                        e
+                    )));
+                } else {
+                    // Header doesn't match - check if it's HTML or other format
+                    let header_str = String::from_utf8_lossy(&header);
+                    if header_str.trim_start().starts_with("<!DOCTYPE") 
+                        || header_str.trim_start().starts_with("<html")
+                        || header_str.trim_start().starts_with("<!doctype")
+                        || header_str.trim_start().starts_with("<HTML") {
+                        // Read more of the file to get better diagnostic info
+                        file.seek(SeekFrom::Start(0))?;
+                        let mut sample = vec![0u8; 512.min(metadata.len() as usize)];
+                        file.read_exact(&mut sample[..])?;
+                        let sample_str = String::from_utf8_lossy(&sample);
+                        
+                        return Err(Error::UnsupportedFileFormat(format!(
+                            "Downloaded file appears to be an HTML page ({} bytes), not a database file. Please verify the link allows direct download. First 200 chars: {}",
+                            metadata.len(),
+                            sample_str.chars().take(200).collect::<String>()
+                        )));
+                    }
+                    
+                    // Read first 32 bytes for better debugging
+                    file.seek(SeekFrom::Start(0))?;
+                    let mut extended_header = vec![0u8; 32.min(metadata.len() as usize)];
+                    if extended_header.len() > 0 {
+                        file.read_exact(&mut extended_header[..])?;
+                    }
+                    
+                    let header_hex: String = extended_header.iter().map(|b| format!("{:02x}", b)).collect::<Vec<_>>().join(" ");
+                    let expected_hex: String = sqlite_magic.iter().map(|b| format!("{:02x}", b)).collect::<Vec<_>>().join(" ");
+                    
+                    return Err(Error::UnsupportedFileFormat(format!(
+                        "File is not a valid SQLite database. Expected SQLite format, but file header does not match.\nFile size: {} bytes.\nExpected header (hex): {}\nActual header (hex): {}\nDiesel error: {}\nFile may be corrupted or in wrong format.",
+                        metadata.len(),
+                        expected_hex,
+                        header_hex,
+                        e
+                    )));
+                }
+            }
+            
+            // If we can't even read the header, return the Diesel error
+            return Err(Error::UnsupportedFileFormat(format!(
+                "Cannot open file as SQLite database. Error: {}",
+                e
             )));
         }
     }
-    
-    Ok(())
 }
 
 /// Copies an existing puzzle database to a new location
