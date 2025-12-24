@@ -6,6 +6,7 @@ import { memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
+import { useShallow } from "zustand/react/shallow";
 import type { NormalizedGame } from "@/bindings";
 import { TreeStateContext } from "@/components/TreeStateContext";
 import {
@@ -13,6 +14,7 @@ import {
   currentDbTypeAtom,
   currentLocalOptionsAtom,
   currentTabAtom,
+  currentTabSelectedAtom,
   lichessOptionsAtom,
   masterOptionsAtom,
   referenceDbAtom,
@@ -95,25 +97,62 @@ function DatabasePanel() {
   const queryClient = useQueryClient();
 
   const store = useContext(TreeStateContext)!;
-  const fen = useStore(store, (s) => s.currentNode().fen);
   const referenceDatabase = useAtomValue(referenceDbAtom);
   const [db, setDb] = useAtom(currentDbTypeAtom);
-  // Reduced debounce for local DB to improve synchronization with analysis board
-  const [debouncedFen] = useDebouncedValue(fen, db === "local" ? 100 : 50);
   const [lichessOptions] = useAtom(lichessOptionsAtom);
   const [masterOptions] = useAtom(masterOptionsAtom);
   const [localOptions, setLocalOptions] = useAtom(currentLocalOptionsAtom);
   const [gameLimit, setGameLimit] = useState(1000);
   const tab = useAtomValue(currentTabAtom);
   const [tabType, setTabType] = useAtom(currentDbTabAtom);
-  const prevFenRef = useRef<string>(fen);
+  const currentTabSelected = useAtomValue(currentTabSelectedAtom);
   const tabValue = tab?.value ?? "analysis";
+  
+  // Only search when we're in the database tab and viewing stats or games
+  const isDatabaseTabActive = currentTabSelected === "database";
+  const isStatsOrGamesTab = tabType === "stats" || tabType === "games";
+  const shouldSearch = isDatabaseTabActive && isStatsOrGamesTab;
+  
+  // Only subscribe to FEN when we actually need it (when in database tab and viewing stats/games)
+  // This prevents unnecessary re-renders that cause stuttering when navigating the board
+  // Use a ref to track the last FEN we actually need, so we don't re-render unnecessarily
+  const lastNeededFenRef = useRef<string>(localOptions.fen || "");
+  
+  // Always get FEN from store, but use a memoized selector that returns stable value when not searching
+  // This prevents re-renders when navigating the board while not in the database tab
+  const fenSelector = useMemo(
+    () => (s: ReturnType<typeof store.getState>) => {
+      // When searching, return the actual FEN from store
+      if (shouldSearch) {
+        const currentFen = s.currentNode().fen;
+        if (currentFen !== lastNeededFenRef.current) {
+          lastNeededFenRef.current = currentFen;
+        }
+        return currentFen;
+      }
+      // When not searching, return a stable value to prevent re-renders
+      // Zustand will still subscribe, but the selector returns the same value, so React won't re-render
+      return lastNeededFenRef.current;
+    },
+    [shouldSearch],
+  );
+  
+  const fenFromStore = useStore(store, useShallow(fenSelector)) as string;
+  
+  // Use the FEN from store when searching, otherwise use the last known FEN
+  const fen: string = shouldSearch ? fenFromStore : lastNeededFenRef.current;
+  
+  // Reduced debounce for local DB to improve synchronization with analysis board
+  const [debouncedFen] = useDebouncedValue(fen, db === "local" ? 100 : 50);
+  
+  const prevFenRef = useRef<string>(localOptions.fen || "");
 
   // Update localOptions immediately when FEN changes (before debounce)
   // This ensures the query always uses the latest FEN
   // Always load 1000 games sorted by elo when FEN changes
+  // ONLY update if we're in the database tab and viewing stats or games
   useEffect(() => {
-    if (db === "local") {
+    if (db === "local" && shouldSearch) {
       const fenChanged = fen !== prevFenRef.current;
       if (fenChanged) {
         prevFenRef.current = fen;
@@ -134,16 +173,17 @@ function DatabasePanel() {
         setGameLimit(1000);
       }
     }
-  }, [fen, setLocalOptions, db, queryClient]);
+  }, [fen, setLocalOptions, db, queryClient, shouldSearch]);
 
   // Handle debounced FEN for final query invalidation
   // This ensures we don't trigger too many queries during rapid FEN changes
+  // ONLY invalidate if we're in the database tab and viewing stats or games
   useEffect(() => {
-    if (db === "local" && debouncedFen === fen) {
+    if (db === "local" && debouncedFen === fen && shouldSearch) {
       // Only invalidate when debounce settles and matches current FEN
       queryClient.invalidateQueries({ queryKey: ["database-opening"] });
     }
-  }, [debouncedFen, fen, db, queryClient]);
+  }, [debouncedFen, fen, db, queryClient, shouldSearch]);
 
   useEffect(() => {
     if (db === "local") {
@@ -174,7 +214,11 @@ function DatabasePanel() {
     [db, localOptions, lichessOptions, masterOptions, debouncedFen],
   );
 
-  const queryEnabled = tabType !== "options" && (db !== "local" || (!!localOptions.fen && !!localOptions.path));
+  // Only enable query when:
+  // 1. We're in the database tab (currentTabSelected === "database")
+  // 2. We're viewing stats or games (not options)
+  // 3. For local DB, we have FEN and path
+  const queryEnabled = shouldSearch && (db !== "local" || (!!localOptions.fen && !!localOptions.path));
 
   const {
     data: openingData,
@@ -296,7 +340,12 @@ function DatabasePanel() {
           <OpeningsTable openings={openingData?.openings || []} loading={isLoading} />
         </PanelWithError>
         <PanelWithError value="games" error={error} type={db}>
-          <GamesTable games={openingData?.games || []} loading={isLoading} />
+          <GamesTable 
+            games={openingData?.games || []} 
+            loading={isLoading}
+            fen={db === "local" ? localOptions.fen : debouncedFen}
+            databasePath={db === "local" ? (localOptions.path ?? undefined) : undefined}
+          />
         </PanelWithError>
         <PanelWithError value="options" error={error} type={db}>
           <ScrollArea h="100%" offsetScrollbars>

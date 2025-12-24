@@ -19,6 +19,7 @@ import { type Achievement, getAchievements } from "@/utils/achievements";
 import { getAllAnalyzedGames, saveAnalyzedGame, saveGameStats } from "@/utils/analyzedGames";
 import { getGameStats, getMainLine, getPGN, parsePGN } from "@/utils/chess";
 import type { ChessComGame } from "@/utils/chess.com/api";
+import { getAllFavoriteGames, isFavoriteGame, removeFavoriteGame, saveFavoriteGame, type FavoriteGame } from "@/utils/favoriteGames";
 import { type DailyGoal, getDailyGoals } from "@/utils/dailyGoals";
 import { getDatabases, query_games } from "@/utils/db";
 import { devLog } from "@/utils/devLog";
@@ -450,8 +451,14 @@ export default function DashboardPage() {
 
   const loadGames = useCallback(async () => {
     try {
-      const games = await getRecentGames(50);
-      setRecentGames(games);
+      const games = await getRecentGames(100);
+      // Filter out games with less than 5 moves
+      const filteredGames = games.filter((g) => {
+        // Filter out games with no moves or less than 5 moves
+        if (!g.moves || g.moves.length === 0) return false;
+        return g.moves.length >= 5;
+      });
+      setRecentGames(filteredGames);
     } catch (err) {
       console.error("Failed to load recent games:", err);
     }
@@ -529,11 +536,11 @@ export default function DashboardPage() {
 
             if (dbInfo && dbInfo.type === "success") {
               try {
-                // Query games from database, sorted by date descending, limit 50
+                // Query games from database, sorted by date descending, limit 100
                 const queryResult = await query_games(dbInfo.file, {
                   options: {
                     page: 1,
-                    pageSize: 50,
+                    pageSize: 100,
                     sort: "date",
                     direction: "desc",
                     skipCount: true,
@@ -561,9 +568,30 @@ export default function DashboardPage() {
             }
           }
 
-          // Sort all games by createdAt descending and limit to 50
+          // Sort all games by createdAt descending and limit to 100
           allGames.sort((a, b) => b.createdAt - a.createdAt);
-          const games = allGames.slice(0, 50);
+          // Filter out games with less than 5 moves
+          const gamesWithEnoughMoves = allGames.filter((game) => {
+            if (!game.pgn) return false; // Filter out games without PGN
+            try {
+              // Extract moves section (after headers)
+              const movesSection = game.pgn.split(/\n\n/)[1] || game.pgn;
+              // Remove comments, annotations, and variations
+              const cleanMoves = movesSection
+                .replace(/\[[^\]]*\]/g, '') // Remove comments in brackets
+                .replace(/\{[^\}]*\}/g, '') // Remove comments in braces
+                .replace(/\([^)]*\)/g, ''); // Remove variations
+              // Count all SAN moves (half-moves)
+              // Pattern matches: e4, Nf3, O-O, e8=Q, etc.
+              const movePattern = /\b([NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](?:=[NBRQ])?[+#]?|O-O(?:-O)?[+#]?)\b/g;
+              const matches = cleanMoves.match(movePattern) || [];
+              // Filter out games with less than 5 half-moves
+              return matches.length >= 5;
+            } catch {
+              return false; // Filter out games if we can't count moves
+            }
+          });
+          const games = gamesWithEnoughMoves.slice(0, 100);
 
           // Load analyzed PGNs from storage
           const analyzedGames = await getAllAnalyzedGames();
@@ -666,7 +694,28 @@ export default function DashboardPage() {
 
           // Sort all games by end_time descending and limit to 100
           allGames.sort((a, b) => b.end_time - a.end_time);
-          const games = allGames.slice(0, 100);
+          // Filter out games with less than 5 moves
+          const gamesWithEnoughMoves = allGames.filter((game) => {
+            if (!game.pgn) return false; // Filter out games without PGN
+            try {
+              // Extract moves section (after headers)
+              const movesSection = game.pgn.split(/\n\n/)[1] || game.pgn;
+              // Remove comments, annotations, and variations
+              const cleanMoves = movesSection
+                .replace(/\[[^\]]*\]/g, '') // Remove comments in brackets
+                .replace(/\{[^\}]*\}/g, '') // Remove comments in braces
+                .replace(/\([^)]*\)/g, ''); // Remove variations
+              // Count all SAN moves (half-moves)
+              // Pattern matches: e4, Nf3, O-O, e8=Q, etc.
+              const movePattern = /\b([NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](?:=[NBRQ])?[+#]?|O-O(?:-O)?[+#]?)\b/g;
+              const matches = cleanMoves.match(movePattern) || [];
+              // Filter out games with less than 5 half-moves
+              return matches.length >= 5;
+            } catch {
+              return false; // Filter out games if we can't count moves
+            }
+          });
+          const games = gamesWithEnoughMoves.slice(0, 100);
 
           // Load analyzed PGNs from storage
           const analyzedGames = await getAllAnalyzedGames();
@@ -704,6 +753,30 @@ export default function DashboardPage() {
   }, [chessComUsernames, selectedChessComUser]);
 
   const [puzzleStats, setPuzzleStats] = useState(() => getPuzzleStats());
+  const [favoriteGames, setFavoriteGames] = useState<FavoriteGame[]>([]);
+
+  // Load favorite games
+  const loadFavoriteGames = useCallback(async () => {
+    try {
+      const favorites = await getAllFavoriteGames();
+      setFavoriteGames(favorites);
+    } catch (err) {
+      console.error("Failed to load favorite games:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadFavoriteGames();
+
+    const handleFavoritesUpdated = () => {
+      loadFavoriteGames();
+    };
+    window.addEventListener("favorites:updated", handleFavoritesUpdated);
+
+    return () => {
+      window.removeEventListener("favorites:updated", handleFavoritesUpdated);
+    };
+  }, [loadFavoriteGames]);
   useEffect(() => {
     const update = () => setPuzzleStats(getPuzzleStats());
     const onVisibility = () => {
@@ -805,6 +878,9 @@ export default function DashboardPage() {
                 setActiveTab,
                 pgn,
                 headers,
+                initialAnalysisTab: "analysis",
+                initialAnalysisSubTab: "report",
+                initialNotationView: "report",
               });
               navigate({ to: "/boards" });
             },
@@ -1118,8 +1194,9 @@ export default function DashboardPage() {
             localGames={recentGames}
             onDeleteLocalGame={async (gameId: string) => {
               await deleteGameRecord(gameId);
-              const updatedGames = await getRecentGames(50);
-              setRecentGames(updatedGames);
+              const updatedGames = await getRecentGames(100);
+              const filteredGames = updatedGames.filter((g) => g.moves.length >= 5);
+              setRecentGames(filteredGames);
             }}
             chessComGames={chessComGames}
             lichessGames={lichessGames}
@@ -1145,6 +1222,9 @@ export default function DashboardPage() {
                 setActiveTab,
                 pgn,
                 headers,
+                initialAnalysisTab: "analysis",
+                initialAnalysisSubTab: "report",
+                initialNotationView: "report",
               }).then((tabId) => {
                 // Store the gameId in sessionStorage so we can update it when analysis completes
                 if (tabId && typeof window !== "undefined") {
@@ -1177,6 +1257,8 @@ export default function DashboardPage() {
                   setActiveTab,
                   pgn: game.pgn,
                   headers,
+                  initialAnalysisTab: "analysis",
+                  initialNotationView: "report",
                 }).then((tabId) => {
                   // Store the game URL and username in sessionStorage so we can save the analyzed PGN when analysis completes
                   if (tabId && typeof window !== "undefined") {
@@ -1213,6 +1295,8 @@ export default function DashboardPage() {
                   setActiveTab,
                   pgn: game.pgn,
                   headers,
+                  initialAnalysisTab: "analysis",
+                  initialNotationView: "report",
                 }).then((tabId) => {
                   // Store the game ID and username in sessionStorage so we can save the analyzed PGN when analysis completes
                   if (tabId && typeof window !== "undefined") {
@@ -1225,9 +1309,13 @@ export default function DashboardPage() {
             }}
             onAnalyzeAllLocal={async () => {
               setAnalyzeAllGameType("local");
-              // Calculate unanalyzed games count
+              // Calculate unanalyzed games count (with same filter as gameCount)
               const analyzedGames = await getAllAnalyzedGames();
-              const allGames = recentGames.filter((g) => g.pgn || g.moves.length > 0);
+              // Apply same filter as gameCount: games with 5+ moves
+              const allGames = recentGames.filter((g) => {
+                if (!g.moves || g.moves.length === 0) return false;
+                return g.moves.length >= 5;
+              });
               const unanalyzed = allGames.filter((game) => {
                 const gameRecord = game as GameRecord;
                 if (!gameRecord.pgn) return true;
@@ -1239,9 +1327,24 @@ export default function DashboardPage() {
             }}
             onAnalyzeAllChessCom={async () => {
               setAnalyzeAllGameType("chesscom");
-              // Calculate unanalyzed games count
+              // Calculate unanalyzed games count (with same filter as gameCount)
               const analyzedGames = await getAllAnalyzedGames();
-              const allGames = chessComGames.filter((g) => g.pgn);
+              // Apply same filter as gameCount: games with PGN and 5+ moves
+              const allGames = chessComGames.filter((g) => {
+                if (!g.pgn) return false;
+                try {
+                  const movesSection = g.pgn.split(/\n\n/)[1] || g.pgn;
+                  const cleanMoves = movesSection
+                    .replace(/\[[^\]]*\]/g, '')
+                    .replace(/\{[^\}]*\}/g, '')
+                    .replace(/\([^)]*\)/g, '');
+                  const movePattern = /\b([NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](?:=[NBRQ])?[+#]?|O-O(?:-O)?[+#]?)\b/g;
+                  const matches = cleanMoves.match(movePattern) || [];
+                  return matches.length >= 5;
+                } catch {
+                  return false;
+                }
+              });
               const unanalyzed = allGames.filter((game) => {
                 const chessComGame = game as ChessComGame;
                 return !analyzedGames[chessComGame.url];
@@ -1251,9 +1354,24 @@ export default function DashboardPage() {
             }}
             onAnalyzeAllLichess={async () => {
               setAnalyzeAllGameType("lichess");
-              // Calculate unanalyzed games count
+              // Calculate unanalyzed games count (with same filter as gameCount)
               const analyzedGames = await getAllAnalyzedGames();
-              const allGames = lichessGames.filter((g) => g.pgn);
+              // Apply same filter as gameCount: games with PGN and 5+ moves
+              const allGames = lichessGames.filter((g) => {
+                if (!g.pgn) return false;
+                try {
+                  const movesSection = g.pgn.split(/\n\n/)[1] || g.pgn;
+                  const cleanMoves = movesSection
+                    .replace(/\[[^\]]*\]/g, '')
+                    .replace(/\{[^\}]*\}/g, '')
+                    .replace(/\([^)]*\)/g, '');
+                  const movePattern = /\b([NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](?:=[NBRQ])?[+#]?|O-O(?:-O)?[+#]?)\b/g;
+                  const matches = cleanMoves.match(movePattern) || [];
+                  return matches.length >= 5;
+                } catch {
+                  return false;
+                }
+              });
               const unanalyzed = allGames.filter((game) => {
                 const lichessGame = game as (typeof lichessGames)[0];
                 return !analyzedGames[lichessGame.id];
@@ -1261,6 +1379,34 @@ export default function DashboardPage() {
               setUnanalyzedGameCount(unanalyzed.length);
               setAnalyzeAllModalOpened(true);
             }}
+            onToggleFavoriteLocal={async (gameId: string) => {
+              const isFavorite = await isFavoriteGame(gameId, "local");
+              if (isFavorite) {
+                await removeFavoriteGame(gameId, "local");
+              } else {
+                await saveFavoriteGame(gameId, "local");
+              }
+              loadFavoriteGames();
+            }}
+            onToggleFavoriteChessCom={async (gameId: string) => {
+              const isFavorite = await isFavoriteGame(gameId, "chesscom");
+              if (isFavorite) {
+                await removeFavoriteGame(gameId, "chesscom");
+              } else {
+                await saveFavoriteGame(gameId, "chesscom");
+              }
+              loadFavoriteGames();
+            }}
+            onToggleFavoriteLichess={async (gameId: string) => {
+              const isFavorite = await isFavoriteGame(gameId, "lichess");
+              if (isFavorite) {
+                await removeFavoriteGame(gameId, "lichess");
+              } else {
+                await saveFavoriteGame(gameId, "lichess");
+              }
+              loadFavoriteGames();
+            }}
+            favoriteGames={favoriteGames}
           />
         </Grid.Col>
 
@@ -1318,11 +1464,45 @@ export default function DashboardPage() {
 
           const allGames =
             analyzeAllGameType === "local"
-              ? recentGames.filter((g) => g.pgn || g.moves.length > 0)
+              ? recentGames.filter((g) => {
+                  // Filter games with 5+ moves (same logic as gameCount)
+                  if (!g.moves || g.moves.length === 0) return false;
+                  return g.moves.length >= 5;
+                })
               : analyzeAllGameType === "chesscom"
-                ? chessComGames.filter((g) => g.pgn)
+                ? chessComGames.filter((g) => {
+                    if (!g.pgn) return false;
+                    try {
+                      // Use same counting method as gameCount
+                      const movesSection = g.pgn.split(/\n\n/)[1] || g.pgn;
+                      const cleanMoves = movesSection
+                        .replace(/\[[^\]]*\]/g, '')
+                        .replace(/\{[^\}]*\}/g, '')
+                        .replace(/\([^)]*\)/g, '');
+                      const movePattern = /\b([NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](?:=[NBRQ])?[+#]?|O-O(?:-O)?[+#]?)\b/g;
+                      const matches = cleanMoves.match(movePattern) || [];
+                      return matches.length >= 5;
+                    } catch {
+                      return false;
+                    }
+                  })
                 : analyzeAllGameType === "lichess"
-                  ? lichessGames.filter((g) => g.pgn)
+                  ? lichessGames.filter((g) => {
+                      if (!g.pgn) return false;
+                      try {
+                        // Use same counting method as gameCount
+                        const movesSection = g.pgn.split(/\n\n/)[1] || g.pgn;
+                        const cleanMoves = movesSection
+                          .replace(/\[[^\]]*\]/g, '')
+                          .replace(/\{[^\}]*\}/g, '')
+                          .replace(/\([^)]*\)/g, '');
+                        const movePattern = /\b([NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](?:=[NBRQ])?[+#]?|O-O(?:-O)?[+#]?)\b/g;
+                        const matches = cleanMoves.match(movePattern) || [];
+                        return matches.length >= 5;
+                      } catch {
+                        return false;
+                      }
+                    })
                   : [];
 
           // Filter to only unanalyzed games if requested
@@ -1368,12 +1548,12 @@ export default function DashboardPage() {
             value: s.value?.toString() ?? "",
           }));
 
-          // Detect available CPU threads and calculate parallel analysis count (half of available threads)
+          // Detect available CPU threads and calculate parallel analysis count (25% of available threads)
           const availableThreads = navigator.hardwareConcurrency || 4;
-          const parallelAnalyses = Math.max(1, Math.floor(availableThreads / 2));
+          const parallelAnalyses = Math.max(1, Math.floor(availableThreads / 4));
 
           console.log(
-            `[AnalyzeAll] Detected ${availableThreads} CPU threads, running ${parallelAnalyses} analyses in parallel`,
+            `[AnalyzeAll] Detected ${availableThreads} CPU threads, running ${parallelAnalyses} analyses in parallel (25% of available threads)`,
           );
 
           // Force Threads to 1 for each individual analysis, regardless of engine configuration
@@ -1467,19 +1647,26 @@ export default function DashboardPage() {
               const cancellationCheckInterval = setInterval(() => {
                 if (isCancelled()) {
                   analysisCancelled = true;
+                  // Stop the engine immediately
                   commands.stopEngine(defaultEngine.path, analysisId).catch(() => {
                     // Ignore errors when stopping
                   });
                   clearInterval(cancellationCheckInterval);
                 }
-              }, 100);
+              }, 50); // Check more frequently for faster cancellation
 
               let analysisResult;
               try {
                 analysisResult = await analysisPromise;
               } catch (error) {
                 clearInterval(cancellationCheckInterval);
+                // If cancelled, stop the engine and return
                 if (analysisCancelled || isCancelled()) {
+                  try {
+                    await commands.stopEngine(defaultEngine.path, analysisId);
+                  } catch {
+                    // Ignore errors when stopping
+                  }
                   activeAnalysisIds.delete(analysisId);
                   return;
                 }
@@ -1732,7 +1919,29 @@ export default function DashboardPage() {
             const batch = gamesToAnalyze.slice(i, i + parallelAnalyses);
 
             // Process batch in parallel
-            await Promise.all(batch.map((game, batchIndex) => processGame(game, i + batchIndex)));
+            const batchPromises = batch.map((game, batchIndex) => processGame(game, i + batchIndex));
+            
+            // Wait for all games in batch to complete or be cancelled
+            // Use allSettled so we can check cancellation status after each completes
+            await Promise.allSettled(batchPromises);
+            
+            // Check cancellation after batch completes - if cancelled, stop all engines immediately
+            if (isCancelled()) {
+              // Stop all remaining active engines immediately
+              const stopPromises = Array.from(activeAnalysisIds).map((analysisId) =>
+                commands.stopEngine(defaultEngine.path, analysisId).catch(() => {
+                  // Ignore errors when stopping
+                }),
+              );
+              await Promise.all(stopPromises);
+              activeAnalysisIds.clear();
+              notifications.show({
+                title: t("features.dashboard.analysisCancelled"),
+                message: `Analysis stopped. ${successCount} games analyzed successfully.`,
+                color: "yellow",
+              });
+              break;
+            }
           }
 
           // Only show completion message if not cancelled
@@ -1751,8 +1960,9 @@ export default function DashboardPage() {
 
             // Refresh games to update stats
             if (analyzeAllGameType === "local") {
-              const updatedGames = await getRecentGames(50);
-              setRecentGames(updatedGames);
+              const updatedGames = await getRecentGames(100);
+              const filteredGames = updatedGames.filter((g) => g.moves.length >= 5);
+              setRecentGames(filteredGames);
             }
 
             notifications.show({
@@ -1773,11 +1983,42 @@ export default function DashboardPage() {
         }}
         gameCount={
           analyzeAllGameType === "local"
-            ? recentGames.filter((g) => g.pgn || g.moves.length > 0).length
+            ? recentGames.filter((g) => {
+                if (!g.moves || g.moves.length === 0) return false;
+                return g.moves.length >= 5;
+              }).length
             : analyzeAllGameType === "chesscom"
-              ? chessComGames.filter((g) => g.pgn).length
+              ? chessComGames.filter((g) => {
+                  if (!g.pgn) return false;
+                  try {
+                    const movesSection = g.pgn.split(/\n\n/)[1] || g.pgn;
+                    const cleanMoves = movesSection
+                      .replace(/\[[^\]]*\]/g, '')
+                      .replace(/\{[^\}]*\}/g, '')
+                      .replace(/\([^)]*\)/g, '');
+                    const movePattern = /\b([NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](?:=[NBRQ])?[+#]?|O-O(?:-O)?[+#]?)\b/g;
+                    const matches = cleanMoves.match(movePattern) || [];
+                    return matches.length >= 5;
+                  } catch {
+                    return false;
+                  }
+                }).length
               : analyzeAllGameType === "lichess"
-                ? lichessGames.filter((g) => g.pgn).length
+                ? lichessGames.filter((g) => {
+                    if (!g.pgn) return false;
+                    try {
+                      const movesSection = g.pgn.split(/\n\n/)[1] || g.pgn;
+                      const cleanMoves = movesSection
+                        .replace(/\[[^\]]*\]/g, '')
+                        .replace(/\{[^\}]*\}/g, '')
+                        .replace(/\([^)]*\)/g, '');
+                      const movePattern = /\b([NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](?:=[NBRQ])?[+#]?|O-O(?:-O)?[+#]?)\b/g;
+                      const matches = cleanMoves.match(movePattern) || [];
+                      return matches.length >= 5;
+                    } catch {
+                      return false;
+                    }
+                  }).length
                 : 0
         }
         unanalyzedGameCount={unanalyzedGameCount ?? undefined}

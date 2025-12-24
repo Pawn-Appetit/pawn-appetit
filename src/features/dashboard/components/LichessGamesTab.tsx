@@ -1,11 +1,12 @@
-import { Avatar, Badge, Button, Group, Loader, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
-import { IconSortAscending, IconSortDescending } from "@tabler/icons-react";
+import { ActionIcon, Avatar, Badge, Button, Group, Loader, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
+import { IconSortAscending, IconSortDescending, IconStar, IconStarFilled } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AnalysisPreview } from "@/components/AnalysisPreview";
 import { currentThemeIdAtom } from "@/features/themes/state/themeAtoms";
 import { getAnalyzedGame, getGameStats as getSavedGameStats } from "@/utils/analyzedGames";
+import type { FavoriteGame } from "@/utils/favoriteGames";
 
 interface LichessGame {
   id: string;
@@ -34,6 +35,8 @@ interface LichessGamesTabProps {
   isLoading?: boolean;
   onAnalyzeGame: (game: LichessGame) => void;
   onAnalyzeAll?: () => void;
+  onToggleFavorite?: (gameId: string) => Promise<void>;
+  favoriteGames?: FavoriteGame[];
 }
 
 export function LichessGamesTab({
@@ -43,6 +46,8 @@ export function LichessGamesTab({
   isLoading = false,
   onAnalyzeGame,
   onAnalyzeAll,
+  onToggleFavorite,
+  favoriteGames = [],
 }: LichessGamesTabProps) {
   const { t } = useTranslation();
   const currentThemeId = useAtomValue(currentThemeIdAtom);
@@ -279,6 +284,7 @@ export function LichessGamesTab({
                     (sortDirection === "asc" ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />)}
                 </Group>
               </Table.Th>
+              <Table.Th>Favorite</Table.Th>
               <Table.Th>
                 {onAnalyzeAll && (
                   <Button size="xs" variant="light" onClick={onAnalyzeAll}>
@@ -396,6 +402,23 @@ export function LichessGamesTab({
                     })}
                   </Table.Td>
                   <Table.Td>
+                    {onToggleFavorite && (
+                      <ActionIcon
+                        size="sm"
+                        variant="subtle"
+                        color={favoriteGames.some((f) => f.gameId === g.id && f.source === "lichess") ? "yellow" : "gray"}
+                        onClick={() => onToggleFavorite(g.id)}
+                        title="Toggle favorite"
+                      >
+                        {favoriteGames.some((f) => f.gameId === g.id && f.source === "lichess") ? (
+                          <IconStarFilled size={16} />
+                        ) : (
+                          <IconStar size={16} />
+                        )}
+                      </ActionIcon>
+                    )}
+                  </Table.Td>
+                  <Table.Td>
                     <Group gap="xs" wrap="nowrap">
                       <AnalysisPreview pgn={analyzedPgns.get(g.id) || g.pgn || null}>
                         <Button size="xs" variant="light" onClick={() => onAnalyzeGame(g)} disabled={!g.pgn}>
@@ -439,7 +462,7 @@ export function LichessGamesTab({
                   {averages.elo > 0 ? Math.round(averages.elo) : "-"}
                 </Text>
               </Table.Td>
-              <Table.Td colSpan={5}></Table.Td>
+              <Table.Td colSpan={6}></Table.Td>
             </Table.Tr>
           </Table.Tfoot>
         </Table>

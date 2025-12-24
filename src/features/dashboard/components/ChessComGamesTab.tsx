@@ -1,5 +1,5 @@
-import { Avatar, Badge, Button, Group, Loader, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
-import { IconSortAscending, IconSortDescending } from "@tabler/icons-react";
+import { ActionIcon, Avatar, Badge, Button, Group, Loader, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
+import { IconSortAscending, IconSortDescending, IconStar, IconStarFilled } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -7,6 +7,7 @@ import { AnalysisPreview } from "@/components/AnalysisPreview";
 import { currentThemeIdAtom } from "@/features/themes/state/themeAtoms";
 import { getAnalyzedGame, getGameStats as getSavedGameStats } from "@/utils/analyzedGames";
 import type { ChessComGame } from "@/utils/chess.com/api";
+import type { FavoriteGame } from "@/utils/favoriteGames";
 
 interface GameStats {
   accuracy: number;
@@ -21,6 +22,8 @@ interface ChessComGamesTabProps {
   isLoading?: boolean;
   onAnalyzeGame: (game: ChessComGame) => void;
   onAnalyzeAll?: () => void;
+  onToggleFavorite?: (gameId: string) => Promise<void>;
+  favoriteGames?: FavoriteGame[];
 }
 
 export function ChessComGamesTab({
@@ -30,6 +33,8 @@ export function ChessComGamesTab({
   isLoading = false,
   onAnalyzeGame,
   onAnalyzeAll,
+  onToggleFavorite,
+  favoriteGames = [],
 }: ChessComGamesTabProps) {
   const { t } = useTranslation();
   const currentThemeId = useAtomValue(currentThemeIdAtom);
@@ -266,6 +271,7 @@ export function ChessComGamesTab({
                     (sortDirection === "asc" ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />)}
                 </Group>
               </Table.Th>
+              <Table.Th>Favorite</Table.Th>
               <Table.Th>
                 {onAnalyzeAll && (
                   <Button size="xs" variant="light" onClick={onAnalyzeAll}>
@@ -392,6 +398,23 @@ export function ChessComGamesTab({
                     })}
                   </Table.Td>
                   <Table.Td>
+                    {onToggleFavorite && (
+                      <ActionIcon
+                        size="sm"
+                        variant="subtle"
+                        color={favoriteGames.some((f) => f.gameId === g.url && f.source === "chesscom") ? "yellow" : "gray"}
+                        onClick={() => onToggleFavorite(g.url)}
+                        title="Toggle favorite"
+                      >
+                        {favoriteGames.some((f) => f.gameId === g.url && f.source === "chesscom") ? (
+                          <IconStarFilled size={16} />
+                        ) : (
+                          <IconStar size={16} />
+                        )}
+                      </ActionIcon>
+                    )}
+                  </Table.Td>
+                  <Table.Td>
                     <Group gap="xs" wrap="nowrap">
                       <AnalysisPreview pgn={analyzedPgns.get(g.url) || g.pgn || null}>
                         <Button size="xs" variant="light" onClick={() => onAnalyzeGame(g)}>
@@ -429,7 +452,7 @@ export function ChessComGamesTab({
                   {averages.elo > 0 ? Math.round(averages.elo) : "-"}
                 </Text>
               </Table.Td>
-              <Table.Td colSpan={5}></Table.Td>
+              <Table.Td colSpan={6}></Table.Td>
             </Table.Tr>
           </Table.Tfoot>
         </Table>

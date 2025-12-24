@@ -733,11 +733,11 @@
       "analyzingGames": "Analyzing {{current}} of {{total}} games...",
       "stopAnalysis": "Stop Analysis",
       "analysisSpeeds": {
-        "express": "Express / depth 8",
-        "swift": "Fast / depth 12",
-        "focused": "Intermediate / depth 16",
-        "advanced": "Advanced / depth 20",
-        "deepdive": "Deep / depth 24"
+        "express": "Express / depth 12",
+        "swift": "Fast / depth 16",
+        "focused": "Balanced / depth 20",
+        "advanced": "Advanced / depth 28",
+        "deepdive": "Deep / depth 36"
       },
       "deleteGame": "Delete game",
       "allAccounts": "All Accounts",
@@ -1044,7 +1044,8 @@
         "removeEmpty": "Remove Empty Games",
         "actions": "Actions",
         "addGames": "Add Games",
-        "exportPGN": "Export to PGN"
+        "exportPGN": "Export to PGN",
+        "selected": "selected"
       },
       "delete": {
         "title": "Delete Database",
@@ -1112,6 +1113,7 @@
       "hideComments": "Hide comments",
       "showVariations": "Show Variations",
       "repertoireView": "Repertoire View",
+      "reportView": "Report View",
       "mainLine": "Main Line",
       "showVariationsTooltip": "Show variations"
     },
@@ -1146,7 +1148,11 @@
       "showingSolution": "Showing Solution",
       "viewSolution": "View Solution",
       "loadingRatingRange": "Loading rating range...",
-      "enterTitle": "Enter Puzzle Title"
+      "enterTitle": "Enter Puzzle Title",
+      "themes": "Themes",
+      "selectThemes": "Select themes",
+      "openingTags": "Opening Tags",
+      "selectOpeningTags": "Select opening tags"
     },
     "tablebase": {
       "title": "Tablebase",
@@ -1347,7 +1353,14 @@
       "title": "Directories",
       "desc": "Customize the directories used by the app",
       "files": "Files directory",
-      "filesDesc": "This is where your games in the Files page are stored"
+      "filesDesc": "This is where your games in the Files page are stored",
+      "precacheOpenings": "Pre-cache Openings",
+      "precacheOpeningsDesc": "Pre-cache all common opening positions from the opening database. This will improve search performance for frequently accessed positions.",
+      "noReferenceDatabase": "Please select a reference database first in the Databases page",
+      "startPrecache": "Start Pre-caching",
+      "processing": "Processing",
+      "errors": "Errors",
+      "precacheCompleted": "Pre-caching completed successfully!"
     },
     "telemetry": "Telemetry",
     "telemetryDesc": "Help improve Pawn Appétit by sharing anonymous usage data",

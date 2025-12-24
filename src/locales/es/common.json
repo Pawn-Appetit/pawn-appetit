@@ -89,7 +89,6 @@
     "stalemate": "Rey ahogado",
     "white": "Blancas",
     "black": "Negras",
-    "draw": "Tablas",
     "random": "Aleatorio",
     "any": "Cualquiera",
     "player": "Jugador",
@@ -494,7 +493,39 @@
       "promoteToMainLine": "Promover a la línea principal",
       "promoteVariation": "Promover variación",
       "copyVariationPGN": "Copiar variación PGN",
-      "deleteMove": "Eliminar movimiento"
+      "deleteMove": "Eliminar movimiento",
+      "pawnAppetit": "Pawn Appétit",
+      "quit": "Salir de Pawn Appétit",
+      "newAnalysisBoard": "Nuevo Tablero de Análisis",
+      "newPlayBoard": "Nuevo Tablero de Juego",
+      "importPgn": "Importar PGN",
+      "settings": "Configuración",
+      "edit": "Editar",
+      "undo": "Deshacer",
+      "redo": "Rehacer",
+      "cut": "Cortar",
+      "copy": "Copiar",
+      "paste": "Pegar",
+      "selectAll": "Seleccionar todo",
+      "commandPalette": "Paleta de Comandos",
+      "forceReload": "Recarga Forzada",
+      "go": "Ir",
+      "goToDashboard": "Ir al Dashboard",
+      "goToBoards": "Ir a Tableros",
+      "goToAccounts": "Ir a Cuentas",
+      "goToFiles": "Ir a Archivos",
+      "goToDatabases": "Ir a Bases de Datos",
+      "goToEngines": "Ir a Motores",
+      "goToLearn": "Ir a Aprender",
+      "goToSettings": "Ir a Configuración",
+      "goToKeyboardShortcuts": "Ir a Atajos de Teclado",
+      "window": "Ventana",
+      "minimize": "Minimizar",
+      "zoom": "Zoom",
+      "toggleFullScreen": "Alternar Pantalla Completa",
+      "closeTab": "Cerrar Pestaña",
+      "closeAllTabs": "Cerrar Todas las Pestañas",
+      "reportIssue": "Reportar Problema"
     },
     "sidebar": {
       "dashboard": "Dashboard",
@@ -506,7 +537,8 @@
       "puzzles": "Puzzles",
       "learn": "Aprender",
       "settings": "Configuración",
-      "keyboardShortcuts": "Atajos de teclado"
+      "keyboardShortcuts": "Atajos de teclado",
+      "tournaments": "Torneos"
     },
     "dashboard": {
       "cards": {
@@ -628,7 +660,10 @@
         "ratings": "Ratings FIDE",
         "standard": "Estándar",
         "rapid": "Rápido",
-        "blitz": "Blitz"
+        "blitz": "Blitz",
+        "lichessToken": "Token de Lichess",
+        "lichessTokenPlaceholder": "Ingresa tu token de API de Lichess",
+        "lichessTokenDescription": "Requerido para crear torneos en Lichess. Obtén tu token desde https://lichess.org/account/oauth/token/create"
       },
       "welcome": {
         "firstOpen": "¡Bienvenido a Pawn Appétit!",
@@ -645,6 +680,9 @@
     },
     "tabs": {
       "newTab": "Nueva pestaña",
+      "limitReached": "Límite de Pestañas Alcanzado",
+      "limitReachedDesc": "Puedes tener hasta {{max}} pestañas abiertas a la vez. Por favor cierra algunas pestañas antes de abrir nuevas.",
+      "maxTabsReached": "Se alcanzó el máximo de {{max}} pestañas",
       "playChess": {
         "title": "Jugar una partida",
         "desc": "Desafía a un motor o a un amigo",
@@ -914,7 +952,8 @@
         "puzzle": "Puzzle",
         "other": "Otro",
         "folder": "Carpeta",
-        "all": "Todos"
+        "all": "Todos",
+        "variants": "Variantes"
       },
       "delete": {
         "title": "Eliminar archivo",
@@ -960,6 +999,7 @@
       "hideComments": "Ocultar comentarios",
       "showVariations": "Mostrar variaciones",
       "repertoireView": "Vista de repertorio",
+      "reportView": "Vista de informe",
       "mainLine": "Línea principal",
       "showVariationsTooltip": "Mostrar variaciones"
     },
@@ -994,7 +1034,11 @@
       "viewSolution": "Ver solución",
       "loadingRatingRange": "Cargando rango de Elo...",
       "enterTitle": "Introducir título del puzzle",
-      "title": "Puzzle"
+      "title": "Puzzle",
+      "themes": "Temas",
+      "selectThemes": "Seleccionar temas",
+      "openingTags": "Etiquetas de Apertura",
+      "selectOpeningTags": "Seleccionar etiquetas de apertura"
     },
     "tablebase": {
       "title": "Base de finales",
@@ -1019,6 +1063,100 @@
       "updateCompleted": "Actualización completada",
       "checkingForUpdates": "Buscando actualizaciones",
       "noUpdatesAvailable": "No hay actualizaciones disponibles"
+    },
+    "tournaments": {
+      "import": "Importar",
+      "search": "Buscar",
+      "create": "Crear",
+      "importTab": {
+        "title": "Importar Torneo de Lichess",
+        "description": "Importa partidas de torneo de Lichess usando un ID de torneo o URL",
+        "noToken": "Token de Lichess no encontrado. Por favor agrega tu token de Lichess en la configuración de cuenta principal.",
+        "button": "Importar Torneo"
+      },
+      "browse": {
+        "title": "Explorar Torneos de Lichess",
+        "description": "Busca y explora torneos en Lichess",
+        "noToken": "Token de Lichess no encontrado. Por favor agrega tu token de Lichess en la configuración de cuenta principal.",
+        "button": "Explorar Torneos",
+        "schedule": "Programar",
+        "noTemplates": "No se encontraron plantillas de torneo",
+        "loadError": "Error al cargar plantillas de torneo",
+        "deleted": "Plantilla de torneo eliminada",
+        "deleteError": "Error al eliminar plantilla de torneo"
+      },
+      "schedule": {
+        "title": "Programar Torneo",
+        "description": "Selecciona la fecha y hora cuando el torneo debe comenzar",
+        "startDate": "Fecha y Hora de Inicio",
+        "dateRequired": "La fecha de inicio es obligatoria",
+        "invalidDate": "Formato de fecha inválido",
+        "success": "¡Torneo programado exitosamente!",
+        "successTitle": "¡Torneo Creado Exitosamente!",
+        "shareUrl": "Comparte esta URL para invitar jugadores:",
+        "urlCopied": "¡URL del torneo copiada al portapapeles!",
+        "copyError": "Error al copiar URL",
+        "invalidTeamId": "ID de equipo inválido. Por favor verifica que el ID del equipo sea correcto y que tengas acceso a él.",
+        "error": "Error al programar torneo",
+        "button": "Programar",
+        "tournamentId": "ID del Torneo:",
+        "share": "Compartir",
+        "shared": "¡Compartido!"
+      },
+      "createTab": {
+        "title": "Crear Plantilla de Torneo",
+        "description": "Crea una nueva plantilla de torneo (programarla más tarde desde la pestaña Buscar)",
+        "noToken": "Token de Lichess no encontrado. Por favor agrega tu token de Lichess en la configuración de cuenta principal.",
+        "noAccount": "No hay cuenta seleccionada. Por favor selecciona una cuenta principal primero.",
+        "button": "Guardar Plantilla",
+        "templateSaved": "¡Plantilla de torneo guardada exitosamente!",
+        "nameRequired": "El nombre del torneo es obligatorio",
+        "success": "¡Torneo creado exitosamente!",
+        "error": "Error al crear torneo",
+        "fields": {
+          "name": "Nombre del Torneo",
+          "namePlaceholder": "Ingresa el nombre del torneo",
+          "description": "Descripción",
+          "descriptionPlaceholder": "Descripción opcional",
+          "clockTime": "Tiempo de Reloj (minutos)",
+          "clockIncrement": "Incremento (segundos)",
+          "minutes": "Duración (minutos)",
+          "variant": "Variante",
+          "rated": "Clasificado",
+          "berserkable": "Permitir Berserk",
+          "streakable": "Permitir Racha",
+          "hasChat": "Habilitar Chat",
+          "position": "Posición Inicial (FEN)",
+          "positionPlaceholder": "Opcional: Posición FEN inicial",
+          "password": "Contraseña (Torneo Privado)",
+          "passwordPlaceholder": "Opcional: Establecer contraseña para torneo privado",
+          "teamBattle": "Batalla de Equipos (ID de Equipo)",
+          "teamBattlePlaceholder": "Opcional: ID de equipo para batalla de equipos",
+          "teamBattleDescription": "Crea un torneo de batalla de equipos donde los jugadores compiten en equipos",
+          "teamRestriction": "Restringir a Equipo (ID de Equipo)",
+          "teamRestrictionPlaceholder": "Opcional: Solo permitir miembros de este equipo unirse",
+          "teamRestrictionDescription": "Ingresa ID de equipo (ej., 'torneos-para-pensar' de https://lichess.org/team/torneos-para-pensar) para restringir el acceso solo a miembros del equipo",
+          "conditions": "Condiciones de Entrada",
+          "minRating": "Rating Mínimo",
+          "maxRating": "Rating Máximo",
+          "nbRatedGame": "Partidas Clasificadas Mínimas"
+        },
+        "variants": {
+          "standard": "Estándar",
+          "chess960": "Chess960",
+          "crazyhouse": "Crazyhouse",
+          "antichess": "Antichess",
+          "atomic": "Atomic",
+          "horde": "Horde",
+          "kingOfTheHill": "Rey de la Colina",
+          "racingKings": "Rey Corredor",
+          "threeCheck": "Tres Jaque"
+        }
+      }
+    },
+    "shortcuts": {
+      "title": "Atajos de Teclado",
+      "helpTitle": "Mostrar ayuda de atajos de teclado"
     }
   },
   "settings": {
@@ -1039,12 +1177,23 @@
       "autoPromotionDesc": "Promocionar automáticamente a reina",
       "coordinates": "Coordenadas",
       "coordinatesDesc": "Mostrar coordenadas en el tablero",
+      "coordinatesNone": "No",
+      "coordinatesInside": "Dentro del tablero",
+      "coordinatesAll": "Todas las casillas del tablero",
       "autoSave": "Guardar automáticamente",
       "autoSaveDesc": "Guardar automáticamente después de cada movimiento",
       "previewBoard": "Previsualizar tablero",
       "previewBoardDesc": "Mostrar una previsualización del tablero al pasar el ratón sobre un movimiento en el análisis del motor",
       "scrollThroughMoves": "Desplazarse por los movimientos",
-      "scrollThroughMovesDesc": "Habilitar o deshabilitar el desplazamiento por los movimientos con el ratón en el tablero"
+      "scrollThroughMovesDesc": "Habilitar o deshabilitar el desplazamiento por los movimientos con el ratón en el tablero",
+      "practiceAnimationSpeed": "Velocidad de Animación de Práctica de Repertorio",
+      "practiceAnimationSpeedDesc": "Controla qué tan rápido se reproducen los movimientos al practicar posiciones de repertorio",
+      "practiceAnimationDisabled": "Deshabilitado",
+      "practiceAnimationVeryFast": "Muy Rápido",
+      "practiceAnimationFast": "Rápido",
+      "practiceAnimationNormal": "Normal",
+      "practiceAnimationSlow": "Lento",
+      "practiceAnimationVerySlow": "Muy Lento"
     },
     "inputs": {
       "title": "Entradas",
@@ -1184,7 +1333,13 @@
       "collection": "Colección de sonidos",
       "collectionDesc": "Colección de sonidos utilizada"
     },
-    "keybindings": "Atajos de teclado",
+    "keybindings": {
+      "title": "Atajos de Teclado",
+      "desc": "Personalizar atajos de teclado",
+      "placeholder": "Escribe para buscar en atajos de teclado",
+      "command": "Comando",
+      "keybinding": "Atajo de Teclado"
+    },
     "directories": {
       "title": "Directorios",
       "desc": "Personalizar los directorios utilizados por la aplicación",
@@ -1418,5 +1573,46 @@
   },
   "about": {
     "tauriVersion": "Versión de Tauri: {{version}}"
+  },
+  "playerStyle": {
+    "mixedStyle": "Estilo Mixto",
+    "mixedStyleDescription": "Repertorio versátil sin un estilo dominante claro, se adapta a diferentes posiciones y oponentes",
+    "noData": "Sin Datos",
+    "noDataDescription": "No hay suficientes aperturas en la base de datos para analizar el estilo de este jugador",
+    "creativeGambiteer": "Gambitero Creativo",
+    "creativeGambiteerDescription": "Prefiere gambitos creativos y líneas poco convencionales para crear complicaciones tempranas y sorprender oponentes",
+    "gambiteer": "Gambitero",
+    "gambiteerDescription": "Emplea frecuentemente gambitos y líneas de apertura sacrificiales para ganar compensación dinámica e iniciativa",
+    "gambiteerSimpleDescription": "A menudo elige gambitos y sacrificios especulativos en la fase de apertura para crear oportunidades tácticas",
+    "gambiteerFallbackDescription": "Usa frecuentemente gambitos o sacrificios especulativos en la apertura para ganar juego dinámico e iniciativa",
+    "systemPlayer": "Jugador de Sistemas",
+    "systemPlayerDescription": "Se basa en sistemas de configuración como Londres, Colle o Torre con planes repetibles y estructuras sólidas",
+    "classicalSolid": "Clásico Sólido",
+    "classicalSolidDescription": "Prefiere estructuras defensivas sólidas y pequeñas ventajas a largo plazo sobre complicaciones tácticas agudas",
+    "positional": "Posicional",
+    "positionalDescription": "Jugador estratégico y posicional con enfoque en estructuras de peones, planes a largo plazo y casillas clave",
+    "positionalSimpleDescription": "Se enfoca en planificación estratégica, estructuras de peones y ventajas posicionales a largo plazo",
+    "positionalFallbackDescription": "Juego estratégico y posicional con enfoque en estructuras, casillas clave y ventajas a largo plazo",
+    "hypermodernDynamic": "Hipermoderno Dinámico",
+    "hypermodernDynamicDescription": "Estilo dinámico e hipermoderno con defensas indias, estructuras Benoni, Defensa Moderna o variaciones agudas de Siciliana",
+    "unconventionalOpenings": "Aperturas No Convencionales",
+    "unconventionalOpeningsDescription": "Prefiere aperturas raras y menos teóricas para evitar la teoría principal y crear posiciones desconocidas",
+    "unconventional": "No Convencional",
+    "unconventionalDescription": "Usa aperturas poco convencionales y sorpresivas como arma principal para evitar teoría y crear posiciones originales",
+    "unconventionalFallbackDescription": "Prefiere aperturas inusuales o raras para evitar preparación teórica y crear posiciones únicas",
+    "dynamicTactician": "Táctico Dinámico",
+    "dynamicTacticianDescription": "Busca posiciones complejas y tácticas con mucho contrajuego y actividad dinámica de piezas",
+    "systematic": "Sistemático",
+    "systematicDescription": "Prefiere sistemas estructurados y aperturas basadas en configuración con planes consistentes y estructuras confiables",
+    "systematicFallbackDescription": "Se basa en aperturas basadas en configuración y sistemas con planes repetibles y fundamentos sólidos",
+    "tactical": "Táctico",
+    "tacticalDescription": "Busca combinaciones y jugadas tácticas concretas, priorizando cálculo y oportunidades tácticas",
+    "tacticalFallbackDescription": "Las tácticas y el cálculo concreto son una parte central del repertorio, buscando posiciones agudas",
+    "dynamic": "Dinámico",
+    "dynamicDescription": "Prefiere posiciones agudas y desequilibradas con juego activo y coordinación dinámica de piezas",
+    "dynamicFallbackDescription": "Disfruta posiciones dinámicas con juego activo de piezas y posibilidades tácticas complejas",
+    "solid": "Sólido",
+    "solidDescription": "Valora seguridad y estructuras sólidas sobre juego agudo, priorizando solidez y estabilidad a largo plazo",
+    "solidFallbackDescription": "Repertorio seguro y confiable con menos riesgos, enfocándose en estructuras sólidas y juego defensivo"
   }
 }

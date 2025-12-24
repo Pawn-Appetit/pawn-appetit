@@ -37,6 +37,13 @@ export type DownloadablePuzzleDatabase = {
 
 const DATABASES: DownloadableDatabase[] = [
   {
+    title: "Lumbra's Gigabase",
+    game_count: 9570564,
+    player_count: 526520,
+    storage_size: BigInt(2789040128),
+    downloadLink: "https://pub-561e4f3376ea4e4eb2ffd01a876ba46e.r2.dev/LumbrasGigaBase2025-06.db3",
+  },
+  {
     title: "Caissabase 2024",
     game_count: 5404926,
     player_count: 321095,
@@ -73,6 +80,14 @@ const PUZZLE_DATABASES: DownloadablePuzzleDatabase[] = [
     puzzleCount: 3080529,
     storageSize: BigInt(339046400),
     downloadLink: "https://pub-561e4f3376ea4e4eb2ffd01a876ba46e.r2.dev/puzzles.db3",
+  },
+  {
+    title: "Lichess Puzzles 2025",
+    description: "Latest puzzles from Lichess.org in database format",
+    puzzleCount: 0, // Will be determined during import
+    storageSize: BigInt(0), // Will be determined during download
+    // CSV file from Lichess database - will be downloaded and imported automatically
+    downloadLink: "https://database.lichess.org/lichess_db_puzzle.csv.zst",
   },
 ];
 

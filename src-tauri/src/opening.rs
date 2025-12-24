@@ -30,7 +30,7 @@ struct OpeningRecord {
     pgn: String,
 }
 
-const TSV_DATA: [&[u8]; 5] = [
+pub const TSV_DATA: [&[u8]; 5] = [
     include_bytes!("../data/a.tsv"),
     include_bytes!("../data/b.tsv"),
     include_bytes!("../data/c.tsv"),

@@ -5,6 +5,7 @@ mod schema;
 mod search;
 mod core;
 mod pgn;
+mod position_cache;
 
 use crate::{
     db::{
@@ -52,6 +53,9 @@ pub use self::models::Puzzle;
 pub use self::schema::puzzles;
 pub use self::search::{
     is_position_in_db, search_position, PositionQuery, PositionQueryJs, PositionStats,
+};
+pub use self::position_cache::{
+    is_position_cached, get_cached_position, save_position_cache,
 };
 
 const INDEXES_SQL: &str = include_str!("../../../database/queries/indexes/create_indexes.sql");
@@ -1480,6 +1484,7 @@ pub async fn get_players_game_info(
 #[specta::specta]
 pub async fn delete_database(
     file: PathBuf,
+    app: tauri::AppHandle,
     state: tauri::State<'_, AppState>,
 ) -> Result<()> {
     use std::fs::remove_file;
@@ -1510,7 +1515,7 @@ pub async fn delete_database(
         log::info!("Closed connection pool for: {:?}", file);
     }
     
-    // Clear any cached data for this database
+    // Clear any cached data for this database (both in-memory and persistent cache)
     let cache_keys_to_remove: Vec<_> = state.line_cache.iter()
         .filter(|entry| entry.key().1 == file)
         .map(|entry| entry.key().clone())
@@ -1518,6 +1523,11 @@ pub async fn delete_database(
     
     for key in cache_keys_to_remove {
         state.line_cache.remove(&key);
+    }
+    
+    // Clear persistent position cache for this database
+    if let Err(e) = crate::db::position_cache::clear_cache_for_database(&app, &file) {
+        log::warn!("Failed to clear position cache for database: {}", e);
     }
     
     log::info!("Waiting for file handles to be released...");
@@ -1713,6 +1723,148 @@ pub async fn export_to_pgn(
 
 #[tauri::command]
 #[specta::specta]
+pub async fn export_position_games_to_pgn(
+    file: PathBuf,
+    fen: String,
+    dest_file: PathBuf,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, AppState>,
+) -> Result<()> {
+    use crate::db::position_cache::{get_cached_position, normalize_db_path};
+    
+    // Get cached game IDs for this position
+    let db_path_str = normalize_db_path(&file);
+    let game_ids = match get_cached_position(&app, &fen, &file)? {
+        Some((_, ids)) => ids,
+        None => return Err(Error::PackageManager("Position not found in cache".to_string())),
+    };
+    
+    if game_ids.is_empty() {
+        return Err(Error::PackageManager("No games found for this position".to_string()));
+    }
+    
+    let db = &mut get_db_or_create(&state, file.to_str().unwrap(), ConnectionOptions::default())?;
+    
+    let file = OpenOptions::new()
+        .create(true)
+        .write(true)
+        .truncate(true)
+        .open(dest_file)?;
+    
+    let mut writer = BufWriter::new(file);
+    
+    let (white_players, black_players) = diesel::alias!(players as white, players as black);
+    games::table
+        .inner_join(white_players.on(games::white_id.eq(white_players.field(players::id))))
+        .inner_join(black_players.on(games::black_id.eq(black_players.field(players::id))))
+        .inner_join(events::table.on(games::event_id.eq(events::id)))
+        .inner_join(sites::table.on(games::site_id.eq(sites::id)))
+        .filter(games::id.eq_any(&game_ids))
+        .load_iter::<(Game, Player, Player, Event, Site), DefaultLoadingMode>(db)?
+        .flatten()
+        .map(|(game, white, black, event, site)| {
+            let pgn = PgnGame {
+                event: event.name,
+                site: site.name,
+                date: game.date,
+                round: game.round,
+                white: white.name,
+                black: black.name,
+                result: game.result,
+                time_control: game.time_control,
+                eco: game.eco,
+                white_elo: game.white_elo.map(|e| e.to_string()),
+                black_elo: game.black_elo.map(|e| e.to_string()),
+                ply_count: game.ply_count.map(|e| e.to_string()),
+                fen: game.fen.clone(),
+                moves: GameTree::from_bytes(
+                    &game.moves,
+                    game.fen
+                        .map(|fen| Fen::from_ascii(fen.as_bytes()).ok())
+                        .flatten()
+                        .map(|fen| Chess::from_setup(fen.into(), CastlingMode::Chess960).ok())
+                        .flatten()
+                )?.to_string(),
+            };
+            
+            pgn.write(&mut writer)?;
+            
+            Ok(())
+        })
+        .collect::<Result<Vec<_>>>()?;
+    
+    info!("Exported {} games from position {} to PGN", game_ids.len(), fen);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn export_selected_games_to_pgn(
+    file: PathBuf,
+    game_ids: Vec<i32>,
+    dest_file: PathBuf,
+    state: tauri::State<'_, AppState>,
+) -> Result<()> {
+    if game_ids.is_empty() {
+        return Err(Error::PackageManager("No games selected".to_string()));
+    }
+    
+    let db = &mut get_db_or_create(&state, file.to_str().unwrap(), ConnectionOptions::default())?;
+    
+    let file = OpenOptions::new()
+        .create(true)
+        .write(true)
+        .truncate(true)
+        .open(dest_file)?;
+    
+    let mut writer = BufWriter::new(file);
+    
+    let (white_players, black_players) = diesel::alias!(players as white, players as black);
+    games::table
+        .inner_join(white_players.on(games::white_id.eq(white_players.field(players::id))))
+        .inner_join(black_players.on(games::black_id.eq(black_players.field(players::id))))
+        .inner_join(events::table.on(games::event_id.eq(events::id)))
+        .inner_join(sites::table.on(games::site_id.eq(sites::id)))
+        .filter(games::id.eq_any(&game_ids))
+        .load_iter::<(Game, Player, Player, Event, Site), DefaultLoadingMode>(db)?
+        .flatten()
+        .map(|(game, white, black, event, site)| {
+            let pgn = PgnGame {
+                event: event.name,
+                site: site.name,
+                date: game.date,
+                round: game.round,
+                white: white.name,
+                black: black.name,
+                result: game.result,
+                time_control: game.time_control,
+                eco: game.eco,
+                white_elo: game.white_elo.map(|e| e.to_string()),
+                black_elo: game.black_elo.map(|e| e.to_string()),
+                ply_count: game.ply_count.map(|e| e.to_string()),
+                fen: game.fen.clone(),
+                moves: GameTree::from_bytes(
+                    &game.moves,
+                    game.fen
+                        .map(|fen| Fen::from_ascii(fen.as_bytes()).ok())
+                        .flatten()
+                        .map(|fen| Chess::from_setup(fen.into(), CastlingMode::Chess960).ok())
+                        .flatten()
+                )?.to_string(),
+            };
+            
+            pgn.write(&mut writer)?;
+            
+            Ok(())
+        })
+        .collect::<Result<Vec<_>>>()?;
+    
+    info!("Exported {} selected games to PGN", game_ids.len());
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 pub async fn delete_db_game(
     file: PathBuf,
     game_id: i32,
@@ -1828,4 +1980,246 @@ mod tests {
         let pawn_home = get_pawn_home(&Board::from_ascii_board_fen(b"8/8/8/8/8/8/8/8").unwrap());
         assert_eq!(pawn_home, 0b0000000000000000);
     }
+}
+
+/// Pre-cache openings from TSV files
+/// This function reads all opening TSV files, converts PGN to FEN,
+/// searches for each position in the database, and caches the results
+#[tauri::command]
+#[specta::specta]
+pub async fn precache_openings(
+    database_path: PathBuf,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, AppState>,
+) -> Result<()> {
+    use crate::opening::TSV_DATA;
+    use csv::ReaderBuilder;
+    use shakmaty::{Chess, EnPassantMode, fen::Fen, san::San};
+    use std::sync::{Arc, Mutex};
+    use tauri::Emitter;
+    use log::info;
+    use tokio::sync::Semaphore;
+    
+    #[derive(serde::Deserialize)]
+    struct OpeningRecord {
+        #[allow(dead_code)]
+        eco: String,
+        name: String,
+        pgn: String,
+    }
+    
+    // Load all openings from TSV files
+    let mut openings: Vec<(String, String)> = Vec::new(); // (name, fen)
+    
+    for tsv_data in TSV_DATA {
+        let mut rdr = ReaderBuilder::new().delimiter(b'\t').from_reader(tsv_data);
+        for result in rdr.deserialize() {
+            match result {
+                Ok(record) => {
+                    let record: OpeningRecord = record;
+                    // Convert PGN to FEN
+                    let mut pos = Chess::default();
+                    for token in record.pgn.split_whitespace() {
+                        if let Ok(san) = token.parse::<San>() {
+                            if let Ok(mv) = san.to_move(&pos) {
+                                pos.play_unchecked(&mv);
+                            }
+                        }
+                    }
+                    let fen = Fen::from_setup(pos.into_setup(EnPassantMode::Legal));
+                    openings.push((record.name, fen.to_string()));
+                },
+                Err(_) => continue,
+            }
+        }
+    }
+    
+    let total = openings.len();
+    let processed = Arc::new(Mutex::new(0usize));
+    let errors = Arc::new(Mutex::new(0usize));
+    
+    // Clone the AppState Arc before spawning tasks (required for 'static lifetime)
+    let state_arc = state.inner().clone();
+    // Explicitly drop the state reference to help the borrow checker
+    // (state will be dropped automatically at the end of the function anyway)
+    
+    info!("Starting to pre-cache {} openings for database: {:?}", total, database_path);
+    
+    // Limit concurrency to avoid overwhelming the database
+    let semaphore = Arc::new(Semaphore::new(4)); // Process 4 openings at a time
+    
+    // Process openings in parallel using futures instead of tokio::spawn
+    // This avoids the 'static lifetime requirement
+    use futures_util::future;
+    let futures: Vec<_> = openings.into_iter().map(|(name, fen)| {
+        let app_clone = app.clone();
+        let db_path_clone = database_path.clone();
+        let fen_clone = fen.clone();
+        let name_clone = name.clone();
+        let processed_clone = processed.clone();
+        let errors_clone = errors.clone();
+        let semaphore_clone = semaphore.clone();
+        let state_inner = state_arc.clone();
+        let total_for_closure = total;
+        
+        async move {
+            let _permit = semaphore_clone.acquire().await.unwrap();
+            
+            // Check if already cached
+            if let Ok(true) = crate::db::position_cache::is_position_cached(&app_clone, &fen_clone, &db_path_clone) {
+                let mut p = processed_clone.lock().unwrap();
+                *p += 1;
+                if *p % 10 == 0 {
+                    app_clone.emit("precache-progress", serde_json::json!({
+                        "processed": *p,
+                        "total": total_for_closure,
+                        "errors": *errors_clone.lock().unwrap(),
+                        "current": name_clone
+                    })).ok();
+                }
+                return;
+            }
+            
+            // Get database connection directly using Arc<AppState>
+            let db_result = {
+                let state_ref = &*state_inner;
+                let file_str = db_path_clone.to_str().unwrap();
+                // Access the connection pool from AppState directly
+                let pool = match state_ref.connection_pool.get(file_str) {
+                    Some(p) => p.clone(),
+                    None => {
+                        // Create new pool if it doesn't exist
+                        use diesel::r2d2::ConnectionManager;
+                        use diesel::SqliteConnection;
+                        let manager = ConnectionManager::<SqliteConnection>::new(file_str);
+                        let new_pool = match diesel::r2d2::Pool::builder()
+                            .max_size(32)
+                            .min_idle(Some(4))
+                            .connection_timeout(std::time::Duration::from_secs(30))
+                            .build(manager)
+                        {
+                            Ok(p) => p,
+                            Err(e) => {
+                                log::warn!("Failed to create connection pool for opening {}: {}", name_clone, e);
+                                let mut e = errors_clone.lock().unwrap();
+                                *e += 1;
+                                return;
+                            }
+                        };
+                        state_ref.connection_pool.insert(file_str.to_string(), new_pool.clone());
+                        new_pool
+                    }
+                };
+                pool.get().map_err(|e| Error::PackageManager(format!("Failed to get connection: {}", e)))
+            };
+            
+            let mut db = match db_result {
+                Ok(conn) => conn,
+                Err(e) => {
+                    log::warn!("Failed to get database connection for opening {}: {}", name_clone, e);
+                    let mut e = errors_clone.lock().unwrap();
+                    *e += 1;
+                    return;
+                }
+            };
+            
+            // Convert position query
+            let position_query = match PositionQuery::exact_from_fen(&fen_clone) {
+                Ok(q) => q,
+                Err(e) => {
+                    log::warn!("Failed to parse FEN for opening {}: {}", name_clone, e);
+                    let mut e = errors_clone.lock().unwrap();
+                    *e += 1;
+                    return;
+                }
+            };
+            
+            // Perform simplified search - just get stats and game IDs
+            // We'll use the internal search functions from search.rs
+            let query_js = {
+                let mut q = GameQueryJs::default();
+                q.position = Some(PositionQueryJs {
+                    fen: fen_clone.clone(),
+                    type_: "exact".to_string(),
+                });
+                q.game_details_limit = Some(1000);
+                q
+            };
+            
+            let is_online = crate::db::search::is_online_database(&db_path_clone);
+            let (stats, game_ids) = if is_online {
+                let total_count: i64 = games::table.count().get_result(&mut db).unwrap_or(0);
+                let total_games = total_count.max(0) as usize;
+                let (stats_vec, ids) = crate::db::search::search_position_online_internal(
+                    &mut db,
+                    &position_query,
+                    &query_js,
+                    &app_clone,
+                    "precache",
+                    &state_inner,
+                    total_games,
+                );
+                (stats_vec, ids)
+            } else {
+                match crate::db::search::search_position_local_internal(
+                    &mut db,
+                    &position_query,
+                    &query_js,
+                    &app_clone,
+                    "precache",
+                    &state_inner,
+                ) {
+                    Ok((stats_vec, ids)) => (stats_vec, ids),
+                    Err(e) => {
+                        log::warn!("Failed to search opening {}: {}", name_clone, e);
+                        let mut e = errors_clone.lock().unwrap();
+                        *e += 1;
+                        return;
+                    }
+                }
+            };
+            
+            // Save to cache
+            if let Err(e) = crate::db::position_cache::save_position_cache(
+                &app_clone,
+                &fen_clone,
+                &db_path_clone,
+                &stats,
+                &game_ids,
+            ) {
+                log::warn!("Failed to cache opening {}: {}", name_clone, e);
+                let mut e = errors_clone.lock().unwrap();
+                *e += 1;
+            } else {
+                let mut p = processed_clone.lock().unwrap();
+                *p += 1;
+                if *p % 10 == 0 || *p == total_for_closure {
+                    app_clone.emit("precache-progress", serde_json::json!({
+                        "processed": *p,
+                        "total": total_for_closure,
+                        "errors": *errors_clone.lock().unwrap(),
+                        "current": name_clone
+                    })).ok();
+                }
+            }
+        }
+    }).collect();
+    
+    // Execute all futures concurrently with semaphore limiting
+    future::join_all(futures).await;
+    
+    let final_processed = *processed.lock().unwrap();
+    let final_errors = *errors.lock().unwrap();
+    
+    info!("Pre-caching completed: {}/{} processed, {} errors", final_processed, total, final_errors);
+    
+    // Emit final progress
+    app.emit("precache-progress", serde_json::json!({
+        "processed": final_processed,
+        "total": total,
+        "errors": final_errors,
+        "completed": true
+    })).ok();
+    
+    Ok(())
 }

@@ -56,6 +56,9 @@ export async function createTab({
   srcInfo,
   gameNumber,
   position,
+  initialAnalysisTab,
+  initialAnalysisSubTab,
+  initialNotationView,
 }: {
   tab: Omit<Tab, "value">;
   setTabs: React.Dispatch<React.SetStateAction<Tab[]>>;
@@ -65,6 +68,9 @@ export async function createTab({
   srcInfo?: EntitySourceMetadata;
   gameNumber?: number;
   position?: number[];
+  initialAnalysisTab?: string;
+  initialAnalysisSubTab?: string;
+  initialNotationView?: "mainline" | "variations" | "repertoire" | "report";
 }) {
   const id = genID();
 
@@ -113,6 +119,21 @@ export async function createTab({
       }
     }
     sessionStorage.setItem(id, JSON.stringify({ version: 0, state: tree }));
+  }
+
+  // Store initial view configuration if provided
+  if (initialAnalysisTab || initialAnalysisSubTab || initialNotationView) {
+    const config: { analysisTab?: string; analysisSubTab?: string; notationView?: string } = {};
+    if (initialAnalysisTab) {
+      config.analysisTab = initialAnalysisTab;
+    }
+    if (initialAnalysisSubTab) {
+      config.analysisSubTab = initialAnalysisSubTab;
+    }
+    if (initialNotationView) {
+      config.notationView = initialNotationView;
+    }
+    sessionStorage.setItem(`${id}_initialConfig`, JSON.stringify(config));
   }
 
   setTabs((prev) => {

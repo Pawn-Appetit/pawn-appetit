@@ -31,18 +31,60 @@ export const ADAPTIVE_EASY_MAX_PROB = 0.8;
 
 // Helper functions to get data from different sections
 async function getDatabasesFromDatabasesSection(): Promise<PuzzleDatabaseInfo[]> {
-  const { readDir } = await import("@tauri-apps/plugin-fs");
+  const { readDir, exists } = await import("@tauri-apps/plugin-fs");
   const { BaseDirectory } = await import("@tauri-apps/plugin-fs");
+  const { appDataDir, resolve } = await import("@tauri-apps/api/path");
 
   let dbPuzzles: PuzzleDatabaseInfo[] = [];
 
-  // Get .db3 puzzle databases from AppData/db folder
+  // Get .db3 puzzle databases from AppData/puzzles folder
   try {
     const files = await readDir("puzzles", { baseDir: BaseDirectory.AppData });
     const dbs = files.filter((file) => file.name?.endsWith(".db3"));
-    dbPuzzles = (await Promise.allSettled(dbs.map((db) => getPuzzleDatabase(db.name))))
-      .filter((r) => r.status === "fulfilled")
-      .map((r) => (r as PromiseFulfilledResult<PuzzleDatabaseInfo>).value);
+    
+    // Verify each file actually exists before trying to get its info
+    const appDataDirPath = await appDataDir();
+    const verifiedDbs = await Promise.all(
+      dbs.map(async (db) => {
+        if (!db.name) return null;
+        const path = await resolve(appDataDirPath, "puzzles", db.name);
+        const fileExists = await exists(path);
+        return fileExists ? db : null;
+      }),
+    );
+    
+    const existingDbs = verifiedDbs.filter((db): db is NonNullable<typeof db> => db !== null);
+    logger.debug(`Found ${existingDbs.length} existing puzzle database files:`, existingDbs.map((db) => db.name));
+    
+    // Get puzzle database info, filtering out any that fail (e.g., file was deleted between check and read)
+    const results = await Promise.allSettled(existingDbs.map((db) => getPuzzleDatabase(db.name)));
+
+    // Log any failures so we know which databases couldn't be loaded
+    for (const r of results) {
+      if (r.status === "rejected") {
+        logger.warn("Failed to load puzzle database:", r.reason);
+      }
+    }
+
+    dbPuzzles = results
+      .filter(
+        (r): r is PromiseFulfilledResult<PuzzleDatabaseInfo> =>
+          r.status === "fulfilled" && r.value !== null,
+      )
+      .filter((r) => {
+        // Additional validation: ensure the database has puzzles and is not empty
+        const dbInfo = r.value;
+        // Only include databases that have puzzles AND have content (storage_size > 0)
+        // A database with 0 puzzles and 0 bytes is not a valid installed database
+        if (dbInfo.puzzleCount > 0 && dbInfo.storageSize > 0) {
+          return true;
+        }
+        logger.debug(
+          `Skipping empty or invalid puzzle database: ${dbInfo.title} (puzzles: ${dbInfo.puzzleCount}, size: ${dbInfo.storageSize})`,
+        );
+        return false;
+      })
+      .map((r) => r.value);
     logger.debug(
       "Loaded puzzle databases:",
       dbPuzzles.map((db) => ({ title: db.title, puzzleCount: db.puzzleCount })),
@@ -189,11 +231,29 @@ export function getAdaptivePuzzleRange(playerRating: number, recentResults: Comp
   return getPuzzleRangeProb(playerRating, minProb, maxProb);
 }
 
-async function getPuzzleDatabase(name: string): Promise<PuzzleDatabaseInfo> {
+async function getPuzzleDatabase(name: string): Promise<PuzzleDatabaseInfo | null> {
   const appDataDirPath = await appDataDir();
   const path = await resolve(appDataDirPath, "puzzles", name);
 
-  return unwrap(await commands.getPuzzleDbInfo(path));
+  // Check if file exists first to avoid showing errors for missing files
+  const { exists } = await import("@tauri-apps/plugin-fs");
+  const fileExists = await exists(path);
+  if (!fileExists) {
+    return null;
+  }
+
+  const result = await commands.getPuzzleDbInfo(path);
+  if (result.status === "error") {
+    // Silently handle "file not found" or "file is empty" errors
+    const errorMsg = result.error;
+    if (errorMsg.includes("does not exist") || errorMsg.includes("is empty")) {
+      return null;
+    }
+    // For other errors, still throw but don't show alert
+    throw new Error(errorMsg);
+  }
+  
+  return result.data;
 }
 
 export async function getPuzzleDatabases(): Promise<PuzzleDatabaseInfo[]> {

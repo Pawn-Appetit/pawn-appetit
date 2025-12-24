@@ -23,6 +23,7 @@ import {
   IconChevronRight,
   IconEye,
   IconEyeOff,
+  IconFileText,
   IconListTree,
   IconPoint,
   IconPointFilled,
@@ -30,7 +31,7 @@ import {
 import { INITIAL_FEN } from "chessops/fen";
 import equal from "fast-deep-equal";
 import { useAtom, useAtomValue } from "jotai";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { Comment } from "@/components/Comment";
@@ -43,12 +44,13 @@ import * as styles from "./GameNotation.css";
 import * as moveStyles from "./MoveCell.css";
 import OpeningName from "./OpeningName";
 
-type VariationState = "mainline" | "variations" | "repertoire";
+type VariationState = "mainline" | "variations" | "repertoire" | "report";
 
 const variationRefs = {
   mainline: React.createRef<HTMLSpanElement>(),
   variations: React.createRef<HTMLSpanElement>(),
   repertoire: React.createRef<HTMLSpanElement>(),
+  report: React.createRef<HTMLSpanElement>(),
 };
 
 function isOnNextDivergenceFromMainline(node: TreeNode, remainingPath: number[]): boolean {
@@ -81,6 +83,94 @@ function hasMultipleChildrenUntilPosition(node: TreeNode, remainingPath: number[
   return hasMultipleChildrenUntilPosition(nextNode, remainingPath.slice(1));
 }
 
+/**
+ * ------------------------------------------------------------------
+ * Report helpers (pairs + variations like ShowVariations)
+ * ------------------------------------------------------------------
+ */
+
+type MoveItem = { node: TreeNode; path: number[] };
+type ReportRow = {
+  key: string;
+  white?: MoveItem;
+  black?: MoveItem;
+  rowStarter?: MoveItem; // first move in this row (white if present, else black)
+};
+
+function isPositionInAltChild(position: number[], parentPath: number[]) {
+  if (position.length <= parentPath.length) return false;
+  for (let i = 0; i < parentPath.length; i++) {
+    if (position[i] !== parentPath[i]) return false;
+  }
+  return position[parentPath.length] > 0;
+}
+
+function buildMainlineItems(tree: TreeNode, path: number[]): MoveItem[] {
+  const items: MoveItem[] = [];
+
+  let cur: TreeNode | undefined = tree;
+  let curPath = [...path];
+
+  // If this is a root-like node (no san), jump into its mainline child 0.
+  if (!cur.san) {
+    if (!cur.children?.length) return items;
+    cur = cur.children[0];
+    curPath = [...curPath, 0];
+  }
+
+  while (cur) {
+    if (cur.san) items.push({ node: cur, path: curPath });
+    if (!cur.children?.length) break;
+    cur = cur.children[0];
+    curPath = [...curPath, 0];
+  }
+
+  return items;
+}
+
+function buildReportRows(items: MoveItem[]): ReportRow[] {
+  const rows: ReportRow[] = [];
+  let i = 0;
+
+  while (i < items.length) {
+    const a = items[i];
+    if (!a) break;
+
+    const aIsWhite = a.node.halfMoves % 2 === 1;
+
+    if (aIsWhite) {
+      const white = a;
+      const next = items[i + 1];
+      const nextIsBlackSameMove =
+        next &&
+        next.node.halfMoves % 2 === 0 &&
+        Math.ceil(next.node.halfMoves / 2) === Math.ceil(white.node.halfMoves / 2);
+
+      const black = nextIsBlackSameMove ? next : undefined;
+
+      rows.push({
+        key: white.node.fen,
+        white,
+        black,
+        rowStarter: white,
+      });
+
+      i += black ? 2 : 1;
+    } else {
+      // Row starts with black (typical for variations starting at black)
+      rows.push({
+        key: a.node.fen,
+        white: undefined,
+        black: a,
+        rowStarter: a,
+      });
+      i += 1;
+    }
+  }
+
+  return rows;
+}
+
 function GameNotation({
   topBar,
   initialVariationState = "mainline",
@@ -102,7 +192,7 @@ function GameNotation({
   const [invisibleValue, setInvisible] = useAtom(currentInvisibleAtom);
   const [variationState, toggleVariationState] = useToggle([
     initialVariationState,
-    ...["mainline", "variations", "repertoire"].filter((v) => v !== initialVariationState),
+    ...["mainline", "variations", "repertoire", "report"].filter((v) => v !== initialVariationState),
   ]) as [VariationState, () => void];
   const [showComments, toggleComments] = useToggle([true, false]);
 
@@ -211,6 +301,22 @@ function GameNotation({
                   variationState={variationState}
                 />
               </Box>
+              <Box
+                style={{
+                  display: variationState === "report" ? "block" : "none",
+                }}
+              >
+                <RenderReport
+                  tree={root}
+                  depth={0}
+                  path={[]}
+                  start={headers.start}
+                  showComments={showComments}
+                  // @ts-expect-error
+                  targetRef={variationRefs.report}
+                  variationState={variationState}
+                />
+              </Box>
             </Box>
             {headers.result && headers.result !== "*" && (
               <Text ta="center">
@@ -269,7 +375,9 @@ function NotationHeader({
                 ? t("features.gameNotation.showVariations")
                 : variationState === "repertoire"
                   ? t("features.gameNotation.repertoireView")
-                  : t("features.gameNotation.mainLine")
+                  : variationState === "report"
+                    ? t("features.gameNotation.reportView")
+                    : t("features.gameNotation.mainLine")
             }
           >
             <ActionIcon onClick={toggleVariationState}>
@@ -277,6 +385,8 @@ function NotationHeader({
                 <IconArrowsSplit size="1rem" />
               ) : variationState === "repertoire" ? (
                 <IconListTree size="1rem" />
+              ) : variationState === "report" ? (
+                <IconFileText size="1rem" />
               ) : (
                 <IconArrowRight size="1rem" />
               )}
@@ -596,9 +706,8 @@ function VariationCell({
               onMouseEnter={(event) => {
                 event.currentTarget.style.opacity = "1";
               }}
-              onMouseLeave={(event) => {
+              onMouseLeave={() => {
                 setChevronClicked(false);
-                event.currentTarget.style.opacity = "0";
               }}
               onClick={() => setExpanded(false)}
             />
@@ -769,9 +878,8 @@ function RepertoireCell({
               onMouseEnter={(event) => {
                 event.currentTarget.style.opacity = "1";
               }}
-              onMouseLeave={(event) => {
+              onMouseLeave={() => {
                 setChevronClicked(false);
-                event.currentTarget.style.opacity = "0";
               }}
               onClick={() => setExpanded(false)}
             />
@@ -814,6 +922,466 @@ function RepertoireCell({
         targetRef={targetRef}
         variationState={variationState}
       />
+    </Box>
+  );
+}
+
+/**
+ * ------------------------------------------------------------------
+ * REPORT VIEW (pairs like chess.com + nested variations like ShowVariations)
+ * ------------------------------------------------------------------
+ */
+
+function RenderReport({
+  tree,
+  path,
+  start,
+  showComments,
+  targetRef,
+  variationState,
+}: {
+  tree: TreeNode;
+  depth: number; // kept for signature compatibility (unused)
+  path: number[];
+  start?: number[];
+  showComments: boolean;
+  targetRef: React.RefObject<HTMLSpanElement>;
+  variationState: VariationState;
+}) {
+  const store = useContext(TreeStateContext);
+  if (!store) {
+    throw new Error("RenderReport must be used within a TreeStateProvider");
+  }
+
+  // Root-level alternative first moves (children[1..]) — like ShowVariations
+  const rootChildren = tree.children || [];
+  const hasRootAlternatives = rootChildren.length > 1;
+
+  return (
+    <Stack gap="xs">
+      {hasRootAlternatives && (
+        <ReportRootAlternatives
+          tree={tree}
+          path={path}
+          start={start}
+          showComments={showComments}
+          targetRef={targetRef}
+          variationState={variationState}
+        />
+      )}
+
+      {/* Mainline as rows (pairs). This also renders nested variations inline. */}
+      <ReportBranch
+        tree={tree}
+        path={path}
+        start={start}
+        showComments={showComments}
+        targetRef={targetRef}
+        variationState={variationState}
+        indentRem={0}
+      />
+    </Stack>
+  );
+}
+
+function ReportRootAlternatives({
+  tree,
+  path,
+  start,
+  showComments,
+  targetRef,
+  variationState,
+}: {
+  tree: TreeNode;
+  path: number[];
+  start?: number[];
+  showComments: boolean;
+  targetRef: React.RefObject<HTMLSpanElement>;
+  variationState: VariationState;
+}) {
+  const store = useContext(TreeStateContext);
+  if (!store) throw new Error("ReportRootAlternatives must be used within a TreeStateProvider");
+  const position = useStore(store, (s) => s.position);
+  const { t } = useTranslation();
+
+  const children = tree.children || [];
+  if (children.length <= 1) return null;
+
+  const isInAlt = isPositionInAltChild(position, path);
+  const [expanded, setExpanded] = useState(() => isInAlt);
+
+  useEffect(() => {
+    if (!expanded && variationState === "report" && isInAlt) setExpanded(true);
+  }, [expanded, variationState, isInAlt]);
+
+  return (
+    <Box>
+      <Group gap="xs" align="center">
+        <Tooltip label={t("features.gameNotation.showVariationsTooltip")}>
+          <ActionIcon
+            variant="subtle"
+            size="xs"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setExpanded((v) => !v);
+            }}
+          >
+            {expanded ? <IconChevronDown size="0.9rem" /> : <IconChevronRight size="0.9rem" />}
+          </ActionIcon>
+        </Tooltip>
+        <Text size="sm" c="dimmed">
+          {t("features.gameNotation.showVariations")}
+        </Text>
+      </Group>
+
+      {expanded && (
+        <Box mt="xs" style={{ marginLeft: "1.25rem" }}>
+          {children.slice(1).map((child, idx) => {
+            const childIndex = idx + 1; // actual index inside children
+            return (
+              <Box
+                key={child.fen}
+                style={{
+                  display: "flex",
+                  gap: "0.35rem",
+                  alignItems: "flex-start",
+                  marginBottom: "0.35rem",
+                }}
+              >
+                <Box style={{ width: "0.8rem", paddingTop: "0.35rem" }}>
+                  <IconPoint size="0.6rem" />
+                </Box>
+                <Box style={{ flex: 1 }}>
+                  <ReportBranch
+                    tree={child}
+                    path={[...path, childIndex]}
+                    start={start}
+                    showComments={showComments}
+                    targetRef={targetRef}
+                    variationState={variationState}
+                    indentRem={0}
+                  />
+                </Box>
+              </Box>
+            );
+          })}
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+function ReportBranch({
+  tree,
+  path,
+  start,
+  showComments,
+  targetRef,
+  variationState,
+  indentRem,
+}: {
+  tree: TreeNode;
+  path: number[];
+  start?: number[];
+  showComments: boolean;
+  targetRef: React.RefObject<HTMLSpanElement>;
+  variationState: VariationState;
+  indentRem: number;
+}) {
+  const items = useMemo(() => buildMainlineItems(tree, path), [tree, path]);
+  const rows = useMemo(() => buildReportRows(items), [items]);
+
+  if (rows.length === 0) return null;
+
+  return (
+    <Stack gap={2} style={{ marginLeft: indentRem ? `${indentRem}rem` : undefined }}>
+      {rows.map((row) => (
+        <ReportRowLine
+          key={row.key}
+          row={row}
+          start={start}
+          showComments={showComments}
+          targetRef={targetRef}
+          variationState={variationState}
+        />
+      ))}
+    </Stack>
+  );
+}
+
+function ReportRowLine({
+  row,
+  start,
+  showComments,
+  targetRef,
+  variationState,
+}: {
+  row: ReportRow;
+  start?: number[];
+  showComments: boolean;
+  targetRef: React.RefObject<HTMLSpanElement>;
+  variationState: VariationState;
+}) {
+  const store = useContext(TreeStateContext);
+  if (!store) throw new Error("ReportRowLine must be used within a TreeStateProvider");
+  const position = useStore(store, (s) => s.position);
+
+  const theme = useMantineTheme();
+  const { colorScheme } = useMantineColorScheme();
+  const { t } = useTranslation();
+
+  const white = row.white;
+  const black = row.black;
+
+  const whiteHasVars = !!white?.node.children && white.node.children.length > 1;
+  const blackHasVars = !!black?.node.children && black.node.children.length > 1;
+
+  const whiteIsInAlt = white ? isPositionInAltChild(position, white.path) : false;
+  const blackIsInAlt = black ? isPositionInAltChild(position, black.path) : false;
+
+  const [whiteExpanded, setWhiteExpanded] = useState(() => (whiteHasVars ? whiteIsInAlt : false));
+  const [blackExpanded, setBlackExpanded] = useState(() => (blackHasVars ? blackIsInAlt : false));
+
+  useEffect(() => {
+    if (!whiteExpanded && variationState === "report" && whiteIsInAlt) setWhiteExpanded(true);
+  }, [whiteExpanded, variationState, whiteIsInAlt]);
+
+  useEffect(() => {
+    if (!blackExpanded && variationState === "report" && blackIsInAlt) setBlackExpanded(true);
+  }, [blackExpanded, variationState, blackIsInAlt]);
+
+  const moveNo =
+    white?.node?.halfMoves != null
+      ? Math.ceil(white.node.halfMoves / 2)
+      : black?.node?.halfMoves != null
+        ? Math.ceil(black.node.halfMoves / 2)
+        : 0;
+
+  const rowStartsWithBlack = !white && !!black;
+  const moveLabel = rowStartsWithBlack ? `${moveNo}...` : `${moveNo}.`;
+
+  const isActiveWhite = white ? equal(position, white.path) : false;
+  const isActiveBlack = black ? equal(position, black.path) : false;
+  const isActiveRow = isActiveWhite || isActiveBlack;
+
+  const zebra = moveNo % 2 === 0;
+
+  const baseBg = zebra
+    ? rgba(theme.colors.gray[6], colorScheme === "dark" ? 0.08 : 0.06)
+    : "transparent";
+
+  const activeBg = rgba(theme.colors[theme.primaryColor][6], colorScheme === "dark" ? 0.22 : 0.14);
+
+  return (
+    <Box>
+      {/* Row like chess.com: [moveNo] [white] [black] */}
+      <Box
+        style={{
+          display: "grid",
+          gridTemplateColumns: "4ch minmax(0, 1fr) minmax(0, 1fr)",
+          columnGap: "0.9rem",
+          alignItems: "center",
+          paddingBlock: "0.25rem",
+          paddingInline: "0.25rem",
+          borderRadius: 8,
+          background: isActiveRow ? activeBg : baseBg,
+        }}
+      >
+        {/* Move number */}
+        <Text
+          size="sm"
+          c="dimmed"
+          style={{
+            textAlign: "right",
+            userSelect: "none",
+            fontVariantNumeric: "tabular-nums",
+            paddingRight: "0.25rem",
+          }}
+        >
+          {moveNo > 0 ? moveLabel : ""}
+        </Text>
+
+        {/* White move */}
+        <ReportMoveCell
+          item={white}
+          showComments={showComments}
+          targetRef={targetRef}
+          start={start}
+          first={true}
+          chevron={{
+            has: whiteHasVars,
+            expanded: whiteExpanded,
+            onToggle: () => setWhiteExpanded((v) => !v),
+            tooltip: t("features.gameNotation.showVariationsTooltip"),
+          }}
+        />
+
+        {/* Black move */}
+        <ReportMoveCell
+          item={black}
+          showComments={showComments}
+          targetRef={targetRef}
+          start={start}
+          first={rowStartsWithBlack}
+          chevron={{
+            has: blackHasVars,
+            expanded: blackExpanded,
+            onToggle: () => setBlackExpanded((v) => !v),
+            tooltip: t("features.gameNotation.showVariationsTooltip"),
+          }}
+        />
+      </Box>
+
+      {/* Comments: align under moves (skip moveNo col) */}
+      {showComments && (white?.node.comment || black?.node.comment) && (
+        <Box style={{ marginLeft: "4ch", paddingLeft: "0.9rem", marginTop: "0.15rem" }}>
+          {white?.node.comment && <Comment comment={white.node.comment} />}
+          {black?.node.comment && <Comment comment={black.node.comment} />}
+        </Box>
+      )}
+
+      {/* Variations branching from WHITE */}
+      {whiteHasVars && whiteExpanded && white && (
+        <Box mt={6} style={{ marginLeft: "4ch", paddingLeft: "0.9rem" }}>
+          {white.node.children!.slice(1).map((child, idx) => {
+            const childIndex = idx + 1;
+            return (
+              <Box
+                key={child.fen}
+                style={{
+                  display: "flex",
+                  gap: "0.35rem",
+                  alignItems: "flex-start",
+                  marginBottom: "0.5rem",
+                }}
+              >
+                <Box style={{ width: "0.9rem", paddingTop: "0.35rem" }}>
+                  <IconPoint size="0.65rem" />
+                </Box>
+                <Box style={{ flex: 1 }}>
+                  <ReportBranch
+                    tree={child}
+                    path={[...white.path, childIndex]}
+                    start={start}
+                    showComments={showComments}
+                    targetRef={targetRef}
+                    variationState={variationState}
+                    indentRem={0}
+                  />
+                </Box>
+              </Box>
+            );
+          })}
+        </Box>
+      )}
+
+      {/* Variations branching from BLACK */}
+      {blackHasVars && blackExpanded && black && (
+        <Box mt={6} style={{ marginLeft: "4ch", paddingLeft: "0.9rem" }}>
+          {black.node.children!.slice(1).map((child, idx) => {
+            const childIndex = idx + 1;
+            return (
+              <Box
+                key={child.fen}
+                style={{
+                  display: "flex",
+                  gap: "0.35rem",
+                  alignItems: "flex-start",
+                  marginBottom: "0.5rem",
+                }}
+              >
+                <Box style={{ width: "0.9rem", paddingTop: "0.35rem" }}>
+                  <IconPointFilled size="0.65rem" />
+                </Box>
+                <Box style={{ flex: 1 }}>
+                  <ReportBranch
+                    tree={child}
+                    path={[...black.path, childIndex]}
+                    start={start}
+                    showComments={showComments}
+                    targetRef={targetRef}
+                    variationState={variationState}
+                    indentRem={0}
+                  />
+                </Box>
+              </Box>
+            );
+          })}
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+function ReportMoveCell({
+  item,
+  showComments,
+  targetRef,
+  start,
+  first,
+  chevron,
+}: {
+  item?: MoveItem;
+  start?: number[];
+  showComments: boolean;
+  targetRef: React.RefObject<HTMLSpanElement>;
+  first: boolean;
+  chevron: { has: boolean; expanded: boolean; onToggle: () => void; tooltip: string };
+}) {
+  const theme = useMantineTheme();
+  const { colorScheme } = useMantineColorScheme();
+
+  if (!item) return <Box />;
+
+  return (
+    <Box
+      style={{
+        display: "flex",
+        alignItems: "baseline",
+        gap: "0.35rem",
+        minWidth: 0,
+      }}
+    >
+      {/* Chevron area (fixed width) */}
+      <Box style={{ width: "1.2rem", display: "flex", justifyContent: "center" }}>
+        {chevron.has ? (
+          <Tooltip label={chevron.tooltip}>
+            <ActionIcon
+              variant="subtle"
+              size="xs"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                chevron.onToggle();
+              }}
+              style={{
+                color: colorScheme === "dark" ? theme.colors.gray[2] : theme.colors.gray[7],
+              }}
+            >
+              {chevron.expanded ? <IconChevronDown size="0.9rem" /> : <IconChevronRight size="0.9rem" />}
+            </ActionIcon>
+          </Tooltip>
+        ) : (
+          <span />
+        )}
+      </Box>
+
+      {/* Move cell (tight, chess.com-ish) */}
+      <Box style={{ minWidth: 0 }}>
+        <CompleteMoveCell
+          targetRef={targetRef}
+          annotations={item.node.annotations}
+          comment={item.node.comment}
+          halfMoves={item.node.halfMoves}
+          move={item.node.san}
+          fen={item.node.fen}
+          movePath={item.path}
+          showComments={showComments}
+          isStart={equal(item.path, start)}
+          first={first}
+        />
+      </Box>
     </Box>
   );
 }

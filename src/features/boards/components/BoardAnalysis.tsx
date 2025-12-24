@@ -278,6 +278,32 @@ function BoardAnalysis() {
   const isPuzzle = currentTab?.source?.type === "file" && currentTab.source.metadata.type === "puzzle";
   const practicing = currentTabSelected === "practice" && practiceTabSelected === "train";
 
+  // Read initial configuration from sessionStorage and set analysis tab if configured
+  useEffect(() => {
+    if (currentTab?.value && typeof window !== "undefined") {
+      const configKey = `${currentTab.value}_initialConfig`;
+      const configJson = sessionStorage.getItem(configKey);
+      if (configJson) {
+        try {
+          const config = JSON.parse(configJson);
+          if (config.analysisTab && currentTabSelected !== config.analysisTab) {
+            setCurrentTabSelected(config.analysisTab);
+            // Remove analysisTab from config, keep notationView for GameNotationWrapper
+            const updatedConfig = { ...config };
+            delete updatedConfig.analysisTab;
+            if (Object.keys(updatedConfig).length === 0) {
+              sessionStorage.removeItem(configKey);
+            } else {
+              sessionStorage.setItem(configKey, JSON.stringify(updatedConfig));
+            }
+          }
+        } catch (e) {
+          // Ignore parsing errors
+        }
+      }
+    }
+  }, [currentTab?.value, currentTabSelected, setCurrentTabSelected]);
+
   const { layout } = useResponsiveLayout();
   const isMobileLayout = layout.chessBoard.layoutType === "mobile";
 

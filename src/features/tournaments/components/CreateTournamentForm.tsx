@@ -70,7 +70,8 @@ export function CreateTournamentForm({ lichessToken, accountName, onTemplateSave
     setLoading(true);
     try {
       // Save as template instead of creating directly
-      await saveTournamentTemplate(formData, accountName);
+      // accountName is guaranteed to be non-null here due to the check above
+      await saveTournamentTemplate(formData, accountName as string);
 
       notifications.show({
         title: t("common.success", "Success"),

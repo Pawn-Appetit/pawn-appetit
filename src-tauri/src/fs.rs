@@ -71,24 +71,40 @@ pub async fn download_file(
     
     let client = Client::builder()
         .timeout(std::time::Duration::from_secs(300))
+        .redirect(reqwest::redirect::Policy::limited(10)) // Follow up to 10 redirects
         .build()?;
 
     let mut req = client.get(&url);
     
-    if let Some(token) = token {
-        req = req.header("Authorization", format!("Bearer {}", token));
+    // Add User-Agent to mimic a browser
+    req = req.header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+    
+    // Add Accept header for better compatibility
+    req = req.header("Accept", "*/*");
+    
+    if let Some(ref token_val) = token {
+        req = req.header("Authorization", format!("Bearer {}", token_val));
     }
     
     let res = req.send().await?;
     
     if !res.status().is_success() {
-        return Err(Error::PackageManager(format!(
-            "Download failed: {}",
-            res.status()
-        )));
+        let status = res.status();
+        let error_msg = if status == 403 {
+            "Download failed: Access denied (403). The server refused to authorize the request."
+        } else if status == 404 {
+            "Download failed: File not found (404). The file may have been moved or deleted."
+        } else {
+            &format!("Download failed: {}", status)
+        };
+        
+        return Err(Error::PackageManager(error_msg.to_string()));
     }
     
-    let content_length = total_size_u64.or_else(|| res.content_length());
+    let response_to_use = res;
+    let final_url = url.clone();
+    
+    let content_length = total_size_u64.or_else(|| response_to_use.content_length());
     
     if let Some(size) = content_length {
         if size > MAX_DOWNLOAD_SIZE {
@@ -99,12 +115,12 @@ pub async fn download_file(
         }
     }
 
-    let is_archive = url.ends_with(".zip") || url.ends_with(".tar") || url.ends_with(".tar.gz");
+    let is_archive = final_url.ends_with(".zip") || final_url.ends_with(".tar") || final_url.ends_with(".tar.gz");
     
     if is_archive {
-        download_and_extract(res, content_length, &path, &url, &id, &app, finalize).await?;
+        download_and_extract(response_to_use, content_length, &path, &final_url, &id, &app, finalize).await?;
     } else {
-        download_to_file(res, content_length, &path, &id, &app, finalize).await?;
+        download_to_file(response_to_use, content_length, &path, &id, &app, finalize).await?;
     }
     
     Ok(())

@@ -3,9 +3,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ChessComGame } from "@/utils/chess.com/api";
 import type { GameRecord } from "@/utils/gameRecords";
+import type { FavoriteGame } from "@/utils/favoriteGames";
 import { ChessComGamesTab } from "./ChessComGamesTab";
 import { LichessGamesTab } from "./LichessGamesTab";
 import { LocalGamesTab } from "./LocalGamesTab";
+import { FavoriteGamesTab } from "./FavoriteGamesTab";
 
 interface LichessGame {
   id: string;
@@ -42,6 +44,10 @@ interface GamesHistoryCardProps {
   onAnalyzeAllChessCom?: () => void;
   onAnalyzeAllLichess?: () => void;
   onDeleteLocalGame?: (gameId: string) => void;
+  onToggleFavoriteLocal?: (gameId: string) => Promise<void>;
+  onToggleFavoriteChessCom?: (gameId: string) => Promise<void>;
+  onToggleFavoriteLichess?: (gameId: string) => Promise<void>;
+  favoriteGames?: FavoriteGame[];
 }
 
 export function GamesHistoryCard({
@@ -65,6 +71,10 @@ export function GamesHistoryCard({
   onAnalyzeAllChessCom,
   onAnalyzeAllLichess,
   onDeleteLocalGame,
+  onToggleFavoriteLocal,
+  onToggleFavoriteChessCom,
+  onToggleFavoriteLichess,
+  favoriteGames = [],
 }: GamesHistoryCardProps) {
   const { t } = useTranslation();
 
@@ -172,6 +182,7 @@ export function GamesHistoryCard({
             <Tabs.Tab value="local">Local</Tabs.Tab>
             <Tabs.Tab value="chesscom">Chess.com</Tabs.Tab>
             <Tabs.Tab value="lichess">Lichess</Tabs.Tab>
+            <Tabs.Tab value="favorites">Favorites</Tabs.Tab>
           </Tabs.List>
           {activeTab === "chesscom" && (
             <Select
@@ -209,6 +220,8 @@ export function GamesHistoryCard({
             onAnalyzeGame={onAnalyzeLocalGame}
             onAnalyzeAll={onAnalyzeAllLocal}
             onDeleteGame={onDeleteLocalGame}
+            onToggleFavorite={onToggleFavoriteLocal}
+            favoriteGames={favoriteGames}
           />
         </Tabs.Panel>
 
@@ -224,6 +237,8 @@ export function GamesHistoryCard({
             isLoading={isLoadingChessComGames}
             onAnalyzeGame={onAnalyzeChessComGame}
             onAnalyzeAll={onAnalyzeAllChessCom}
+            onToggleFavorite={onToggleFavoriteChessCom}
+            favoriteGames={favoriteGames}
           />
         </Tabs.Panel>
 
@@ -239,6 +254,29 @@ export function GamesHistoryCard({
             isLoading={isLoadingLichessGames}
             onAnalyzeGame={onAnalyzeLichessGame}
             onAnalyzeAll={onAnalyzeAllLichess}
+            onToggleFavorite={onToggleFavoriteLichess}
+            favoriteGames={favoriteGames}
+          />
+        </Tabs.Panel>
+
+        <Tabs.Panel
+          value="favorites"
+          pt="xs"
+          style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minHeight: 0 }}
+        >
+          <FavoriteGamesTab
+            localGames={localGames}
+            chessComGames={chessComGames}
+            lichessGames={lichessGames}
+            favoriteGames={favoriteGames}
+            chessComUsernames={chessComUsernames}
+            lichessUsernames={lichessUsernames}
+            onAnalyzeLocalGame={onAnalyzeLocalGame}
+            onAnalyzeChessComGame={onAnalyzeChessComGame}
+            onAnalyzeLichessGame={onAnalyzeLichessGame}
+            onToggleFavoriteLocal={onToggleFavoriteLocal}
+            onToggleFavoriteChessCom={onToggleFavoriteChessCom}
+            onToggleFavoriteLichess={onToggleFavoriteLichess}
           />
         </Tabs.Panel>
       </Tabs>

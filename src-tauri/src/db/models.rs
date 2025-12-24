@@ -16,6 +16,9 @@ pub struct Puzzle {
     pub rating_deviation: i32,
     pub popularity: i32,
     pub nb_plays: i32,
+    pub themes: Option<String>,
+    pub game_url: Option<String>,
+    pub opening_tags: Option<String>,
 }
 
 #[derive(Default, Debug, Queryable, Serialize, Deserialize, Identifiable, Clone, Type)]

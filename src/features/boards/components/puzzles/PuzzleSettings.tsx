@@ -1,4 +1,4 @@
-import { Center, Checkbox, Divider, Group, Input, RangeSlider, Select } from "@mantine/core";
+import { Center, Checkbox, Divider, Group, Input, MultiSelect, RangeSlider, Select } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 import type { PuzzleDatabaseInfo } from "@/bindings";
 
@@ -17,6 +17,14 @@ interface PuzzleSettingsProps {
   onHideRatingChange: (value: boolean) => void;
   inOrder: boolean;
   onInOrderChange: (value: boolean) => void;
+  hasThemes: boolean;
+  themes: string[];
+  themesOptions: Array<{ group: string; items: Array<{ value: string; label: string }> }>;
+  onThemesChange: (value: string[]) => void;
+  hasOpeningTags: boolean;
+  openingTags: string[];
+  openingTagsOptions: Array<{ value: string; label: string }>;
+  onOpeningTagsChange: (value: string[]) => void;
 }
 
 export const PuzzleSettings = ({
@@ -34,6 +42,14 @@ export const PuzzleSettings = ({
   onHideRatingChange,
   inOrder,
   onInOrderChange,
+  hasThemes,
+  themes,
+  themesOptions,
+  onThemesChange,
+  hasOpeningTags,
+  openingTags,
+  openingTagsOptions,
+  onOpeningTagsChange,
 }: PuzzleSettingsProps) => {
   const { t } = useTranslation();
 
@@ -55,6 +71,29 @@ export const PuzzleSettings = ({
         onChange={onDatabaseChange}
       />
       <Divider my="sm" />
+      {hasThemes && (
+        <MultiSelect
+          label={t("features.puzzle.themes")}
+          data={themesOptions}
+          value={themes}
+          onChange={onThemesChange}
+          placeholder={t("features.puzzle.selectThemes")}
+          clearable
+          searchable
+        />
+      )}
+      {hasOpeningTags && (
+        <MultiSelect
+          label={t("features.puzzle.openingTags")}
+          data={openingTagsOptions}
+          value={openingTags}
+          onChange={onOpeningTagsChange}
+          placeholder={t("features.puzzle.selectOpeningTags")}
+          clearable
+          searchable
+        />
+      )}
+      {(hasThemes || hasOpeningTags) && <Divider my="sm" />}
       <Group>
         <Input.Wrapper label={t("features.puzzle.ratingRange")} flex={1}>
           <RangeSlider

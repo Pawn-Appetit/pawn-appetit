@@ -1,5 +1,5 @@
 import { ActionIcon, Avatar, Badge, Button, Group, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
-import { IconSortAscending, IconSortDescending, IconTrash } from "@tabler/icons-react";
+import { IconSortAscending, IconSortDescending, IconStar, IconStarFilled, IconTrash } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,15 +8,18 @@ import { currentThemeIdAtom } from "@/features/themes/state/themeAtoms";
 import { getAnalyzedGame } from "@/utils/analyzedGames";
 import type { GameRecord } from "@/utils/gameRecords";
 import { calculateGameStats, type GameStats } from "@/utils/gameRecords";
+import type { FavoriteGame } from "@/utils/favoriteGames";
 
 interface LocalGamesTabProps {
   games: GameRecord[];
   onAnalyzeGame: (game: GameRecord) => void;
   onAnalyzeAll?: () => void;
   onDeleteGame?: (gameId: string) => void;
+  onToggleFavorite?: (gameId: string) => Promise<void>;
+  favoriteGames?: FavoriteGame[];
 }
 
-export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame }: LocalGamesTabProps) {
+export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame, onToggleFavorite, favoriteGames = [] }: LocalGamesTabProps) {
   const { t } = useTranslation();
   const currentThemeId = useAtomValue(currentThemeIdAtom);
   const isAcademiaMaya = currentThemeId === "academia-maya";
@@ -230,6 +233,7 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
                     (sortDirection === "asc" ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />)}
                 </Group>
               </Table.Th>
+              <Table.Th>Favorite</Table.Th>
               <Table.Th>
                 {onAnalyzeAll && (
                   <Button size="xs" variant="light" onClick={onAnalyzeAll}>
@@ -334,6 +338,23 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
                   <Table.Td>{g.moves.length}</Table.Td>
                   <Table.Td c="dimmed">{dateStr}</Table.Td>
                   <Table.Td>
+                    {onToggleFavorite && (
+                      <ActionIcon
+                        size="sm"
+                        variant="subtle"
+                        color={favoriteGames.some((f) => f.gameId === g.id && f.source === "local") ? "yellow" : "gray"}
+                        onClick={() => onToggleFavorite(g.id)}
+                        title="Toggle favorite"
+                      >
+                        {favoriteGames.some((f) => f.gameId === g.id && f.source === "local") ? (
+                          <IconStarFilled size={16} />
+                        ) : (
+                          <IconStar size={16} />
+                        )}
+                      </ActionIcon>
+                    )}
+                  </Table.Td>
+                  <Table.Td>
                     <Group gap="xs">
                       <AnalysisPreview pgn={analyzedPgns.get(g.id) || g.pgn || null}>
                         <Button size="xs" variant="light" onClick={() => onAnalyzeGame(g)}>
@@ -379,7 +400,7 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
                   {averages.elo > 0 ? Math.round(averages.elo) : "-"}
                 </Text>
               </Table.Td>
-              <Table.Td colSpan={4}></Table.Td>
+              <Table.Td colSpan={5}></Table.Td>
             </Table.Tr>
           </Table.Tfoot>
         </Table>

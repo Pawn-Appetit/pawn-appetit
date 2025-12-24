@@ -147,7 +147,7 @@ export function AddPuzzle({
                   filters: [
                     {
                       name: "Puzzle files",
-                      extensions: ["pgn", "pgn.zst", "db", "db3"],
+                      extensions: ["pgn", "pgn.zst", "csv", "csv.zst", "db", "db3"],
                     },
                   ],
                 });
@@ -157,7 +157,7 @@ export function AddPuzzle({
                 if (filename) {
                   form.setFieldValue("filename", filename);
                   if (!form.values.title) {
-                    const nameWithoutExt = filename.replace(/\.(pgn|db|db3)(.zst)?$/i, "");
+                    const nameWithoutExt = filename.replace(/\.(pgn|csv|db|db3)(.zst)?$/i, "");
                     form.setFieldValue("title", capitalize(nameWithoutExt.replaceAll(/[_-]/g, " ")));
                   }
                 }

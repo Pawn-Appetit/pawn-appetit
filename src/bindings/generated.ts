@@ -124,15 +124,17 @@ async memorySize() : Promise<bigint> {
  * * `min_rating` - Minimum puzzle rating to include
  * * `max_rating` - Maximum puzzle rating to include
  * * `random` - Randomize puzzle in cache
+ * * `themes` - Optional list of themes to filter by (puzzle must contain at least one)
+ * * `opening_tags` - Optional list of opening tags to filter by (puzzle must contain at least one)
  * 
  * # Returns
  * * `Ok(Puzzle)` if a puzzle was found
  * * `Err(Error::NoPuzzles)` if no puzzles match the criteria
  * * Other errors if there was a problem accessing the database
  */
-async getPuzzle(file: string, minRating: number, maxRating: number, random: boolean) : Promise<Result<Puzzle, string>> {
+async getPuzzle(file: string, minRating: number, maxRating: number, random: boolean, themes: string[] | null, openingTags: string[] | null) : Promise<Result<Puzzle, string>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("get_puzzle", { file, minRating, maxRating, random }) };
+    return { status: "ok", data: await TAURI_INVOKE("get_puzzle", { file, minRating, maxRating, random, themes, openingTags }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -345,6 +347,22 @@ async exportToPgn(file: string, destFile: string) : Promise<Result<null, string>
     else return { status: "error", error: e  as any };
 }
 },
+async exportPositionGamesToPgn(file: string, fen: string, destFile: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("export_position_games_to_pgn", { file, fen, destFile }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async exportSelectedGamesToPgn(file: string, gameIds: number[], destFile: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("export_selected_games_to_pgn", { file, gameIds, destFile }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async authenticate(username: string) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("authenticate", { username }) };
@@ -431,6 +449,19 @@ async searchPosition(file: string, query: GameQueryJs, tabId: string) : Promise<
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Pre-cache openings from TSV files
+ * This function reads all opening TSV files, converts PGN to FEN,
+ * searches for each position in the database, and caches the results
+ */
+async precacheOpenings(databasePath: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("precache_openings", { databasePath }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async getPlayers(file: string, query: PlayerQuery) : Promise<Result<QueryResponse<Player[]>, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_players", { file, query }) };
@@ -506,6 +537,73 @@ async getPuzzleRatingRange(file: string) : Promise<Result<[number, number], stri
 async importPuzzleFile(sourceFile: string, dbPath: string, title: string, description: string | null) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("import_puzzle_file", { sourceFile, dbPath, title, description }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Checks if a puzzle database has the themes and opening_tags columns
+ * 
+ * # Arguments
+ * * `file` - Path to the puzzle database
+ * 
+ * # Returns
+ * * `Ok((has_themes, has_opening_tags))` indicating which columns exist
+ * * `Err(Error)` if there was a problem accessing the database
+ */
+async checkPuzzleDbColumns(file: string) : Promise<Result<[boolean, boolean], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("check_puzzle_db_columns", { file }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Gets distinct values for themes from a puzzle database
+ * OPTIMIZED: Uses normalized table if available, otherwise falls back to old method
+ * 
+ * # Arguments
+ * * `file` - Path to the puzzle database
+ * 
+ * # Returns
+ * * `Ok(Vec<ThemeOption>)` with distinct theme values and their friendly names
+ * * `Err(Error)` if there was a problem accessing the database
+ */
+async getPuzzleThemes(file: string) : Promise<Result<ThemeGroup[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_puzzle_themes", { file }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Gets distinct values for opening_tags from a puzzle database
+ * OPTIMIZED: Uses normalized table if available, otherwise falls back to old method
+ * 
+ * # Arguments
+ * * `file` - Path to the puzzle database
+ * 
+ * # Returns
+ * * `Ok(Vec<OpeningTagOption>)` with distinct opening tag values and their friendly names
+ * * `Err(Error)` if there was a problem accessing the database
+ */
+async getPuzzleOpeningTags(file: string) : Promise<Result<OpeningTagOption[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_puzzle_opening_tags", { file }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Validates a downloaded puzzle database file
+ */
+async validatePuzzleDatabase(file: string) : Promise<Result<boolean, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("validate_puzzle_database", { file }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -683,6 +781,10 @@ export type GoMode = { t: "PlayersTime"; c: PlayersTime } | { t: "Depth"; c: num
  */
 export type MoveAnalysis = { best: BestMoves[]; novelty: boolean; is_sacrifice: boolean }
 export type NormalizedGame = { id: number; fen: string; event: string; event_id: number; site: string; site_id: number; date?: string | null; time?: string | null; round?: string | null; white: string; white_id: number; white_elo?: number | null; black: string; black_id: number; black_elo?: number | null; result: Outcome; time_control?: string | null; eco?: string | null; ply_count?: number | null; moves: string }
+/**
+ * Opening tag option with technical value and friendly label
+ */
+export type OpeningTagOption = { value: string; label: string }
 export type OutOpening = { name: string; fen: string }
 export type Outcome = "1-0" | "0-1" | "1/2-1/2" | "*"
 export type PackageManagerResult = { success: boolean; stdout: string; stderr: string }
@@ -696,7 +798,7 @@ export type PlayerSort = "id" | "name" | "elo"
 export type PlayersTime = { white: number; black: number; winc: number; binc: number }
 export type PositionQueryJs = { fen: string; type_: string }
 export type PositionStats = { move: string; white: number; draw: number; black: number }
-export type Puzzle = { id: number; fen: string; moves: string; rating: number; rating_deviation: number; popularity: number; nb_plays: number }
+export type Puzzle = { id: number; fen: string; moves: string; rating: number; rating_deviation: number; popularity: number; nb_plays: number; themes: string | null; game_url: string | null; opening_tags: string | null }
 /**
  * Information about a puzzle database
  */
@@ -747,6 +849,14 @@ export type SiteStatsData = { site: string; player: string; data: StatsData[] }
 export type SortDirection = "asc" | "desc"
 export type StatsData = { date: string; is_player_white: boolean; player_elo: number; result: GameOutcome; time_control: string; opening: string }
 export type TelemetryConfig = { enabled: boolean; initial_run_completed: boolean }
+/**
+ * Theme group containing a category name and its themes
+ */
+export type ThemeGroup = { group: string; items: ThemeOption[] }
+/**
+ * Theme option with technical value and friendly label
+ */
+export type ThemeOption = { value: string; label: string }
 export type Token = { type: "ParenOpen" } | { type: "ParenClose" } | { type: "Comment"; value: string } | { type: "San"; value: string } | { type: "Header"; value: { tag: string; value: string } } | { type: "Nag"; value: string } | { type: "Outcome"; value: string }
 export type TournamentQuery = { options: QueryOptions<TournamentSort>; name: string | null }
 export type TournamentSort = "id" | "name"

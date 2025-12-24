@@ -1,11 +1,12 @@
-import { Box, Card, Group, ScrollArea, Select, Stack, Tabs, Text, TextInput, Title, useDirection } from "@mantine/core";
+import { Box, Button, Card, Group, Progress, ScrollArea, Select, Stack, Tabs, Text, TextInput, Title, useDirection } from "@mantine/core";
 
 import { IconBook, IconBrush, IconChess, IconFlag, IconFolder, IconMouse, IconVolume } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
 import { open } from "@tauri-apps/plugin-dialog";
-import { useAtom } from "jotai";
-import { useCallback, useMemo, useState } from "react";
+import { useAtom, useAtomValue } from "jotai";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { listen } from "@tauri-apps/api/event";
 import { updateDirectoriesCache } from "@/App";
 import AboutModal from "@/components/About";
 import FileInput from "@/components/FileInput";
@@ -39,8 +40,10 @@ import {
   snapArrowsAtom,
   spellCheckAtom,
   storedDocumentDirAtom,
+  referenceDbAtom,
 } from "@/state/atoms";
 import { hasTranslatedPieceChars } from "@/utils/format";
+import { commands } from "@/bindings";
 import ColorControl from "../themes/components/ColorControl";
 import FontSizeSlider from "../themes/components/FontSizeSlider";
 import BoardSelect from "./components/BoardSelect";
@@ -79,6 +82,15 @@ export default function Page() {
   const [coordinatesMode, setCoordinatesMode] = useAtom(showCoordinatesAtom);
   const [practiceAnimationSpeed, setPracticeAnimationSpeed] = useAtom(practiceAnimationSpeedAtom);
   const [dateFormatMode, setDateFormatMode] = useState(localStorage.getItem("dateFormatMode") || "intl");
+  const referenceDatabase = useAtomValue(referenceDbAtom);
+  const [precacheProgress, setPrecacheProgress] = useState<{
+    processed: number;
+    total: number;
+    errors: number;
+    current?: string;
+    completed?: boolean;
+  } | null>(null);
+  const [precaching, setPrecaching] = useState(false);
 
   const handleDateFormatModeChange = useCallback(
     (val: "intl" | "locale") => {
@@ -99,6 +111,50 @@ export default function Page() {
     langs.sort((a, b) => a.label.localeCompare(b.label));
     return langs;
   }, [t, i18n.services.resourceStore.data]);
+
+  // Listen for precache progress events
+  useEffect(() => {
+    const unlisten = listen("precache-progress", (event: any) => {
+      const data = event.payload as {
+        processed: number;
+        total: number;
+        errors: number;
+        current?: string;
+        completed?: boolean;
+      };
+      setPrecacheProgress(data);
+      if (data.completed) {
+        setPrecaching(false);
+      }
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
+
+  const handlePrecacheOpenings = useCallback(async () => {
+    if (!referenceDatabase) {
+      alert("Please select a reference database first");
+      return;
+    }
+
+    setPrecaching(true);
+    setPrecacheProgress({ processed: 0, total: 0, errors: 0 });
+
+    try {
+      const result = await commands.precacheOpenings(referenceDatabase);
+      if (result.status === "error") {
+        console.error("Failed to pre-cache openings:", result.error);
+        alert(`Failed to pre-cache openings: ${result.error}`);
+        setPrecaching(false);
+      }
+    } catch (error) {
+      console.error("Error pre-caching openings:", error);
+      alert(`Error pre-caching openings: ${error}`);
+      setPrecaching(false);
+    }
+  }, [referenceDatabase]);
 
   const dateFormatModes = useMemo(
     () => [
@@ -822,6 +878,67 @@ export default function Page() {
         ),
       },
       {
+        id: "precache-openings",
+        title: t("settings.directories.precacheOpenings"),
+        description: t("settings.directories.precacheOpeningsDesc"),
+        tab: "directories",
+        component: (
+          <Stack gap="md" className={classes.item}>
+            <Group justify="space-between" wrap="nowrap" gap="xl">
+              <div style={{ flex: 1 }}>
+                <Text>{t("settings.directories.precacheOpenings")}</Text>
+                <Text size="xs" c="dimmed">
+                  {t("settings.directories.precacheOpeningsDesc")}
+                </Text>
+                {!referenceDatabase && (
+                  <Text size="xs" c="red" mt="xs">
+                    {t("settings.directories.noReferenceDatabase")}
+                  </Text>
+                )}
+              </div>
+              <Button
+                onClick={handlePrecacheOpenings}
+                disabled={!referenceDatabase || precaching}
+                loading={precaching}
+              >
+                {t("settings.directories.startPrecache")}
+              </Button>
+            </Group>
+            {precacheProgress && (
+              <Stack gap="xs">
+                <Group justify="space-between" align="center">
+                  <Text size="sm" fw={500}>
+                    {precacheProgress.processed}/{precacheProgress.total}
+                  </Text>
+                  <Text size="sm" c="dimmed">
+                    {precacheProgress.total > 0 ? Math.round((precacheProgress.processed / precacheProgress.total) * 100) : 0}%
+                  </Text>
+                </Group>
+                <Progress
+                  value={precacheProgress.total > 0 ? (precacheProgress.processed / precacheProgress.total) * 100 : 0}
+                  size="lg"
+                />
+                {precacheProgress.current && (
+                  <Text size="xs" c="dimmed">
+                    {t("settings.directories.processing")}: {precacheProgress.current}
+                  </Text>
+                )}
+                {precacheProgress.errors > 0 && (
+                  <Text size="xs" c="red">
+                    {t("settings.directories.errors")}: {precacheProgress.errors}
+                  </Text>
+                )}
+                {precacheProgress.completed && (
+                  <Text size="sm" c="green">
+                    {t("settings.directories.precacheCompleted")}
+                  </Text>
+                )}
+              </Stack>
+            )}
+          </Stack>
+        ),
+      },
+      {
         id: "telemetry",
         title: t("settings.telemetry"),
         description: t("settings.telemetryDesc"),
@@ -844,6 +961,10 @@ export default function Page() {
       filesDirectory,
       setFilesDirectory,
       dateFormatMode,
+      referenceDatabase,
+      precaching,
+      precacheProgress,
+      handlePrecacheOpenings,
       dateFormatModes,
       handleDateFormatModeChange,
       languages,

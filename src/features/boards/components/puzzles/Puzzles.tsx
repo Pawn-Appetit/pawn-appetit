@@ -1,7 +1,7 @@
 import { Divider, Paper, Portal, ScrollArea, Stack } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtom } from "jotai";
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useStore } from "zustand";
 import ChallengeHistory from "@/components/ChallengeHistory";
 import GameNotation from "@/components/GameNotation";
@@ -15,10 +15,12 @@ import {
   progressivePuzzlesAtom,
   puzzlePlayerRatingAtom,
 } from "@/state/atoms";
+import { commands } from "@/bindings";
 import { positionFromFen } from "@/utils/chessops";
 import { logger } from "@/utils/logger";
 import { navigateToDatabasesWithModal } from "@/utils/navigation";
 import { getAdaptivePuzzleRange, PUZZLE_DEBUG_LOGS } from "@/utils/puzzles";
+import { unwrap } from "@/utils/unwrap";
 import PuzzleBoard from "./PuzzleBoard";
 import { PuzzleControls } from "./PuzzleControls";
 import { PuzzleSettings } from "./PuzzleSettings";
@@ -56,6 +58,14 @@ function Puzzles({ id }: { id: string }) {
   const [showingSolution, setShowingSolution] = useState(false);
   const isShowingSolutionRef = useRef<boolean>(false);
 
+  // Filter states
+  const [hasThemes, setHasThemes] = useState(false);
+  const [hasOpeningTags, setHasOpeningTags] = useState(false);
+  const [themes, setThemes] = useState<string[]>([]);
+  const [openingTags, setOpeningTags] = useState<string[]>([]);
+  const [themesOptions, setThemesOptions] = useState<Array<{ group: string; items: Array<{ value: string; label: string }> }>>([]);
+  const [openingTagsOptions, setOpeningTagsOptions] = useState<Array<{ value: string; label: string }>>([]);
+
   const updateShowingSolution = (isShowing: boolean) => {
     setShowingSolution(isShowing);
     isShowingSolutionRef.current = isShowing;
@@ -84,7 +94,13 @@ function Puzzles({ id }: { id: string }) {
       });
 
     try {
-      const puzzle = await generatePuzzleFromDb(selectedDb, range, inOrder);
+      const puzzle = await generatePuzzleFromDb(
+        selectedDb,
+        range,
+        inOrder,
+        themes.length > 0 ? themes : undefined,
+        openingTags.length > 0 ? openingTags : undefined,
+      );
       PUZZLE_DEBUG_LOGS &&
         logger.debug("Generated puzzle:", {
           fen: puzzle.fen,
@@ -147,8 +163,138 @@ function Puzzles({ id }: { id: string }) {
       });
     } else {
       setSelectedDb(value);
+      // Reset filters when database changes
+      setThemes([]);
+      setOpeningTags([]);
     }
   };
+
+  // Load database column info and distinct values when database changes
+  useEffect(() => {
+    if (!selectedDb || !selectedDb.endsWith(".db3")) {
+      setHasThemes(false);
+      setHasOpeningTags(false);
+      setThemesOptions([]);
+      setOpeningTagsOptions([]);
+      return;
+    }
+
+    // Use a flag to prevent multiple simultaneous loads
+    let cancelled = false;
+
+    const loadDatabaseInfo = async () => {
+      try {
+        PUZZLE_DEBUG_LOGS && logger.debug("Loading database info for:", selectedDb);
+        
+        // First verify the file exists before attempting to load info
+        const { exists } = await import("@tauri-apps/plugin-fs");
+        const { appDataDir, resolve } = await import("@tauri-apps/api/path");
+        const appDataDirPath = await appDataDir();
+        const dbPath = await resolve(appDataDirPath, "puzzles", selectedDb);
+        
+        const fileExists = await exists(dbPath);
+        if (!fileExists) {
+          PUZZLE_DEBUG_LOGS && logger.debug("Database file does not exist yet:", dbPath);
+          setHasThemes(false);
+          setHasOpeningTags(false);
+          setThemesOptions([]);
+          setOpeningTagsOptions([]);
+          return;
+        }
+        
+        // Load column check and themes/opening_tags in parallel for better performance
+        const [columnsResult, themesResult, tagsResult] = await Promise.all([
+          commands.checkPuzzleDbColumns(selectedDb).catch((err) => {
+            // Silently handle "file not found" or "file is empty" errors
+            const errorMsg = err instanceof Error ? err.message : String(err);
+            if (errorMsg.includes("does not exist") || errorMsg.includes("is empty")) {
+              return { status: "error" as const, error: errorMsg };
+            }
+            throw err;
+          }),
+          // Start loading themes immediately (will be filtered by column check)
+          commands.getPuzzleThemes(selectedDb).catch((err) => {
+            const errorMsg = err instanceof Error ? err.message : String(err);
+            if (errorMsg.includes("does not exist") || errorMsg.includes("is empty")) {
+              return { status: "error" as const, error: errorMsg };
+            }
+            return { status: "error" as const, error: "" };
+          }),
+          // Start loading opening_tags immediately
+          commands.getPuzzleOpeningTags(selectedDb).catch((err) => {
+            const errorMsg = err instanceof Error ? err.message : String(err);
+            if (errorMsg.includes("does not exist") || errorMsg.includes("is empty")) {
+              return { status: "error" as const, error: errorMsg };
+            }
+            return { status: "error" as const, error: "" };
+          }),
+        ]);
+
+        if (cancelled) return;
+
+        PUZZLE_DEBUG_LOGS && logger.debug("Columns result:", columnsResult);
+        if (columnsResult.status === "ok") {
+          const [hasThemesCol, hasOpeningTagsCol] = columnsResult.data;
+          PUZZLE_DEBUG_LOGS && logger.debug("Has themes:", hasThemesCol, "Has opening tags:", hasOpeningTagsCol);
+          setHasThemes(hasThemesCol);
+          setHasOpeningTags(hasOpeningTagsCol);
+
+          // Use the pre-loaded results
+          if (hasThemesCol && themesResult.status === "ok") {
+            PUZZLE_DEBUG_LOGS && logger.debug("Themes groups count:", themesResult.data.length);
+            // Backend returns ThemeGroup[] with group and items, convert to format for MultiSelect
+            const themesData = themesResult.data as unknown as Array<{ group: string; items: Array<{ value: string; label: string }> }>;
+            setThemesOptions(themesData.map(group => ({
+              group: group.group,
+              items: group.items.map(opt => ({
+                value: opt.value,
+                label: opt.label,
+              })),
+            })));
+          } else {
+            setThemesOptions([]);
+          }
+
+          if (hasOpeningTagsCol && tagsResult.status === "ok") {
+            PUZZLE_DEBUG_LOGS && logger.debug("Opening tags options count:", tagsResult.data.length);
+            // Backend returns OpeningTagOption[] with value and label, convert to format for MultiSelect
+            const tagsData = tagsResult.data as unknown as Array<{ value: string; label: string }>;
+            setOpeningTagsOptions(tagsData.map(opt => ({
+              value: opt.value,
+              label: opt.label,
+            })));
+          } else {
+            setOpeningTagsOptions([]);
+          }
+        } else {
+          // Database doesn't exist or is empty - silently handle this
+          PUZZLE_DEBUG_LOGS && logger.debug("Columns check failed (database may not be installed):", columnsResult.error);
+          setHasThemes(false);
+          setHasOpeningTags(false);
+          setThemesOptions([]);
+          setOpeningTagsOptions([]);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          // Only log non-expected errors (file not found/empty are expected if DB not installed)
+          const errorMsg = error instanceof Error ? error.message : String(error);
+          if (!errorMsg.includes("does not exist") && !errorMsg.includes("is empty")) {
+            logger.error("Failed to load database column info:", error);
+          }
+          setHasThemes(false);
+          setHasOpeningTags(false);
+          setThemesOptions([]);
+          setOpeningTagsOptions([]);
+        }
+      }
+    };
+
+    loadDatabaseInfo();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedDb]);
 
   return (
     <>
@@ -181,6 +327,14 @@ function Puzzles({ id }: { id: string }) {
             onHideRatingChange={setHideRating}
             inOrder={inOrder}
             onInOrderChange={setInOrder}
+            hasThemes={hasThemes}
+            themes={themes}
+            themesOptions={themesOptions}
+            onThemesChange={setThemes}
+            hasOpeningTags={hasOpeningTags}
+            openingTags={openingTags}
+            openingTagsOptions={openingTagsOptions}
+            onOpeningTagsChange={setOpeningTags}
           />
           <Divider my="sm" />
 

@@ -1,11 +1,13 @@
 import { Portal, Stack } from "@mantine/core";
 import React, { memo, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useAtomValue } from "jotai";
 import GameNotation from "@/components/GameNotation";
 import MoveControls from "@/components/MoveControls";
 import { ResponsiveLoadingWrapper } from "@/components/ResponsiveLoadingWrapper";
 import { ResponsiveSkeleton } from "@/components/ResponsiveSkeleton";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+import { activeTabAtom, currentTabAtom } from "@/state/atoms";
 
 interface GameNotationWrapperProps {
   topBar?: boolean;
@@ -30,6 +32,34 @@ function GameNotationWrapper({
   const { layout } = useResponsiveLayout();
   const [isInitializing, setIsInitializing] = useState(true);
   const [initializationError, setInitializationError] = useState<Error | null>(null);
+  const currentTab = useAtomValue(currentTabAtom);
+  const [initialVariationState, setInitialVariationState] = useState<"mainline" | "variations" | "repertoire" | "report">("mainline");
+
+  // Read initial configuration from sessionStorage and set notation view if configured
+  useEffect(() => {
+    if (currentTab?.value && typeof window !== "undefined") {
+      const configKey = `${currentTab.value}_initialConfig`;
+      const configJson = sessionStorage.getItem(configKey);
+      if (configJson) {
+        try {
+          const config = JSON.parse(configJson);
+          if (config.notationView && ["mainline", "variations", "repertoire", "report"].includes(config.notationView)) {
+            setInitialVariationState(config.notationView as "mainline" | "variations" | "repertoire" | "report");
+            // Remove notationView from config, or remove entire config if it's the only key
+            const updatedConfig = { ...config };
+            delete updatedConfig.notationView;
+            if (Object.keys(updatedConfig).length === 0) {
+              sessionStorage.removeItem(configKey);
+            } else {
+              sessionStorage.setItem(configKey, JSON.stringify(updatedConfig));
+            }
+          }
+        } catch (e) {
+          // Ignore parsing errors
+        }
+      }
+    }
+  }, [currentTab?.value]);
 
   // Handle analysis panel initialization
   useEffect(() => {
@@ -108,7 +138,7 @@ function GameNotationWrapper({
       ) : (
         // Default: render GameNotation with optional additional children (like MoveControls)
         <>
-          <GameNotation topBar={topBar} />
+          <GameNotation topBar={topBar} initialVariationState={initialVariationState} />
           {children}
         </>
       )}

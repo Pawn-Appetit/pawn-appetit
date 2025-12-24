@@ -25,7 +25,7 @@ import {
 export interface TreeStoreState extends TreeState {
   currentNode: () => TreeNode;
 
-  goToNext: () => void;
+  goToNext: (playSoundOnMove?: boolean) => void;
   goToPrevious: () => void;
   goToStart: () => void;
   goToEnd: () => void;
@@ -118,13 +118,15 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
         }),
       ),
 
-    goToNext: () =>
+    goToNext: (playSoundOnMove = true) =>
       set((state) => {
         const node = getNodeAtPath(state.root, state.position);
         const [pos] = positionFromFen(node.fen);
         if (!pos || !node.children[0]?.move) return state;
         const san = makeSan(pos, node.children[0].move);
-        playSound(san.includes("x"), san.includes("+"));
+        if (playSoundOnMove) {
+          playSound(san.includes("x"), san.includes("+"));
+        }
         if (node && node.children.length > 0) {
           return {
             ...state,
