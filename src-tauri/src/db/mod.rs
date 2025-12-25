@@ -2220,3 +2220,49 @@ pub async fn precache_openings(
     
     Ok(())
 }
+
+/// Download pre-calculated position cache database
+#[tauri::command]
+#[specta::specta]
+pub async fn download_position_cache(
+    app: tauri::AppHandle,
+) -> Result<()> {
+    use crate::fs::download_file;
+    use tauri::path::BaseDirectory;
+    
+    // Get the path where position_cache.db3 should be stored
+    let cache_path = app.path()
+        .resolve("position_cache.db3", BaseDirectory::AppData)
+        .map_err(|e| Error::PackageManager(format!("Failed to resolve cache DB path: {}", e)))?;
+    
+    // Ensure parent directory exists
+    if let Some(parent) = cache_path.parent() {
+        std::fs::create_dir_all(parent)
+            .map_err(|e| Error::Io(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("Failed to create cache directory: {}", e)
+            )))?;
+    }
+    
+    // Download URL for pre-calculated position cache
+    let download_url = "https://pub-ea015655e3e044baaea19e7e0bf574f9.r2.dev/position_cache.db3";
+    
+    info!("Downloading position cache from: {}", download_url);
+    info!("Saving to: {}", cache_path.display());
+    
+    // Download the file (will overwrite if it exists)
+    // Use "db_position_cache" as ID to match the format expected by ProgressButton
+    download_file(
+        "db_position_cache".to_string(),
+        download_url.to_string(),
+        cache_path.clone(),
+        app.clone(),
+        None,
+        None,
+        None,
+    ).await?;
+    
+    info!("Position cache downloaded successfully to: {}", cache_path.display());
+    
+    Ok(())
+}

@@ -352,6 +352,29 @@ function AddDatabase({
     }
   }, [puzzleForm]);
 
+  const [positionCacheInstalled, setPositionCacheInstalled] = useState(false);
+  
+  // Check if position cache exists
+  useEffect(() => {
+    const checkPositionCache = async () => {
+      try {
+        const { appDataDir, resolve } = await import("@tauri-apps/api/path");
+        const { exists } = await import("@tauri-apps/plugin-fs");
+        const appDataDirPath = await appDataDir();
+        const cachePath = await resolve(appDataDirPath, "position_cache.db3");
+        const cacheExists = await exists(cachePath);
+        setPositionCacheInstalled(cacheExists);
+      } catch (error) {
+        console.error("Failed to check position cache:", error);
+        setPositionCacheInstalled(false);
+      }
+    };
+    
+    if (opened) {
+      checkPositionCache();
+    }
+  }, [opened]);
+
   const installedDatabaseTitles = useMemo(
     () =>
       new Set(
@@ -418,7 +441,11 @@ function AddDatabase({
                         database={db}
                         databaseId={i}
                         setDatabases={setDatabases}
-                        initInstalled={installedDatabaseTitles.has(db.title)}
+                        initInstalled={
+                          db.title === "Position Cache"
+                            ? positionCacheInstalled
+                            : installedDatabaseTitles.has(db.title)
+                        }
                       />
                     ))}
                     {error && (
@@ -535,14 +562,32 @@ function AddDatabase({
 function DatabaseCard({ setDatabases, database, databaseId, initInstalled }: DatabaseCardProps) {
   const { t } = useTranslation();
   const [inProgress, setInProgress] = useState<boolean>(false);
+  const [isInstalled, setIsInstalled] = useState(initInstalled);
+  
+  // Update installed state when initInstalled changes
+  useEffect(() => {
+    setIsInstalled(initInstalled);
+  }, [initInstalled]);
 
   const downloadDatabase = useCallback(
     async (id: number, url: string, name: string) => {
       try {
         setInProgress(true);
-        const path = await resolve(await appDataDir(), "db", `${name}.db3`);
-        await commands.downloadFile(`db_${id}`, url, path, null, null, null);
+        // Special handling for Position Cache - it goes to AppData, not db folder
+        if (name === "Position Cache") {
+          const result = await commands.downloadPositionCache();
+          if (result.status === "error") {
+            throw new Error(result.error);
+          }
+        } else {
+          const path = await resolve(await appDataDir(), "db", `${name}.db3`);
+          await commands.downloadFile(`db_${id}`, url, path, null, null, null);
+        }
         setDatabases();
+        // Update installed state for Position Cache
+        if (name === "Position Cache") {
+          setIsInstalled(true);
+        }
       } catch (error) {
         console.error("Failed to download database:", error);
         throw error;
@@ -594,9 +639,9 @@ function DatabaseCard({ setDatabases, database, databaseId, initInstalled }: Dat
       </Group>
 
       <ProgressButton
-        id={`db_${databaseId}`}
+        id={database.title === "Position Cache" ? "db_position_cache" : `db_${databaseId}`}
         progressEvent={events.downloadProgress}
-        initInstalled={initInstalled}
+        initInstalled={isInstalled}
         labels={{
           completed: t("common.installed"),
           action: t("common.install"),

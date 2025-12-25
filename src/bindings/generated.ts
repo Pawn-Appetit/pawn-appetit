@@ -462,6 +462,17 @@ async precacheOpenings(databasePath: string) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Download pre-calculated position cache database
+ */
+async downloadPositionCache() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("download_position_cache") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async getPlayers(file: string, query: PlayerQuery) : Promise<Result<QueryResponse<Player[]>, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_players", { file, query }) };

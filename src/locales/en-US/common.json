@@ -399,7 +399,10 @@
     "until": "Until",
     "pickDate": "Pick date",
     "playerUsername": "Player's username",
-    "selectColor": "Select color"
+    "selectColor": "Select color",
+    "downloadPositionCache": "Download Position Cache",
+    "downloadPositionCacheDesc": "Download pre-calculated position cache with statistics and games for Lumbra's Gigabase, Caissabase 2024, Ajedrez Data (Correspondence & OTB), and MillionBase. This will overwrite your existing cache.",
+    "positionCacheDownloaded": "Position cache downloaded successfully!"
   },
   "gameInfo": {
     "unknownEvent": "Unknown Event",

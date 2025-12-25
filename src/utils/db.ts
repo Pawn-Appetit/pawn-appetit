@@ -25,6 +25,7 @@ export type DownloadableDatabase = {
   player_count: number;
   storage_size: bigint;
   downloadLink: string;
+  description?: string;
 };
 // TODO: These two types should follow the same format (camelCase vs snake_case)
 export type DownloadablePuzzleDatabase = {
@@ -70,6 +71,14 @@ const DATABASES: DownloadableDatabase[] = [
     player_count: 284403,
     storage_size: BigInt(779833344),
     downloadLink: "https://pub-561e4f3376ea4e4eb2ffd01a876ba46e.r2.dev/mb-3.db3",
+  },
+  {
+    title: "Position Cache",
+    game_count: 0,
+    player_count: 0,
+    storage_size: BigInt(628700416), 
+    downloadLink: "https://pub-ea015655e3e044baaea19e7e0bf574f9.r2.dev/position_cache.db3",
+    description: "Pre-calculated position cache with statistics and games for Lumbra's Gigabase, Caissabase 2024, Ajedrez Data (Correspondence & OTB), and MillionBase. This will overwrite your existing cache.",
   },
 ];
 

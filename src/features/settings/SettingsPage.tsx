@@ -91,6 +91,7 @@ export default function Page() {
     completed?: boolean;
   } | null>(null);
   const [precaching, setPrecaching] = useState(false);
+  const [downloadingCache, setDownloadingCache] = useState(false);
 
   const handleDateFormatModeChange = useCallback(
     (val: "intl" | "locale") => {
