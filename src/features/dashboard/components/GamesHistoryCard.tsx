@@ -1,9 +1,11 @@
-import { Card, Group, Select, Tabs } from "@mantine/core";
+import { Button, Card, Group, Select, Tabs } from "@mantine/core";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { IconChartBar } from "@tabler/icons-react";
 import type { ChessComGame } from "@/utils/chess.com/api";
 import type { GameRecord } from "@/utils/gameRecords";
 import type { FavoriteGame } from "@/utils/favoriteGames";
+import { getAllAnalyzedGames, getAnalyzedGame } from "@/utils/analyzedGames";
 import { ChessComGamesTab } from "./ChessComGamesTab";
 import { LichessGamesTab } from "./LichessGamesTab";
 import { LocalGamesTab } from "./LocalGamesTab";
@@ -48,6 +50,8 @@ interface GamesHistoryCardProps {
   onToggleFavoriteChessCom?: (gameId: string) => Promise<void>;
   onToggleFavoriteLichess?: (gameId: string) => Promise<void>;
   favoriteGames?: FavoriteGame[];
+  onGenerateStats?: (playerName: string, gameType: "local" | "chesscom") => Promise<void>;
+  selectedPlayerName?: string | null;
 }
 
 export function GamesHistoryCard({
@@ -75,8 +79,88 @@ export function GamesHistoryCard({
   onToggleFavoriteChessCom,
   onToggleFavoriteLichess,
   favoriteGames = [],
+  onGenerateStats,
+  selectedPlayerName,
 }: GamesHistoryCardProps) {
   const { t } = useTranslation();
+
+  const [analyzedCount, setAnalyzedCount] = useState(0);
+
+  // Count analyzed games for the selected player
+  useEffect(() => {
+    // For Chess.com, we need selectedChessComUser to be set and not "all"
+    if (activeTab === "chesscom") {
+      if (!selectedChessComUser || selectedChessComUser === "all" || !onGenerateStats) {
+        setAnalyzedCount(0);
+        return;
+      }
+    } else if (activeTab === "local") {
+      if (!selectedPlayerName || !onGenerateStats) {
+        setAnalyzedCount(0);
+        return;
+      }
+    } else {
+      setAnalyzedCount(0);
+      return;
+    }
+
+    let cancelled = false;
+
+    const countGames = async () => {
+      try {
+        const analyzedGames = await getAllAnalyzedGames();
+        let count = 0;
+
+        if (activeTab === "local") {
+          // Count analyzed local games for the player
+          for (const game of localGames) {
+            if (cancelled) break;
+            const analyzedPgn = await getAnalyzedGame(game.id);
+            if (analyzedPgn) {
+              // Check if player name matches
+              const whiteMatch = game.white.name?.toLowerCase().includes(selectedPlayerName.toLowerCase()) || 
+                               selectedPlayerName.toLowerCase().includes(game.white.name?.toLowerCase() || "");
+              const blackMatch = game.black.name?.toLowerCase().includes(selectedPlayerName.toLowerCase()) || 
+                               selectedPlayerName.toLowerCase().includes(game.black.name?.toLowerCase() || "");
+              if (whiteMatch || blackMatch) {
+                count++;
+              }
+            }
+          }
+        } else if (activeTab === "chesscom" && selectedChessComUser && selectedChessComUser !== "all") {
+          // Count analyzed Chess.com games for the selected user
+          for (const game of chessComGames) {
+            if (cancelled) break;
+            if (analyzedGames[game.url]) {
+              const whiteMatch = game.white.username?.toLowerCase().includes(selectedChessComUser.toLowerCase()) || 
+                               selectedChessComUser.toLowerCase().includes(game.white.username?.toLowerCase() || "");
+              const blackMatch = game.black.username?.toLowerCase().includes(selectedChessComUser.toLowerCase()) || 
+                               selectedChessComUser.toLowerCase().includes(game.black.username?.toLowerCase() || "");
+              if (whiteMatch || blackMatch) {
+                count++;
+              }
+            }
+          }
+        }
+
+        if (!cancelled) {
+          setAnalyzedCount(count);
+          console.log(`[GenerateStats] Counted ${count} analyzed games for ${activeTab === "local" ? selectedPlayerName : selectedChessComUser}`);
+        }
+      } catch (error) {
+        console.error("[GenerateStats] Error counting games:", error);
+        if (!cancelled) {
+          setAnalyzedCount(0);
+        }
+      }
+    };
+
+    countGames();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, selectedPlayerName, selectedChessComUser, localGames, chessComGames, onGenerateStats]);
 
   // Default height in pixels
   const DEFAULT_HEIGHT = 400;
@@ -184,6 +268,7 @@ export function GamesHistoryCard({
             <Tabs.Tab value="lichess">Lichess</Tabs.Tab>
             <Tabs.Tab value="favorites">Favorites</Tabs.Tab>
           </Tabs.List>
+          <Group gap="xs">
           {activeTab === "chesscom" && (
             <Select
               placeholder="Filter by account"
@@ -208,6 +293,28 @@ export function GamesHistoryCard({
               disabled={lichessUsernames.length <= 1}
             />
           )}
+            {onGenerateStats &&
+              ((activeTab === "local" && selectedPlayerName) || 
+               (activeTab === "chesscom" && selectedChessComUser && selectedChessComUser !== "all")) &&
+              analyzedCount >= 50 && (
+                <Button
+                  leftSection={<IconChartBar size={16} />}
+                  onClick={() => {
+                    const gameType = activeTab === "local" ? "local" : "chesscom";
+                    const playerName = activeTab === "local" 
+                      ? selectedPlayerName 
+                      : (selectedChessComUser && selectedChessComUser !== "all" ? selectedChessComUser : selectedPlayerName);
+                    if (playerName) {
+                      onGenerateStats(playerName, gameType);
+                    }
+                  }}
+                  variant="light"
+                  size="sm"
+                >
+                  {t("features.dashboard.generateStats", "Generate Stats")} ({analyzedCount})
+                </Button>
+              )}
+          </Group>
         </Group>
 
         <Tabs.Panel

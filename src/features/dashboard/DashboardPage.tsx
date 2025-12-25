@@ -16,7 +16,7 @@ import { practices } from "@/features/learn/constants/practices";
 import { activeTabAtom, enginesAtom, sessionsAtom, tabsAtom } from "@/state/atoms";
 import { useUserStatsStore } from "@/state/userStatsStore";
 import { type Achievement, getAchievements } from "@/utils/achievements";
-import { getAllAnalyzedGames, saveAnalyzedGame, saveGameStats } from "@/utils/analyzedGames";
+import { getAllAnalyzedGames, getAnalyzedGame, saveAnalyzedGame, saveGameStats } from "@/utils/analyzedGames";
 import { getGameStats, getMainLine, getPGN, parsePGN } from "@/utils/chess";
 import type { ChessComGame } from "@/utils/chess.com/api";
 import { getAllFavoriteGames, isFavoriteGame, removeFavoriteGame, saveFavoriteGame, type FavoriteGame } from "@/utils/favoriteGames";
@@ -54,6 +54,7 @@ import { createTab, genID, type Tab } from "@/utils/tabs";
 import type { TreeState } from "@/utils/treeReducer";
 import { unwrap } from "@/utils/unwrap";
 import { type AnalyzeAllConfig, AnalyzeAllModal } from "./components/AnalyzeAllModal";
+import { PlayerStatsModal } from "./components/PlayerStatsModal";
 import { DailyGoalsCard } from "./components/DailyGoalsCard";
 import { GamesHistoryCard } from "./components/GamesHistoryCard";
 import { PuzzleStatsCard } from "./components/PuzzleStatsCard";
@@ -99,6 +100,9 @@ export default function DashboardPage() {
   const [analyzeAllModalOpened, setAnalyzeAllModalOpened] = useState(false);
   const [analyzeAllGameType, setAnalyzeAllGameType] = useState<"local" | "chesscom" | "lichess" | null>(null);
   const [unanalyzedGameCount, setUnanalyzedGameCount] = useState<number | null>(null);
+  const [playerStatsModalOpened, setPlayerStatsModalOpened] = useState(false);
+  const [playerStatsResult, setPlayerStatsResult] = useState<any | null>(null);
+  const [playerStatsDebugPgns, setPlayerStatsDebugPgns] = useState<string | null>(null);
 
   // FIDE player information
   const [fideId, setFideId] = useState<string | null>(null);
@@ -1407,6 +1411,105 @@ export default function DashboardPage() {
               loadFavoriteGames();
             }}
             favoriteGames={favoriteGames}
+            onGenerateStats={async (playerName: string, gameType: "local" | "chesscom") => {
+              try {
+                notifications.show({
+                  title: t("features.dashboard.generatingStats", "Generating Stats"),
+                  message: t("features.dashboard.generatingStatsMessage", "Processing analyzed games..."),
+                  color: "blue",
+                });
+
+                const analyzedGames = await getAllAnalyzedGames();
+                let analyzedPgns: string[] = [];
+
+                if (gameType === "local") {
+                  // Get analyzed games for local games
+                  const playerGames = recentGames.filter((game) => {
+                    const gameRecord = game as GameRecord;
+                    if (!gameRecord.pgn) return false;
+                    // Check if the player name matches White or Black
+                    const whiteMatch = gameRecord.white.name?.toLowerCase().includes(playerName.toLowerCase()) || 
+                                     playerName.toLowerCase().includes(gameRecord.white.name?.toLowerCase() || "");
+                    const blackMatch = gameRecord.black.name?.toLowerCase().includes(playerName.toLowerCase()) || 
+                                     playerName.toLowerCase().includes(gameRecord.black.name?.toLowerCase() || "");
+                    return whiteMatch || blackMatch;
+                  });
+
+                  for (const game of playerGames) {
+                    const analyzedPgn = await getAnalyzedGame(game.id);
+                    if (analyzedPgn) {
+                      analyzedPgns.push(analyzedPgn);
+                    }
+                  }
+                } else if (gameType === "chesscom") {
+                  // Get analyzed games for Chess.com games
+                  const playerGames = chessComGames.filter((game) => {
+                    if (!game.pgn) return false;
+                    const whiteMatch = game.white.username?.toLowerCase().includes(playerName.toLowerCase()) || 
+                                     playerName.toLowerCase().includes(game.white.username?.toLowerCase() || "");
+                    const blackMatch = game.black.username?.toLowerCase().includes(playerName.toLowerCase()) || 
+                                     playerName.toLowerCase().includes(game.black.username?.toLowerCase() || "");
+                    return whiteMatch || blackMatch;
+                  });
+
+                  for (const game of playerGames) {
+                    const analyzedPgn = analyzedGames[game.url];
+                    if (analyzedPgn) {
+                      analyzedPgns.push(analyzedPgn);
+                    }
+                  }
+                }
+
+                if (analyzedPgns.length < 50) {
+                  notifications.show({
+                    title: t("features.dashboard.insufficientGames", "Insufficient Games"),
+                    message: t("features.dashboard.insufficientGamesMessage", "You need at least 50 analyzed games to generate stats."),
+                    color: "orange",
+                  });
+                  return;
+                }
+
+                // Process normally (cache disabled for now)
+                // Add opening headers (ECO, Opening, Variation) to each PGN
+                console.log("[onGenerateStats] Adding opening headers to", analyzedPgns.length, "PGNs");
+                const { addOpeningHeadersToPgns } = await import("@/utils/pgnWithOpenings");
+                const enrichedPgns = await addOpeningHeadersToPgns(analyzedPgns);
+                console.log("[onGenerateStats] Enriched PGNs count:", enrichedPgns.length);
+                const combinedPgn = enrichedPgns.join("\n\n");
+                console.log("[onGenerateStats] Combined PGN length:", combinedPgn.length);
+
+                // Store debug PGNs
+                setPlayerStatsDebugPgns(combinedPgn);
+
+                // Analyze using playerMistakes
+                const { analyzeAnnotatedPgnCollection } = await import("@/utils/playerMistakes");
+                const result = analyzeAnnotatedPgnCollection(combinedPgn, playerName);
+
+                // Store result and open modal
+                setPlayerStatsResult(result);
+                setPlayerStatsModalOpened(true);
+                
+                notifications.show({
+                  title: t("features.dashboard.statsGenerated", "Stats Generated"),
+                  message: t("features.dashboard.statsGeneratedMessage", `Analyzed ${result.gamesMatchedPlayer} games. Found ${result.issues.length} issues.`),
+                  color: "green",
+                });
+              } catch (error) {
+                console.error("Error generating stats:", error);
+                notifications.show({
+                  title: t("features.dashboard.statsError", "Error"),
+                  message: t("features.dashboard.statsErrorMessage", "Failed to generate stats. Please try again."),
+                  color: "red",
+                });
+              }
+            }}
+            selectedPlayerName={
+              activeGamesTab === "local"
+                ? displayName || mainAccountName || null
+                : activeGamesTab === "chesscom" && selectedChessComUser && selectedChessComUser !== "all"
+                  ? selectedChessComUser
+                  : null
+            }
           />
         </Grid.Col>
 
@@ -1441,6 +1544,17 @@ export default function DashboardPage() {
           <DailyGoalsCard goals={goals} achievements={achievements} currentStreak={puzzleStats.currentStreak} />
         </Grid.Col>
       </Grid>
+
+      <PlayerStatsModal
+        opened={playerStatsModalOpened}
+        onClose={() => {
+          setPlayerStatsModalOpened(false);
+          setPlayerStatsResult(null);
+          setPlayerStatsDebugPgns(null);
+        }}
+        result={playerStatsResult}
+        debugPgns={playerStatsDebugPgns || undefined}
+      />
 
       <AnalyzeAllModal
         opened={analyzeAllModalOpened}

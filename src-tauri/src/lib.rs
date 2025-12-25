@@ -53,7 +53,7 @@ use crate::{
         delete_duplicated_games, edit_db_info, get_db_info, get_games, get_game, get_players, merge_players, update_game
     },
     fs::{download_file, file_exists, get_file_metadata},
-    opening::{get_opening_from_fen, get_opening_from_name, search_opening_name},
+    opening::{get_opening_from_fen, get_opening_from_name, get_opening_info_from_fen, search_opening_name},
 };
 use tokio::sync::{RwLock, Semaphore};
 
@@ -112,6 +112,7 @@ pub async fn run() {
             search_opening_name,
             get_opening_from_fen,
             get_opening_from_name,
+            get_opening_info_from_fen,
             get_players_game_info,
             get_engine_config,
             file_exists,

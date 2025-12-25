@@ -657,6 +657,11 @@
       "helpTitle": "Show keyboard shortcuts help"
     },
     "dashboard": {
+      "byColor": "By Color",
+      "filterByColor": "Filter by Color",
+      "all": "All",
+      "white": "White",
+      "black": "Black",
       "cards": {
         "learn": {
           "title": "Learn Chess",

@@ -164,6 +164,14 @@ async getOpeningFromName(name: string) : Promise<Result<string, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+async getOpeningInfoFromFen(fen: string) : Promise<Result<OpeningInfo, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_opening_info_from_fen", { fen }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async getPlayersGameInfo(file: string, id: number) : Promise<Result<PlayerGameInfo, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_players_game_info", { file, id }) };
@@ -792,6 +800,7 @@ export type GoMode = { t: "PlayersTime"; c: PlayersTime } | { t: "Depth"; c: num
  */
 export type MoveAnalysis = { best: BestMoves[]; novelty: boolean; is_sacrifice: boolean }
 export type NormalizedGame = { id: number; fen: string; event: string; event_id: number; site: string; site_id: number; date?: string | null; time?: string | null; round?: string | null; white: string; white_id: number; white_elo?: number | null; black: string; black_id: number; black_elo?: number | null; result: Outcome; time_control?: string | null; eco?: string | null; ply_count?: number | null; moves: string }
+export type OpeningInfo = { eco: string; opening: string; variation: string }
 /**
  * Opening tag option with technical value and friendly label
  */
