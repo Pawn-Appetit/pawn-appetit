@@ -128,6 +128,7 @@ function Accounts({
           query={query}
           sortBy={sortBy}
           isLoading={isLoading}
+          onAddAccount={() => setOpen(true)}
         />
       ) : (
         <AccountsTableView
@@ -136,6 +137,7 @@ function Accounts({
           query={query}
           sortBy={sortBy}
           isLoading={isLoading}
+          onAddAccount={() => setOpen(true)}
         />
       )}
       <AccountModal open={open} setOpen={setOpen} addLichess={addLichess} addChessCom={addChessCom} />

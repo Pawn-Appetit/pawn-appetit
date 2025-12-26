@@ -1,6 +1,7 @@
 import {
   ActionIcon,
   Badge,
+  Button,
   Group,
   Image,
   Paper,
@@ -18,6 +19,8 @@ import {
   IconDownload,
   IconEdit,
   IconRefresh,
+  IconSearch,
+  IconUserPlus,
   IconX,
 } from "@tabler/icons-react";
 import { appDataDir, resolve } from "@tauri-apps/api/path";
@@ -66,7 +69,8 @@ function AccountsTableView({
   query = "",
   sortBy = { field: "name", direction: "asc" },
   isLoading = false,
-}: AccountsTableViewProps) {
+  onAddAccount,
+}: AccountsTableViewProps & { onAddAccount: () => void }) {
   const { t } = useTranslation();
   const sessions = useAtomValue(sessionsAtom);
   const [, setSessions] = useAtom(sessionsAtom);
@@ -257,14 +261,14 @@ function AccountsTableView({
         sessions.map((s) =>
           s.lichess?.account.id === account.id
             ? {
-                ...s,
-                lichess: {
-                  account: account,
-                  username: lichessUsername,
-                  accessToken: lichessAccessToken,
-                },
-                updatedAt: Date.now(),
-              }
+              ...s,
+              lichess: {
+                account: account,
+                username: lichessUsername,
+                accessToken: lichessAccessToken,
+              },
+              updatedAt: Date.now(),
+            }
             : s,
         ),
       );
@@ -276,13 +280,13 @@ function AccountsTableView({
         sessions.map((s) =>
           s.chessCom?.username === chessComUsername
             ? {
-                ...s,
-                chessCom: {
-                  username: chessComUsername,
-                  stats,
-                },
-                updatedAt: Date.now(),
-              }
+              ...s,
+              chessCom: {
+                username: chessComUsername,
+                stats,
+              },
+              updatedAt: Date.now(),
+            }
             : s,
         ),
       );
@@ -389,6 +393,45 @@ function AccountsTableView({
             <Skeleton h="3rem" />
           </Stack>
         </ScrollArea>
+      </Paper>
+    );
+  }
+
+
+
+  if (sessions.length === 0) {
+    return (
+      <Paper withBorder p="xl" radius="md">
+        <Stack align="center" justify="center" gap="md" py="xl">
+          <IconUserPlus size={48} stroke={1.5} style={{ opacity: 0.5 }} />
+          <Stack gap="xs" align="center">
+            <Text size="lg" fw={700}>
+              No accounts added
+            </Text>
+            <Text size="sm" c="dimmed" ta="center" maw={400}>
+              Connect your Lichess or Chess.com account to analyze your games and track your progress.
+            </Text>
+          </Stack>
+          <Button onClick={onAddAccount} size="sm">
+            Add Account
+          </Button>
+        </Stack>
+      </Paper>
+    );
+  }
+
+  if (filteredAndSorted.length === 0) {
+    return (
+      <Paper withBorder p="xl" radius="md">
+        <Stack align="center" justify="center" gap="md" py="xl">
+          <IconSearch size={48} stroke={1.5} style={{ opacity: 0.5 }} />
+          <Text size="lg" fw={500}>
+            No accounts found
+          </Text>
+          <Text size="sm" c="dimmed">
+            No accounts match your search query. Try adjusting your filters.
+          </Text>
+        </Stack>
       </Paper>
     );
   }
