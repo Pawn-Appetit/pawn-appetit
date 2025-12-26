@@ -1,5 +1,5 @@
-import { Alert, ScrollArea, SimpleGrid, Skeleton, Stack, Text } from "@mantine/core";
-import { IconMoodEmpty } from "@tabler/icons-react";
+import { Button, Paper, ScrollArea, SimpleGrid, Skeleton, Stack, Text } from "@mantine/core";
+import { IconSearch, IconUserPlus } from "@tabler/icons-react";
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { remove } from "@tauri-apps/plugin-fs";
 import { useAtom } from "jotai";
@@ -19,12 +19,14 @@ function AccountCards({
   query = "",
   sortBy = { field: "name", direction: "asc" },
   isLoading = false,
+  onAddAccount,
 }: {
   databases: DatabaseInfo[];
   setDatabases: React.Dispatch<React.SetStateAction<DatabaseInfo[]>>;
   query?: string;
   sortBy?: SortState;
   isLoading?: boolean;
+  onAddAccount: () => void;
 }) {
   const [sessions, setSessions] = useAtom(sessionsAtom);
   const playerNames = Array.from(
@@ -113,13 +115,35 @@ function AccountCards({
 
   return (
     <ScrollArea offsetScrollbars>
-      {filteredAndSorted.length === 0 ? (
-        <Stack align="center" justify="center" py="xl" gap="md">
-          <IconMoodEmpty size={48} stroke={1.5} style={{ opacity: 0.5 }} />
-          <Alert variant="light" color="gray" title="No accounts found" radius="md">
-            <Text size="sm">Try adjusting your search or add a new account to get started.</Text>
-          </Alert>
-        </Stack>
+      {sessions.length === 0 ? (
+        <Paper withBorder p="xl" radius="md" mt="xl">
+          <Stack align="center" justify="center" gap="md">
+            <IconUserPlus size={64} stroke={1.5} style={{ opacity: 0.5 }} />
+            <Stack gap="xs" align="center">
+              <Text size="xl" fw={700}>
+                No accounts added
+              </Text>
+              <Text size="sm" c="dimmed" ta="center" maw={400}>
+                Connect your Lichess or Chess.com account to analyze your games and track your progress.
+              </Text>
+            </Stack>
+            <Button onClick={onAddAccount} size="md">
+              Add Account
+            </Button>
+          </Stack>
+        </Paper>
+      ) : filteredAndSorted.length === 0 ? (
+        <Paper withBorder p="xl" radius="md" mt="xl">
+          <Stack align="center" justify="center" gap="md">
+            <IconSearch size={64} stroke={1.5} style={{ opacity: 0.5 }} />
+            <Text size="xl" fw={700}>
+              No accounts found
+            </Text>
+            <Text size="sm" c="dimmed">
+              No accounts match your search. Try adjusting your filters.
+            </Text>
+          </Stack>
+        </Paper>
       ) : (
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }} spacing="md" verticalSpacing="md">
           {filteredAndSorted.map(({ name, sessions }) =>
@@ -260,14 +284,14 @@ function LichessOrChessCom({
             sessions.map((s) =>
               s.lichess?.account.id === account.id
                 ? {
-                    ...s,
-                    lichess: {
-                      account: account,
-                      username: lichessSession.username,
-                      accessToken: lichessSession.accessToken,
-                    },
-                    updatedAt: Date.now(),
-                  }
+                  ...s,
+                  lichess: {
+                    account: account,
+                    username: lichessSession.username,
+                    accessToken: lichessSession.accessToken,
+                  },
+                  updatedAt: Date.now(),
+                }
                 : s,
             ),
           );
@@ -357,13 +381,13 @@ function LichessOrChessCom({
             sessions.map((s) =>
               session.chessCom && s.chessCom?.username === session.chessCom?.username
                 ? {
-                    ...s,
-                    chessCom: {
-                      username: session.chessCom?.username,
-                      stats,
-                    },
-                    updatedAt: Date.now(),
-                  }
+                  ...s,
+                  chessCom: {
+                    username: session.chessCom?.username,
+                    stats,
+                  },
+                  updatedAt: Date.now(),
+                }
                 : s,
             ),
           );
