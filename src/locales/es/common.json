@@ -809,6 +809,12 @@
         "timeControl": "Control de tiempo",
         "averageRating": "Puntuación promedio"
       },
+      "variants": {
+        "treeBuilder": {
+          "button": "Armar variantes",
+          "depth": "Profundidad (jugadas del jugador activo)"
+        }
+      },
       "annotate": {
         "writeHere": "Escribe aquí..."
       }

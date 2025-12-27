@@ -135,7 +135,10 @@ export async function createFile({
   }
 }
 
-export async function createTempImportFile(pgn: string): Promise<FileMetadata> {
+export async function createTempImportFile(
+  pgn: string,
+  filetype: "game" | "repertoire" | "tournament" | "puzzle" | "variants" | "other" = "game",
+): Promise<FileMetadata> {
   const tempDirPath = await join(await tempDir(), "pawn-appetit");
   const tempFilePath = await join(tempDirPath, `temp_import_${Date.now()}.pgn`);
 
@@ -156,7 +159,7 @@ export async function createTempImportFile(pgn: string): Promise<FileMetadata> {
     path: tempFilePath,
     numGames,
     metadata: {
-      type: "game",
+      type: filetype,
       tags: [],
     },
     lastModified: Date.now(),

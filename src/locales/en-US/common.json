@@ -928,6 +928,12 @@
         "timeControl": "Time control",
         "averageRating": "Average rating"
       },
+      "variants": {
+        "treeBuilder": {
+          "button": "Build variants",
+          "depth": "Depth (active player moves)"
+        }
+      },
       "annotate": {
         "writeHere": "Write here..."
       }

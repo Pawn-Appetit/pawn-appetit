@@ -126,7 +126,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
             };
           }
         } else {
-          const tempFile = await createTempImportFile(resolvedTarget.content);
+          const tempFile = await createTempImportFile(resolvedTarget.content, filetype);
           importedFiles.push({
             path: tempFile.path,
             name: "Pasted Content",
@@ -156,7 +156,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
         try {
           const fileName = await basename(filePath);
 
-          const singleFileTarget = await resolvePgnTarget({ type: "file", target: filePath });
+          const singleFileTarget = await resolvePgnTarget({ type: "file", target: filePath }, filetype);
           const { trees, errors } = await parseGamesFromTarget(singleFileTarget);
 
           totalGames += singleFileTarget.count;
@@ -277,7 +277,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
 
     if (importType === "PGN") {
       try {
-        const resolvedPgnTarget = await resolvePgnTarget(pgnTarget);
+        const resolvedPgnTarget = await resolvePgnTarget(pgnTarget, filetype);
         const result = await processMultipleFiles(resolvedPgnTarget);
         setImportResult(result);
       } catch (error) {
