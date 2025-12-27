@@ -7,6 +7,9 @@ diesel::table! {
         rating_deviation -> Integer,
         popularity -> Integer,
         nb_plays -> Integer,
+        themes -> Nullable<Text>,
+        game_url -> Nullable<Text>,
+        opening_tags -> Nullable<Text>,
     }
 }
 

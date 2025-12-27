@@ -1,11 +1,15 @@
-import { Card, Group, Select, Tabs } from "@mantine/core";
+import { Button, Card, Group, Select, Tabs } from "@mantine/core";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { IconChartBar } from "@tabler/icons-react";
 import type { ChessComGame } from "@/utils/chess.com/api";
 import type { GameRecord } from "@/utils/gameRecords";
+import type { FavoriteGame } from "@/utils/favoriteGames";
+import { getAllAnalyzedGames, getAnalyzedGame } from "@/utils/analyzedGames";
 import { ChessComGamesTab } from "./ChessComGamesTab";
 import { LichessGamesTab } from "./LichessGamesTab";
 import { LocalGamesTab } from "./LocalGamesTab";
+import { FavoriteGamesTab } from "./FavoriteGamesTab";
 
 interface LichessGame {
   id: string;
@@ -42,6 +46,14 @@ interface GamesHistoryCardProps {
   onAnalyzeAllChessCom?: () => void;
   onAnalyzeAllLichess?: () => void;
   onDeleteLocalGame?: (gameId: string) => void;
+  onToggleFavoriteLocal?: (gameId: string) => Promise<void>;
+  onToggleFavoriteChessCom?: (gameId: string) => Promise<void>;
+  onToggleFavoriteLichess?: (gameId: string) => Promise<void>;
+  favoriteGames?: FavoriteGame[];
+  onGenerateStats?: (playerName: string, gameType: "local" | "chesscom" | "lichess") => Promise<void>;
+  selectedPlayerName?: string | null;
+  gameHistoryLimit: number;
+  onGameHistoryLimitChange: (limit: number) => void;
 }
 
 export function GamesHistoryCard({
@@ -65,8 +77,114 @@ export function GamesHistoryCard({
   onAnalyzeAllChessCom,
   onAnalyzeAllLichess,
   onDeleteLocalGame,
+  onToggleFavoriteLocal,
+  onToggleFavoriteChessCom,
+  onToggleFavoriteLichess,
+  favoriteGames = [],
+  onGenerateStats,
+  selectedPlayerName,
+  gameHistoryLimit,
+  onGameHistoryLimitChange,
 }: GamesHistoryCardProps) {
   const { t } = useTranslation();
+
+  const [analyzedCount, setAnalyzedCount] = useState(0);
+
+  // Count analyzed games for the selected player
+  useEffect(() => {
+    // For Chess.com, we need selectedChessComUser to be set and not "all"
+    if (activeTab === "chesscom") {
+      if (!selectedChessComUser || selectedChessComUser === "all" || !onGenerateStats) {
+        setAnalyzedCount(0);
+        return;
+      }
+    } else if (activeTab === "local") {
+      if (!selectedPlayerName || !onGenerateStats) {
+        setAnalyzedCount(0);
+        return;
+      }
+    } else if (activeTab === "lichess") {
+      if (!selectedLichessUser || selectedLichessUser === "all" || !onGenerateStats) {
+        setAnalyzedCount(0);
+        return;
+      }
+    } else {
+      setAnalyzedCount(0);
+      return;
+    }
+
+    let cancelled = false;
+
+    const countGames = async () => {
+      try {
+        const analyzedGames = await getAllAnalyzedGames();
+        let count = 0;
+
+        if (activeTab === "local") {
+          // Count analyzed local games for the player
+          for (const game of localGames) {
+            if (cancelled) break;
+            const analyzedPgn = await getAnalyzedGame(game.id);
+            if (analyzedPgn) {
+              // Check if player name matches
+              const playerNameLower = selectedPlayerName!.toLowerCase();
+              const whiteMatch = game.white.name?.toLowerCase().includes(playerNameLower) || 
+                               playerNameLower.includes(game.white.name?.toLowerCase() || "");
+              const blackMatch = game.black.name?.toLowerCase().includes(playerNameLower) || 
+                               playerNameLower.includes(game.black.name?.toLowerCase() || "");
+              if (whiteMatch || blackMatch) {
+                count++;
+              }
+            }
+          }
+        } else if (activeTab === "chesscom" && selectedChessComUser && selectedChessComUser !== "all") {
+          // Count analyzed Chess.com games for the selected user
+          for (const game of chessComGames) {
+            if (cancelled) break;
+            if (analyzedGames[game.url]) {
+              const whiteMatch = game.white.username?.toLowerCase().includes(selectedChessComUser.toLowerCase()) || 
+                               selectedChessComUser.toLowerCase().includes(game.white.username?.toLowerCase() || "");
+              const blackMatch = game.black.username?.toLowerCase().includes(selectedChessComUser.toLowerCase()) || 
+                               selectedChessComUser.toLowerCase().includes(game.black.username?.toLowerCase() || "");
+              if (whiteMatch || blackMatch) {
+                count++;
+              }
+            }
+          }
+        } else if (activeTab === "lichess" && selectedLichessUser && selectedLichessUser !== "all") {
+          // Count analyzed Lichess games for the selected user
+          for (const game of lichessGames) {
+            if (cancelled) break;
+            if (analyzedGames[game.id]) {
+              const whiteMatch = game.players.white.user?.name?.toLowerCase().includes(selectedLichessUser.toLowerCase()) || 
+                               selectedLichessUser.toLowerCase().includes(game.players.white.user?.name?.toLowerCase() || "");
+              const blackMatch = game.players.black.user?.name?.toLowerCase().includes(selectedLichessUser.toLowerCase()) || 
+                               selectedLichessUser.toLowerCase().includes(game.players.black.user?.name?.toLowerCase() || "");
+              if (whiteMatch || blackMatch) {
+                count++;
+              }
+            }
+          }
+        }
+
+        if (!cancelled) {
+          setAnalyzedCount(count);
+          console.log(`[GenerateStats] Counted ${count} analyzed games for ${activeTab === "local" ? selectedPlayerName : activeTab === "chesscom" ? selectedChessComUser : selectedLichessUser}`);
+        }
+      } catch (error) {
+        console.error("[GenerateStats] Error counting games:", error);
+        if (!cancelled) {
+          setAnalyzedCount(0);
+        }
+      }
+    };
+
+    countGames();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, selectedPlayerName, selectedChessComUser, localGames, chessComGames, onGenerateStats]);
 
   // Default height in pixels
   const DEFAULT_HEIGHT = 400;
@@ -172,7 +290,25 @@ export function GamesHistoryCard({
             <Tabs.Tab value="local">Local</Tabs.Tab>
             <Tabs.Tab value="chesscom">Chess.com</Tabs.Tab>
             <Tabs.Tab value="lichess">Lichess</Tabs.Tab>
+            <Tabs.Tab value="favorites">Favorites</Tabs.Tab>
           </Tabs.List>
+          <Group gap="xs">
+            <Select
+              placeholder={t("features.dashboard.maxGames", "Max games")}
+              value={String(gameHistoryLimit)}
+              onChange={(value) => {
+                if (!value) return;
+                const parsed = Number(value);
+                if (!Number.isNaN(parsed)) onGameHistoryLimitChange(parsed);
+              }}
+              data={[
+                { value: "100", label: "100" },
+                { value: "200", label: "200" },
+                { value: "300", label: "300" },
+                { value: "500", label: "500" },
+                { value: "1000", label: "1000" },
+              ]}
+            />
           {activeTab === "chesscom" && (
             <Select
               placeholder="Filter by account"
@@ -197,6 +333,30 @@ export function GamesHistoryCard({
               disabled={lichessUsernames.length <= 1}
             />
           )}
+            {onGenerateStats &&
+              ((activeTab === "local" && selectedPlayerName) || 
+               (activeTab === "chesscom" && selectedChessComUser && selectedChessComUser !== "all") ||
+               (activeTab === "lichess" && selectedLichessUser && selectedLichessUser !== "all")) && (
+                <Button
+                  leftSection={<IconChartBar size={16} />}
+                  onClick={() => {
+                    const gameType = activeTab === "local" ? "local" : activeTab === "chesscom" ? "chesscom" : "lichess";
+                    const playerName = activeTab === "local" 
+                      ? selectedPlayerName 
+                      : activeTab === "chesscom"
+                      ? (selectedChessComUser && selectedChessComUser !== "all" ? selectedChessComUser : selectedPlayerName)
+                      : (selectedLichessUser && selectedLichessUser !== "all" ? selectedLichessUser : selectedPlayerName);
+                    if (playerName) {
+                      onGenerateStats(playerName, gameType);
+                    }
+                  }}
+                  variant="light"
+                  size="sm"
+                >
+                  {t("features.dashboard.generateStats", "Generate Stats")} ({analyzedCount})
+                </Button>
+              )}
+          </Group>
         </Group>
 
         <Tabs.Panel
@@ -209,6 +369,8 @@ export function GamesHistoryCard({
             onAnalyzeGame={onAnalyzeLocalGame}
             onAnalyzeAll={onAnalyzeAllLocal}
             onDeleteGame={onDeleteLocalGame}
+            onToggleFavorite={onToggleFavoriteLocal}
+            favoriteGames={favoriteGames}
           />
         </Tabs.Panel>
 
@@ -224,6 +386,8 @@ export function GamesHistoryCard({
             isLoading={isLoadingChessComGames}
             onAnalyzeGame={onAnalyzeChessComGame}
             onAnalyzeAll={onAnalyzeAllChessCom}
+            onToggleFavorite={onToggleFavoriteChessCom}
+            favoriteGames={favoriteGames}
           />
         </Tabs.Panel>
 
@@ -239,6 +403,29 @@ export function GamesHistoryCard({
             isLoading={isLoadingLichessGames}
             onAnalyzeGame={onAnalyzeLichessGame}
             onAnalyzeAll={onAnalyzeAllLichess}
+            onToggleFavorite={onToggleFavoriteLichess}
+            favoriteGames={favoriteGames}
+          />
+        </Tabs.Panel>
+
+        <Tabs.Panel
+          value="favorites"
+          pt="xs"
+          style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minHeight: 0 }}
+        >
+          <FavoriteGamesTab
+            localGames={localGames}
+            chessComGames={chessComGames}
+            lichessGames={lichessGames}
+            favoriteGames={favoriteGames}
+            chessComUsernames={chessComUsernames}
+            lichessUsernames={lichessUsernames}
+            onAnalyzeLocalGame={onAnalyzeLocalGame}
+            onAnalyzeChessComGame={onAnalyzeChessComGame}
+            onAnalyzeLichessGame={onAnalyzeLichessGame}
+            onToggleFavoriteLocal={onToggleFavoriteLocal}
+            onToggleFavoriteChessCom={onToggleFavoriteChessCom}
+            onToggleFavoriteLichess={onToggleFavoriteLichess}
           />
         </Tabs.Panel>
       </Tabs>

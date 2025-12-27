@@ -32,6 +32,9 @@ export default defineConfig({
     watch: {
       ignored: ["**/src-tauri/**"],
     },
+    fs: {
+      strict: false,
+    },
   },
   build: {
     // Always minify for tauri build; keep inline sourcemap only for debug

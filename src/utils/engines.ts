@@ -1,13 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Platform } from "@tauri-apps/plugin-os";
 import { z } from "zod";
+
 import { type BestMoves, commands, type EngineOptions, type GoMode } from "@/bindings";
 import { isInstallMethodSupported } from "./packageManager";
 import { unwrap } from "./unwrap";
 
 export const requiredEngineSettings = ["MultiPV", "Threads", "Hash"];
 
+/**
+ * IMPORTANT:
+ * - `bmi2` is used as a 2-way CPU switch in Pawn Appetit (bmi2 compatible vs not).
+ * - For engines that offer AVX/AVX2 vs SSE builds, we map:
+ *    bmi2=true  -> faster build (AVX/AVX2)
+ *    bmi2=false -> safer build (SSE/SSE2/ancient)
+ * - For engines that don't have CPU variants, duplicate entries (bmi2 true/false) with same build.
+ */
 const ENGINES = [
+  // ---------------------------
+  // Stockfish
+  // ---------------------------
   {
     name: "Stockfish",
     version: "17.1",
@@ -82,6 +94,10 @@ const ENGINES = [
     elo: 3635,
     downloadSize: 79953920,
   },
+
+  // ---------------------------
+  // RubiChess
+  // ---------------------------
   {
     name: "RubiChess",
     version: "20240817",
@@ -130,6 +146,10 @@ const ENGINES = [
     elo: 3600,
     downloadSize: 31417660,
   },
+
+  // ---------------------------
+  // Dragon (Komodo)
+  // ---------------------------
   {
     name: "Dragon by Komodo",
     version: "1",
@@ -202,6 +222,10 @@ const ENGINES = [
     elo: 3533,
     downloadSize: 85049133,
   },
+
+  // ---------------------------
+  // Komodo 14
+  // ---------------------------
   {
     name: "Komodo",
     version: "14",
@@ -274,6 +298,10 @@ const ENGINES = [
     elo: 3479,
     downloadSize: 9745847,
   },
+
+  // ---------------------------
+  // Leela Chess Zero (Lc0)
+  // ---------------------------
   {
     name: "Leela Chess Zero",
     version: "0.30.0",
@@ -330,24 +358,154 @@ const ENGINES = [
     path: "/usr/bin/lc0",
     elo: 3440,
   },
+
+  // ============================================================
+  // EXTRA ENGINES (descarga directa desde sus sitios)
+  // ============================================================
+
+  // ---------------------------
+  // Koivisto 8.0 (direct binary)
+  // ---------------------------
+  {
+    name: "Koivisto",
+    version: "8.0",
+    os: "windows",
+    bmi2: true,
+    image: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Chess_icon.svg",
+    installMethod: "download" as const,
+    downloadLink: "https://github.com/Luecx/Koivisto/releases/download/v8.0/Koivisto_8.0-x64-windows-avx2.exe",
+    path: "koivisto/Koivisto_8.0-x64-windows-avx2.exe",
+    elo: 3500,
+  },
+  {
+    name: "Koivisto",
+    version: "8.0",
+    os: "windows",
+    bmi2: false,
+    image: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Chess_icon.svg",
+    installMethod: "download" as const,
+    downloadLink: "https://github.com/Luecx/Koivisto/releases/download/v8.0/Koivisto_8.0-x64-windows-sse2.exe",
+    path: "koivisto/Koivisto_8.0-x64-windows-sse2.exe",
+    elo: 3500,
+  },
+// Koivisto (Linux AVX2) — como tu ejemplo
+{
+  name: "Koivisto",
+  version: "8.0",
+  os: "linux",
+  bmi2: true,
+  image: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Chess_icon.svg",
+  installMethod: "download" as const,
+  downloadLink: "https://github.com/Luecx/Koivisto/releases/download/v8.0/Koivisto_8.0-x64-linux-avx2",
+  path: "koivisto/Koivisto_8.0-x64-linux-avx2",
+  elo: 3500,
+},
+
+// Clover (solo Windows en releases) :contentReference[oaicite:1]{index=1}
+{
+  name: "Clover",
+  version: "9.1",
+  os: "windows",
+  bmi2: true,
+  image: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Chess_icon.svg",
+  installMethod: "download" as const,
+  downloadLink: "https://github.com/lucametehau/CloverEngine/releases/download/v9.1/Clover.9.1-avx2.exe",
+  path: "clover/Clover.9.1-avx2.exe",
+  elo: 0,
+},
+
+// Obsidian (solo Windows en releases) :contentReference[oaicite:2]{index=2}
+{
+  name: "Obsidian",
+  version: "16.0",
+  os: "windows",
+  bmi2: true,
+  image: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Chess_icon.svg",
+  installMethod: "download" as const,
+  downloadLink: "https://github.com/gab8192/Obsidian/releases/download/v16.0/Obsidian_16.0_avx2.exe",
+  path: "obsidian/Obsidian_16.0_avx2.exe",
+  elo: 0,
+},
+
+// Berserk (solo Windows en releases) :contentReference[oaicite:3]{index=3}
+{
+  name: "Berserk",
+  version: "13",
+  os: "windows",
+  bmi2: true,
+  image: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Chess_icon.svg",
+  installMethod: "download" as const,
+  downloadLink: "https://github.com/jhonnold/berserk/releases/download/13/berserk-13-avx2.exe",
+  path: "berserk/berserk-13-avx2.exe",
+  elo: 0,
+},
+
+  {
+    name: "Koivisto",
+    version: "8.0",
+    os: "linux",
+    bmi2: false,
+    image: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Chess_icon.svg",
+    installMethod: "download" as const,
+    downloadLink: "https://github.com/Luecx/Koivisto/releases/download/v8.0/Koivisto_8.0-x64-linux-sse2",
+    path: "koivisto/Koivisto_8.0-x64-linux-sse2",
+    elo: 3500,
+  },
+
+  // ---------------------------
+  // Wasp 6.50 (direct binary) - MUY útil para niveles “humanos”
+  // ---------------------------
+  {
+    name: "Wasp",
+    version: "6.50",
+    os: "windows",
+    bmi2: true,
+    image: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Chess_icon.svg",
+    installMethod: "download" as const,
+    downloadLink: "https://www.waspchess.com/wasp_downloads/Wasp_6.50/Wasp650-windows-avx.exe",
+    path: "wasp/Wasp650-windows-avx.exe",
+    elo: 2900,
+  },
+  {
+    name: "Wasp",
+    version: "6.50",
+    os: "windows",
+    bmi2: false,
+    image: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Chess_icon.svg",
+    installMethod: "download" as const,
+    downloadLink: "https://www.waspchess.com/wasp_downloads/Wasp_6.50/Wasp650-windows.exe",
+    path: "wasp/Wasp650-windows.exe",
+    elo: 2900,
+  },
+  {
+    name: "Wasp",
+    version: "6.50",
+    os: "linux",
+    bmi2: true,
+    image: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Chess_icon.svg",
+    installMethod: "download" as const,
+    downloadLink: "https://www.waspchess.com/wasp_downloads/Wasp_6.50/Wasp650-linux-avx",
+    path: "wasp/Wasp650-linux-avx",
+    elo: 2900,
+  },
+  {
+    name: "Wasp",
+    version: "6.50",
+    os: "linux",
+    bmi2: false,
+    image: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Chess_icon.svg",
+    installMethod: "download" as const,
+    downloadLink: "https://www.waspchess.com/wasp_downloads/Wasp_6.50/Wasp650-linux",
+    path: "wasp/Wasp650-linux",
+    elo: 2900,
+  },
 ];
 
 const goModeSchema: z.ZodSchema<GoMode> = z.union([
-  z.object({
-    t: z.literal("Depth"),
-    c: z.number(),
-  }),
-  z.object({
-    t: z.literal("Time"),
-    c: z.number(),
-  }),
-  z.object({
-    t: z.literal("Nodes"),
-    c: z.number(),
-  }),
-  z.object({
-    t: z.literal("Infinite"),
-  }),
+  z.object({ t: z.literal("Depth"), c: z.number() }),
+  z.object({ t: z.literal("Time"), c: z.number() }),
+  z.object({ t: z.literal("Nodes"), c: z.number() }),
+  z.object({ t: z.literal("Infinite") }),
 ]);
 
 const engineSettingsSchema = z.array(
@@ -366,11 +524,13 @@ const localEngineSchema = z.object({
   path: z.string(),
   image: z.string().nullish(),
   elo: z.number().nullish(),
+
   installMethod: z.enum(["download", "brew", "package"]).nullish(),
   downloadSize: z.number().nullish(),
   downloadLink: z.string().nullish(),
   brewPackage: z.string().nullish(),
   packageCommand: z.string().nullish(),
+
   loaded: z.boolean().nullish(),
   go: goModeSchema.nullish(),
   enabled: z.boolean().nullish(),
@@ -435,6 +595,7 @@ export function useDefaultEngines(os: Platform | undefined, opened: boolean) {
     enabled: opened && !!os,
     staleTime: Infinity,
   });
+
   return {
     defaultEngines: data,
     error,

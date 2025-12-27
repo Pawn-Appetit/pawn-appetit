@@ -30,7 +30,7 @@ export function CreateModal({
   const { documentDir } = useLoaderData({ from: "/files" });
 
   async function addFile() {
-    const resolvedPgnTarget = await resolvePgnTarget(pgnTarget);
+    const resolvedPgnTarget = await resolvePgnTarget(pgnTarget, filetype);
     const newFile = await createFile({
       filename,
       filetype,

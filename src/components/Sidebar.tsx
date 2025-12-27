@@ -78,6 +78,11 @@ function QuickActionLink({
       tab: { name: tabName, type: tabType },
       setTabs,
       setActiveTab,
+      ...(tabType === "analysis" && {
+        initialAnalysisTab: "analysis",
+        initialAnalysisSubTab: "report",
+        initialNotationView: "report" as const,
+      }),
     });
     navigate({ to: "/boards" });
   };

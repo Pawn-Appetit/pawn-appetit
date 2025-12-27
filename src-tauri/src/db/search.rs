@@ -40,6 +40,7 @@ use crate::{
         pgn::{get_material_count, MaterialCount},
         schema::*,
         ConnectionOptions, GameSort, SortDirection,
+        is_position_cached, get_cached_position, save_position_cache,
     },
     error::Error,
     AppState,
@@ -72,7 +73,7 @@ const CHECKPOINT_STRIDE: usize = 8;
 /// Returns true if this file looks like an ONLINE DB:
 /// `{username}_lichess.db3` or `{username}_chesscom.db3`
 #[inline]
-fn is_online_database(file: &PathBuf) -> bool {
+pub(crate) fn is_online_database(file: &PathBuf) -> bool {
     // Get filename from path (handles both full paths and just filenames)
     let filename = file
         .file_name()
@@ -816,7 +817,7 @@ pub async fn build_position_checkpoints(
 /// a local vector from DB including white_elo/black_elo.
 ///
 /// Returns: (openings stats, matching game ids)
-fn search_position_local_internal(
+pub(crate) fn search_position_local_internal(
     db: &mut SqliteConnection,
     position_query: &PositionQuery,
     query: &GameQueryJs,
@@ -1216,7 +1217,7 @@ fn search_position_local_internal(
 /// Search position in online databases (Lichess/Chess.com)
 /// Uses reachability check from each game's initial position (from FEN)
 /// and does NOT rely on `games.pawn_home/white_material/black_material`.
-fn search_position_online_internal(
+pub(crate) fn search_position_online_internal(
     db: &mut SqliteConnection,
     position_query: &PositionQuery,
     query: &GameQueryJs,
@@ -1552,32 +1553,114 @@ pub async fn search_position(
 ) -> Result<(Vec<PositionStats>, Vec<NormalizedGame>), Error> {
     let db = &mut get_db_or_create(&state, file.to_str().unwrap(), ConnectionOptions::default())?;
 
-    // Build cache key (without game_details_limit)
-    let mut cache_query = query.clone();
-    cache_query.game_details_limit = None;
-    let cache_key = (cache_query.clone(), file.clone());
+    // Get FEN from position query
+    let fen = match &query.position {
+        Some(pos_query) => pos_query.fen.clone(),
+        None => return Err(Error::NoMatchFound),
+    };
 
-    if let Some(pos) = state.line_cache.get(&cache_key) {
-        let (cached_openings, cached_games) = pos.value().clone();
+    // Check if position is cached in database
+    if is_position_cached(&app, &fen, &file)? {
+        // Load cached data
+        if let Some((cached_stats, cached_game_ids)) = get_cached_position(&app, &fen, &file)? {
+            // Apply game_details_limit
+            let game_details_limit: usize = query
+                .game_details_limit
+                .unwrap_or(10)
+                .min(1000)
+                .try_into()
+                .unwrap_or(10);
 
-        // Apply game_details_limit if specified
-        let game_details_limit: usize = query
-            .game_details_limit
-            .unwrap_or(10)
-            .min(1000)
-            .try_into()
-            .unwrap_or(10);
+            let ids_to_load: Vec<i32> = cached_game_ids.into_iter().take(game_details_limit).collect();
 
-        let truncated_games = if cached_games.len() > game_details_limit {
-            cached_games.into_iter().take(game_details_limit).collect()
-        } else {
-            cached_games
-        };
+            // Load full game data from original database
+            let (white_players, black_players) = diesel::alias!(players as white, players as black);
+            let mut query_builder = games::table
+                .inner_join(white_players.on(games::white_id.eq(white_players.field(players::id))))
+                .inner_join(black_players.on(games::black_id.eq(black_players.field(players::id))))
+                .inner_join(events::table.on(games::event_id.eq(events::id)))
+                .inner_join(sites::table.on(games::site_id.eq(sites::id)))
+                .filter(games::id.eq_any(&ids_to_load))
+                .into_boxed();
 
-        return Ok((cached_openings, truncated_games));
+            // Apply sorting if specified
+            if let Some(options) = &query.options {
+                query_builder = match options.sort {
+                    GameSort::Id => match options.direction {
+                        SortDirection::Asc => query_builder.order(games::id.asc()),
+                        SortDirection::Desc => query_builder.order(games::id.desc()),
+                    },
+                    GameSort::Date => match options.direction {
+                        SortDirection::Asc => query_builder.order((games::date.asc(), games::time.asc())),
+                        SortDirection::Desc => {
+                            query_builder.order((games::date.desc(), games::time.desc()))
+                        }
+                    },
+                    GameSort::WhiteElo => match options.direction {
+                        SortDirection::Asc => query_builder.order(games::white_elo.asc()),
+                        SortDirection::Desc => query_builder.order(games::white_elo.desc()),
+                    },
+                    GameSort::BlackElo => match options.direction {
+                        SortDirection::Asc => query_builder.order(games::black_elo.asc()),
+                        SortDirection::Desc => query_builder.order(games::black_elo.desc()),
+                    },
+                    GameSort::PlyCount => match options.direction {
+                        SortDirection::Asc => query_builder.order(games::ply_count.asc()),
+                        SortDirection::Desc => query_builder.order(games::ply_count.desc()),
+                    },
+                    GameSort::AverageElo => query_builder,
+                };
+            }
+
+            let games_result: Vec<(Game, Player, Player, Event, Site)> = if !ids_to_load.is_empty() {
+                query_builder.load(db)?
+            } else {
+                Vec::new()
+            };
+
+            let mut normalized_games = normalize_games(games_result)?;
+
+            // Sort by average ELO if needed
+            if let Some(options) = &query.options {
+                if matches!(options.sort, GameSort::AverageElo) {
+                    let sort_direction = options.direction.clone();
+                    normalized_games.sort_by(|a, b| {
+                        let a_avg = match (a.white_elo, a.black_elo) {
+                            (Some(w), Some(bl)) => Some((w + bl + 1) / 2),
+                            (Some(e), None) | (None, Some(e)) => Some(e),
+                            (None, None) => None,
+                        };
+                        let b_avg = match (b.white_elo, b.black_elo) {
+                            (Some(w), Some(bl)) => Some((w + bl + 1) / 2),
+                            (Some(e), None) | (None, Some(e)) => Some(e),
+                            (None, None) => None,
+                        };
+
+                        let a_val = a_avg.unwrap_or(0);
+                        let b_val = b_avg.unwrap_or(0);
+
+                        match sort_direction {
+                            SortDirection::Asc => a_val.cmp(&b_val),
+                            SortDirection::Desc => b_val.cmp(&a_val),
+                        }
+                    });
+                }
+            }
+
+            let _ = app.emit(
+                "search_progress",
+                ProgressPayload {
+                    progress: 100.0,
+                    id: tab_id.clone(),
+                    finished: true,
+                },
+            );
+
+            return Ok((cached_stats, normalized_games));
+        }
     }
 
-    // Convert position query
+    // Convert position query for search
     let position_query = match &query.position {
         Some(pos_query) => convert_position_query(pos_query.clone())?,
         None => return Err(Error::NoMatchFound),
@@ -1628,6 +1711,8 @@ pub async fn search_position(
         .try_into()
         .unwrap_or(10);
 
+    // Clone ids before consuming it
+    let all_game_ids = ids.clone();
     let ids_to_load: Vec<i32> = ids.into_iter().take(game_details_limit).collect();
 
     let (white_players, black_players) = diesel::alias!(players as white, players as black);
@@ -1703,10 +1788,13 @@ pub async fn search_position(
         }
     }
 
-    // Cache results (key ignores game_details_limit as before)
-    state
-        .line_cache
-        .insert(cache_key, (openings.clone(), normalized_games.clone()));
+    // Save results to persistent cache (save all game IDs, not just the loaded ones)
+    // This allows us to load different subsets later based on game_details_limit
+    // Save to cache after we've extracted ids_to_load
+    if let Err(e) = save_position_cache(&app, &fen, &file, &openings, &all_game_ids) {
+        // Log error but don't fail the request
+        log::warn!("Failed to save position cache: {}", e);
+    }
 
     let _ = app.emit(
         "search_progress",

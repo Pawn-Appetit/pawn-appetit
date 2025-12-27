@@ -35,6 +35,8 @@
         "fs:allow-document-write-recursive",
         "fs:allow-document-meta",
         "fs:allow-document-meta-recursive",
+        "fs:allow-temp-read-recursive",
+        "fs:allow-temp-write-recursive",
         "window-state:default",
         {
             "identifier": "http:default",

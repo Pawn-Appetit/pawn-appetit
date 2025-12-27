@@ -16,7 +16,7 @@ import {
 import { IconChevronsRight, IconPlayerPause, IconSelector, IconSettings } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
-import { memo, useContext, useDeferredValue, useEffect, useMemo } from "react";
+import { memo, useContext, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
@@ -91,8 +91,60 @@ function AnalysisPanel() {
   const allEnabledLoader = useAtomValue(allEnabledAtom);
   const allEnabled = allEnabledLoader.state === "hasData" && allEnabledLoader.data;
 
+  const activeTab = useAtomValue(activeTabAtom);
+  
+  // Read initial configuration from sessionStorage synchronously before first render
+  const initialTabFromConfig = useMemo(() => {
+    if (activeTab && typeof window !== "undefined") {
+      const configKey = `${activeTab}_initialConfig`;
+      const configJson = sessionStorage.getItem(configKey);
+      if (configJson) {
+        try {
+          const config = JSON.parse(configJson);
+          if (config.analysisSubTab && ["engines", "report", "logs"].includes(config.analysisSubTab)) {
+            return config.analysisSubTab;
+          }
+        } catch (e) {
+          // Ignore parsing errors
+        }
+      }
+    }
+    return null;
+  }, [activeTab]);
+
   const [tab, setTab] = useAtom(currentAnalysisTabAtom);
   const [expanded, setExpanded] = useAtom(currentExpandedEnginesAtom);
+
+  // Use the configured tab value if available, otherwise use the atom value
+  const effectiveTab = initialTabFromConfig || tab;
+
+  // Set the initial tab value from configuration and clean up config
+  useEffect(() => {
+    if (initialTabFromConfig && tab !== initialTabFromConfig) {
+      setTab(initialTabFromConfig);
+      // Remove analysisSubTab from config after using it
+      if (activeTab && typeof window !== "undefined") {
+        const configKey = `${activeTab}_initialConfig`;
+        const configJson = sessionStorage.getItem(configKey);
+        if (configJson) {
+          try {
+            const config = JSON.parse(configJson);
+            const updatedConfig = { ...config };
+            delete updatedConfig.analysisSubTab;
+            if (Object.keys(updatedConfig).length === 0) {
+              sessionStorage.removeItem(configKey);
+            } else {
+              sessionStorage.setItem(configKey, JSON.stringify(updatedConfig));
+            }
+          } catch (e) {
+            // Ignore parsing errors
+          }
+        }
+      }
+    }
+    // Only run once when activeTab changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   const [pos] = positionFromFen(currentNodeFen);
   const navigate = useNavigate();
@@ -103,7 +155,7 @@ function AnalysisPanel() {
         h="100%"
         orientation="vertical"
         placement="right"
-        value={tab}
+        value={effectiveTab}
         onChange={(v) => setTab(v!)}
         style={{
           display: "flex",
@@ -121,7 +173,7 @@ function AnalysisPanel() {
           value="engines"
           style={{
             overflow: "hidden",
-            display: tab === "engines" ? "flex" : "none",
+            display: effectiveTab === "engines" ? "flex" : "none",
             flexDirection: "column",
           }}
         >
@@ -239,7 +291,7 @@ function AnalysisPanel() {
           pt="xs"
           style={{
             overflow: "hidden",
-            display: tab === "report" ? "flex" : "none",
+            display: effectiveTab === "report" ? "flex" : "none",
             flexDirection: "column",
           }}
         >
@@ -250,7 +302,7 @@ function AnalysisPanel() {
           pt="xs"
           style={{
             overflow: "hidden",
-            display: tab === "logs" ? "flex" : "none",
+            display: effectiveTab === "logs" ? "flex" : "none",
             flexDirection: "column",
           }}
         >

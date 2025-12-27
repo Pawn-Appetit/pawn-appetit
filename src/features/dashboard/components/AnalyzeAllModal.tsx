@@ -12,11 +12,11 @@ export interface AnalyzeAllConfig {
 }
 
 const getAnalysisOptions = (t: (key: string) => string): Record<AnalysisSpeed, { label: string; depth: number }> => ({
-  express: { label: t("features.dashboard.analysisSpeeds.express"), depth: 8 },
-  swift: { label: t("features.dashboard.analysisSpeeds.swift"), depth: 12 },
-  focused: { label: t("features.dashboard.analysisSpeeds.focused"), depth: 16 },
-  advanced: { label: t("features.dashboard.analysisSpeeds.advanced"), depth: 20 },
-  deepdive: { label: t("features.dashboard.analysisSpeeds.deepdive"), depth: 24 },
+  express: { label: t("features.dashboard.analysisSpeeds.express"), depth: 12 },
+  swift: { label: t("features.dashboard.analysisSpeeds.swift"), depth: 16 },
+  focused: { label: t("features.dashboard.analysisSpeeds.focused"), depth: 20 },
+  advanced: { label: t("features.dashboard.analysisSpeeds.advanced"), depth: 28 },
+  deepdive: { label: t("features.dashboard.analysisSpeeds.deepdive"), depth: 36 },
 });
 
 interface AnalyzeAllModalProps {
@@ -49,7 +49,7 @@ export function AnalyzeAllModal({
   const form = useForm<AnalyzeAllConfig>({
     initialValues: {
       speed: "focused",
-      depth: 16,
+      depth: 20,
       analyzeMode: analyzeMode,
     },
   });
@@ -95,8 +95,8 @@ export function AnalyzeAllModal({
 
   const handleStop = () => {
     cancelledRef.current = true;
-    // Don't set isAnalyzing to false immediately - let the onAnalyze callback handle it
-    // This ensures the cancellation is properly propagated
+    setIsAnalyzing(false);
+    // The onAnalyze callback will handle stopping the engines
   };
 
   // Reset progress and form when modal opens/closes
@@ -109,7 +109,7 @@ export function AnalyzeAllModal({
       // Reset form to initial values when modal opens
       form.setValues({
         speed: "focused",
-        depth: 16,
+        depth: 20,
         analyzeMode: analyzeMode,
       });
     }

@@ -276,7 +276,9 @@ export const currentDbTypeAtom = tabValue(dbTypeFamily);
 const dbTabFamily = atomFamily((tab: string) => atom("stats"));
 export const currentDbTabAtom = tabValue(dbTabFamily);
 
-const analysisTabFamily = atomFamily((tab: string) => atom("engines"));
+// Default analysis sub-tab inside AnalysisPanel.
+// Previously this was "engines", but UX-wise it's more useful to start on the Report view.
+const analysisTabFamily = atomFamily((tab: string) => atom("report"));
 export const currentAnalysisTabAtom = tabValue(analysisTabFamily);
 
 const practiceTabFamily = atomFamily((tab: string) => atom("train"));

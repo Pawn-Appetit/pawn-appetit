@@ -20,14 +20,17 @@ export type ResolvedPgnTarget = PgnTarget & {
   errors?: { file?: string; error: string }[]; // Track import errors
 };
 
-export async function resolvePgnTarget(target: PgnTarget): Promise<ResolvedPgnTarget> {
+export async function resolvePgnTarget(
+  target: PgnTarget,
+  filetype: FileMetadata["metadata"]["type"] = "game",
+): Promise<ResolvedPgnTarget> {
   if (target.type === "file") {
     // Read the file and create a temp file with the content.
     // The temp file can be used to open the analysis board if we don't save it.
     const count = unwrap(await commands.countPgnGames(target.target as string));
     const games = unwrap(await commands.readGames(target.target as string, 0, count - 1));
     const content = games.join("");
-    const file = await createTempImportFile(content);
+    const file = await createTempImportFile(content, filetype);
     return {
       ...target,
       content,
@@ -57,7 +60,7 @@ export async function resolvePgnTarget(target: PgnTarget): Promise<ResolvedPgnTa
     }
 
     const content = allGames.join("");
-    const file = await createTempImportFile(content);
+    const file = await createTempImportFile(content, filetype);
 
     return {
       ...target,
@@ -71,7 +74,7 @@ export async function resolvePgnTarget(target: PgnTarget): Promise<ResolvedPgnTa
 
   // Create a temp file with the content of the text area. Allow to reuse the same parsing flow for normal files.
   // Here again, the temp file can be used to open the analysis board if we don't save it.
-  const file = await createTempImportFile(target.target as string);
+  const file = await createTempImportFile(target.target as string, filetype);
   const count = unwrap(await commands.countPgnGames(file.path));
   const games = unwrap(await commands.readGames(file.path, 0, count - 1));
   return {

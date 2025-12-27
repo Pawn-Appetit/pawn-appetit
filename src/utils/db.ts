@@ -25,6 +25,7 @@ export type DownloadableDatabase = {
   player_count: number;
   storage_size: bigint;
   downloadLink: string;
+  description?: string;
 };
 // TODO: These two types should follow the same format (camelCase vs snake_case)
 export type DownloadablePuzzleDatabase = {
@@ -36,6 +37,13 @@ export type DownloadablePuzzleDatabase = {
 };
 
 const DATABASES: DownloadableDatabase[] = [
+  {
+    title: "Lumbra's Gigabase",
+    game_count: 9570564,
+    player_count: 526520,
+    storage_size: BigInt(2789040128),
+    downloadLink: "https://pub-561e4f3376ea4e4eb2ffd01a876ba46e.r2.dev/LumbrasGigaBase2025-06.db3",
+  },
   {
     title: "Caissabase 2024",
     game_count: 5404926,
@@ -64,6 +72,14 @@ const DATABASES: DownloadableDatabase[] = [
     storage_size: BigInt(779833344),
     downloadLink: "https://pub-561e4f3376ea4e4eb2ffd01a876ba46e.r2.dev/mb-3.db3",
   },
+  {
+    title: "Position Cache",
+    game_count: 0,
+    player_count: 0,
+    storage_size: BigInt(628700416), 
+    downloadLink: "https://pub-ea015655e3e044baaea19e7e0bf574f9.r2.dev/position_cache.db3",
+    description: "Pre-calculated position cache with statistics and games for Lumbra's Gigabase, Caissabase 2024, Ajedrez Data (Correspondence & OTB), and MillionBase. This will overwrite your existing cache.",
+  },
 ];
 
 const PUZZLE_DATABASES: DownloadablePuzzleDatabase[] = [
@@ -73,6 +89,13 @@ const PUZZLE_DATABASES: DownloadablePuzzleDatabase[] = [
     puzzleCount: 3080529,
     storageSize: BigInt(339046400),
     downloadLink: "https://pub-561e4f3376ea4e4eb2ffd01a876ba46e.r2.dev/puzzles.db3",
+  },
+  {
+    title: "Lichess Puzzles 2025",
+    description: "Latest puzzles from Lichess.org organized by themes in database format",
+    puzzleCount: 5600086, 
+    storageSize: BigInt(3542036480), // 3,459,020 KB = 3,542,036,480 bytes 
+    downloadLink: "https://pub-ea015655e3e044baaea19e7e0bf574f9.r2.dev/Lichess%20Puzzles%202025.db3",
   },
 ];
 

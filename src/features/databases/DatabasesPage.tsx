@@ -894,7 +894,9 @@ function DatabaseActions({
         mutate();
         onSelect(null);
         if (isPuzzleDatabase(database)) {
-          refreshPuzzleDatabases();
+          await refreshPuzzleDatabases();
+          // Dispatch event to notify other components (e.g., puzzle board) that puzzles were updated
+          window.dispatchEvent(new Event("puzzles:updated"));
         }
       },
     });

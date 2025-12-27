@@ -3,18 +3,20 @@ import { DateInput } from "@mantine/dates";
 import { parseSquare } from "chessops";
 import { EMPTY_BOARD_FEN, makeFen, parseFen } from "chessops/fen";
 import { useAtom } from "jotai";
-import { useRef } from "react";
+import { useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Chessground } from "@/components/Chessground";
 import PiecesGrid from "@/features/boards/components/PiecesGrid";
 import { PlayerSearchInput } from "@/features/databases/components/PlayerSearchInput";
 import { currentLocalOptionsAtom } from "@/state/atoms";
 import { formatDateToPGN, parseDate } from "@/utils/format";
+import { commands } from "@/bindings";
 
 function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
   const boardRef = useRef(null);
   const [options, setOptions] = useAtom(currentLocalOptionsAtom);
   const { t } = useTranslation();
+  const [downloadingCache, setDownloadingCache] = useState(false);
   const setSimilarStructure = async (fen: string) => {
     const setup = parseFen(fen).unwrap();
     for (const square of setup.board.pawn.complement()) {
@@ -174,6 +176,37 @@ function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
           />
         </Box>
       </Group>
+
+      <Stack gap="xs" mt="md" p="md" style={{ border: "1px solid var(--mantine-color-default-border)", borderRadius: "var(--mantine-radius-sm)" }}>
+        <Text fw="bold" size="sm">{t("databaseOptions.downloadPositionCache")}</Text>
+        <Text size="xs" c="dimmed">{t("databaseOptions.downloadPositionCacheDesc")}</Text>
+        <Button
+          variant="light"
+          onClick={async () => {
+            setDownloadingCache(true);
+            try {
+              const result = await commands.downloadPositionCache();
+              if (result.status === "error") {
+                console.error("Failed to download position cache:", result.error);
+                alert(`Failed to download position cache: ${result.error}`);
+                setDownloadingCache(false);
+              } else {
+                alert(t("databaseOptions.positionCacheDownloaded"));
+                setDownloadingCache(false);
+              }
+            } catch (error) {
+              console.error("Failed to download position cache:", error);
+              alert(`Failed to download position cache: ${error}`);
+              setDownloadingCache(false);
+            }
+          }}
+          disabled={downloadingCache}
+          loading={downloadingCache}
+          size="sm"
+        >
+          {t("databaseOptions.downloadPositionCache")}
+        </Button>
+      </Stack>
     </Stack>
   );
 }

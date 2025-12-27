@@ -35,8 +35,8 @@ use crate::chess::{
 };
 use crate::db::{
     clear_games, convert_pgn, create_indexes, delete_database, delete_db_game, delete_empty_games,
-    delete_indexes, export_to_pgn, get_player, get_players_game_info, get_tournaments,
-    search_position,
+    delete_indexes, export_to_pgn, export_position_games_to_pgn, export_selected_games_to_pgn, get_player, get_players_game_info, get_tournaments,
+    precache_openings, search_position, download_position_cache,
 };
 use crate::fide::{download_fide_db, find_fide_player, fetch_fide_profile_html, save_fide_photo};
 use crate::fs::{set_file_as_executable, DownloadProgress};
@@ -46,14 +46,14 @@ use crate::package_manager::{
     check_package_installed, check_package_manager_available, find_executable_path, install_package,
 };
 use crate::pgn::{count_pgn_games, delete_game, read_games, write_game};
-use crate::puzzle::{get_puzzle, get_puzzle_db_info, get_puzzle_rating_range, import_puzzle_file};
+use crate::puzzle::{get_puzzle, get_puzzle_db_info, get_puzzle_rating_range, import_puzzle_file, check_puzzle_db_columns, get_puzzle_themes, get_puzzle_opening_tags, validate_puzzle_database};
 use crate::telemetry::{get_telemetry_config, get_telemetry_enabled, set_telemetry_enabled, get_user_country_api, get_user_country_locale, get_user_id_command, get_platform_info_command};
 use crate::{
     db::{
         delete_duplicated_games, edit_db_info, get_db_info, get_games, get_game, get_players, merge_players, update_game
     },
     fs::{download_file, file_exists, get_file_metadata},
-    opening::{get_opening_from_fen, get_opening_from_name, search_opening_name},
+    opening::{get_opening_from_fen, get_opening_from_name, get_opening_info_from_fen, search_opening_name},
 };
 use tokio::sync::{RwLock, Semaphore};
 
@@ -112,6 +112,7 @@ pub async fn run() {
             search_opening_name,
             get_opening_from_fen,
             get_opening_from_name,
+            get_opening_info_from_fen,
             get_players_game_info,
             get_engine_config,
             file_exists,
@@ -134,6 +135,8 @@ pub async fn run() {
             delete_db_game,
             delete_database,
             export_to_pgn,
+            export_position_games_to_pgn,
+            export_selected_games_to_pgn,
             authenticate,
             write_game,
             download_fide_db,
@@ -144,10 +147,16 @@ pub async fn run() {
             get_game,
             update_game,
             search_position,
+            precache_openings,
+            download_position_cache,
             get_players,
             get_puzzle_db_info,
             get_puzzle_rating_range,
             import_puzzle_file,
+            check_puzzle_db_columns,
+            get_puzzle_themes,
+            get_puzzle_opening_tags,
+            validate_puzzle_database,
             get_telemetry_enabled,
             set_telemetry_enabled,
             get_telemetry_config,
