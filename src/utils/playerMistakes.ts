@@ -1,28 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* playerMistakes.ts
- *
- * Improved PGN mistake extractor for annotated multi-PGN compendiums.
- *
- * Key fixes vs previous version:
- * - Never emits "piece inactivity" (or any error) when CP swing is 0 / positive (unless explicit ?/?? markers).
- * - Includes full context: game identification, player color, move label (1... vs 1.), and the opponent's immediate reply.
- * - Uses SIBLING variations (same ply alternatives): parent.children[1..] are alternatives to parent.children[0].
- * - Severity is consistent with CP thresholds (no "MISTAKE" at swing 0).
- *
- * New improvements (themes + issue types):
- * - Adds positional feature extraction (king safety / pawn structure / space / development).
- * - Infers Theme from real features instead of mapping only from MistakeKind.
- * - Reclassifies positional->tactical when opponent reply is forcing (check/capture) with meaningful CP loss.
- *
- * Requirements: chessops ^0.15.0
- */
-
 import { makeFen } from "chessops/fen";
 import { parsePgn, parseComment, startingPosition, type PgnNodeData } from "chessops/pgn";
 import { parseSan } from "chessops/san";
 import type { Color, Role, Square } from "chessops/types";
 
-/* ---------------------------------- Public API ---------------------------------- */
+import { detectThemes, type ThemeId, type ThemeContext } from "./themes";
+import { clonePosition, playMovesWithEvents, materialFromFen, isEndgameFen, isMatePosition } from "./themes/engine";
+
+function determineWin(result: string | undefined, playerColor: Color): boolean {
+  if (!result) return false;
+  if (result.startsWith("1-0")) return playerColor === "white";
+  if (result.startsWith("0-1")) return playerColor === "black";
+  return false;
+}
 
 export type MistakeKind =
   | "tactical_blunder"
@@ -37,36 +26,23 @@ export type MistakeKind =
 export type MistakeSeverity = "blunder" | "mistake" | "inaccuracy" | "info";
 
 export interface PlayerMistakeOptions {
-  /** How many plies to print for variation lines */
   maxVariationPlies?: number;
-
-  /** Consider these many plies as "opening phase" */
   openingPhasePlies?: number;
-
-  /** CP thresholds (player perspective). Only negative swings count as errors unless explicit ?/?? exists. */
   cpInaccuracy?: number;
   cpMistake?: number;
   cpBlunder?: number;
-
-  /** If a best sibling alternative is >= this CP better than played, mark missed-tactic-ish evidence */
   minAltGainCp?: number;
-
-  /** Minimum CP loss to allow strategic tags like "piece inactivity" (prevents nonsense at 0 CP) */
   minStrategicLossCp?: number;
-
-  /** If true, allow emitting an inaccuracy even without eval, when SAN/NAG contains ?/?? */
   allowSymbolOnly?: boolean;
-
-  /** Limit siblings inspected per ply for performance */
   maxSiblingsPerPly?: number;
-
-  /** How many plies of mainline to keep as SAN context */
   contextPlies?: number;
+  maxMove?: number;
+  playerColor?: Color;
 }
 
 export interface GameIdentity {
   index: number;
-  source: string; // e.g. "Chess.com"
+  source: string; 
   site?: string;
   event?: string;
   date?: string;
@@ -82,45 +58,45 @@ export interface GameIdentity {
 export interface AlternativeSuggestion {
   san: string;
   line: string;
-  cpAfterPlayer?: number; // player-perspective CP after alternative move (if present)
-  gainCpVsPlayed?: number; // alt - played (if played is known)
+  cpAfterPlayer?: number; 
+  gainCpVsPlayed?: number; 
 }
 
 export interface PlayerMistake {
   game: GameIdentity;
 
-  /** Main player identification */
+  
   playerName: string;
   playerColor: Color;
 
-  /** Move info */
+  
   ply: number;
   moveNumber: number;
   mover: Color;
-  moveLabel: string; // "1. e4" or "1... e5"
+  moveLabel: string; 
   playedSan: string;
 
-  /** Context */
-  sanContextBefore: string[]; // last N plies before the move
+  
+  sanContextBefore: string[]; 
   opponentReplySan?: string;
   opponentReplyMoveLabel?: string;
 
-  /** Position snapshots */
+  
   fenBefore: string;
   fenAfter: string;
   fenAfterOpponentReply?: string;
 
-  /** Eval info (player perspective, CP) */
+  
   cpBeforePlayer?: number;
   cpAfterPlayer?: number;
-  cpSwingPlayer?: number; // after - before (negative is worse)
-  cpLossAbs?: number; // abs(negative swing) or alt gain
+  cpSwingPlayer?: number; 
+  cpLossAbs?: number; 
 
-  /** Classification */
+  
   kind: MistakeKind;
   severity: MistakeSeverity;
 
-  /** Strong explanation signals */
+  
   flags: {
     hasQuestionMark: boolean;
     hasDoubleQuestion: boolean;
@@ -136,7 +112,7 @@ export interface PlayerMistake {
 
     openingPhase: boolean;
 
-    // --- NEW positional features (all optional => backwards compatible) ---
+    
     kingCastledBefore?: boolean;
     kingCastledAfter?: boolean;
     kingShieldBefore?: number;
@@ -164,10 +140,19 @@ export interface PlayerMistake {
     developmentScoreAfter?: number;
   };
 
-  /** Best same-ply alternative (sibling) */
+  /**
+   * Thematic tags inferred from the sibling punishment variation.  Each
+   * tag corresponds to a pattern detected by the theme engine.  Tags
+   * should be added sparingly – only when the heuristics are confident.
+   * An empty array indicates that no themes were detected.  See
+   * src/utils/themes for the list of possible values.
+   */
+  tags?: ThemeId[];
+
+  
   bestAlternative?: AlternativeSuggestion;
 
-  /** Extra candidate alternatives (top few) */
+  
   alternativeCandidates?: AlternativeSuggestion[];
 }
 
@@ -178,8 +163,364 @@ export interface PlayerMistakesReport {
   mistakes: PlayerMistake[];
 }
 
-const DEFAULTS: Required<PlayerMistakeOptions> = {
-  maxVariationPlies: 10,
+
+
+
+
+
+
+
+
+
+
+
+export type ErrorKind = MistakeKind;
+
+
+export interface Evidence {
+  
+  cpSwingAbs: number;
+}
+
+/**
+ * An Issue extends a PlayerMistake by ensuring tags and evidence fields
+ * are present.  Additional derived properties can be added here in the
+ * future without affecting the core analysis logic.
+ */
+export interface Issue extends PlayerMistake {
+  tags: ThemeId[];
+  evidence: Evidence;
+}
+
+
+export interface OpeningStat {
+  opening?: string;
+  eco?: string;
+  playerColor: Color;
+  games: number;
+  pliesAnalyzed: number;
+  issueCounts: Record<ErrorKind, number>;
+  frequentMistakes: Array<Issue & { count?: number }>;
+}
+
+export interface PlayerMistakeOptions {
+  maxVariationPlies?: number;
+  openingPhasePlies?: number;
+  cpInaccuracy?: number;
+  cpMistake?: number;
+  cpBlunder?: number;
+  minAltGainCp?: number;
+  minStrategicLossCp?: number;
+  allowSymbolOnly?: boolean;
+  maxSiblingsPerPly?: number;
+  contextPlies?: number;
+  maxMove?: number;
+  playerColor?: Color;
+}
+
+
+export interface AnalysisResult {
+  player: string;
+  gamesAnalyzed: number;
+  gamesMatchedPlayer: number;
+  issues: Issue[];
+  pawnStructures: PawnStructureStat[];
+  stats: {
+    global: {
+      issueCounts: Record<ErrorKind, number>;
+      themeCounts: Record<Theme, number>;
+      mostCommonSchemes: { schemeSignature: string; count: number }[];
+    };
+    byOpening: OpeningStat[];
+  };
+}
+
+/**
+ * Generate a full analysis result for the UI.  Internally this invokes
+ * `analyzePlayerMistakes` to extract the raw mistake list, then enriches
+ * each record with evidence and tags, and finally aggregates statistics
+ * globally and by opening.  Consumers should call this function instead
+ * of `analyzePlayerMistakes` when the richer model is required.
+ */
+export function generateAnalysisResult(
+  pgnText: string,
+  playerName: string,
+  options?: PlayerMistakeOptions,
+): AnalysisResult {
+  const report = analyzePlayerMistakes(pgnText, playerName, options);
+  
+  const issues: Issue[] = report.mistakes.map((m) => {
+    const tags = m.tags ?? [];
+    const evidence: Evidence = { cpSwingAbs: m.cpLossAbs ?? 0 };
+    return { ...m, tags, evidence };
+  });
+  
+  let filteredIssues = issues;
+  if (options?.maxMove !== undefined) {
+    filteredIssues = filteredIssues.filter(i => i.moveNumber <= options.maxMove!);
+  }
+  if (options?.playerColor) {
+    filteredIssues = filteredIssues.filter(i => i.playerColor === options.playerColor);
+  }
+  
+  const pawnStructures =
+    options?.maxMove !== undefined && options?.playerColor
+      ? computePawnStructures(pgnText, playerName, {
+          moveNumber: options.maxMove,
+          playerColor: options.playerColor,
+        })
+      : [];
+  
+  const initialCounts: Record<ErrorKind, number> = {
+    tactical_blunder: 0,
+    tactical_mistake: 0,
+    tactical_inaccuracy: 0,
+    material_blunder: 0,
+    opening_principle: 0,
+    piece_inactivity: 0,
+    positional_misplay: 0,
+    unknown: 0,
+  };
+  const globalIssueCounts: Record<ErrorKind, number> = { ...initialCounts };
+  const globalThemeCounts: Record<Theme, number> = {} as Record<Theme, number>;
+  const schemeCounts: Record<string, number> = {};
+  for (const issue of issues) {
+    globalIssueCounts[issue.kind] = (globalIssueCounts[issue.kind] ?? 0) + 1;
+    for (const tag of issue.tags) {
+      globalThemeCounts[tag as Theme] = (globalThemeCounts[tag as Theme] ?? 0) + 1;
+    }
+    const signature = issue.tags.slice().sort().join("+");
+    if (signature) {
+      schemeCounts[signature] = (schemeCounts[signature] ?? 0) + 1;
+    }
+  }
+  const mostCommonSchemes = Object.entries(schemeCounts)
+    .map(([schemeSignature, count]) => ({ schemeSignature, count }))
+    .sort((a, b) => b.count - a.count);
+  
+  const byOpeningMap = new Map<string, OpeningStat>();
+  const gameCountMap = new Map<string, Set<number>>();
+  const ecoMap = new Map<string, Set<string>>();
+
+  function baseOpeningName(opening?: string): string {
+    if (!opening) return "Unknown";
+    let s = opening.trim();
+    s = s.split(/[,:;]/)[0] ?? s;
+    s = s.split(/\(/)[0] ?? s;
+    s = s.split(" - ")[0] ?? s;
+    s = s.split(" / ")[0] ?? s;
+    return s.trim() || "Unknown";
+  }
+
+  for (const issue of issues) {
+    const opening = baseOpeningName(issue.game.opening);
+    const eco = issue.game.eco;
+    const color = issue.playerColor;
+    const key = `${opening}|${color}`;
+    let stat = byOpeningMap.get(key);
+    if (!stat) {
+      stat = {
+        opening,
+        eco: undefined,
+        playerColor: color,
+        games: 0,
+        pliesAnalyzed: 0,
+        issueCounts: { ...initialCounts },
+        frequentMistakes: [],
+      };
+      byOpeningMap.set(key, stat);
+    }
+    
+    stat.pliesAnalyzed++;
+    stat.issueCounts[issue.kind] = (stat.issueCounts[issue.kind] ?? 0) + 1;
+    stat.frequentMistakes.push(issue);
+    
+    let set = gameCountMap.get(key);
+    if (!set) {
+      set = new Set<number>();
+      gameCountMap.set(key, set);
+    }
+    set.add(issue.game.index);
+
+    if (eco) {
+      let ecoSet = ecoMap.get(key);
+      if (!ecoSet) {
+        ecoSet = new Set<string>();
+        ecoMap.set(key, ecoSet);
+      }
+      ecoSet.add(eco);
+    }
+  }
+  
+  const byOpening: OpeningStat[] = [];
+  for (const [key, stat] of byOpeningMap.entries()) {
+    const gamesSet = gameCountMap.get(key);
+    stat.games = gamesSet ? gamesSet.size : 0;
+    const ecoSet = ecoMap.get(key);
+    if (ecoSet && ecoSet.size === 1) {
+      stat.eco = Array.from(ecoSet)[0];
+    }
+    const freqMap = new Map<string, { issue: Issue; count: number }>();
+    for (const issue of stat.frequentMistakes) {
+      const key = `${issue.moveNumber}|${issue.playedSan}|${issue.kind}|${issue.fenBefore}`;
+      const existing = freqMap.get(key);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        freqMap.set(key, { issue, count: 1 });
+      }
+    }
+    stat.frequentMistakes = Array.from(freqMap.values())
+      .sort((a, b) => b.count - a.count || (b.issue.evidence.cpSwingAbs ?? 0) - (a.issue.evidence.cpSwingAbs ?? 0))
+      .slice(0, 5)
+      .map((entry) => ({ ...entry.issue, count: entry.count }));
+    byOpening.push(stat);
+  }
+  
+  byOpening.sort((a, b) => b.games - a.games);
+  return {
+    player: report.playerName,
+    gamesAnalyzed: report.totalGamesParsed,
+    gamesMatchedPlayer: report.gamesMatchedPlayer,
+    issues,
+    pawnStructures,
+    stats: {
+      global: { issueCounts: globalIssueCounts, themeCounts: globalThemeCounts, mostCommonSchemes },
+      byOpening,
+    },
+  };
+}
+
+export interface PawnStructureGame {
+  gameIndex: number;
+  white?: string;
+  black?: string;
+  result?: string;
+  fen: string;
+}
+
+export interface PawnStructureStat {
+  structure: string;
+  frequency: number;
+  winRate: number;
+  sampleFen?: string;
+  games?: PawnStructureGame[];
+}
+
+export function computePawnStructures(
+  pgnText: string,
+  playerName: string,
+  options: { moveNumber: number; playerColor: Color },
+): PawnStructureStat[] {
+  const games = safeParseGames(pgnText);
+  const stats = new Map<string, { count: number; wins: number; sampleFen?: string; games: PawnStructureGame[] }>();
+  const maxGamesPerStructure = 50;
+
+  for (let gi = 0; gi < games.length; gi++) {
+    const game = games[gi] as any;
+    const headers: Map<string, string> = game.headers;
+    const white = headers.get("White") ?? "";
+    const black = headers.get("Black") ?? "";
+    const result = headers.get("Result") ?? undefined;
+
+    const playerColor = detectPlayerColor(playerName, white, black);
+    if (!playerColor || playerColor !== options.playerColor) continue;
+
+    let pos: any;
+    try {
+      pos = startingPosition(game.headers).unwrap();
+    } catch {
+      continue;
+    }
+
+    let node: NodeAny = game.moves;
+    let structure: string | null = null;
+    let structureFen: string | null = null;
+
+    while (node.children && node.children.length > 0) {
+      const main = node.children[0] as ChildNodeAny;
+      const mover: Color = pos.turn;
+      const moveNumber: number = pos.fullmoves;
+      const san = sanitizeSan(main.data.san);
+
+      const mv = safeParseSan(pos, san);
+      if (!mv) break;
+      pos.play(mv);
+
+      if (mover === options.playerColor && moveNumber === options.moveNumber) {
+        const fenAfter = makeFen(pos.toSetup());
+        structureFen = fenAfter;
+        structure = pawnStructureSignatureForColor(fenAfter, options.playerColor);
+        break;
+      }
+
+      node = main as any;
+    }
+
+    if (!structure || !structureFen) continue;
+    const won = determineWin(result, options.playerColor);
+    if (!stats.has(structure)) {
+      stats.set(structure, { count: 0, wins: 0, sampleFen: structureFen, games: [] });
+    }
+    const stat = stats.get(structure)!;
+    stat.count += 1;
+    if (won) stat.wins += 1;
+    if (!stat.sampleFen) stat.sampleFen = structureFen;
+    if (stat.games.length < maxGamesPerStructure) {
+      stat.games.push({
+        gameIndex: gi,
+        white,
+        black,
+        result,
+        fen: structureFen,
+      });
+    }
+  }
+
+  return Array.from(stats.entries())
+    .map(([structure, { count, wins, sampleFen, games }]) => ({
+      structure,
+      frequency: count,
+      winRate: count > 0 ? wins / count : 0,
+      sampleFen,
+      games,
+    }))
+    .sort((a, b) => b.frequency - a.frequency)
+    .slice(0, 20);
+}
+
+function pawnStructureSignatureForColor(fen: string, color: Color): string {
+  const [boardStr] = fen.split(" ");
+  if (!boardStr) return "Unknown";
+
+  const pawns: string[] = [];
+  const ranks = boardStr.split("/");
+  if (ranks.length !== 8) return "Unknown";
+
+  for (let r = 0; r < 8; r++) {
+    const rank = 8 - r;
+    let file = 0;
+    for (const char of ranks[r] ?? "") {
+      const digit = Number(char);
+      if (!Number.isNaN(digit)) {
+        file += digit;
+        continue;
+      }
+      const fileChar = String.fromCharCode("a".charCodeAt(0) + file);
+      const square = `${fileChar}${rank}`;
+      if (color === "white" && char === "P") pawns.push(square);
+      if (color === "black" && char === "p") pawns.push(square);
+      file += 1;
+    }
+  }
+
+  pawns.sort();
+  return pawns.join(",") || "-";
+}
+
+
+const DEFAULTS: Required<Pick<PlayerMistakeOptions, "maxVariationPlies" | "openingPhasePlies" | "cpInaccuracy" | "cpMistake" | "cpBlunder" | "minAltGainCp" | "minStrategicLossCp" | "allowSymbolOnly" | "maxSiblingsPerPly" | "contextPlies" | "maxMove">> = {
+  maxVariationPlies: 30,
   openingPhasePlies: 20,
 
   cpInaccuracy: 50,
@@ -192,14 +533,17 @@ const DEFAULTS: Required<PlayerMistakeOptions> = {
   allowSymbolOnly: true,
   maxSiblingsPerPly: 10,
   contextPlies: 8,
+  maxMove: 100,
 };
+
+type MistakeOptionsResolved = Required<Omit<PlayerMistakeOptions, "playerColor">> & { playerColor?: Color };
 
 export function analyzePlayerMistakes(
   pgnText: string,
   playerName: string,
   options?: PlayerMistakeOptions,
 ): PlayerMistakesReport {
-  const opt: Required<PlayerMistakeOptions> = { ...DEFAULTS, ...(options ?? {}) };
+  const opt: MistakeOptionsResolved = { ...DEFAULTS, ...(options ?? {}) };
 
   const games = safeParseGames(pgnText);
 
@@ -237,7 +581,7 @@ export function analyzePlayerMistakes(
     mistakes.push(...perGame);
   }
 
-  // Sort by absolute CP loss descending (largest blunders first)
+  
   mistakes.sort((a, b) => (b.cpLossAbs ?? 0) - (a.cpLossAbs ?? 0));
 
   return {
@@ -248,7 +592,7 @@ export function analyzePlayerMistakes(
   };
 }
 
-/* ---------------------------------- Core game walk ---------------------------------- */
+
 
 type NodeAny = { data?: PgnNodeData; children: ChildNodeAny[] };
 type ChildNodeAny = { data: PgnNodeData; children: ChildNodeAny[] };
@@ -258,30 +602,30 @@ function analyzeSingleGame(
   gameId: GameIdentity,
   playerName: string,
   playerColor: Color,
-  opt: Required<PlayerMistakeOptions>,
+  opt: MistakeOptionsResolved,
 ): PlayerMistake[] {
   const out: PlayerMistake[] = [];
 
-  // Start position (supports custom FEN headers)
+  
   let pos: any;
   try {
     pos = startingPosition(game.headers).unwrap();
   } catch {
-    // If startingPosition fails, skip game (better than producing garbage)
+    
     return out;
   }
 
-  // Traversal variables
+  
   let ply = 0;
   let decisionNode: NodeAny = game.moves;
 
-  // Keep last known eval (White perspective CP) to bridge sparse annotations
+  
   let lastCpWhite: number | undefined;
 
-  // Context buffer: last N SAN plies
+  
   const context: string[] = [];
 
-  // Pending record index to attach opponent reply + material loss after reply
+  
   let pendingReply: { idx: number; materialBaselinePawns: number } | null = null;
 
   while (decisionNode.children && decisionNode.children.length > 0) {
@@ -292,36 +636,37 @@ function analyzeSingleGame(
     const moveNumber: number = pos.fullmoves;
 
     const fenBefore = makeFen(pos.toSetup());
+    const posBeforeMove = clonePosition(pos);
 
     const rawSan = main.data.san;
     const playedSan = sanitizeSan(rawSan);
 
-    // Eval BEFORE (usually in startingComments)
+    
     const cpWhiteBefore = evalCpWhiteFromAnyComments(main.data.startingComments) ?? lastCpWhite;
     const cpBeforePlayer = cpWhiteBefore !== undefined ? cpToPlayer(cpWhiteBefore, playerColor) : undefined;
 
-    // NAG / punctuation indicators
+    
     const nags = main.data.nags ?? [];
     const hasQM = /[?]/.test(rawSan) || hasQuestionMarkFromNags(nags);
-    const hasDQM = /\?\?/.test(rawSan) || nags.includes(4); // ?? often NAG 4
+    const hasDQM = /\?\?/.test(rawSan) || nags.includes(4); 
     const hasEX = /[!]/.test(rawSan) || hasExclamationFromNags(nags);
 
-    // Development metrics BEFORE (only meaningful for opening heuristics)
+    
     const undBefore = undevelopedMinorsCount(pos, playerColor);
 
-    // BEFORE positional features (only for player moves)
+    
     const preKing = mover === playerColor ? kingSafetyFeatures(pos, playerColor) : null;
     const prePawn = mover === playerColor ? pawnStructureFeatures(pos, playerColor) : null;
     const preSpace = mover === playerColor ? spaceFeatures(pos, playerColor) : null;
     const preDev = mover === playerColor ? developmentFeatures(pos, playerColor) : null;
 
-    // Parse and play move
+    
     const mv = safeParseSan(pos, playedSan);
     if (!mv) {
-      // If SAN parsing fails, descend mainline but avoid producing invalid evaluations
+      
       decisionNode = main as any;
       ply += 1;
-      // Still push context token for UI continuity
+      
       contextPush(context, playedSan, opt.contextPlies);
       continue;
     }
@@ -330,20 +675,20 @@ function analyzeSingleGame(
 
     const fenAfter = makeFen(pos.toSetup());
 
-    // AFTER positional features (only for player moves)
+    
     const postKing = mover === playerColor ? kingSafetyFeatures(pos, playerColor) : null;
     const postPawn = mover === playerColor ? pawnStructureFeatures(pos, playerColor) : null;
     const postSpace = mover === playerColor ? spaceFeatures(pos, playerColor) : null;
     const postDev = mover === playerColor ? developmentFeatures(pos, playerColor) : null;
 
-    // Eval AFTER (usually in comments)
+    
     const cpWhiteAfter = evalCpWhiteFromAnyComments(main.data.comments);
     if (cpWhiteAfter !== undefined) lastCpWhite = cpWhiteAfter;
 
     const cpAfterPlayer = cpWhiteAfter !== undefined ? cpToPlayer(cpWhiteAfter, playerColor) : undefined;
 
-    // If this is an opponent move and we have a pending player's mistake waiting for reply,
-    // attach opponent reply SAN + fenAfterOpponentReply + capture/check + material loss.
+    
+    
     if (pendingReply && mover !== playerColor) {
       const rec = out[pendingReply.idx];
       if (rec) {
@@ -358,13 +703,13 @@ function analyzeSingleGame(
         const loss = pendingReply.materialBaselinePawns - playerMatNow;
         rec.flags.materialLossSoonPawns = loss > 0 ? loss : 0;
 
-        // If material loss is significant, upgrade classification if needed
+        
         if ((rec.flags.materialLossSoonPawns ?? 0) >= 2) {
           rec.kind = "material_blunder";
           rec.severity = "blunder";
         }
 
-        // Reclassify positional->tactical when opponent reply is forcing and loss is meaningful
+        
         const absLoss = rec.cpLossAbs ?? 0;
         if (
           rec.kind === "positional_misplay" &&
@@ -382,20 +727,20 @@ function analyzeSingleGame(
       pendingReply = null;
     }
 
-    // Analyze only player moves
+    
     if (mover === playerColor) {
       const undAfter = undevelopedMinorsCount(pos, playerColor);
 
       const cpSwingPlayer =
         cpBeforePlayer !== undefined && cpAfterPlayer !== undefined ? cpAfterPlayer - cpBeforePlayer : undefined;
 
-      // CP loss is negative swing magnitude (if worsening), otherwise 0
+      
       const cpLoss = cpSwingPlayer !== undefined && cpSwingPlayer < 0 ? -cpSwingPlayer : 0;
 
-      // Same-ply sibling alternatives are parent.children[1..]
-      const siblings = (parent.children.slice(1) as ChildNodeAny[]).slice(0, opt.maxSiblingsPerPly);
+      
+      const altSiblings = (parent.children.slice(1) as ChildNodeAny[]).slice(0, opt.maxSiblingsPerPly);
 
-      const altCandidates: AlternativeSuggestion[] = siblings
+      const altCandidates: AlternativeSuggestion[] = altSiblings
         .map((sib) => buildSiblingAlternativeSuggestion(sib, mover, moveNumber, ply, playerColor, cpAfterPlayer, opt))
         .filter((x): x is AlternativeSuggestion => !!x);
 
@@ -404,10 +749,10 @@ function analyzeSingleGame(
       const altGainAbs =
         bestAlt?.gainCpVsPlayed !== undefined && bestAlt.gainCpVsPlayed > 0 ? bestAlt.gainCpVsPlayed : 0;
 
-      // Decide if we should emit a record:
-      // - primary: measurable negative CP loss above inaccuracy threshold
-      // - or explicit annotation ?/?? (symbol-only allowed) even if eval is missing/small
-      // - or strong best alternative improvement with eval data
+      
+      
+      
+      
       const hasEvalLoss = cpLoss >= opt.cpInaccuracy;
       const hasSymbol = hasQM || hasDQM;
       const hasStrongAlt = altGainAbs >= opt.minAltGainCp;
@@ -416,7 +761,7 @@ function analyzeSingleGame(
         hasEvalLoss || (opt.allowSymbolOnly && hasSymbol) || (cpSwingPlayer === undefined && hasStrongAlt);
 
       if (shouldEmit) {
-        // Determine severity: based on cpLoss if available; otherwise based on symbols/alt gain
+        
         const lossForSeverity = cpLoss > 0 ? cpLoss : altGainAbs;
 
         const severity: MistakeSeverity =
@@ -428,7 +773,7 @@ function analyzeSingleGame(
                 ? "inaccuracy"
                 : "info";
 
-        // Improved classification: never label strategic errors without a meaningful loss
+        
         const openingPhase = ply < opt.openingPhasePlies;
 
         const { kind, adjustedSeverity } = classify({
@@ -510,21 +855,135 @@ function analyzeSingleGame(
           alternativeCandidates: altCandidates.length ? altCandidates.slice(0, 3) : undefined,
         };
 
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        const themeSibling = chooseEvaluatedSibling(altSiblings, playerColor);
+        if (themeSibling) {
+          const altForTheme = buildSiblingAlternativeSuggestion(
+            themeSibling,
+            mover,
+            moveNumber,
+            ply,
+            playerColor,
+            cpAfterPlayer,
+            opt,
+          );
+          if (altForTheme) record.bestAlternative = altForTheme;
+        }
+
+        let tags: ThemeId[] = [];
+        try {
+          const maxPlies = opt.maxVariationPlies ?? DEFAULTS.maxVariationPlies;
+          let lineNode = themeSibling;
+          let startFen = fenBefore;
+          let lineStartPos = posBeforeMove;
+          let lineActorColor = playerColor;
+
+          if (!lineNode) {
+            const punishSiblings = (main.children?.slice(1) as ChildNodeAny[] | undefined)?.slice(
+              0,
+              opt.maxSiblingsPerPly,
+            );
+            if (punishSiblings && punishSiblings.length > 0) {
+              lineNode = choosePunishVariation(punishSiblings);
+              startFen = fenAfter;
+              lineStartPos = clonePosition(pos);
+              lineActorColor = playerColor === "white" ? "black" : "white";
+            }
+          }
+
+          const variation = lineNode ? collectVariationInfo(lineNode, maxPlies) : { moves: [], mateIn: undefined };
+          const seq = variation.moves;
+          const startMaterialDiff =
+            materialFromFen(startFen, lineActorColor) - materialFromFen(startFen, playerColor);
+          const { finalPos, movesPlayed, events } = playMovesWithEvents(
+            lineStartPos,
+            seq,
+            lineActorColor,
+            playerColor,
+          );
+          const finalFen = makeFen(finalPos.toSetup());
+          const finalMaterialDiff =
+            materialFromFen(finalFen, lineActorColor) - materialFromFen(finalFen, playerColor);
+          const regressionEvents = [...events]
+            .reverse()
+            .map((event) => ({
+              ...event,
+              fenBefore: event.fenAfter,
+              fenAfter: event.fenBefore,
+              materialDiffBefore: event.materialDiffAfter,
+              materialDiffAfter: event.materialDiffBefore,
+            }));
+          const ctx: ThemeContext = {
+            startFen,
+            finalFen,
+            moveSequence: seq,
+            moveEvents: events,
+            regressionEvents,
+            playerColor,
+            punisherColor: lineActorColor,
+            moveNumber,
+            movesPlayed,
+            mateIn: variation.mateIn,
+            startMaterialDiff,
+            finalMaterialDiff,
+            isMate: isMatePosition(finalPos),
+            isEndgame: isEndgameFen(finalFen),
+          };
+          tags = detectThemes(ctx);
+        } catch {
+          tags = [];
+        }
+
+        if (!tags.length) {
+          const startFen = fenBefore;
+          const startMaterialDiff =
+            materialFromFen(startFen, playerColor) - materialFromFen(startFen, playerColor === "white" ? "black" : "white");
+          const ctx: ThemeContext = {
+            startFen,
+            finalFen: startFen,
+            moveSequence: [],
+            moveEvents: [],
+            regressionEvents: [],
+            playerColor,
+            punisherColor: playerColor,
+            moveNumber,
+            movesPlayed: 0,
+            startMaterialDiff,
+            finalMaterialDiff: startMaterialDiff,
+            isMate: false,
+            isEndgame: isEndgameFen(startFen),
+          };
+          tags = detectThemes(ctx);
+        }
+
+        
+        
+        
+        record.tags = tags;
+
         const idx = out.push(record) - 1;
 
-        // Set pending reply for opponent's immediate response
+        
         pendingReply = {
           idx,
-          // baseline after the player's move, before opponent reply
+          
           materialBaselinePawns: materialCountInPawns(pos, playerColor),
         };
       }
     }
 
-    // Update context AFTER playing the move
+    
     contextPush(context, playedSan, opt.contextPlies);
 
-    // Descend to continue mainline
+    
     decisionNode = main as any;
     ply += 1;
   }
@@ -532,7 +991,7 @@ function analyzeSingleGame(
   return out;
 }
 
-/* ---------------------------------- Classification ---------------------------------- */
+
 
 function classify(args: {
   cpLoss: number;
@@ -546,7 +1005,7 @@ function classify(args: {
   undAfter: number;
   bestAlt: AlternativeSuggestion | null;
   altGainAbs: number;
-  opt: Required<PlayerMistakeOptions>;
+  opt: MistakeOptionsResolved;
 }): { kind: MistakeKind; adjustedSeverity: MistakeSeverity } {
   const {
     cpLoss,
@@ -562,12 +1021,12 @@ function classify(args: {
     opt,
   } = args;
 
-  // If we only have symbols and no meaningful loss, keep it mild.
+  
   if (cpLoss < opt.cpInaccuracy && (hasQM || hasDQM) && severity === "info") {
     return { kind: "positional_misplay", adjustedSeverity: "inaccuracy" };
   }
 
-  // Tactical by large eval drop
+  
   if (cpLoss >= opt.cpBlunder) {
     return { kind: "tactical_blunder", adjustedSeverity: "blunder" };
   }
@@ -575,8 +1034,8 @@ function classify(args: {
     return { kind: "tactical_mistake", adjustedSeverity: "mistake" };
   }
   if (cpLoss >= opt.cpInaccuracy) {
-    // Opening principle: only in opening AND move looks like a principle violation AND
-    // development didn't improve (undeveloped minors didn't decrease)
+    
+    
     if (
       openingPhase &&
       looksLikeOpeningPrincipleViolation(playedSan) &&
@@ -586,8 +1045,8 @@ function classify(args: {
       return { kind: "opening_principle", adjustedSeverity: severity };
     }
 
-    // Piece inactivity: only if loss is meaningful AND move is clearly non-developing
-    // AND development remains poor.
+    
+    
     if (
       cpLoss >= opt.minStrategicLossCp &&
       openingPhase &&
@@ -598,7 +1057,7 @@ function classify(args: {
       return { kind: "piece_inactivity", adjustedSeverity: severity };
     }
 
-    // Missed tactic hint: alternative is much better and is check/capture
+    
     if (bestAlt && altGainAbs >= opt.minAltGainCp) {
       if (isCaptureSan(bestAlt.san) || isCheckSan(bestAlt.san)) {
         return { kind: "tactical_inaccuracy", adjustedSeverity: severity };
@@ -608,9 +1067,9 @@ function classify(args: {
     return { kind: "positional_misplay", adjustedSeverity: severity };
   }
 
-  // If no meaningful eval loss, do not invent mistakes.
-  // But if there is a strong alternative improvement (rare case when played eval missing),
-  // keep it mild.
+  
+  
+  
   if (bestAlt && altGainAbs >= opt.minAltGainCp) {
     return { kind: "positional_misplay", adjustedSeverity: "inaccuracy" };
   }
@@ -618,7 +1077,7 @@ function classify(args: {
   return { kind: "unknown", adjustedSeverity: "info" };
 }
 
-/* ---------------------------------- Sibling Alternatives ---------------------------------- */
+
 
 function buildSiblingAlternativeSuggestion(
   siblingNode: ChildNodeAny,
@@ -627,12 +1086,12 @@ function buildSiblingAlternativeSuggestion(
   ply: number,
   playerColor: Color,
   playedCpAfterPlayer: number | undefined,
-  opt: Required<PlayerMistakeOptions>,
+  opt: MistakeOptionsResolved,
 ): AlternativeSuggestion | null {
   const sanAltRaw = siblingNode.data.san;
   const sanAlt = sanitizeSan(sanAltRaw);
 
-  // Eval after alternative move (often stored in sibling's `comments` or `startingComments`)
+  
   const cpWhiteAfter =
     evalCpWhiteFromAnyComments(siblingNode.data.comments) ??
     evalCpWhiteFromAnyComments(siblingNode.data.startingComments);
@@ -664,8 +1123,28 @@ function chooseBestAlternativeByEval(cands: AlternativeSuggestion[]): Alternativ
     return withEval[0];
   }
 
-  // If no evals exist, return first candidate for reference only
+  
   return cands[0];
+}
+
+function chooseEvaluatedSibling(sibs: ChildNodeAny[], playerColor: Color): ChildNodeAny | null {
+  if (!sibs || sibs.length === 0) return null;
+  let best: ChildNodeAny | null = null;
+  let bestEval: number | undefined;
+
+  for (const sib of sibs) {
+    const cpWhiteAfter =
+      evalCpWhiteFromAnyComments(sib.data.comments) ?? evalCpWhiteFromAnyComments(sib.data.startingComments);
+    if (cpWhiteAfter === undefined) continue;
+    const cpAfterPlayer = cpToPlayer(cpWhiteAfter, playerColor);
+    if (bestEval === undefined || cpAfterPlayer > bestEval) {
+      bestEval = cpAfterPlayer;
+      best = sib;
+    }
+  }
+
+  if (best) return best;
+  return choosePunishVariation(sibs);
 }
 
 function formatVariationLineFromNode(
@@ -680,8 +1159,8 @@ function formatVariationLineFromNode(
   let mover: Color = firstMover;
   let moveNo = startMoveNumber;
 
-  // The variation starts at the same ply as the played move.
-  // Print "N." if White to move, "N..." if Black to move.
+  
+  
   parts.push(mover === "white" ? `${moveNo}.` : `${moveNo}...`);
 
   let node: ChildNodeAny | null = firstNode;
@@ -689,10 +1168,10 @@ function formatVariationLineFromNode(
   for (let i = 0; i < maxPlies && node; i++) {
     parts.push(sanitizeSan(node.data.san));
 
-    // Advance along the variation mainline
+    
     node = node.children && node.children.length ? node.children[0] : null;
 
-    // Update ply/move numbering tokens
+    
     if (mover === "black") moveNo += 1;
     mover = mover === "white" ? "black" : "white";
 
@@ -705,7 +1184,7 @@ function formatVariationLineFromNode(
   return parts.join(" ").replace(/\s+/g, " ").trim();
 }
 
-/* ---------------------------------- Eval Extraction ---------------------------------- */
+
 
 function evalCpWhiteFromAnyComments(comments?: string[]): number | undefined {
   if (!comments || !comments.length) return undefined;
@@ -713,22 +1192,22 @@ function evalCpWhiteFromAnyComments(comments?: string[]): number | undefined {
   for (const raw of comments) {
     const parsed: any = parseComment(raw);
 
-    // chessops uses `eval` in many versions; keep compatibility if a different key exists.
+    
     const ev = parsed?.eval ?? parsed?.evaluation ?? parsed?.engine ?? undefined;
     if (!ev) continue;
 
-    // Pawn eval -> centipawns
+    
     if (typeof ev.pawns === "number") return Math.round(ev.pawns * 100);
     if (typeof ev.cp === "number") return Math.round(ev.cp);
 
-    // Mate eval -> very large CP
+    
     if (typeof ev.mate === "number") {
       const sign = ev.mate >= 0 ? 1 : -1;
       const n = Math.min(999, Math.abs(ev.mate));
       return sign * (100000 - n * 100);
     }
 
-    // Some formats store eval directly as number
+    
     if (typeof ev === "number") return Math.round(ev);
   }
 
@@ -739,27 +1218,27 @@ function cpToPlayer(cpWhite: number, playerColor: Color): number {
   return playerColor === "white" ? cpWhite : -cpWhite;
 }
 
-/* ---------------------------------- Development / Opening heuristics ---------------------------------- */
+
 
 function looksLikeOpeningPrincipleViolation(san: string): boolean {
-  // Heuristic-only: used ONLY when there is meaningful eval loss.
-  // Central pawn moves are generally "fine" opening moves, so avoid tagging them as principle violations.
+  
+  
   if (isCastlingSan(san)) return false;
   if (isDevelopingPieceMove(san)) return false;
 
-  // Early queen/rook/king moves are often suspicious in opening.
+  
   if (/^Q/.test(san)) return true;
   if (/^R/.test(san)) return true;
   if (/^K/.test(san)) return true;
 
-  // Flank pawn moves are more likely to be principle-ish (a/b/g/h pawns)
+  
   if (isPawnMove(san) && isFlankPawnMove(san)) return true;
 
   return false;
 }
 
 function isClearlyNonDevelopingMove(san: string): boolean {
-  // "Non-developing" in the opening: pawn moves (especially flank) and early queen moves.
+  
   if (isCastlingSan(san)) return false;
   if (isDevelopingPieceMove(san)) return false;
 
@@ -782,8 +1261,8 @@ function isPawnMove(san: string): boolean {
 }
 
 function isCentralPawnMove(san: string): boolean {
-  // Treat c/d/e/f pawns as central-ish.
-  // SAN can be "e4", "exd5", "cxd4", etc.
+  
+  
   const m = san.match(/^([a-h])/);
   if (!m) return false;
   const file = m[1];
@@ -820,13 +1299,13 @@ function undevelopedMinorsCount(pos: any, color: Color): number {
   return count;
 }
 
-/* ---------------------------------- Positional Feature Extraction ---------------------------------- */
+
 
 type KingSafety = {
   castled: boolean;
-  shield: number; // 0..3 typical
-  onOpenFile: boolean; // pawnless file (both colors)
-  xrayHeavy: boolean; // enemy rook/queen x-ray on king file
+  shield: number; 
+  onOpenFile: boolean; 
+  xrayHeavy: boolean; 
 };
 
 type PawnStruct = {
@@ -903,7 +1382,7 @@ function hasEnemyHeavyXrayOnFile(pos: any, ks: Square, color: Color): boolean {
         continue;
       }
       if (pc.color === enemy && (pc.role === "rook" || pc.role === "queen")) return true;
-      break; // blocked
+      break; 
     }
   }
   return false;
@@ -912,7 +1391,7 @@ function hasEnemyHeavyXrayOnFile(pos: any, ks: Square, color: Color): boolean {
 function kingShieldCount(pos: any, color: Color, ks: Square | null): number {
   if (ks == null) return 0;
 
-  // If clearly castled, use standard pawn shield squares.
+  
   if (isCastledKingSquare(color, ks)) {
     const kingside =
       (color === "white" && ks === squareFromName("g1")) ||
@@ -930,7 +1409,7 @@ function kingShieldCount(pos: any, color: Color, ks: Square | null): number {
     return count;
   }
 
-  // Else: local “forward shield” squares (3 squares in front)
+  
   const f = fileOf(ks);
   const r = rankOf(ks);
   const forwardRank = color === "white" ? r + 1 : r - 1;
@@ -969,7 +1448,7 @@ function pawnStructureFeatures(pos: any, color: Color): PawnStruct {
   const byFile = new Array(8).fill(0);
   for (const sq of pawns) byFile[fileOf(sq)]++;
 
-  // islands
+  
   let islands = 0;
   let inIsland = false;
   for (let f = 0; f < 8; f++) {
@@ -981,11 +1460,11 @@ function pawnStructureFeatures(pos: any, color: Color): PawnStruct {
     }
   }
 
-  // doubled
+  
   let doubled = 0;
   for (let f = 0; f < 8; f++) doubled += Math.max(0, byFile[f] - 1);
 
-  // isolated
+  
   let isolated = 0;
   for (let f = 0; f < 8; f++) {
     if (byFile[f] === 0) continue;
@@ -994,7 +1473,7 @@ function pawnStructureFeatures(pos: any, color: Color): PawnStruct {
     if (left === 0 && right === 0) isolated += byFile[f];
   }
 
-  // passed pawns (rough)
+  
   const enemyMax = new Array(8).fill(-1);
   const enemyMin = new Array(8).fill(8);
   for (const sq of enemyPawns) {
@@ -1072,9 +1551,9 @@ function developmentFeatures(pos: any, color: Color): DevFeat {
   const ks = kingSafetyFeatures(pos, color);
   const qm = queenMoved(pos, color);
 
-  // central pawn advancement (rough)
+  
   const pawns = Array.from(pos.board.pieces(color, "pawn") ?? []) as number[];
-  const centralFiles = new Set<number>([2, 3, 4, 5]); // c,d,e,f
+  const centralFiles = new Set<number>([2, 3, 4, 5]); 
   let centralAdvanced = 0;
   for (const sq of pawns) {
     const f = fileOf(sq);
@@ -1089,7 +1568,7 @@ function developmentFeatures(pos: any, color: Color): DevFeat {
   return { score, developedMinors, castled: ks.castled, queenMoved: qm };
 }
 
-/* ---------------------------------- Material heuristic ---------------------------------- */
+
 
 function materialCountInPawns(pos: any, color: Color): number {
   const values: Record<Role, number> = {
@@ -1117,10 +1596,10 @@ function countIterable(it: Iterable<any> | undefined | null): number {
   return Array.from(it).length;
 }
 
-/* ---------------------------------- SAN & NAG helpers ---------------------------------- */
+
 
 function sanitizeSan(san: string): string {
-  // Keep check/mate symbols, remove trailing !? annotations.
+  
   return san.trim().replace(/[\!\?]+$/g, "");
 }
 
@@ -1134,13 +1613,13 @@ function isCheckSan(san: string): boolean {
 
 function hasQuestionMarkFromNags(nags?: number[]): boolean {
   if (!nags || !nags.length) return false;
-  // Common NAGs: ?=2, ??=4, ?!=6
+  
   return nags.includes(2) || nags.includes(4) || nags.includes(6);
 }
 
 function hasExclamationFromNags(nags?: number[]): boolean {
   if (!nags || !nags.length) return false;
-  // Common NAGs: !=1, !! = 3, !?=5
+  
   return nags.includes(1) || nags.includes(3) || nags.includes(5);
 }
 
@@ -1156,14 +1635,99 @@ function moveLabel(moveNumber: number, mover: Color, san: string): string {
   return mover === "white" ? `${moveNumber}. ${san}` : `${moveNumber}... ${san}`;
 }
 
-/* ---------------------------------- Context ring ---------------------------------- */
+
 
 function contextPush(buf: string[], san: string, max: number) {
   buf.push(san);
   while (buf.length > max) buf.shift();
 }
 
-/* ---------------------------------- Player detection ---------------------------------- */
+
+
+/**
+ * Select one sibling variation to use as the punishment line.  When multiple
+ * siblings exist, the variation with the greatest depth (i.e. the longest
+ * chain of consecutive child moves) is chosen.  If depths are equal the
+ * first sibling is returned.  Returns null when the input array is empty.
+ */
+function choosePunishVariation(sibs: ChildNodeAny[]): ChildNodeAny | null {
+  if (!sibs || sibs.length === 0) return null;
+  let best: ChildNodeAny | null = null;
+  let bestDepth = -1;
+  for (const sib of sibs) {
+    const depth = variationDepth(sib);
+    if (best === null || depth > bestDepth) {
+      best = sib;
+      bestDepth = depth;
+    }
+  }
+  return best;
+}
+
+/**
+ * Compute the depth of a variation by following the first child pointers
+ * until a leaf is reached.  Each node contributes one ply to the depth.
+ */
+function variationDepth(node: ChildNodeAny): number {
+  let depth = 0;
+  let current: ChildNodeAny | undefined = node;
+  while (current) {
+    depth++;
+    if (current.children && current.children.length > 0) {
+      current = current.children[0] as any;
+    } else {
+      break;
+    }
+  }
+  return depth;
+}
+
+function extractMateInFromComments(comments?: string[]): number | undefined {
+  if (!comments || !comments.length) return undefined;
+
+  for (const raw of comments) {
+    const parsed: any = parseComment(raw);
+    const ev = parsed?.eval ?? parsed?.evaluation ?? parsed?.engine ?? undefined;
+    const mate = ev?.mate ?? parsed?.mate;
+    if (typeof mate === "number" && mate !== 0) {
+      return Math.abs(mate);
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Collect the SAN moves along a variation and any mate scores reported
+ * by the evaluator.  At most `maxPlies` plies are collected.
+ */
+function collectVariationInfo(node: ChildNodeAny, maxPlies: number): { moves: string[]; mateIn?: number } {
+  const moves: string[] = [];
+  let mateIn: number | undefined;
+  let count = 0;
+  let current: ChildNodeAny | undefined = node;
+  while (current && count < maxPlies) {
+    const sanRaw = current.data.san;
+    const san = sanitizeSan(sanRaw);
+    moves.push(san);
+
+    const mateFromComments =
+      extractMateInFromComments(current.data.comments) ??
+      extractMateInFromComments(current.data.startingComments);
+    if (typeof mateFromComments === "number") {
+      mateIn = mateIn === undefined ? mateFromComments : Math.min(mateIn, mateFromComments);
+    }
+
+    count++;
+    if (current.children && current.children.length > 0) {
+      current = current.children[0] as any;
+    } else {
+      break;
+    }
+  }
+  return { moves, mateIn };
+}
+
+
 
 function detectPlayerColor(playerName: string, white: string, black: string): Color | null {
   const p = normalizeName(playerName);
@@ -1175,7 +1739,7 @@ function detectPlayerColor(playerName: string, white: string, black: string): Co
   if (w && (w.includes(p) || p.includes(w))) return "white";
   if (b && (b.includes(p) || p.includes(b))) return "black";
 
-  // fallback: token match
+  
   const tokens = p.split(" ").filter(Boolean);
   if (tokens.some((t) => w.includes(t))) return "white";
   if (tokens.some((t) => b.includes(t))) return "black";
@@ -1191,12 +1755,12 @@ function normalizeName(s: string): string {
     .trim();
 }
 
-/* ---------------------------------- Source / Parsing helpers ---------------------------------- */
+
 
 function safeParseGames(pgnText: string): any[] {
   let games = parsePgn(pgnText) as any[];
 
-  // If no headers exist (moves-only text), wrap into a minimal single game
+  
   if (!games.length) {
     const wrapped = `[Event "?"]\n[Site "?"]\n[Date "????.??.??"]\n[Round "?"]\n[White "?"]\n[Black "?"]\n[Result "*"]\n\n${pgnText}\n`;
     games = parsePgn(wrapped) as any[];
@@ -1209,8 +1773,8 @@ function extractSourceName(siteOrEvent: string): string {
   const s = (siteOrEvent ?? "").trim();
   if (!s) return "Unknown";
 
-  // If it's a URL, derive hostname
-  if (/^https?:\/\//i.test(s)) {
+  
+  if (/^https?:\/\//.test(s)) {
     try {
       const u = new URL(s);
       const host = u.hostname.toLowerCase();
@@ -1218,11 +1782,11 @@ function extractSourceName(siteOrEvent: string): string {
       if (host.includes("lichess.org")) return "Lichess";
       return host;
     } catch {
-      // ignore
+      
     }
   }
 
-  // common direct labels
+  
   const low = s.toLowerCase();
   if (low.includes("chess.com")) return "Chess.com";
   if (low.includes("lichess")) return "Lichess";
@@ -1230,7 +1794,7 @@ function extractSourceName(siteOrEvent: string): string {
   return s;
 }
 
-/* ---------------------------------- Square helpers ---------------------------------- */
+
 
 function squareFromName(name: string): Square {
   const file = name.charCodeAt(0) - "a".charCodeAt(0);
@@ -1238,10 +1802,10 @@ function squareFromName(name: string): Square {
   return (rank * 8 + file) as Square;
 }
 
-/* ---------------------------------- Compatibility Layer ---------------------------------- */
 
-// Legacy types for backward compatibility
-export type ErrorKind = MistakeKind;
+
+
+
 export type Theme =
   | "missed_tactic"
   | "hanging_material"
@@ -1329,18 +1893,18 @@ export interface AnalysisResult {
   player: string;
   gamesAnalyzed: number;
   gamesMatchedPlayer: number;
-  issues: MistakeRecord[];
+  issues: Issue[];
   stats: {
-    byOpening: OpeningStats[];
     global: {
       issueCounts: Record<ErrorKind, number>;
       themeCounts: Record<Theme, number>;
-      mostCommonSchemes: Array<{ schemeSignature: string; count: number }>;
+      mostCommonSchemes: { schemeSignature: string; count: number }[];
     };
+    byOpening: OpeningStat[];
   };
 }
 
-// Old mapping kept for backwards compatibility with any external callers that might still use it.
+
 function mistakeKindToTheme(kind: MistakeKind): Theme {
   switch (kind) {
     case "tactical_blunder":
@@ -1365,12 +1929,12 @@ function mistakeKindToTheme(kind: MistakeKind): Theme {
 function inferThemeFromMistake(m: PlayerMistake): Theme {
   const loss = m.cpLossAbs ?? 0;
 
-  // 1) Material first
+  
   if (m.kind === "material_blunder" || (m.flags.materialLossSoonPawns ?? 0) >= 2) {
     return "hanging_material";
   }
 
-  // 2) King safety
+  
   const shieldBefore = m.flags.kingShieldBefore;
   const shieldAfter = m.flags.kingShieldAfter;
   const xrayBefore = m.flags.kingXrayHeavyBefore ?? false;
@@ -1386,14 +1950,14 @@ function inferThemeFromMistake(m: PlayerMistake): Theme {
 
   if (kingWorsened && loss >= 30) return "king_exposed";
 
-  // 3) Pawn structure deterioration
+  
   const islandsWorse = (m.flags.pawnIslandsAfter ?? 0) > (m.flags.pawnIslandsBefore ?? 0);
   const isoWorse = (m.flags.pawnIsolatedAfter ?? 0) > (m.flags.pawnIsolatedBefore ?? 0);
   const dblWorse = (m.flags.pawnDoubledAfter ?? 0) > (m.flags.pawnDoubledBefore ?? 0);
 
   if ((islandsWorse || isoWorse || dblWorse) && loss >= 40) return "pawn_structure";
 
-  // 4) Development in opening
+  
   const opening = m.flags.openingPhase;
   const devBefore = m.flags.developmentScoreBefore;
   const devAfter = m.flags.developmentScoreAfter;
@@ -1410,7 +1974,7 @@ function inferThemeFromMistake(m: PlayerMistake): Theme {
 
   if (devStalled && loss >= 30) return "development";
 
-  // 5) Space / center
+  
   const centerBefore = m.flags.centerPresenceBefore;
   const centerAfter = m.flags.centerPresenceAfter;
   const spaceBefore = m.flags.spaceScoreBefore;
@@ -1422,16 +1986,16 @@ function inferThemeFromMistake(m: PlayerMistake): Theme {
 
   if ((lostCenter || lostSpace) && loss >= 40) return "space";
 
-  // 6) Tactics
+  
   if (m.kind === "tactical_blunder" || m.kind === "tactical_mistake" || m.kind === "tactical_inaccuracy") {
     return "missed_tactic";
   }
 
-  // 7) Fallback
+  
   return m.kind === "unknown" ? "unknown" : "plan";
 }
 
-// Convert PlayerMistake to MistakeRecord
+
 function convertMistakeToRecord(mistake: PlayerMistake, gameIndex: number): MistakeRecord {
   const schemeSignature = mistake.sanContextBefore.slice(-12).join(" ");
   const theme = inferThemeFromMistake(mistake);
@@ -1508,7 +2072,7 @@ function convertMistakeToRecord(mistake: PlayerMistake, gameIndex: number): Mist
   };
 }
 
-/* -------------------------- Opening grouping (FIXED) -------------------------- */
+
 /**
  * Goals:
  * 1) Sort by player color (white first, then black).
@@ -1527,10 +2091,10 @@ function buildOpeningStatsFromMistakes(mistakes: PlayerMistake[]): OpeningStats[
     key: string;
     playerColor: Color;
 
-    openingKeyId: string; // normalized identifier (opening base or eco)
-    openingDisplay?: string; // nice base opening display
-    ecoSet: Set<string>; // to keep eco only if unique
-    openingSet: Set<string>; // base opening variants seen (for picking best display)
+    openingKeyId: string; 
+    openingDisplay?: string; 
+    ecoSet: Set<string>; 
+    openingSet: Set<string>; 
 
     games: Set<string>;
     pliesAnalyzed: number;
@@ -1580,14 +2144,14 @@ function buildOpeningStatsFromMistakes(mistakes: PlayerMistake[]): OpeningStats[
     if (!opening) return "";
     let s = opening.trim();
 
-    // Strip anything after common separators (variation/prose)
-    // e.g. "Italian Game, Two Knights Defense" -> "Italian Game"
-    // e.g. "Sicilian Defense: Najdorf" -> "Sicilian Defense"
-    // e.g. "Queen's Gambit (Accepted)" -> "Queen's Gambit"
+    
+    
+    
+    
     s = s.split(/[,:;]/)[0] ?? s;
     s = s.split(/\(/)[0] ?? s;
 
-    // Some PGNs have " - " or " / " separators; keep left side as base.
+    
     s = s.split(" - ")[0] ?? s;
     s = s.split(" / ")[0] ?? s;
 
@@ -1595,10 +2159,10 @@ function buildOpeningStatsFromMistakes(mistakes: PlayerMistake[]): OpeningStats[
   }
 
   function normalizeOpeningId(base: string): string {
-    // Lowercase, remove punctuation, collapse whitespace
+    
     return base
       .toLowerCase()
-      .replace(/[’']/g, "") // normalize apostrophes
+      .replace(/[’']/g, "") 
       .replace(/[.,;:!?'"()\[\]{}]/g, " ")
       .replace(/[_\-]+/g, " ")
       .replace(/\s+/g, " ")
@@ -1611,12 +2175,12 @@ function buildOpeningStatsFromMistakes(mistakes: PlayerMistake[]): OpeningStats[
     if (!n) return c || undefined;
     if (!c) return n;
 
-    // Prefer version with capitals (more "title-like")
+    
     const cCaps = /[A-Z]/.test(c);
     const nCaps = /[A-Z]/.test(n);
     if (!cCaps && nCaps) return n;
 
-    // Prefer longer (often includes "Defense"/"Gambit" etc.) but still base name
+    
     if (n.length > c.length + 2) return n;
 
     return c;
@@ -1635,8 +2199,8 @@ function buildOpeningStatsFromMistakes(mistakes: PlayerMistake[]): OpeningStats[
     const openingBase = baseOpeningName(m.game.opening);
     const openingId = normalizeOpeningId(openingBase);
 
-    // IMPORTANT: if opening exists, group by opening (ignore eco/variation differences).
-    // Otherwise fallback to eco.
+    
+    
     const primaryId = openingId || ecoNorm || "?";
 
     const key = makeOpeningKey(m.playerColor, primaryId);
@@ -1659,15 +2223,15 @@ function buildOpeningStatsFromMistakes(mistakes: PlayerMistake[]): OpeningStats[
       map.set(key, agg);
     }
 
-    // Track display names / ECOs
+    
     if (ecoNorm) agg.ecoSet.add(ecoNorm);
     if (openingBase) agg.openingSet.add(openingBase);
 
-    // Update display opening name
+    
     agg.openingDisplay = pickBetterDisplay(agg.openingDisplay, openingBase);
 
-    // Count unique games for this opening+color:
-    // Use the PGN index (guaranteed unique per parse) so we don't under/over-count.
+    
+    
     agg.games.add(String(m.game.index));
 
     agg.pliesAnalyzed += 1;
@@ -1704,12 +2268,12 @@ function buildOpeningStatsFromMistakes(mistakes: PlayerMistake[]): OpeningStats[
       .sort((a, b) => b.count - a.count || (b.avgCpSwingAbs ?? 0) - (a.avgCpSwingAbs ?? 0))
       .slice(0, 15);
 
-    // ECO only if unique across the grouped games; else undefined (so you don't show misleading ECO).
+    
     const eco = agg.ecoSet.size === 1 ? Array.from(agg.ecoSet)[0] : undefined;
 
-    // Display opening:
-    // - If we have an opening base name, show it.
-    // - If not, fallback to ECO.
+    
+    
+    
     const openingDisplay =
       agg.openingDisplay?.trim() ||
       (eco ? eco : undefined) ||
@@ -1719,7 +2283,7 @@ function buildOpeningStatsFromMistakes(mistakes: PlayerMistake[]): OpeningStats[
       key: agg.key,
       eco,
       opening: openingDisplay,
-      variation: undefined, // grouped by opening, ignoring variation
+      variation: undefined, 
       playerColor: agg.playerColor,
       games: agg.games.size,
       pliesAnalyzed: agg.pliesAnalyzed,
@@ -1729,7 +2293,7 @@ function buildOpeningStatsFromMistakes(mistakes: PlayerMistake[]): OpeningStats[
     });
   }
 
-  // Sort: color first (white then black), then by games desc (most played first), then name.
+  
   return result.sort((a, b) => {
     if (a.playerColor !== b.playerColor) return a.playerColor === "white" ? -1 : 1;
     if (b.games !== a.games) return b.games - a.games;
@@ -1739,9 +2303,10 @@ function buildOpeningStatsFromMistakes(mistakes: PlayerMistake[]): OpeningStats[
   });
 }
 
-/* ---------------------------------- Legacy function ---------------------------------- */
 
-// Legacy function for backward compatibility
+
+
+/*
 export function analyzeAnnotatedPgnCollection(
   pgnText: string,
   playerName: string,
@@ -1749,7 +2314,7 @@ export function analyzeAnnotatedPgnCollection(
 ): AnalysisResult {
   const report = analyzePlayerMistakes(pgnText, playerName, options);
 
-  const issues: MistakeRecord[] = report.mistakes.map((m, idx) => convertMistakeToRecord(m, idx));
+  const issues: Issue[] = report.mistakes.map((m, idx) => convertMistakeToRecord(m, idx));
 
   const ALL_ERROR_KINDS: ErrorKind[] = [
     "tactical_blunder",
@@ -1809,3 +2374,4 @@ export function analyzeAnnotatedPgnCollection(
     },
   };
 }
+*/

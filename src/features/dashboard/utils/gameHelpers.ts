@@ -113,6 +113,48 @@ export function createPGNFromMoves(moves: string[], result: string, initialFen?:
   return pgn;
 }
 
+export function createPgnFromLocalGame(game: GameRecord): string {
+  const headers = createLocalGameHeaders(game);
+  let pgn = `[Event "${headers.event}"]\n`;
+  pgn += `[Site "${headers.site}"]\n`;
+  pgn += `[Date "${headers.date}"]\n`;
+  pgn += `[Round "?"]\n`;
+  pgn += `[White "${headers.white}"]\n`;
+  pgn += `[Black "${headers.black}"]\n`;
+  pgn += `[Result "${headers.result}"]\n`;
+  if (headers.time_control) {
+    pgn += `[TimeControl "${headers.time_control}"]\n`;
+  }
+  if (headers.variant) {
+    pgn += `[Variant "${headers.variant}"]\n`;
+  }
+  const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  if (headers.fen && headers.fen !== INITIAL_FEN) {
+    pgn += `[SetUp "1"]\n`;
+    pgn += `[FEN "${headers.fen}"]\n`;
+  }
+  pgn += "\n";
+
+  if (!game.moves || game.moves.length === 0) {
+    pgn += headers.result;
+    return pgn;
+  }
+
+  const movesPairs = [];
+  for (let i = 0; i < game.moves.length; i += 2) {
+    const moveNumber = Math.floor(i / 2) + 1;
+    const whiteMove = game.moves[i];
+    const blackMove = game.moves[i + 1];
+    if (blackMove) {
+      movesPairs.push(`${moveNumber}. ${whiteMove} ${blackMove}`);
+    } else {
+      movesPairs.push(`${moveNumber}. ${whiteMove}`);
+    }
+  }
+  pgn += movesPairs.join(" ") + " " + headers.result;
+  return pgn;
+}
+
 /**
  * Convert NormalizedGame from database to LichessGame format
  */

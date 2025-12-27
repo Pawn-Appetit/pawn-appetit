@@ -1,55 +1,87 @@
-import { Badge, Code, Group, Modal, ScrollArea, Stack, Table, Text, Title, Divider, Tabs, Select, ActionIcon, Tooltip, Button, SegmentedControl } from "@mantine/core";
+import { Badge, Code, Group, Modal, ScrollArea, Stack, Table, Text, Title, Divider, Tabs, Select, MultiSelect, ActionIcon, Tooltip, Button, SegmentedControl } from "@mantine/core";
 import { useTranslation } from "react-i18next";
-import { useState, useMemo } from "react";
-import { IconExternalLink, IconCopy } from "@tabler/icons-react";
+import { useState, useMemo, useEffect, Fragment } from "react";
+import { IconExternalLink, IconCopy, IconSearch } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { useAtom } from "jotai";
 import { useNavigate } from "@tanstack/react-router";
+import type { NormalizedGame } from "@/bindings";
 import { tabsAtom, activeTabAtom } from "@/state/atoms";
 import { createTab } from "@/utils/tabs";
 import { parsePGN } from "@/utils/chess";
-import type { AnalysisResult, ErrorKind } from "@/utils/playerMistakes";
+import { splitPgnGames } from "@/utils/pgnUtils";
+import type { AnalysisResult, ErrorKind, PawnStructureStat } from "@/utils/playerMistakes";
+import { generateAnalysisResult } from "@/utils/playerMistakes";
+import { Chessground } from "@/components/Chessground";
+import { getAllAnalyzedGames } from "@/utils/analyzedGames";
+import { getDatabases, query_games } from "@/utils/db";
+import { getAllGames } from "@/utils/gameRecords";
+import { createPgnFromLocalGame } from "@/features/dashboard/utils/gameHelpers";
 
 interface PlayerStatsModalProps {
   opened: boolean;
   onClose: () => void;
   result: AnalysisResult | null;
   debugPgns?: string;
+  pgnText?: string;
+  statsGameType?: "local" | "chesscom" | "lichess";
+  statsAccountName?: string;
 }
 
-export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerStatsModalProps) {
+export function PlayerStatsModal({
+  opened,
+  onClose,
+  result,
+  debugPgns,
+  pgnText,
+  statsGameType,
+  statsAccountName,
+}: PlayerStatsModalProps) {
   const { t } = useTranslation();
   const [, setTabs] = useAtom(tabsAtom);
   const setActiveTab = useAtom(activeTabAtom)[1];
   const navigate = useNavigate();
   
-  const [kindFilter, setKindFilter] = useState<string | null>(null);
+  const [themeFilter, setThemeFilter] = useState<string[]>([]);
   const [severityFilter, setSeverityFilter] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<"cpSwing" | "moveNumber" | "kind" | "severity">("cpSwing");
+  const [sortBy, setSortBy] = useState<"cpSwing" | "moveNumber" | "theme" | "severity">("cpSwing");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [openingsColorFilter, setOpeningsColorFilter] = useState<"all" | "white" | "black">("all");
 
+  const [pawnMoveFilter, setPawnMoveFilter] = useState<number>(50);
+  const [pawnColorFilter, setPawnColorFilter] = useState<"white" | "black">("white");
+  const [pawnStructures, setPawnStructures] = useState<PawnStructureStat[]>([]);
+  const [pawnSortBy, setPawnSortBy] = useState<"frequency" | "winRate">("frequency");
+  const [pawnScope, setPawnScope] = useState<"analyzed" | "all">("analyzed");
+  const [pawnLoading, setPawnLoading] = useState(false);
+  const [expandedStructure, setExpandedStructure] = useState<string | null>(null);
+  const [expandedFen, setExpandedFen] = useState<string | null>(null);
+  const fallbackFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
   // Get unique values for filters (must be before early return)
-  const uniqueKinds = useMemo(() => {
-    if (!result) return [];
-    const kinds = new Set(result.issues.map((i) => i.kind));
-    return Array.from(kinds).sort();
+  const uniqueThemes = useMemo(() => {
+    const issues = result?.issues ?? [];
+    const themes = new Set<string>();
+    issues.forEach((issue) => {
+      issue.tags?.forEach((tag) => themes.add(tag));
+    });
+    return Array.from(themes).sort();
   }, [result]);
-  
+
   const uniqueSeverities = useMemo(() => {
-    if (!result) return [];
-    const severities = new Set(result.issues.map((i) => i.severity));
+    const issues = result?.issues ?? [];
+    const severities = new Set(issues.map((i) => i.severity));
     return Array.from(severities).sort();
   }, [result]);
   
   // Filter and sort issues (must be before early return)
   const filteredAndSortedIssues = useMemo(() => {
-    if (!result) return [];
-    let filtered = result.issues;
+    const issues = result?.issues ?? [];
+    let filtered = issues;
     
     // Apply filters
-    if (kindFilter) {
-      filtered = filtered.filter((i) => i.kind === kindFilter);
+    if (themeFilter.length > 0) {
+      filtered = filtered.filter((i) => i.tags?.some((tag) => themeFilter.includes(tag)));
     }
     if (severityFilter) {
       filtered = filtered.filter((i) => i.severity === severityFilter);
@@ -68,8 +100,8 @@ export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerS
         case "moveNumber":
           comparison = a.moveNumber - b.moveNumber;
           break;
-        case "kind":
-          comparison = a.kind.localeCompare(b.kind);
+        case "theme":
+          comparison = (a.tags?.join(", ") ?? "").localeCompare(b.tags?.join(", ") ?? "");
           break;
         case "severity":
           const severityOrder = { blunder: 0, mistake: 1, inaccuracy: 2, info: 3 };
@@ -81,30 +113,23 @@ export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerS
     });
     
     return sorted;
-  }, [result, kindFilter, severityFilter, sortBy, sortOrder]);
+  }, [result, themeFilter, severityFilter, sortBy, sortOrder]);
 
   // Group issues by color for overview display
   const issuesByColor = useMemo(() => {
-    if (!result) return { white: [], black: [] };
+    const issues = result?.issues ?? [];
     return {
-      white: result.issues.filter((i) => i.playerColor === "white"),
-      black: result.issues.filter((i) => i.playerColor === "black"),
+      white: issues.filter((i) => i.playerColor === "white"),
+      black: issues.filter((i) => i.playerColor === "black"),
     };
   }, [result]);
 
   // Calculate stats by color
   const statsByColor = useMemo(() => {
-    if (!result) {
-      return {
-        white: { issueCounts: {} as Record<ErrorKind, number>, themeCounts: {} as Record<string, number> },
-        black: { issueCounts: {} as Record<ErrorKind, number>, themeCounts: {} as Record<string, number> },
-      };
-    }
-    
-    const whiteIssues = issuesByColor.white;
-    const blackIssues = issuesByColor.black;
-    
-    const whiteIssueCounts: Record<ErrorKind, number> = {
+    // Initialise counts even when result is null so that destructuring does not
+    // crash downstream.  Counts are keyed by ErrorKind; themeCounts are
+    // keyed by ThemeId (string).
+    const baseIssueCounts: Record<ErrorKind, number> = {
       tactical_blunder: 0,
       tactical_mistake: 0,
       tactical_inaccuracy: 0,
@@ -114,40 +139,35 @@ export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerS
       positional_misplay: 0,
       unknown: 0,
     };
+    const whiteIssues = issuesByColor.white ?? [];
+    const blackIssues = issuesByColor.black ?? [];
+    const whiteIssueCounts: Record<ErrorKind, number> = { ...baseIssueCounts };
     const whiteThemeCounts: Record<string, number> = {};
-    
-    const blackIssueCounts: Record<ErrorKind, number> = {
-      tactical_blunder: 0,
-      tactical_mistake: 0,
-      tactical_inaccuracy: 0,
-      material_blunder: 0,
-      opening_principle: 0,
-      piece_inactivity: 0,
-      positional_misplay: 0,
-      unknown: 0,
-    };
+    const blackIssueCounts: Record<ErrorKind, number> = { ...baseIssueCounts };
     const blackThemeCounts: Record<string, number> = {};
-    
     whiteIssues.forEach((issue) => {
       whiteIssueCounts[issue.kind] = (whiteIssueCounts[issue.kind] || 0) + 1;
-      whiteThemeCounts[issue.theme] = (whiteThemeCounts[issue.theme] || 0) + 1;
+      // Issue may have multiple tags
+      issue.tags?.forEach((tag: string) => {
+        whiteThemeCounts[tag] = (whiteThemeCounts[tag] || 0) + 1;
+      });
     });
-    
     blackIssues.forEach((issue) => {
       blackIssueCounts[issue.kind] = (blackIssueCounts[issue.kind] || 0) + 1;
-      blackThemeCounts[issue.theme] = (blackThemeCounts[issue.theme] || 0) + 1;
+      issue.tags?.forEach((tag: string) => {
+        blackThemeCounts[tag] = (blackThemeCounts[tag] || 0) + 1;
+      });
     });
-    
     return {
       white: { issueCounts: whiteIssueCounts, themeCounts: whiteThemeCounts },
       black: { issueCounts: blackIssueCounts, themeCounts: blackThemeCounts },
     };
-  }, [result, issuesByColor]);
+  }, [issuesByColor]);
 
   // Filter and sort openings by color and games count (must be before early return)
   const filteredAndSortedOpenings = useMemo(() => {
-    if (!result) return [];
-    let filtered = result.stats.byOpening;
+    const openings = result?.stats?.byOpening ?? [];
+    let filtered = openings;
     
     // Apply color filter
     if (openingsColorFilter !== "all") {
@@ -157,6 +177,12 @@ export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerS
     // Sort by games count descending (most played first)
     return [...filtered].sort((a, b) => b.games - a.games);
   }, [result, openingsColorFilter]);
+
+  useEffect(() => {
+    if (result?.pawnStructures) {
+      setPawnStructures(result.pawnStructures);
+    }
+  }, [result]);
 
   if (!result) {
     return null;
@@ -172,32 +198,25 @@ export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerS
       color: "green",
     });
   };
+
+  const toggleStructureDetails = (structure: PawnStructureStat) => {
+    const key = structure.structure;
+    if (expandedStructure === key) {
+      setExpandedStructure(null);
+      setExpandedFen(null);
+      return;
+    }
+    setExpandedStructure(key);
+    const firstFen = structure.sampleFen ?? structure.games?.[0]?.fen ?? null;
+    setExpandedFen(firstFen);
+  };
   
-  const openGameInNewTab = async (gameId: string, fenBefore: string, gameIndex: number) => {
+  const openGameInNewTab = async (fenBefore: string, gameIndex: number) => {
     // Try to find the game in debugPgns
     if (debugPgns) {
-      const games = debugPgns.split("\n\n").filter((g) => g.trim().length > 0);
+      const games = splitPgnGames(debugPgns);
       
-      // Try to find by gameIndex first (more reliable)
       let game = games[gameIndex];
-      
-      // If not found by index, try to find by gameId in headers
-      if (!game) {
-        const foundGame = games.find((g) => {
-          const siteMatch = g.match(/\[Site\s+"([^"]+)"/);
-          const eventMatch = g.match(/\[Event\s+"([^"]+)"/);
-          const roundMatch = g.match(/\[Round\s+"([^"]+)"/);
-          return (
-            siteMatch?.[1] === gameId ||
-            eventMatch?.[1] === gameId ||
-            roundMatch?.[1] === gameId ||
-            g.includes(gameId)
-          );
-        });
-        if (foundGame) {
-          game = foundGame;
-        }
-      }
       
       if (game) {
         try {
@@ -256,6 +275,237 @@ export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerS
     }
   };
 
+  const normalizeName = (name?: string): string => (name ?? "").toLowerCase().trim();
+  const matchesName = (candidate: string | undefined, target: string) => {
+    if (!candidate || !target) return false;
+    const cand = candidate.toLowerCase();
+    const normalizedTarget = target.toLowerCase();
+    return cand.includes(normalizedTarget) || normalizedTarget.includes(cand);
+  };
+
+  const findDatabaseFileForAccount = async (
+    accountName: string,
+    type: "chesscom" | "lichess",
+  ): Promise<string | null> => {
+    const normalizedAccountName = accountName.trim();
+    if (!normalizedAccountName) return null;
+
+    const databases = await getDatabases();
+    const targetFilename = `${normalizedAccountName}_${type}.db3`;
+    const targetLower = targetFilename.toLowerCase();
+
+    const match = databases.find(
+      (db) =>
+        db.type === "success" &&
+        db.filename &&
+        (db.filename === targetFilename || db.filename.toLowerCase() === targetLower),
+    );
+
+    return match && match.type === "success" ? match.file : null;
+  };
+
+  const getPgnHeaderValue = (pgn: string, header: string): string => {
+    const regex = new RegExp(`\\[${header}\\s+"([^"]+)"`, "i");
+    const match = pgn.match(regex);
+    return match?.[1] ?? "";
+  };
+
+  const detectPgnSourceFromPgn = (pgn: string): "chesscom" | "lichess" | null => {
+    const site = getPgnHeaderValue(pgn, "Site").toLowerCase();
+    if (site.includes("chess.com")) return "chesscom";
+    if (site.includes("lichess")) return "lichess";
+    return null;
+  };
+
+  const collectAnalyzedPgnsFromStorage = async (
+    target: string,
+    type: "chesscom" | "lichess",
+  ): Promise<string[]> => {
+    if (!target) return [];
+    const normalizedTarget = normalizeName(target);
+    if (!normalizedTarget) return [];
+
+    try {
+      const stored = await getAllAnalyzedGames();
+      const matches: string[] = [];
+
+      for (const pgn of Object.values(stored)) {
+        if (!pgn) continue;
+        const source = detectPgnSourceFromPgn(pgn);
+        if (source !== type) continue;
+        const whiteName = getPgnHeaderValue(pgn, "White");
+        const blackName = getPgnHeaderValue(pgn, "Black");
+        const isWhite = matchesName(whiteName, normalizedTarget);
+        const isBlack = matchesName(blackName, normalizedTarget);
+        const matchesColor =
+          pawnColorFilter === "white"
+            ? isWhite
+            : pawnColorFilter === "black"
+              ? isBlack
+              : isWhite || isBlack;
+        if (matchesColor) {
+          matches.push(pgn);
+        }
+      }
+
+      return matches;
+    } catch (error) {
+      console.error("Failed to collect analyzed PGNs from storage:", error);
+      return [];
+    }
+  };
+
+  const createPgnFromNormalizedGame = (game: NormalizedGame): string => {
+    const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    const resultTag = game.result || "*";
+    const movesText = (game.moves || "").trim();
+    const hasResult = /(?:1-0|0-1|1\/2-1\/2|\*)$/.test(movesText);
+    const movetext = movesText ? (hasResult ? movesText : `${movesText} ${resultTag}`) : resultTag;
+
+    let pgn = `[Event "${game.event || "Online Game"}"]\n`;
+    pgn += `[Site "${game.site || "Online"}"]\n`;
+    pgn += `[Date "${game.date || "????.??.??"}"]\n`;
+    if (game.round) {
+      pgn += `[Round "${game.round}"]\n`;
+    }
+    pgn += `[White "${game.white || "White"}"]\n`;
+    pgn += `[Black "${game.black || "Black"}"]\n`;
+    pgn += `[Result "${resultTag}"]\n`;
+    if (game.time_control) {
+      pgn += `[TimeControl "${game.time_control}"]\n`;
+    }
+    if (game.eco) {
+      pgn += `[ECO "${game.eco}"]\n`;
+    }
+    if (game.fen && game.fen !== INITIAL_FEN) {
+      pgn += `[SetUp "1"]\n`;
+      pgn += `[FEN "${game.fen}"]\n`;
+    }
+    pgn += "\n";
+    pgn += movetext;
+    return pgn;
+  };
+
+  const fetchLocalPgns = async (target: string): Promise<string[]> => {
+    const games = await getAllGames();
+    const filtered = games.filter((game) => {
+      const targetName = target;
+      const whiteMatch = matchesName(game.white.name, targetName);
+      const blackMatch = matchesName(game.black.name, targetName);
+      if (pawnColorFilter === "white" && !whiteMatch) return false;
+      if (pawnColorFilter === "black" && !blackMatch) return false;
+      return whiteMatch || blackMatch;
+    });
+    return filtered
+      .map((game) => game.pgn || createPgnFromLocalGame(game))
+      .filter(Boolean) as string[];
+  };
+
+  const queryAllGamesFromDb = async (dbFile: string, target: string): Promise<string[]> => {
+    const pageSize = 200;
+    let page = 1;
+    const collected: string[] = [];
+    const normalizedTarget = normalizeName(target);
+
+    while (true) {
+      const response = await query_games(dbFile, {
+        sides: "Any",
+        options: {
+          skipCount: true,
+          page,
+          pageSize,
+          sort: "date",
+          direction: "desc",
+        },
+      });
+      const data = response.data ?? [];
+      if (!data.length) break;
+
+      for (const game of data) {
+        const isWhite = matchesName(game.white, normalizedTarget);
+        const isBlack = matchesName(game.black, normalizedTarget);
+        const matchesColorFilter =
+          pawnColorFilter === "white"
+            ? isWhite
+            : pawnColorFilter === "black"
+              ? isBlack
+              : isWhite || isBlack;
+        if (!matchesColorFilter) continue;
+        if (game.moves) {
+          collected.push(createPgnFromNormalizedGame(game));
+        }
+      }
+
+      if (data.length < pageSize) break;
+      page += 1;
+    }
+
+    return collected;
+  };
+
+  const fetchOnlinePgns = async (type: "chesscom" | "lichess", target: string): Promise<string[]> => {
+    const dbFile = await findDatabaseFileForAccount(target, type);
+    if (!dbFile) return [];
+    return queryAllGamesFromDb(dbFile, target);
+  };
+
+  const gatherPawnPgns = async (): Promise<string[]> => {
+    if (pawnScope === "analyzed") {
+      const pgnSource = debugPgns ?? pgnText;
+      return pgnSource ? [pgnSource] : [];
+    }
+    if (!statsGameType || !statsAccountName) return [];
+    const normalizedPlayer = normalizeName(statsAccountName ?? result.player);
+    if (!normalizedPlayer) return [];
+    if (statsGameType === "local") {
+      return fetchLocalPgns(normalizedPlayer);
+    }
+    if (statsGameType === "chesscom") {
+      const fetched = await fetchOnlinePgns("chesscom", normalizedPlayer);
+      return fetched.length
+        ? fetched
+        : await collectAnalyzedPgnsFromStorage(normalizedPlayer, "chesscom");
+    }
+    if (statsGameType === "lichess") {
+      const fetched = await fetchOnlinePgns("lichess", normalizedPlayer);
+      return fetched.length
+        ? fetched
+        : await collectAnalyzedPgnsFromStorage(normalizedPlayer, "lichess");
+    }
+    return [];
+  };
+
+  const handlePawnSearch = async () => {
+    setPawnLoading(true);
+    try {
+      const pgns = await gatherPawnPgns();
+      if (!pgns.length) {
+        notifications.show({
+          title: t("features.dashboard.noPawnStructures", "No pawn structures found."),
+          message: t("features.dashboard.noPawnStructuresMessage", "No games available for the selected filter."),
+          color: "orange",
+        });
+        setPawnStructures([]);
+        return;
+      }
+      const combined = pgns.join("\n\n");
+      const analysisResult = await generateAnalysisResult(combined, result.player, {
+        maxMove: pawnMoveFilter,
+        playerColor: pawnColorFilter,
+      });
+      setPawnStructures(analysisResult.pawnStructures || []);
+    } catch (error) {
+      console.error("Error analyzing pawn structures:", error);
+      notifications.show({
+        title: t("features.dashboard.error", "Error"),
+        message: t("features.dashboard.errorAnalyzingPawns", "Failed to analyze pawn structures"),
+        color: "red",
+      });
+    } finally {
+      setPawnLoading(false);
+    }
+  };
+
   return (
     <Modal
       opened={opened}
@@ -273,6 +523,7 @@ export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerS
           <Tabs.Tab value="overview">{t("features.dashboard.overview", "Overview")}</Tabs.Tab>
           <Tabs.Tab value="issues">{t("features.dashboard.issues", "Issues")}</Tabs.Tab>
           <Tabs.Tab value="openings">{t("features.dashboard.openings", "Openings")}</Tabs.Tab>
+          <Tabs.Tab value="pawn-structures">{t("features.dashboard.pawnStructures", "Pawn Structures")}</Tabs.Tab>
           <Tabs.Tab value="debug">{t("features.dashboard.debug", "Debug")}</Tabs.Tab>
         </Tabs.List>
 
@@ -387,14 +638,15 @@ export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerS
           <Stack gap="md">
             {/* Filters and Sort */}
             <Group gap="md" wrap="wrap">
-              <Select
-                label={t("features.dashboard.filterByKind", "Filter by Kind")}
-                placeholder={t("features.dashboard.allKinds", "All Kinds")}
-                data={uniqueKinds.map((k) => ({ value: k, label: k.replace(/_/g, " ") }))}
-                value={kindFilter}
-                onChange={setKindFilter}
+              <MultiSelect
+                label={t("features.dashboard.filterByTheme", "Filter by Theme")}
+                placeholder={t("features.dashboard.allThemes", "All Themes")}
+                data={uniqueThemes}
+                value={themeFilter}
+                onChange={setThemeFilter}
+                searchable
                 clearable
-                style={{ flex: 1, minWidth: 150 }}
+                style={{ flex: 1, minWidth: 180 }}
               />
               <Select
                 label={t("features.dashboard.filterBySeverity", "Filter by Severity")}
@@ -410,7 +662,7 @@ export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerS
                 data={[
                   { value: "cpSwing", label: t("features.dashboard.cpSwing", "CP Swing") },
                   { value: "moveNumber", label: t("features.dashboard.moveNumber", "Move Number") },
-                  { value: "kind", label: t("features.dashboard.kind", "Kind") },
+                  { value: "theme", label: t("features.dashboard.theme", "Theme") },
                   { value: "severity", label: t("features.dashboard.severity", "Severity") },
                 ]}
                 value={sortBy}
@@ -442,8 +694,8 @@ export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerS
                   <Table.Tr>
                     <Table.Th>{t("features.dashboard.game", "Game")}</Table.Th>
                     <Table.Th>{t("features.dashboard.move", "Move")}</Table.Th>
-                    <Table.Th>{t("features.dashboard.played", "Played")}</Table.Th>
-                    <Table.Th>{t("features.dashboard.kind", "Kind")}</Table.Th>
+                    <Table.Th>{t("features.dashboard.bestLine", "Best Line")}</Table.Th>
+                    <Table.Th>{t("features.dashboard.theme", "Theme")}</Table.Th>
                     <Table.Th>{t("features.dashboard.severity", "Severity")}</Table.Th>
                     <Table.Th>{t("features.dashboard.cpSwing", "CP Swing")}</Table.Th>
                     <Table.Th>{t("features.dashboard.fen", "FEN")}</Table.Th>
@@ -455,12 +707,20 @@ export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerS
                     <Table.Tr key={idx}>
                       <Table.Td>
                         <Text size="xs" style={{ maxWidth: 150 }} truncate>
-                          {issue.gameId}
+                          {issue.game.index}
                         </Text>
                       </Table.Td>
                       <Table.Td>{issue.moveNumber}. {issue.playedSan}</Table.Td>
-                      <Table.Td>{issue.playedSan}</Table.Td>
-                      <Table.Td>{issue.kind.replace(/_/g, " ")}</Table.Td>
+                      <Table.Td>
+                        {issue.bestAlternative?.san
+                          ? `${issue.bestAlternative.san} — ${issue.tags?.join(", ") ?? ""}`
+                          : issue.tags?.length
+                            ? issue.tags.join(", ")
+                            : "-"}
+                      </Table.Td>
+                      <Table.Td>
+                        {issue.tags && issue.tags.length > 0 ? issue.tags.join(", ") : "-"}
+                      </Table.Td>
                       <Table.Td>
                         <Badge
                           color={
@@ -477,10 +737,10 @@ export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerS
                         </Badge>
                       </Table.Td>
                       <Table.Td>
-                        {issue.evidence.cpSwingPlayer !== undefined
-                          ? issue.evidence.cpSwingPlayer > 0
-                            ? `+${issue.evidence.cpSwingPlayer}`
-                            : issue.evidence.cpSwingPlayer
+                        {issue.evidence.cpSwingAbs !== undefined
+                          ? issue.evidence.cpSwingAbs > 0
+                            ? `+${issue.evidence.cpSwingAbs}`
+                            : issue.evidence.cpSwingAbs
                           : "-"}
                       </Table.Td>
                       <Table.Td>
@@ -505,7 +765,7 @@ export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerS
                             <ActionIcon
                               size="sm"
                               variant="subtle"
-                              onClick={() => openGameInNewTab(issue.gameId, issue.fenBefore, issue.gameIndex)}
+                              onClick={() => openGameInNewTab(issue.fenBefore, issue.game.index)}
                             >
                               <IconExternalLink size={16} />
                             </ActionIcon>
@@ -577,9 +837,6 @@ export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerS
                     </Group>
                     <Badge>{opening.games} {t("features.dashboard.games", "games")}</Badge>
                   </Group>
-                  {opening.variation && (
-                    <Text size="sm" c="dimmed">{opening.variation}</Text>
-                  )}
                   <Group gap="xs">
                     <Text size="xs" c="dimmed">
                       {t("features.dashboard.pliesAnalyzed", "Plies Analyzed")}: {opening.pliesAnalyzed}
@@ -608,11 +865,36 @@ export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerS
                   {opening.frequentMistakes.length > 0 && (
                     <Stack gap="xs" mt="xs">
                       <Text size="xs" fw={600}>{t("features.dashboard.frequentMistakes", "Frequent Mistakes")}:</Text>
-                      {opening.frequentMistakes.slice(0, 3).map((mistake, mIdx) => (
-                        <Text key={mIdx} size="xs" c="dimmed">
-                          {mistake.moveNumber}. {mistake.playedSan} ({mistake.count}x) - {mistake.kind.replace(/_/g, " ")}
-                        </Text>
-                      ))}
+                      <Table>
+                        <Table.Thead>
+                          <Table.Tr>
+                            <Table.Th>{t("features.dashboard.move", "Move")}</Table.Th>
+                            <Table.Th>{t("features.dashboard.kind", "Kind")}</Table.Th>
+                            <Table.Th>{t("features.dashboard.count", "Count")}</Table.Th>
+                            <Table.Th>{t("features.dashboard.fen", "FEN")}</Table.Th>
+                          </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>
+                          {opening.frequentMistakes.slice(0, 5).map((mistake, mIdx) => (
+                            <Table.Tr key={mIdx}>
+                              <Table.Td>{mistake.moveNumber}. {mistake.playedSan}</Table.Td>
+                              <Table.Td>{mistake.kind.replace(/_/g, " ")}</Table.Td>
+                              <Table.Td>{mistake.count ?? 1}</Table.Td>
+                              <Table.Td>
+                                <Tooltip label={mistake.fenBefore}>
+                                  <ActionIcon
+                                    size="sm"
+                                    variant="subtle"
+                                    onClick={() => copyFenToClipboard(mistake.fenBefore)}
+                                  >
+                                    <IconCopy size={16} />
+                                  </ActionIcon>
+                                </Tooltip>
+                              </Table.Td>
+                            </Table.Tr>
+                          ))}
+                        </Table.Tbody>
+                      </Table>
                     </Stack>
                   )}
                   <Divider />
@@ -622,6 +904,199 @@ export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerS
             </ScrollArea>
           </Stack>
         </Tabs.Panel>
+
+        <Tabs.Panel value="pawn-structures" pt="md">
+          <ScrollArea h="calc(90vh - 180px)">
+            <Stack gap="md">
+              <Title order={4}>{t("features.dashboard.pawnStructures", "Pawn Structures")}</Title>
+              
+              <Group>
+              <Select
+                label={t("features.dashboard.inMove", "In Move")}
+                data={Array.from({ length: 100 }, (_, i) => ({ value: (i + 1).toString(), label: (i + 1).toString() }))}
+                value={pawnMoveFilter.toString()}
+                onChange={(value) => setPawnMoveFilter(parseInt(value || "50"))}
+                style={{ width: 120 }}
+              />
+              <Select
+                label={t("features.dashboard.playerColor", "Player Color")}
+                data={[
+                  { value: "white", label: t("features.dashboard.white", "White") },
+                  { value: "black", label: t("features.dashboard.black", "Black") },
+                ]}
+                value={pawnColorFilter}
+                onChange={(value) => setPawnColorFilter(value as "white" | "black")}
+                style={{ width: 120 }}
+              />
+              <SegmentedControl
+                value={pawnScope}
+                onChange={(value) => setPawnScope(value as typeof pawnScope)}
+                data={[
+                  { value: "analyzed", label: t("features.dashboard.analyzed", "Analizadas") },
+                  { value: "all", label: t("features.dashboard.all", "Todas") },
+                ]}
+              />
+              <Button
+                leftSection={<IconSearch size={16} />}
+                onClick={handlePawnSearch}
+                loading={pawnLoading}
+              >
+                {t("features.dashboard.search", "Search")}
+              </Button>
+            </Group>
+
+              {pawnStructures.length > 0 && (
+                <Table>
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th style={{ width: 200 }}>{t("features.dashboard.structure", "Structure")}</Table.Th>
+                      <Table.Th
+                        style={{ width: 120, cursor: "pointer" }}
+                        onClick={() => setPawnSortBy("frequency")}
+                      >
+                        {t("features.dashboard.frequency", "Frequency")} {pawnSortBy === "frequency" ? "^" : ""}
+                      </Table.Th>
+                      <Table.Th
+                        style={{ width: 120, cursor: "pointer" }}
+                        onClick={() => setPawnSortBy("winRate")}
+                      >
+                        {t("features.dashboard.winRate", "Win Rate")} {pawnSortBy === "winRate" ? "^" : ""}
+                      </Table.Th>
+                      <Table.Th style={{ width: 120 }}>{t("features.dashboard.actions", "Actions")}</Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>
+                    {pawnStructures
+                      .sort((a, b) => pawnSortBy === "frequency" ? b.frequency - a.frequency : b.winRate - a.winRate)
+                      .map((structure, index) => {
+                        const displayFen = expandedFen ?? structure.sampleFen ?? structure.games?.[0]?.fen ?? fallbackFen;
+                        return (
+                          <Fragment key={index}>
+                            <Table.Tr>
+                              <Table.Td>{structure.structure}</Table.Td>
+                              <Table.Td>{structure.frequency}</Table.Td>
+                              <Table.Td>{(structure.winRate * 100).toFixed(1)}%</Table.Td>
+                              <Table.Td>
+                                <Button
+                                  size="xs"
+                                  variant="light"
+                                  onClick={() => toggleStructureDetails(structure)}
+                                >
+                                  {expandedStructure === structure.structure
+                                    ? t("features.dashboard.hide", "Hide")
+                                    : t("features.dashboard.view", "View")}
+                                </Button>
+                              </Table.Td>
+                            </Table.Tr>
+                            {expandedStructure === structure.structure && (
+                              <Table.Tr>
+                                <Table.Td colSpan={4}>
+                                  <Group align="flex-start" wrap="wrap">
+                                    <Stack gap="xs" style={{ width: 240 }}>
+                                      <Chessground
+                                        fen={displayFen}
+                                        coordinates={false}
+                                        viewOnly
+                                        orientation={pawnColorFilter}
+                                      />
+                                      {displayFen && (
+                                        <Button
+                                          size="xs"
+                                          variant="light"
+                                          leftSection={<IconCopy size={14} />}
+                                          onClick={() => copyFenToClipboard(displayFen)}
+                                        >
+                                          {t("features.dashboard.copyFen", "Copy FEN")}
+                                        </Button>
+                                      )}
+                                    </Stack>
+                                    <Stack gap="xs" style={{ flex: 1 }}>
+                                      <Group gap="md">
+                                        <Text size="sm" fw={600}>
+                                          {structure.structure}
+                                        </Text>
+                                        <Badge size="sm" variant="light">
+                                          {structure.frequency}
+                                        </Badge>
+                                        <Text size="sm" c="dimmed">
+                                          {(structure.winRate * 100).toFixed(1)}%
+                                        </Text>
+                                      </Group>
+                                      {structure.games && structure.games.length > 0 ? (
+                                        <ScrollArea h={220} style={{ minHeight: 200 }}>
+                                          <Table>
+                                            <Table.Thead>
+                                              <Table.Tr>
+                                                <Table.Th>{t("features.dashboard.game", "Game")}</Table.Th>
+                                                <Table.Th>{t("features.dashboard.white", "White")}</Table.Th>
+                                                <Table.Th>{t("features.dashboard.black", "Black")}</Table.Th>
+                                                <Table.Th>{t("features.dashboard.result", "Result")}</Table.Th>
+                                                <Table.Th>{t("features.dashboard.actions", "Actions")}</Table.Th>
+                                              </Table.Tr>
+                                            </Table.Thead>
+                                            <Table.Tbody>
+                                              {structure.games.map((game, gIdx) => (
+                                                <Table.Tr key={`${game.gameIndex}-${gIdx}`}>
+                                                  <Table.Td>{game.gameIndex + 1}</Table.Td>
+                                                  <Table.Td>{game.white || "-"}</Table.Td>
+                                                  <Table.Td>{game.black || "-"}</Table.Td>
+                                                  <Table.Td>{game.result || "-"}</Table.Td>
+                                                  <Table.Td>
+                                                    <Group gap="xs" wrap="nowrap">
+                                                      <Button
+                                                        size="xs"
+                                                        variant="light"
+                                                        onClick={() => setExpandedFen(game.fen)}
+                                                      >
+                                                        {t("features.dashboard.show", "Show")}
+                                                      </Button>
+                                                      <ActionIcon
+                                                        size="sm"
+                                                        variant="subtle"
+                                                        onClick={() => copyFenToClipboard(game.fen)}
+                                                      >
+                                                        <IconCopy size={14} />
+                                                      </ActionIcon>
+                                                      <ActionIcon
+                                                        size="sm"
+                                                        variant="subtle"
+                                                        onClick={() => openGameInNewTab(game.fen, game.gameIndex)}
+                                                      >
+                                                        <IconExternalLink size={14} />
+                                                      </ActionIcon>
+                                                    </Group>
+                                                  </Table.Td>
+                                                </Table.Tr>
+                                              ))}
+                                            </Table.Tbody>
+                                          </Table>
+                                        </ScrollArea>
+                                      ) : (
+                                        <Text size="sm" c="dimmed">
+                                          {t("features.dashboard.noGamesFound", "No games found")}
+                                        </Text>
+                                      )}
+                                    </Stack>
+                                  </Group>
+                                </Table.Td>
+                              </Table.Tr>
+                            )}
+                          </Fragment>
+                        );
+                      })}
+                  </Table.Tbody>
+                </Table>
+              )}
+
+              {pawnStructures.length === 0 && (
+                <Text size="sm" c="dimmed" ta="center" py="xl">
+                  {t("features.dashboard.noPawnStructures", "No pawn structures found. Click search to analyze.")}
+                </Text>
+              )}
+            </Stack>
+          </ScrollArea>
+        </Tabs.Panel>
+
 
         <Tabs.Panel value="debug" pt="md">
           <ScrollArea h="calc(90vh - 180px)">
@@ -665,4 +1140,3 @@ export function PlayerStatsModal({ opened, onClose, result, debugPgns }: PlayerS
     </Modal>
   );
 }
-

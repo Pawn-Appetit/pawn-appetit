@@ -1,10 +1,8 @@
-import { ActionIcon, Avatar, Badge, Button, Group, Loader, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
+import { ActionIcon, Avatar, Box, Button, Group, Loader, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
 import { IconSortAscending, IconSortDescending, IconStar, IconStarFilled } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AnalysisPreview } from "@/components/AnalysisPreview";
-import { currentThemeIdAtom } from "@/features/themes/state/themeAtoms";
 import { getAnalyzedGame, getGameStats as getSavedGameStats } from "@/utils/analyzedGames";
 import type { ChessComGame } from "@/utils/chess.com/api";
 import type { FavoriteGame } from "@/utils/favoriteGames";
@@ -37,14 +35,13 @@ export function ChessComGamesTab({
   favoriteGames = [],
 }: ChessComGamesTabProps) {
   const { t } = useTranslation();
-  const currentThemeId = useAtomValue(currentThemeIdAtom);
-  const isAcademiaMaya = currentThemeId === "academia-maya";
   const [gameStats, setGameStats] = useState<Map<string, GameStats>>(new Map());
   const [analyzedPgns, setAnalyzedPgns] = useState<Map<string, string>>(new Map());
   const [page, setPage] = useState(1);
   const itemsPerPage = 25;
   const [sortBy, setSortBy] = useState<"elo" | "date" | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const showAccountColumn = !selectedUser || selectedUser === "all";
 
   // Debug: log when isLoading changes
   useEffect(() => {
@@ -263,7 +260,7 @@ export function ChessComGamesTab({
                 </Group>
               </Table.Th>
               <Table.Th>Moves</Table.Th>
-              <Table.Th>Account</Table.Th>
+              {showAccountColumn && <Table.Th>Account</Table.Th>}
               <Table.Th style={{ cursor: "pointer", userSelect: "none" }} onClick={() => handleSort("date")}>
                 <Group gap="xs" wrap="nowrap">
                   Date
@@ -297,7 +294,7 @@ export function ChessComGamesTab({
               const isUserWhite = (g.white.username || "").toLowerCase() === (accountUsername || "").toLowerCase();
               const opponent = isUserWhite ? g.black : g.white;
               const userAccount = isUserWhite ? g.white : g.black;
-              const color = isUserWhite ? t("chess.white") : t("chess.black");
+              const color = isUserWhite ? "white" : "black";
               const result = isUserWhite ? g.white.result : g.black.result;
               const stats = gameStats.get(g.url);
 
@@ -316,25 +313,12 @@ export function ChessComGamesTab({
                 return result;
               };
 
-              // Get color for result badge - different colors for Academia Maya
-              const getResultColor = (result: string, isUserWin: boolean) => {
-                if (isAcademiaMaya) {
-                  if (isUserWin) return "green"; // Green for victory in Academia Maya
-                  if (
-                    result === "checkmated" ||
-                    result === "resigned" ||
-                    result === "timeout" ||
-                    result === "abandoned"
-                  )
-                    return "red"; // Red for defeat
-                  return "gray"; // Gray for draw
-                } else {
-                  // Default colors for other themes
-                  if (result === "win") return "teal";
-                  if (result === "checkmated" || result === "resigned") return "red";
-                  return "gray";
-                }
-              };
+              const resultColor =
+                result === "win"
+                  ? "var(--mantine-color-blue-6)"
+                  : result === "checkmated" || result === "resigned" || result === "timeout" || result === "abandoned"
+                    ? "var(--mantine-color-red-6)"
+                    : "var(--mantine-color-gray-5)";
 
               return (
                 <Table.Tr key={g.url}>
@@ -347,10 +331,30 @@ export function ChessComGamesTab({
                     </Group>
                   </Table.Td>
                   <Table.Td>
-                    <Badge variant="light">{color}</Badge>
+                    <Box
+                      aria-label={color}
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 999,
+                        backgroundColor: color === "white" ? "#ffffff" : "#000000",
+                        border: color === "white" ? "1px solid #666666" : "1px solid #000000",
+                        marginLeft: 4,
+                      }}
+                    />
                   </Table.Td>
                   <Table.Td>
-                    <Badge color={getResultColor(result, result === "win")}>{getTranslatedResult(result)}</Badge>
+                    <Box
+                      aria-label={getTranslatedResult(result)}
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 999,
+                        backgroundColor: resultColor,
+                        border: "1px solid rgba(0,0,0,0.2)",
+                        marginLeft: 4,
+                      }}
+                    />
                   </Table.Td>
                   <Table.Td>
                     {stats ? (
@@ -388,9 +392,11 @@ export function ChessComGamesTab({
                   <Table.Td>
                     <Text size="xs">{getMoveCount(g)}</Text>
                   </Table.Td>
-                  <Table.Td>
-                    <Text size="xs">{userAccount.username}</Text>
-                  </Table.Td>
+                  {showAccountColumn && (
+                    <Table.Td>
+                      <Text size="xs">{userAccount.username}</Text>
+                    </Table.Td>
+                  )}
                   <Table.Td c="dimmed">
                     {t("formatters.dateFormat", {
                       date: new Date(g.end_time * 1000),
@@ -452,7 +458,7 @@ export function ChessComGamesTab({
                   {averages.elo > 0 ? Math.round(averages.elo) : "-"}
                 </Text>
               </Table.Td>
-              <Table.Td colSpan={6}></Table.Td>
+              <Table.Td colSpan={showAccountColumn ? 6 : 5}></Table.Td>
             </Table.Tr>
           </Table.Tfoot>
         </Table>

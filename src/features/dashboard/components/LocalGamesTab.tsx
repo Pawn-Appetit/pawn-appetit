@@ -1,10 +1,8 @@
-import { ActionIcon, Avatar, Badge, Button, Group, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
+import { ActionIcon, Avatar, Box, Button, Group, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
 import { IconSortAscending, IconSortDescending, IconStar, IconStarFilled, IconTrash } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AnalysisPreview } from "@/components/AnalysisPreview";
-import { currentThemeIdAtom } from "@/features/themes/state/themeAtoms";
 import { getAnalyzedGame } from "@/utils/analyzedGames";
 import type { GameRecord } from "@/utils/gameRecords";
 import { calculateGameStats, type GameStats } from "@/utils/gameRecords";
@@ -21,8 +19,6 @@ interface LocalGamesTabProps {
 
 export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame, onToggleFavorite, favoriteGames = [] }: LocalGamesTabProps) {
   const { t } = useTranslation();
-  const currentThemeId = useAtomValue(currentThemeIdAtom);
-  const isAcademiaMaya = currentThemeId === "academia-maya";
   const [gameStats, setGameStats] = useState<Map<string, GameStats>>(new Map());
   const [analyzedPgns, setAnalyzedPgns] = useState<Map<string, string>>(new Map());
   const [page, setPage] = useState(1);
@@ -247,24 +243,16 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
             {sortedAndPaginatedGames.map((g) => {
               const isUserWhite = g.white.type === "human";
               const opponent = isUserWhite ? g.black : g.white;
-              const color = isUserWhite ? t("chess.white") : t("chess.black");
+              const color = isUserWhite ? "white" : "black";
 
               // Determine if user won
               const userWon = (isUserWhite && g.result === "1-0") || (!isUserWhite && g.result === "0-1");
 
-              // Get color for result badge - different colors for Academia Maya
-              const getResultColor = () => {
-                if (isAcademiaMaya) {
-                  if (userWon) return "green"; // Green for victory in Academia Maya
-                  if (g.result === "1-0" || g.result === "0-1") return "red"; // Red for defeat (when the user lost)
-                  return "gray"; // Gray for draw
-                } else {
-                  // Default colors for other themes
-                  if (userWon) return "teal";
-                  if (g.result === "1-0" || g.result === "0-1") return "red";
-                  return "gray";
-                }
-              };
+              const resultColor = userWon
+                ? "var(--mantine-color-blue-6)"
+                : g.result === "1-0" || g.result === "0-1"
+                  ? "var(--mantine-color-red-6)"
+                  : "var(--mantine-color-gray-5)";
               const diffMs = now - g.timestamp;
               let dateStr = "";
               if (diffMs < 60 * 60 * 1000) {
@@ -291,16 +279,30 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
                     </Group>
                   </Table.Td>
                   <Table.Td>
-                    <Badge variant="light">{color}</Badge>
+                    <Box
+                      aria-label={color}
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 999,
+                        backgroundColor: color === "white" ? "#ffffff" : "#000000",
+                        border: color === "white" ? "1px solid #666666" : "1px solid #000000",
+                        marginLeft: 4,
+                      }}
+                    />
                   </Table.Td>
                   <Table.Td>
-                    <Badge color={getResultColor()}>
-                      {g.result === "1-0"
-                        ? t("features.dashboard.win")
-                        : g.result === "0-1"
-                          ? t("features.dashboard.loss")
-                          : g.result}
-                    </Badge>
+                    <Box
+                      aria-label={userWon ? t("features.dashboard.win") : t("features.dashboard.loss")}
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 999,
+                        backgroundColor: resultColor,
+                        border: "1px solid rgba(0,0,0,0.2)",
+                        marginLeft: 4,
+                      }}
+                    />
                   </Table.Td>
                   <Table.Td>
                     {stats ? (

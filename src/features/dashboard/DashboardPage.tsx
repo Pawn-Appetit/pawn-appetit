@@ -103,6 +103,8 @@ export default function DashboardPage() {
   const [playerStatsModalOpened, setPlayerStatsModalOpened] = useState(false);
   const [playerStatsResult, setPlayerStatsResult] = useState<any | null>(null);
   const [playerStatsDebugPgns, setPlayerStatsDebugPgns] = useState<string | null>(null);
+  const [playerStatsGameType, setPlayerStatsGameType] = useState<"local" | "chesscom" | "lichess" | null>(null);
+  const [playerStatsAccountName, setPlayerStatsAccountName] = useState<string | null>(null);
 
   // FIDE player information
   const [fideId, setFideId] = useState<string | null>(null);
@@ -452,10 +454,11 @@ export default function DashboardPage() {
   const [selectedChessComUser, setSelectedChessComUser] = useState<string | null>("all");
 
   const [recentGames, setRecentGames] = useState<GameRecord[]>([]);
+  const [gameHistoryLimit, setGameHistoryLimit] = useState(100);
 
   const loadGames = useCallback(async () => {
     try {
-      const games = await getRecentGames(100);
+      const games = await getRecentGames(gameHistoryLimit);
       // Filter out games with less than 5 moves
       const filteredGames = games.filter((g) => {
         // Filter out games with no moves or less than 5 moves
@@ -466,7 +469,7 @@ export default function DashboardPage() {
     } catch (err) {
       console.error("Failed to load recent games:", err);
     }
-  }, []);
+  }, [gameHistoryLimit]);
 
   useEffect(() => {
     loadGames();
@@ -595,7 +598,7 @@ export default function DashboardPage() {
               return false; // Filter out games if we can't count moves
             }
           });
-          const games = gamesWithEnoughMoves.slice(0, 100);
+          const games = gamesWithEnoughMoves.slice(0, gameHistoryLimit);
 
           // Load analyzed PGNs from storage
           const analyzedGames = await getAllAnalyzedGames();
@@ -630,7 +633,7 @@ export default function DashboardPage() {
     return () => {
       window.removeEventListener("lichess:games:updated", handleLichessGamesUpdated);
     };
-  }, [lichessUsernames, selectedLichessUser]);
+  }, [lichessUsernames, selectedLichessUser, gameHistoryLimit]);
 
   const [chessComGames, setChessComGames] = useState<ChessComGame[]>([]);
   const [isLoadingChessComGames, setIsLoadingChessComGames] = useState(false);
@@ -668,7 +671,7 @@ export default function DashboardPage() {
                 const queryResult = await query_games(dbInfo.file, {
                   options: {
                     page: 1,
-                    pageSize: 100,
+                    pageSize: gameHistoryLimit,
                     sort: "date",
                     direction: "desc",
                     skipCount: true,
@@ -719,7 +722,7 @@ export default function DashboardPage() {
               return false; // Filter out games if we can't count moves
             }
           });
-          const games = gamesWithEnoughMoves.slice(0, 100);
+          const games = gamesWithEnoughMoves.slice(0, gameHistoryLimit);
 
           // Load analyzed PGNs from storage
           const analyzedGames = await getAllAnalyzedGames();
@@ -754,7 +757,7 @@ export default function DashboardPage() {
     return () => {
       window.removeEventListener("chesscom:games:updated", handleChessComGamesUpdated);
     };
-  }, [chessComUsernames, selectedChessComUser]);
+  }, [chessComUsernames, selectedChessComUser, gameHistoryLimit]);
 
   const [puzzleStats, setPuzzleStats] = useState(() => getPuzzleStats());
   const [favoriteGames, setFavoriteGames] = useState<FavoriteGame[]>([]);
@@ -1196,9 +1199,11 @@ export default function DashboardPage() {
             activeTab={activeGamesTab}
             onTabChange={setActiveGamesTab}
             localGames={recentGames}
+            gameHistoryLimit={gameHistoryLimit}
+            onGameHistoryLimitChange={setGameHistoryLimit}
             onDeleteLocalGame={async (gameId: string) => {
               await deleteGameRecord(gameId);
-              const updatedGames = await getRecentGames(100);
+              const updatedGames = await getRecentGames(gameHistoryLimit);
               const filteredGames = updatedGames.filter((g) => g.moves.length >= 5);
               setRecentGames(filteredGames);
             }}
@@ -1411,8 +1416,10 @@ export default function DashboardPage() {
               loadFavoriteGames();
             }}
             favoriteGames={favoriteGames}
-            onGenerateStats={async (playerName: string, gameType: "local" | "chesscom") => {
+            onGenerateStats={async (playerName: string, gameType: "local" | "chesscom" | "lichess") => {
               try {
+                setPlayerStatsGameType(gameType);
+                setPlayerStatsAccountName(playerName);
                 notifications.show({
                   title: t("features.dashboard.generatingStats", "Generating Stats"),
                   message: t("features.dashboard.generatingStatsMessage", "Processing analyzed games..."),
@@ -1458,6 +1465,23 @@ export default function DashboardPage() {
                       analyzedPgns.push(analyzedPgn);
                     }
                   }
+                } else if (gameType === "lichess") {
+                  // Get analyzed games for Lichess games
+                  const playerGames = lichessGames.filter((game) => {
+                    if (!game.pgn) return false;
+                    const whiteMatch = game.players.white.user?.name?.toLowerCase().includes(playerName.toLowerCase()) || 
+                                     playerName.toLowerCase().includes(game.players.white.user?.name?.toLowerCase() || "");
+                    const blackMatch = game.players.black.user?.name?.toLowerCase().includes(playerName.toLowerCase()) || 
+                                     playerName.toLowerCase().includes(game.players.black.user?.name?.toLowerCase() || "");
+                    return whiteMatch || blackMatch;
+                  });
+
+                  for (const game of playerGames) {
+                    const analyzedPgn = analyzedGames[game.id];
+                    if (analyzedPgn) {
+                      analyzedPgns.push(analyzedPgn);
+                    }
+                  }
                 }
 
                 if (analyzedPgns.length < 50) {
@@ -1482,8 +1506,8 @@ export default function DashboardPage() {
                 setPlayerStatsDebugPgns(combinedPgn);
 
                 // Analyze using playerMistakes
-                const { analyzeAnnotatedPgnCollection } = await import("@/utils/playerMistakes");
-                const result = analyzeAnnotatedPgnCollection(combinedPgn, playerName);
+                const { generateAnalysisResult } = await import("@/utils/playerMistakes");
+                const result = generateAnalysisResult(combinedPgn, playerName);
 
                 // Store result and open modal
                 setPlayerStatsResult(result);
@@ -1554,6 +1578,8 @@ export default function DashboardPage() {
         }}
         result={playerStatsResult}
         debugPgns={playerStatsDebugPgns || undefined}
+        statsGameType={playerStatsGameType || undefined}
+        statsAccountName={playerStatsAccountName || undefined}
       />
 
       <AnalyzeAllModal
@@ -2074,7 +2100,7 @@ export default function DashboardPage() {
 
             // Refresh games to update stats
             if (analyzeAllGameType === "local") {
-              const updatedGames = await getRecentGames(100);
+              const updatedGames = await getRecentGames(gameHistoryLimit);
               const filteredGames = updatedGames.filter((g) => g.moves.length >= 5);
               setRecentGames(filteredGames);
             }

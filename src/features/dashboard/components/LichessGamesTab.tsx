@@ -1,10 +1,8 @@
-import { ActionIcon, Avatar, Badge, Button, Group, Loader, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
+import { ActionIcon, Avatar, Box, Button, Group, Loader, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
 import { IconSortAscending, IconSortDescending, IconStar, IconStarFilled } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AnalysisPreview } from "@/components/AnalysisPreview";
-import { currentThemeIdAtom } from "@/features/themes/state/themeAtoms";
 import { getAnalyzedGame, getGameStats as getSavedGameStats } from "@/utils/analyzedGames";
 import type { FavoriteGame } from "@/utils/favoriteGames";
 
@@ -50,14 +48,13 @@ export function LichessGamesTab({
   favoriteGames = [],
 }: LichessGamesTabProps) {
   const { t } = useTranslation();
-  const currentThemeId = useAtomValue(currentThemeIdAtom);
-  const isAcademiaMaya = currentThemeId === "academia-maya";
   const [gameStats, setGameStats] = useState<Map<string, GameStats>>(new Map());
   const [analyzedPgns, setAnalyzedPgns] = useState<Map<string, string>>(new Map());
   const [page, setPage] = useState(1);
   const itemsPerPage = 25;
   const [sortBy, setSortBy] = useState<"elo" | "date" | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const showAccountColumn = !selectedUser || selectedUser === "all";
 
   // Debug: log when isLoading changes
   useEffect(() => {
@@ -276,7 +273,7 @@ export function LichessGamesTab({
                 </Group>
               </Table.Th>
               <Table.Th>Moves</Table.Th>
-              <Table.Th>Account</Table.Th>
+              {showAccountColumn && <Table.Th>Account</Table.Th>}
               <Table.Th style={{ cursor: "pointer", userSelect: "none" }} onClick={() => handleSort("date")}>
                 <Group gap="xs" wrap="nowrap">
                   Date
@@ -312,7 +309,7 @@ export function LichessGamesTab({
               const isUserWhite = (gameWhiteName || "").toLowerCase() === (accountUsername || "").toLowerCase();
               const opponent = isUserWhite ? g.players.black : g.players.white;
               const userAccount = isUserWhite ? g.players.white : g.players.black;
-              const color = isUserWhite ? t("chess.white") : t("chess.black");
+              const color = isUserWhite ? "white" : "black";
               const stats = gameStats.get(g.id);
 
               // Translate status
@@ -326,19 +323,11 @@ export function LichessGamesTab({
               // Determine if user won
               const userWon = g.winner === (isUserWhite ? "white" : "black");
 
-              // Get color for result badge - different colors for Academia Maya
-              const getResultColor = () => {
-                if (isAcademiaMaya) {
-                  if (userWon) return "green"; // Green for victory in Academia Maya
-                  if (g.winner) return "red"; // Red for defeat
-                  return "gray"; // Gray for draw
-                } else {
-                  // Default colors for other themes
-                  if (userWon) return "teal";
-                  if (g.winner) return "red";
-                  return "gray";
-                }
-              };
+              const resultColor = userWon
+                ? "var(--mantine-color-blue-6)"
+                : g.winner
+                  ? "var(--mantine-color-red-6)"
+                  : "var(--mantine-color-gray-5)";
 
               return (
                 <Table.Tr key={g.id}>
@@ -351,10 +340,30 @@ export function LichessGamesTab({
                     </Group>
                   </Table.Td>
                   <Table.Td>
-                    <Badge variant="light">{color}</Badge>
+                    <Box
+                      aria-label={color}
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 999,
+                        backgroundColor: color === "white" ? "#ffffff" : "#000000",
+                        border: color === "white" ? "1px solid #666666" : "1px solid #000000",
+                        marginLeft: 4,
+                      }}
+                    />
                   </Table.Td>
                   <Table.Td>
-                    <Badge color={getResultColor()}>{getTranslatedStatus(g.status)}</Badge>
+                    <Box
+                      aria-label={getTranslatedStatus(g.status)}
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 999,
+                        backgroundColor: resultColor,
+                        border: "1px solid rgba(0,0,0,0.2)",
+                        marginLeft: 4,
+                      }}
+                    />
                   </Table.Td>
                   <Table.Td>
                     {stats ? (
@@ -392,9 +401,11 @@ export function LichessGamesTab({
                   <Table.Td>
                     <Text size="xs">{getMoveCount(g)}</Text>
                   </Table.Td>
-                  <Table.Td>
-                    <Text size="xs">{userAccount.user?.name}</Text>
-                  </Table.Td>
+                  {showAccountColumn && (
+                    <Table.Td>
+                      <Text size="xs">{userAccount.user?.name}</Text>
+                    </Table.Td>
+                  )}
                   <Table.Td c="dimmed">
                     {t("formatters.dateFormat", {
                       date: new Date(g.createdAt),
@@ -462,7 +473,7 @@ export function LichessGamesTab({
                   {averages.elo > 0 ? Math.round(averages.elo) : "-"}
                 </Text>
               </Table.Td>
-              <Table.Td colSpan={6}></Table.Td>
+              <Table.Td colSpan={showAccountColumn ? 6 : 5}></Table.Td>
             </Table.Tr>
           </Table.Tfoot>
         </Table>

@@ -1,4 +1,4 @@
-import { ActionIcon, Avatar, Badge, Group, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
+import { ActionIcon, Avatar, Badge, Box, Group, Pagination, ScrollArea, Stack, Table, Text } from "@mantine/core";
 import { IconStarFilled } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useEffect, useMemo, useState } from "react";
@@ -224,14 +224,15 @@ export function FavoriteGamesTab({
       <ScrollArea style={{ flex: 1, minHeight: 0 }} type="auto">
         <Table striped highlightOnHover>
           <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Source</Table.Th>
-              <Table.Th>Opponent</Table.Th>
-              <Table.Th>Result</Table.Th>
-              <Table.Th>Date</Table.Th>
-              <Table.Th>Favorite</Table.Th>
-              <Table.Th>Actions</Table.Th>
-            </Table.Tr>
+          <Table.Tr>
+            <Table.Th>Source</Table.Th>
+            <Table.Th>Color</Table.Th>
+            <Table.Th>Opponent</Table.Th>
+            <Table.Th>Result</Table.Th>
+            <Table.Th>Date</Table.Th>
+            <Table.Th>Favorite</Table.Th>
+            <Table.Th>Actions</Table.Th>
+          </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
             {paginatedGames.map((item) => {

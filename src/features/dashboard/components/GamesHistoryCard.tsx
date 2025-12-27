@@ -50,8 +50,10 @@ interface GamesHistoryCardProps {
   onToggleFavoriteChessCom?: (gameId: string) => Promise<void>;
   onToggleFavoriteLichess?: (gameId: string) => Promise<void>;
   favoriteGames?: FavoriteGame[];
-  onGenerateStats?: (playerName: string, gameType: "local" | "chesscom") => Promise<void>;
+  onGenerateStats?: (playerName: string, gameType: "local" | "chesscom" | "lichess") => Promise<void>;
   selectedPlayerName?: string | null;
+  gameHistoryLimit: number;
+  onGameHistoryLimitChange: (limit: number) => void;
 }
 
 export function GamesHistoryCard({
@@ -81,6 +83,8 @@ export function GamesHistoryCard({
   favoriteGames = [],
   onGenerateStats,
   selectedPlayerName,
+  gameHistoryLimit,
+  onGameHistoryLimitChange,
 }: GamesHistoryCardProps) {
   const { t } = useTranslation();
 
@@ -96,6 +100,11 @@ export function GamesHistoryCard({
       }
     } else if (activeTab === "local") {
       if (!selectedPlayerName || !onGenerateStats) {
+        setAnalyzedCount(0);
+        return;
+      }
+    } else if (activeTab === "lichess") {
+      if (!selectedLichessUser || selectedLichessUser === "all" || !onGenerateStats) {
         setAnalyzedCount(0);
         return;
       }
@@ -118,10 +127,11 @@ export function GamesHistoryCard({
             const analyzedPgn = await getAnalyzedGame(game.id);
             if (analyzedPgn) {
               // Check if player name matches
-              const whiteMatch = game.white.name?.toLowerCase().includes(selectedPlayerName.toLowerCase()) || 
-                               selectedPlayerName.toLowerCase().includes(game.white.name?.toLowerCase() || "");
-              const blackMatch = game.black.name?.toLowerCase().includes(selectedPlayerName.toLowerCase()) || 
-                               selectedPlayerName.toLowerCase().includes(game.black.name?.toLowerCase() || "");
+              const playerNameLower = selectedPlayerName!.toLowerCase();
+              const whiteMatch = game.white.name?.toLowerCase().includes(playerNameLower) || 
+                               playerNameLower.includes(game.white.name?.toLowerCase() || "");
+              const blackMatch = game.black.name?.toLowerCase().includes(playerNameLower) || 
+                               playerNameLower.includes(game.black.name?.toLowerCase() || "");
               if (whiteMatch || blackMatch) {
                 count++;
               }
@@ -141,11 +151,25 @@ export function GamesHistoryCard({
               }
             }
           }
+        } else if (activeTab === "lichess" && selectedLichessUser && selectedLichessUser !== "all") {
+          // Count analyzed Lichess games for the selected user
+          for (const game of lichessGames) {
+            if (cancelled) break;
+            if (analyzedGames[game.id]) {
+              const whiteMatch = game.players.white.user?.name?.toLowerCase().includes(selectedLichessUser.toLowerCase()) || 
+                               selectedLichessUser.toLowerCase().includes(game.players.white.user?.name?.toLowerCase() || "");
+              const blackMatch = game.players.black.user?.name?.toLowerCase().includes(selectedLichessUser.toLowerCase()) || 
+                               selectedLichessUser.toLowerCase().includes(game.players.black.user?.name?.toLowerCase() || "");
+              if (whiteMatch || blackMatch) {
+                count++;
+              }
+            }
+          }
         }
 
         if (!cancelled) {
           setAnalyzedCount(count);
-          console.log(`[GenerateStats] Counted ${count} analyzed games for ${activeTab === "local" ? selectedPlayerName : selectedChessComUser}`);
+          console.log(`[GenerateStats] Counted ${count} analyzed games for ${activeTab === "local" ? selectedPlayerName : activeTab === "chesscom" ? selectedChessComUser : selectedLichessUser}`);
         }
       } catch (error) {
         console.error("[GenerateStats] Error counting games:", error);
@@ -269,6 +293,22 @@ export function GamesHistoryCard({
             <Tabs.Tab value="favorites">Favorites</Tabs.Tab>
           </Tabs.List>
           <Group gap="xs">
+            <Select
+              placeholder={t("features.dashboard.maxGames", "Max games")}
+              value={String(gameHistoryLimit)}
+              onChange={(value) => {
+                if (!value) return;
+                const parsed = Number(value);
+                if (!Number.isNaN(parsed)) onGameHistoryLimitChange(parsed);
+              }}
+              data={[
+                { value: "100", label: "100" },
+                { value: "200", label: "200" },
+                { value: "300", label: "300" },
+                { value: "500", label: "500" },
+                { value: "1000", label: "1000" },
+              ]}
+            />
           {activeTab === "chesscom" && (
             <Select
               placeholder="Filter by account"
@@ -295,15 +335,18 @@ export function GamesHistoryCard({
           )}
             {onGenerateStats &&
               ((activeTab === "local" && selectedPlayerName) || 
-               (activeTab === "chesscom" && selectedChessComUser && selectedChessComUser !== "all")) &&
+               (activeTab === "chesscom" && selectedChessComUser && selectedChessComUser !== "all") ||
+               (activeTab === "lichess" && selectedLichessUser && selectedLichessUser !== "all")) &&
               analyzedCount >= 50 && (
                 <Button
                   leftSection={<IconChartBar size={16} />}
                   onClick={() => {
-                    const gameType = activeTab === "local" ? "local" : "chesscom";
+                    const gameType = activeTab === "local" ? "local" : activeTab === "chesscom" ? "chesscom" : "lichess";
                     const playerName = activeTab === "local" 
                       ? selectedPlayerName 
-                      : (selectedChessComUser && selectedChessComUser !== "all" ? selectedChessComUser : selectedPlayerName);
+                      : activeTab === "chesscom"
+                      ? (selectedChessComUser && selectedChessComUser !== "all" ? selectedChessComUser : selectedPlayerName)
+                      : (selectedLichessUser && selectedLichessUser !== "all" ? selectedLichessUser : selectedPlayerName);
                     if (playerName) {
                       onGenerateStats(playerName, gameType);
                     }

@@ -137,6 +137,32 @@ export async function getRecentGames(limit = 20): Promise<GameRecord[]> {
   }
 }
 
+export async function getAllGames(): Promise<GameRecord[]> {
+  try {
+    const dir = await appDataDir();
+    const file = await resolve(dir, FILENAME);
+    if (!(await exists(file))) {
+      return [];
+    }
+    const text = await readTextFile(file);
+    const records: GameRecord[] = JSON.parse(text);
+    const validRecords = records.filter((record) => {
+      if (!record.id) return false;
+      if (!record.white || !record.black) return false;
+      if (!record.white.type || !record.black.type) return false;
+      if (!Array.isArray(record.moves)) return false;
+      if (!record.timestamp || typeof record.timestamp !== "number") return false;
+      if (!record.result || typeof record.result !== "string") return false;
+      if (!record.fen || typeof record.fen !== "string") return false;
+      return true;
+    });
+    return validRecords;
+  } catch (err) {
+    error(`[gameRecords] Failed to get all games: ${err}`);
+    return [];
+  }
+}
+
 export async function countGamesOnDate(date: Date = new Date()): Promise<number> {
   const dir = await appDataDir();
   const file = await resolve(dir, FILENAME);
