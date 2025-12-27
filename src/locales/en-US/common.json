@@ -660,6 +660,7 @@
       "byColor": "By Color",
       "filterByColor": "Filter by Color",
       "all": "All",
+      "any": "Any",
       "white": "White",
       "black": "Black",
       "cards": {

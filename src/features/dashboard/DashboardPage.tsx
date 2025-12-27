@@ -1484,15 +1484,6 @@ export default function DashboardPage() {
                   }
                 }
 
-                if (analyzedPgns.length < 50) {
-                  notifications.show({
-                    title: t("features.dashboard.insufficientGames", "Insufficient Games"),
-                    message: t("features.dashboard.insufficientGamesMessage", "You need at least 50 analyzed games to generate stats."),
-                    color: "orange",
-                  });
-                  return;
-                }
-
                 // Process normally (cache disabled for now)
                 // Add opening headers (ECO, Opening, Variation) to each PGN
                 console.log("[onGenerateStats] Adding opening headers to", analyzedPgns.length, "PGNs");

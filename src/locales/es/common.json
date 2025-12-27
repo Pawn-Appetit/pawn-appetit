@@ -541,6 +541,9 @@
       "tournaments": "Torneos"
     },
     "dashboard": {
+      "any": "Cualquiera",
+      "playerStructure": "Solo jugador",
+      "bothStructures": "Ambas estructuras",
       "cards": {
         "learn": {
           "title": "Aprender ajedrez",

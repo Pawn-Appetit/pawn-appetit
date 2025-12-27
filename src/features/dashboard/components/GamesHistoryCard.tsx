@@ -336,8 +336,7 @@ export function GamesHistoryCard({
             {onGenerateStats &&
               ((activeTab === "local" && selectedPlayerName) || 
                (activeTab === "chesscom" && selectedChessComUser && selectedChessComUser !== "all") ||
-               (activeTab === "lichess" && selectedLichessUser && selectedLichessUser !== "all")) &&
-              analyzedCount >= 50 && (
+               (activeTab === "lichess" && selectedLichessUser && selectedLichessUser !== "all")) && (
                 <Button
                   leftSection={<IconChartBar size={16} />}
                   onClick={() => {

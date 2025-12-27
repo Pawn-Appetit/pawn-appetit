@@ -1,4 +1,4 @@
-import { Badge, Code, Group, Modal, ScrollArea, Stack, Table, Text, Title, Divider, Tabs, Select, MultiSelect, ActionIcon, Tooltip, Button, SegmentedControl } from "@mantine/core";
+import { Badge, Code, Group, Modal, Progress, ScrollArea, Stack, Table, Text, Title, Divider, Tabs, Select, MultiSelect, ActionIcon, Tooltip, Button, SegmentedControl } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 import { useState, useMemo, useEffect, Fragment } from "react";
 import { IconExternalLink, IconCopy, IconSearch } from "@tabler/icons-react";
@@ -48,14 +48,17 @@ export function PlayerStatsModal({
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [openingsColorFilter, setOpeningsColorFilter] = useState<"all" | "white" | "black">("all");
 
-  const [pawnMoveFilter, setPawnMoveFilter] = useState<number>(50);
-  const [pawnColorFilter, setPawnColorFilter] = useState<"white" | "black">("white");
+  const [pawnMoveFilter, setPawnMoveFilter] = useState<number>(10);
+  const [pawnColorFilter, setPawnColorFilter] = useState<"white" | "black" | "any">("white");
+  const [pawnStructureMode, setPawnStructureMode] = useState<"player" | "both">("player");
   const [pawnStructures, setPawnStructures] = useState<PawnStructureStat[]>([]);
   const [pawnSortBy, setPawnSortBy] = useState<"frequency" | "winRate">("frequency");
   const [pawnScope, setPawnScope] = useState<"analyzed" | "all">("analyzed");
   const [pawnLoading, setPawnLoading] = useState(false);
+  const [pawnProgress, setPawnProgress] = useState<number | null>(null);
   const [expandedStructure, setExpandedStructure] = useState<string | null>(null);
   const [expandedFen, setExpandedFen] = useState<string | null>(null);
+  const [pawnSearchPgns, setPawnSearchPgns] = useState<string | null>(null);
   const fallbackFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
   // Get unique values for filters (must be before early return)
@@ -212,66 +215,102 @@ export function PlayerStatsModal({
   };
   
   const openGameInNewTab = async (fenBefore: string, gameIndex: number) => {
-    // Try to find the game in debugPgns
-    if (debugPgns) {
-      const games = splitPgnGames(debugPgns);
+    const sourcePgns = pawnSearchPgns ?? debugPgns ?? pgnText ?? null;
+    console.debug("[pawn-structures] openGameInNewTab", {
+      gameIndex,
+      hasDebugPgns: Boolean(debugPgns),
+      hasPawnSearchPgns: Boolean(pawnSearchPgns),
+      hasPgnText: Boolean(pgnText),
+      sourceLength: sourcePgns?.length ?? 0,
+      fenBefore,
+    });
+    if (sourcePgns) {
+      const games = splitPgnGames(sourcePgns);
+      console.debug("[pawn-structures] splitPgnGames", { count: games.length });
       
       let game = games[gameIndex];
-      
-      if (game) {
-        try {
-          // Parse the PGN to get the position at the FEN
-          const tree = await parsePGN(game);
-          
-          // Find the position in the tree that matches fenBefore
-          let targetPosition: number[] = [];
-          const findPosition = (node: any, path: number[] = []): boolean => {
-            if (node.fen === fenBefore) {
-              targetPosition = path;
-              return true;
-            }
-            for (let i = 0; i < node.children.length; i++) {
-              if (findPosition(node.children[i], [...path, i])) {
-                return true;
-              }
-            }
-            return false;
-          };
-          
-          findPosition(tree.root);
-          
-          // Create a new tab with the game at the specific position
-          await createTab({
-            tab: {
-              name: `Game ${gameIndex + 1} - Move ${fenBefore.split(" ")[5] || ""}`,
-              type: "analysis",
-            },
-            setTabs,
-            setActiveTab: () => {}, // Don't change active tab
-            pgn: game,
-            position: targetPosition.length > 0 ? targetPosition : undefined,
-          });
-          
-          notifications.show({
-            title: t("features.dashboard.gameOpened", "Game Opened"),
-            message: t("features.dashboard.gameOpenedMessage", "Game opened in new tab"),
-            color: "green",
-          });
-        } catch (error) {
-          console.error("Error opening game:", error);
-          notifications.show({
-            title: t("features.dashboard.error", "Error"),
-            message: t("features.dashboard.errorOpeningGame", "Failed to open game"),
-            color: "red",
-          });
+      let targetPosition: number[] = [];
+
+      const findPosition = (node: any, path: number[] = []): boolean => {
+        if (node.fen === fenBefore) {
+          targetPosition = path;
+          return true;
         }
-      } else {
+        for (let i = 0; i < node.children.length; i++) {
+          if (findPosition(node.children[i], [...path, i])) {
+            return true;
+          }
+        }
+        return false;
+      };
+
+      if (!game && games.length > 0) {
+        console.debug("[pawn-structures] game index missing, scanning for fen match");
+        for (let i = 0; i < games.length; i++) {
+          try {
+            const tree = await parsePGN(games[i]);
+            targetPosition = [];
+            if (findPosition(tree.root)) {
+              game = games[i];
+              console.debug("[pawn-structures] found fen match in game index", { index: i });
+              break;
+            }
+          } catch {
+            continue;
+          }
+        }
+      }
+
+      if (!game) {
+        console.debug("[pawn-structures] game not found in PGNs", { gameIndex });
         notifications.show({
           title: t("features.dashboard.gameNotFound", "Game Not Found"),
           message: t("features.dashboard.gameNotFoundMessage", "Could not find game in PGNs"),
           color: "orange",
         });
+        return;
       }
+
+      try {
+        if (game) {
+          try {
+            const tree = await parsePGN(game);
+            findPosition(tree.root);
+          } catch {
+            targetPosition = [];
+          }
+        }
+
+        await createTab({
+          tab: {
+            name: `Game ${gameIndex + 1} - Move ${fenBefore.split(" ")[5] || ""}`,
+            type: "analysis",
+          },
+          setTabs,
+          setActiveTab,
+          pgn: game,
+          position: targetPosition.length > 0 ? targetPosition : undefined,
+        });
+        
+        notifications.show({
+          title: t("features.dashboard.gameOpened", "Game Opened"),
+          message: t("features.dashboard.gameOpenedMessage", "Game opened in new tab"),
+          color: "green",
+        });
+      } catch (error) {
+        console.error("Error opening game:", error);
+        notifications.show({
+          title: t("features.dashboard.error", "Error"),
+          message: t("features.dashboard.errorOpeningGame", "Failed to open game"),
+          color: "red",
+        });
+      }
+    } else {
+      notifications.show({
+        title: t("features.dashboard.gameNotFound", "Game Not Found"),
+        message: t("features.dashboard.gameNotFoundMessage", "Could not find game in PGNs"),
+        color: "orange",
+      });
     }
   };
 
@@ -371,16 +410,19 @@ export function PlayerStatsModal({
     pgn += `[White "${game.white || "White"}"]\n`;
     pgn += `[Black "${game.black || "Black"}"]\n`;
     pgn += `[Result "${resultTag}"]\n`;
+    if (game.white_elo) {
+      pgn += `[WhiteElo "${game.white_elo}"]\n`;
+    }
+    if (game.black_elo) {
+      pgn += `[BlackElo "${game.black_elo}"]\n`;
+    }
     if (game.time_control) {
       pgn += `[TimeControl "${game.time_control}"]\n`;
     }
     if (game.eco) {
       pgn += `[ECO "${game.eco}"]\n`;
     }
-    if (game.fen && game.fen !== INITIAL_FEN) {
-      pgn += `[SetUp "1"]\n`;
-      pgn += `[FEN "${game.fen}"]\n`;
-    }
+    // Avoid injecting final FEN from the database as a starting position.
     pgn += "\n";
     pgn += movetext;
     return pgn;
@@ -401,9 +443,15 @@ export function PlayerStatsModal({
       .filter(Boolean) as string[];
   };
 
-  const queryAllGamesFromDb = async (dbFile: string, target: string): Promise<string[]> => {
+  const queryAllGamesFromDb = async (
+    dbFile: string,
+    target: string,
+    onProgress?: (value: number) => void,
+  ): Promise<string[]> => {
     const pageSize = 200;
     let page = 1;
+    let loaded = 0;
+    let totalCount: number | null = null;
     const collected: string[] = [];
     const normalizedTarget = normalizeName(target);
 
@@ -411,7 +459,7 @@ export function PlayerStatsModal({
       const response = await query_games(dbFile, {
         sides: "Any",
         options: {
-          skipCount: true,
+          skipCount: page !== 1,
           page,
           pageSize,
           sort: "date",
@@ -420,6 +468,9 @@ export function PlayerStatsModal({
       });
       const data = response.data ?? [];
       if (!data.length) break;
+      if (page === 1 && typeof response.count === "number") {
+        totalCount = response.count;
+      }
 
       for (const game of data) {
         const isWhite = matchesName(game.white, normalizedTarget);
@@ -436,6 +487,11 @@ export function PlayerStatsModal({
         }
       }
 
+      loaded += data.length;
+      if (onProgress && totalCount && totalCount > 0) {
+        onProgress(Math.min(100, Math.round((loaded / totalCount) * 100)));
+      }
+
       if (data.length < pageSize) break;
       page += 1;
     }
@@ -443,13 +499,17 @@ export function PlayerStatsModal({
     return collected;
   };
 
-  const fetchOnlinePgns = async (type: "chesscom" | "lichess", target: string): Promise<string[]> => {
+  const fetchOnlinePgns = async (
+    type: "chesscom" | "lichess",
+    target: string,
+    onProgress?: (value: number) => void,
+  ): Promise<string[]> => {
     const dbFile = await findDatabaseFileForAccount(target, type);
     if (!dbFile) return [];
-    return queryAllGamesFromDb(dbFile, target);
+    return queryAllGamesFromDb(dbFile, target, onProgress);
   };
 
-  const gatherPawnPgns = async (): Promise<string[]> => {
+  const gatherPawnPgns = async (onProgress?: (value: number) => void): Promise<string[]> => {
     if (pawnScope === "analyzed") {
       const pgnSource = debugPgns ?? pgnText;
       return pgnSource ? [pgnSource] : [];
@@ -461,13 +521,13 @@ export function PlayerStatsModal({
       return fetchLocalPgns(normalizedPlayer);
     }
     if (statsGameType === "chesscom") {
-      const fetched = await fetchOnlinePgns("chesscom", normalizedPlayer);
+      const fetched = await fetchOnlinePgns("chesscom", normalizedPlayer, onProgress);
       return fetched.length
         ? fetched
         : await collectAnalyzedPgnsFromStorage(normalizedPlayer, "chesscom");
     }
     if (statsGameType === "lichess") {
-      const fetched = await fetchOnlinePgns("lichess", normalizedPlayer);
+      const fetched = await fetchOnlinePgns("lichess", normalizedPlayer, onProgress);
       return fetched.length
         ? fetched
         : await collectAnalyzedPgnsFromStorage(normalizedPlayer, "lichess");
@@ -477,8 +537,9 @@ export function PlayerStatsModal({
 
   const handlePawnSearch = async () => {
     setPawnLoading(true);
+    setPawnProgress(0);
     try {
-      const pgns = await gatherPawnPgns();
+      const pgns = await gatherPawnPgns((value) => setPawnProgress(value));
       if (!pgns.length) {
         notifications.show({
           title: t("features.dashboard.noPawnStructures", "No pawn structures found."),
@@ -489,11 +550,14 @@ export function PlayerStatsModal({
         return;
       }
       const combined = pgns.join("\n\n");
+      setPawnSearchPgns(combined);
       const analysisResult = await generateAnalysisResult(combined, result.player, {
         maxMove: pawnMoveFilter,
         playerColor: pawnColorFilter,
+        pawnStructureMode,
       });
       setPawnStructures(analysisResult.pawnStructures || []);
+      setPawnProgress(100);
     } catch (error) {
       console.error("Error analyzing pawn structures:", error);
       notifications.show({
@@ -503,6 +567,7 @@ export function PlayerStatsModal({
       });
     } finally {
       setPawnLoading(false);
+      setPawnProgress(null);
     }
   };
 
@@ -915,7 +980,7 @@ export function PlayerStatsModal({
                 label={t("features.dashboard.inMove", "In Move")}
                 data={Array.from({ length: 100 }, (_, i) => ({ value: (i + 1).toString(), label: (i + 1).toString() }))}
                 value={pawnMoveFilter.toString()}
-                onChange={(value) => setPawnMoveFilter(parseInt(value || "50"))}
+                onChange={(value) => setPawnMoveFilter(parseInt(value || "10"))}
                 style={{ width: 120 }}
               />
               <Select
@@ -923,9 +988,10 @@ export function PlayerStatsModal({
                 data={[
                   { value: "white", label: t("features.dashboard.white", "White") },
                   { value: "black", label: t("features.dashboard.black", "Black") },
+                  { value: "any", label: t("features.dashboard.any", "Any") },
                 ]}
                 value={pawnColorFilter}
-                onChange={(value) => setPawnColorFilter(value as "white" | "black")}
+                onChange={(value) => setPawnColorFilter((value as "white" | "black" | "any") || "any")}
                 style={{ width: 120 }}
               />
               <SegmentedControl
@@ -936,6 +1002,14 @@ export function PlayerStatsModal({
                   { value: "all", label: t("features.dashboard.all", "Todas") },
                 ]}
               />
+              <SegmentedControl
+                value={pawnStructureMode}
+                onChange={(value) => setPawnStructureMode(value as typeof pawnStructureMode)}
+                data={[
+                  { value: "player", label: t("features.dashboard.playerStructure", "Solo jugador") },
+                  { value: "both", label: t("features.dashboard.bothStructures", "Ambas estructuras") },
+                ]}
+              />
               <Button
                 leftSection={<IconSearch size={16} />}
                 onClick={handlePawnSearch}
@@ -944,6 +1018,9 @@ export function PlayerStatsModal({
                 {t("features.dashboard.search", "Search")}
               </Button>
             </Group>
+            {pawnLoading && (
+              <Progress value={pawnProgress ?? 0} size="xs" />
+            )}
 
               {pawnStructures.length > 0 && (
                 <Table>
@@ -997,7 +1074,7 @@ export function PlayerStatsModal({
                                         fen={displayFen}
                                         coordinates={false}
                                         viewOnly
-                                        orientation={pawnColorFilter}
+                                        orientation={pawnColorFilter === "any" ? "white" : pawnColorFilter}
                                       />
                                       {displayFen && (
                                         <Button
@@ -1038,8 +1115,14 @@ export function PlayerStatsModal({
                                               {structure.games.map((game, gIdx) => (
                                                 <Table.Tr key={`${game.gameIndex}-${gIdx}`}>
                                                   <Table.Td>{game.gameIndex + 1}</Table.Td>
-                                                  <Table.Td>{game.white || "-"}</Table.Td>
-                                                  <Table.Td>{game.black || "-"}</Table.Td>
+                                                  <Table.Td>
+                                                    {game.white || "-"}
+                                                    {game.whiteElo ? ` (${game.whiteElo})` : ""}
+                                                  </Table.Td>
+                                                  <Table.Td>
+                                                    {game.black || "-"}
+                                                    {game.blackElo ? ` (${game.blackElo})` : ""}
+                                                  </Table.Td>
                                                   <Table.Td>{game.result || "-"}</Table.Td>
                                                   <Table.Td>
                                                     <Group gap="xs" wrap="nowrap">

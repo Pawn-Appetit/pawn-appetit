@@ -6,11 +6,12 @@ import type { Color, Role, Square } from "chessops/types";
 import { detectThemes, type ThemeId, type ThemeContext } from "./themes";
 import { clonePosition, playMovesWithEvents, materialFromFen, isEndgameFen, isMatePosition } from "./themes/engine";
 
-function determineWin(result: string | undefined, playerColor: Color): boolean {
-  if (!result) return false;
-  if (result.startsWith("1-0")) return playerColor === "white";
-  if (result.startsWith("0-1")) return playerColor === "black";
-  return false;
+function determineWin(result: string | undefined, playerColor: Color): number {
+  if (!result) return 0;
+  if (result.startsWith("1-0")) return playerColor === "white" ? 1 : 0;
+  if (result.startsWith("0-1")) return playerColor === "black" ? 1 : 0;
+  if (result.startsWith("1/2-1/2")) return 0.5;
+  return 0;
 }
 
 export type MistakeKind =
@@ -37,7 +38,8 @@ export interface PlayerMistakeOptions {
   maxSiblingsPerPly?: number;
   contextPlies?: number;
   maxMove?: number;
-  playerColor?: Color;
+  playerColor?: Color | "any";
+  pawnStructureMode?: "player" | "both";
 }
 
 export interface GameIdentity {
@@ -215,7 +217,8 @@ export interface PlayerMistakeOptions {
   maxSiblingsPerPly?: number;
   contextPlies?: number;
   maxMove?: number;
-  playerColor?: Color;
+  playerColor?: Color | "any";
+  pawnStructureMode?: "player" | "both";
 }
 
 
@@ -259,7 +262,7 @@ export function generateAnalysisResult(
   if (options?.maxMove !== undefined) {
     filteredIssues = filteredIssues.filter(i => i.moveNumber <= options.maxMove!);
   }
-  if (options?.playerColor) {
+  if (options?.playerColor && options.playerColor !== "any") {
     filteredIssues = filteredIssues.filter(i => i.playerColor === options.playerColor);
   }
   
@@ -268,6 +271,7 @@ export function generateAnalysisResult(
       ? computePawnStructures(pgnText, playerName, {
           moveNumber: options.maxMove,
           playerColor: options.playerColor,
+          pawnStructureMode: options.pawnStructureMode,
         })
       : [];
   
@@ -395,6 +399,8 @@ export interface PawnStructureGame {
   gameIndex: number;
   white?: string;
   black?: string;
+  whiteElo?: string;
+  blackElo?: string;
   result?: string;
   fen: string;
 }
@@ -410,7 +416,7 @@ export interface PawnStructureStat {
 export function computePawnStructures(
   pgnText: string,
   playerName: string,
-  options: { moveNumber: number; playerColor: Color },
+  options: { moveNumber: number; playerColor: Color | "any"; pawnStructureMode?: "player" | "both" },
 ): PawnStructureStat[] {
   const games = safeParseGames(pgnText);
   const stats = new Map<string, { count: number; wins: number; sampleFen?: string; games: PawnStructureGame[] }>();
@@ -421,10 +427,14 @@ export function computePawnStructures(
     const headers: Map<string, string> = game.headers;
     const white = headers.get("White") ?? "";
     const black = headers.get("Black") ?? "";
+    const whiteElo = headers.get("WhiteElo") ?? undefined;
+    const blackElo = headers.get("BlackElo") ?? undefined;
     const result = headers.get("Result") ?? undefined;
 
     const playerColor = detectPlayerColor(playerName, white, black);
-    if (!playerColor || playerColor !== options.playerColor) continue;
+    if (!playerColor) continue;
+    if (options.playerColor !== "any" && playerColor !== options.playerColor) continue;
+    const colorForStructure = options.playerColor === "any" ? playerColor : options.playerColor;
 
     let pos: any;
     try {
@@ -447,30 +457,38 @@ export function computePawnStructures(
       if (!mv) break;
       pos.play(mv);
 
-      if (mover === options.playerColor && moveNumber === options.moveNumber) {
-        const fenAfter = makeFen(pos.toSetup());
-        structureFen = fenAfter;
-        structure = pawnStructureSignatureForColor(fenAfter, options.playerColor);
-        break;
+    if (mover === colorForStructure && moveNumber === options.moveNumber) {
+      const fenAfter = makeFen(pos.toSetup());
+      structureFen = fenAfter;
+      if (options.pawnStructureMode === "both") {
+        const whiteSig = pawnStructureSignatureForColor(fenAfter, "white");
+        const blackSig = pawnStructureSignatureForColor(fenAfter, "black");
+        structure = `w:${whiteSig}|b:${blackSig}`;
+      } else {
+        structure = pawnStructureSignatureForColor(fenAfter, colorForStructure);
       }
+      break;
+    }
 
       node = main as any;
     }
 
     if (!structure || !structureFen) continue;
-    const won = determineWin(result, options.playerColor);
+    const won = determineWin(result, playerColor);
     if (!stats.has(structure)) {
       stats.set(structure, { count: 0, wins: 0, sampleFen: structureFen, games: [] });
     }
     const stat = stats.get(structure)!;
     stat.count += 1;
-    if (won) stat.wins += 1;
+    if (won) stat.wins += won;
     if (!stat.sampleFen) stat.sampleFen = structureFen;
     if (stat.games.length < maxGamesPerStructure) {
       stat.games.push({
         gameIndex: gi,
         white,
         black,
+        whiteElo,
+        blackElo,
         result,
         fen: structureFen,
       });
@@ -519,7 +537,7 @@ function pawnStructureSignatureForColor(fen: string, color: Color): string {
 }
 
 
-const DEFAULTS: Required<Pick<PlayerMistakeOptions, "maxVariationPlies" | "openingPhasePlies" | "cpInaccuracy" | "cpMistake" | "cpBlunder" | "minAltGainCp" | "minStrategicLossCp" | "allowSymbolOnly" | "maxSiblingsPerPly" | "contextPlies" | "maxMove">> = {
+const DEFAULTS: Required<Pick<PlayerMistakeOptions, "maxVariationPlies" | "openingPhasePlies" | "cpInaccuracy" | "cpMistake" | "cpBlunder" | "minAltGainCp" | "minStrategicLossCp" | "allowSymbolOnly" | "maxSiblingsPerPly" | "contextPlies" | "maxMove" | "pawnStructureMode">> = {
   maxVariationPlies: 30,
   openingPhasePlies: 20,
 
@@ -534,16 +552,21 @@ const DEFAULTS: Required<Pick<PlayerMistakeOptions, "maxVariationPlies" | "openi
   maxSiblingsPerPly: 10,
   contextPlies: 8,
   maxMove: 100,
+  pawnStructureMode: "player",
 };
 
-type MistakeOptionsResolved = Required<Omit<PlayerMistakeOptions, "playerColor">> & { playerColor?: Color };
+type MistakeOptionsResolved = Required<Omit<PlayerMistakeOptions, "playerColor">> & { playerColor?: Color | "any" };
 
 export function analyzePlayerMistakes(
   pgnText: string,
   playerName: string,
   options?: PlayerMistakeOptions,
 ): PlayerMistakesReport {
-  const opt: MistakeOptionsResolved = { ...DEFAULTS, ...(options ?? {}) };
+  const opt: MistakeOptionsResolved = {
+    ...DEFAULTS,
+    ...(options ?? {}),
+    pawnStructureMode: options?.pawnStructureMode ?? DEFAULTS.pawnStructureMode,
+  };
 
   const games = safeParseGames(pgnText);
 
