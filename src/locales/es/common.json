@@ -71,6 +71,8 @@
     "all": "Todos",
     "convert": "Convertir",
     "copied": "Copiado",
+    "copiedFenToClipboard": "FEN copiado al portapapeles",
+    "copiedPgnToClipboard": "PGN copiado al portapapeles",
     "copy": "Copiar",
     "update": "Actualizar",
     "reload": "Recargar",
@@ -539,6 +541,30 @@
       "settings": "Configuración",
       "keyboardShortcuts": "Atajos de teclado",
       "tournaments": "Torneos"
+    },
+    "board": {
+      "variants": {
+        "treeBuilder": {
+          "button": "Construir variantes",
+          "title": "?rbol de variantes",
+          "syncHint": "Sincroniza con la base de datos seleccionada en el panel Database.",
+          "localDb": "Base local:",
+          "mode": "Mejor jugada para mi lado",
+          "engine": "Motor actual",
+          "winrate": "Mayor tasa de victorias",
+          "engineSelect": "Selecciona motor",
+          "engineTime": "Tiempo por jugada (ms)",
+          "dbMoves": "Jugadas desde base de datos",
+          "coverage": "Cobertura %",
+          "minMoves": "M?nimo de jugadas",
+          "depth": "Profundidad (movimientos del jugador activo)",
+          "sideNote": "Tu lado se define por la orientaci?n del tablero.",
+          "run": "Ejecutar",
+          "missingDb": "Selecciona una base local en el panel Database para usar jugadas de base.",
+          "noProgress": "No se pudo avanzar desde esta posici?n. Revisa las opciones de base de datos o engine.",
+          "done": "Generaci?n de variantes finalizada."
+        }
+      }
     },
     "dashboard": {
       "any": "Cualquiera",
@@ -1493,7 +1519,14 @@
     "failedToLoadMobileBoardLayout": "Error al cargar diseño de tablero móvil",
     "defaultLayout": "Diseño predeterminado",
     "unexpectedError": "Error inesperado:",
-    "invalidMove": "Movimiento inválido"
+    "invalidMove": "Movimiento inválido",
+    "failedToCopyFen": "No se pudo copiar el FEN",
+    "failedToCopyPgn": "No se pudo copiar el PGN",
+    "missingFen": "FEN faltante",
+    "missingReferenceDatabase": "Falta la base de datos de referencia",
+    "missingEngine": "Falta el motor",
+    "missingPosition": "Falta la posici?n",
+    "unknownError": "Error desconocido"
   },
   "window": {
     "minimize": "Minimizar ventana",

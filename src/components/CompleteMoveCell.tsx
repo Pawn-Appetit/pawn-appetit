@@ -41,6 +41,7 @@ function CompleteMoveCell({
   first,
   isStart,
   targetRef,
+  enableTranspositions = true,
 }: {
   halfMoves: number;
   comment: string;
@@ -51,11 +52,12 @@ function CompleteMoveCell({
   first?: boolean;
   isStart: boolean;
   movePath: number[];
-  targetRef: React.RefObject<HTMLSpanElement>;
+  targetRef: React.RefObject<HTMLSpanElement | null>;
+  enableTranspositions?: boolean;
 }) {
   const store = useContext(TreeStateContext)!;
   const isCurrentVariation = useStore(store, (s) => equal(s.position, movePath));
-  const root = useStore(store, (s) => s.root);
+  const root = useStore(store, (s) => (enableTranspositions ? s.root : null));
   const goToMove = useStore(store, (s) => s.goToMove);
   const deleteMove = useStore(store, (s) => s.deleteMove);
   const promoteVariation = useStore(store, (s) => s.promoteVariation);
@@ -72,7 +74,8 @@ function CompleteMoveCell({
   const [open, setOpen] = useState(false);
   const currentTab = useAtomValue(currentTabAtom);
 
-  const transpositions = fen ? getTranspositions(fen, movePath, root) : [];
+  const transpositions =
+    enableTranspositions && fen && root ? getTranspositions(fen, movePath, root) : [];
   const { t } = useTranslation();
 
   return (
@@ -153,6 +156,7 @@ export default memo(CompleteMoveCell, (prev, next) => {
     prev.first === next.first &&
     prev.isStart === next.isStart &&
     equal(prev.movePath, next.movePath) &&
-    prev.halfMoves === next.halfMoves
+    prev.halfMoves === next.halfMoves &&
+    (prev.enableTranspositions ?? true) === (next.enableTranspositions ?? true)
   );
 });

@@ -71,6 +71,8 @@
     "all": "All",
     "convert": "Convert",
     "copied": "Copied",
+    "copiedFenToClipboard": "Copied FEN to clipboard",
+    "copiedPgnToClipboard": "Copied PGN to clipboard",
     "copy": "Copy",
     "update": "Update",
     "reload": "Reload",
@@ -561,6 +563,30 @@
       "quickPlay": "Quick Play",
       "quickAnalyze": "Quick Analyze",
       "quickPuzzles": "Quick Puzzles"
+    },
+    "board": {
+      "variants": {
+        "treeBuilder": {
+          "button": "Build variants",
+          "title": "Variants tree",
+          "syncHint": "Sync with the database selected in the Database panel.",
+          "localDb": "Local database:",
+          "mode": "Best move for my side",
+          "engine": "Current engine",
+          "winrate": "Highest win rate",
+          "engineSelect": "Select engine",
+          "engineTime": "Time per move (ms)",
+          "dbMoves": "Moves from database",
+          "coverage": "Coverage %",
+          "minMoves": "Minimum moves",
+          "depth": "Depth (active player moves)",
+          "sideNote": "Your side is defined by the board orientation.",
+          "run": "Run",
+          "missingDb": "Select a local database in the Database panel to use database moves.",
+          "noProgress": "Could not make progress from this position. Check the database or engine options.",
+          "done": "Variants generation finished."
+        }
+      }
     },
     "tournaments": {
       "import": "Import",
@@ -1515,7 +1541,14 @@
     "failedToLoadMobileBoardLayout": "Failed to load mobile board layout",
     "defaultLayout": "Default Layout",
     "unexpectedError": "Unexpected Error:",
-    "invalidMove": "Invalid move"
+    "invalidMove": "Invalid move",
+    "failedToCopyFen": "Failed to copy FEN",
+    "failedToCopyPgn": "Failed to copy PGN",
+    "missingFen": "Missing FEN",
+    "missingReferenceDatabase": "Missing reference database",
+    "missingEngine": "Missing engine",
+    "missingPosition": "Missing position",
+    "unknownError": "Unknown error"
   },
   "window": {
     "minimize": "Minimize Window",

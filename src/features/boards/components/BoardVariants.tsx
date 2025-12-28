@@ -68,8 +68,8 @@ function BoardVariants() {
   const clearShapes = useStore(store, (s) => s.clearShapes);
   const setStoreState = useStore(store, (s) => s.setState);
   const setStoreSave = useStore(store, (s) => s.save);
-  const root = useStore(store, (s) => s.root);
-  const headers = useStore(store, (s) => s.headers);
+  const boardOrientation = useStore(store, (s) => s.headers.orientation || "white");
+  const is960 = useStore(store, (s) => s.headers.variant === "Chess960");
   const engines = useAtomValue(enginesAtom);
   const [dbType, setDbType] = useAtom(currentDbTypeAtom);
   const localOptions = useAtomValue(currentLocalOptionsAtom);
@@ -125,13 +125,10 @@ function BoardVariants() {
     [setCurrentTab, currentTab, documentDir, store, setStoreSave, t],
   );
 
-  // Get board orientation (default to white if not set)
-  const boardOrientation = headers.orientation || "white";
-  const is960 = headers.variant === "Chess960";
-
   // Generate puzzles from variants
   const generatePuzzles = useCallback(async () => {
     try {
+      const root = store.getState().root;
       // Open save dialog
       const filePath = await save({
         defaultPath: `${documentDir}/puzzles-${formatDateToPGN(new Date())}.pgn`,
@@ -243,7 +240,7 @@ function BoardVariants() {
         color: "red",
       });
     }
-  }, [root, boardOrientation, documentDir, t]);
+  }, [store, boardOrientation, documentDir, t]);
 
   const reloadBoard = useCallback(async () => {
     if (currentTab != null) {
@@ -282,22 +279,23 @@ function BoardVariants() {
 
   const copyFen = useCallback(async () => {
     try {
-      const currentNode = getNodeAtPath(root, store.getState().position);
+      const currentNode = getNodeAtPath(store.getState().root, store.getState().position);
       await navigator.clipboard.writeText(currentNode.fen);
       notifications.show({
         title: t("keybindings.copyFen"),
-        message: t("Copied FEN to clipboard"),
+        message: t("common.copiedFenToClipboard"),
         color: "green",
       });
     } catch (error) {
-      console.error("Failed to copy FEN:", error);
+      console.error(t("errors.failedToCopyFen"), error);
     }
-  }, [root, store, t]);
+  }, [store, t]);
 
   const copyPgn = useCallback(async () => {
     try {
+      const { root, headers } = store.getState();
       const pgn = getPGN(root, {
-        headers,
+        headers: headers,
         comments: true,
         extraMarkups: true,
         glyphs: true,
@@ -306,13 +304,13 @@ function BoardVariants() {
       await navigator.clipboard.writeText(pgn);
       notifications.show({
         title: t("keybindings.copyPgn"),
-        message: t("Copied PGN to clipboard"),
+        message: t("common.copiedPgnToClipboard"),
         color: "green",
       });
     } catch (error) {
-      console.error("Failed to copy PGN:", error);
+      console.error(t("errors.failedToCopyPgn"), error);
     }
-  }, [root, headers, t]);
+  }, [store, t]);
 
   const keyMap = useAtomValue(keyMapAtom);
 
@@ -377,7 +375,7 @@ function BoardVariants() {
     async (fen: string) => {
       const trimmedFen = fen.trim();
       if (!trimmedFen) {
-        throw new Error("Missing FEN");
+        throw new Error(t("errors.missingFen"));
       }
       const tabValue = currentTab?.value ?? "analysis";
 
@@ -385,7 +383,7 @@ function BoardVariants() {
         case "local": {
           const path = localOptions.path ?? referenceDatabase;
           if (!path) {
-            throw new Error("Missing reference database");
+            throw new Error(t("errors.missingReferenceDatabase"));
           }
           const [openings] = await searchPosition({ ...localOptions, fen: trimmedFen, path }, tabValue);
           return openings as Opening[];
@@ -412,7 +410,7 @@ function BoardVariants() {
           return [];
       }
     },
-    [currentTab?.value, dbType, lichessOptions, localOptions, masterOptions, referenceDatabase],
+    [currentTab?.value, dbType, lichessOptions, localOptions, masterOptions, referenceDatabase, t],
   );
 
   const getWinrateCandidates = useCallback((openings: Opening[], myColor: "white" | "black") => {
@@ -462,7 +460,7 @@ function BoardVariants() {
   const getEngineBestMove = useCallback(
     async (fen: string) => {
       if (!selectedEngine) {
-        throw new Error("Missing engine");
+        throw new Error(t("errors.missingEngine"));
       }
       const engineSettings =
         selectedEngineSettings?.settings?.map((s) => ({
@@ -562,7 +560,7 @@ function BoardVariants() {
       }
       return result?.[1]?.[0]?.uciMoves?.[0] ?? null;
     },
-    [activeTab, is960, selectedEngine, selectedEngineSettings?.settings, treeBuilderEngineMs],
+    [activeTab, is960, selectedEngine, selectedEngineSettings?.settings, t, treeBuilderEngineMs],
   );
 
   const cancelTreeBuilder = useCallback(() => {
@@ -588,19 +586,16 @@ function BoardVariants() {
       if (dbType === "local" && !localOptions.path && !referenceDatabase) {
         notifications.show({
           title: t("common.error"),
-          message: t(
-            "features.board.variants.treeBuilder.missingDb",
-            "Selecciona una base local en el panel Database para usar jugadas de base.",
-          ),
+          message: t("features.board.variants.treeBuilder.missingDb"),
           color: "red",
         });
         return;
       }
 
       const startPath = [...store.getState().position];
-      const startNode = getNodeAtPath(root, startPath);
+      const startNode = getNodeAtPath(store.getState().root, startPath);
       if (!startNode?.fen) {
-        throw new Error("Missing position");
+        throw new Error(t("errors.missingPosition"));
       }
       const myColor = boardOrientation === "black" ? "black" : "white";
       const maxDepth = Math.max(1, Math.floor(treeBuilderDepth) * 2);
@@ -713,19 +708,16 @@ function BoardVariants() {
       if (!treeBuilderCancelRef.current && !expandedAny) {
         notifications.show({
           title: t("common.error"),
-          message: t(
-            "features.board.variants.treeBuilder.noProgress",
-            "No se pudo avanzar desde esta posicion. Revisa las opciones de base de datos o engine.",
-          ),
+          message: t("features.board.variants.treeBuilder.noProgress"),
           color: "red",
         });
       }
 
       if (!treeBuilderCancelRef.current) {
-        window.alert(t("features.board.variants.treeBuilder.done", "Generacion de variantes finalizada."));
+        window.alert(t("features.board.variants.treeBuilder.done"));
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
+      const message = error instanceof Error ? error.message : t("errors.unknownError");
       notifications.show({
         title: t("common.error"),
         message,
@@ -750,7 +742,6 @@ function BoardVariants() {
     localOptions.path,
     normalizeDbMove,
     referenceDatabase,
-    root,
     selectCoverageMoves,
     selectedEngine,
     activeTab,
@@ -881,24 +872,21 @@ function BoardVariants() {
           >
             {treeBuilderRunning
               ? t("common.cancel")
-              : t("features.board.variants.treeBuilder.button", "Build variants")}
+              : t("features.board.variants.treeBuilder.button")}
           </Button>
         </>
       </GameNotationWrapper>
       <Modal
         opened={treeBuilderOpened}
         onClose={() => setTreeBuilderOpened(false)}
-        title={t("features.board.variants.treeBuilder.title", "Arbol de variantes")}
+        title={t("features.board.variants.treeBuilder.title")}
         centered
         size="lg"
       >
         <Stack gap="md">
           <Stack gap="xs">
             <Text size="sm">
-              {t(
-                "features.board.variants.treeBuilder.syncHint",
-                "Sincroniza con la base de datos seleccionada en el panel Database.",
-              )}
+              {t("features.board.variants.treeBuilder.syncHint")}
             </Text>
             <SegmentedControl
               data={[
@@ -912,17 +900,17 @@ function BoardVariants() {
             />
             {dbType === "local" && (
               <Text size="xs" c="dimmed">
-                {t("features.board.variants.treeBuilder.localDb", "Base local:")} {referenceDatabase || "-"}
+                {t("features.board.variants.treeBuilder.localDb")} {referenceDatabase || "-"}
               </Text>
             )}
           </Stack>
 
           <Stack gap="xs">
-            <Text size="sm">{t("features.board.variants.treeBuilder.mode", "Mejor jugada para mi lado")}</Text>
+            <Text size="sm">{t("features.board.variants.treeBuilder.mode")}</Text>
             <SegmentedControl
               data={[
-                { label: t("features.board.variants.treeBuilder.engine", "Engine actual"), value: "engine" },
-                { label: t("features.board.variants.treeBuilder.winrate", "Mayor winrate"), value: "winrate" },
+                { label: t("features.board.variants.treeBuilder.engine"), value: "engine" },
+                { label: t("features.board.variants.treeBuilder.winrate"), value: "winrate" },
               ]}
               value={treeBuilderMode}
               onChange={(value) => setTreeBuilderMode(value as "engine" | "winrate")}
@@ -934,12 +922,12 @@ function BoardVariants() {
                   data={engineOptions}
                   value={selectedEngine ? (selectedEngine.type === "local" ? selectedEngine.path : selectedEngine.url) : null}
                   onChange={setSelectedEngineKey}
-                  placeholder={t("features.board.variants.treeBuilder.engineSelect", "Selecciona engine")}
+                  placeholder={t("features.board.variants.treeBuilder.engineSelect")}
                   disabled={!engineOptions.length}
                   searchable
                 />
                 <NumberInput
-                  label={t("features.board.variants.treeBuilder.engineTime", "Tiempo por jugada (ms)")}
+                  label={t("features.board.variants.treeBuilder.engineTime")}
                   value={treeBuilderEngineMs}
                   onChange={(value) => setTreeBuilderEngineMs(Number(value) || 0)}
                   min={1}
@@ -949,17 +937,17 @@ function BoardVariants() {
           </Stack>
 
           <Stack gap="xs">
-            <Text size="sm">{t("features.board.variants.treeBuilder.dbMoves", "Jugadas desde base de datos")}</Text>
+            <Text size="sm">{t("features.board.variants.treeBuilder.dbMoves")}</Text>
             <Group grow>
               <NumberInput
-                label={t("features.board.variants.treeBuilder.coverage", "% de cobertura")}
+                label={t("features.board.variants.treeBuilder.coverage")}
                 value={treeBuilderCoverage}
                 onChange={(value) => setTreeBuilderCoverage(Number(value) || 0)}
                 min={1}
                 max={100}
               />
               <NumberInput
-                label={t("features.board.variants.treeBuilder.minMoves", "Minimo de jugadas")}
+                label={t("features.board.variants.treeBuilder.minMoves")}
                 value={treeBuilderMinMoves}
                 onChange={(value) => setTreeBuilderMinMoves(Number(value) || 0)}
                 min={1}
@@ -968,7 +956,7 @@ function BoardVariants() {
           </Stack>
 
           <NumberInput
-            label={t("features.board.variants.treeBuilder.depth", "Depth (active player moves)")}
+            label={t("features.board.variants.treeBuilder.depth")}
             value={treeBuilderDepth}
             onChange={(value) => setTreeBuilderDepth(Number(value) || 0)}
             min={1}
@@ -976,10 +964,7 @@ function BoardVariants() {
 
           <Group justify="space-between">
             <Text size="xs" c="dimmed">
-              {t(
-                "features.board.variants.treeBuilder.sideNote",
-                "Tu lado se define por la orientacion del tablero.",
-              )}
+              {t("features.board.variants.treeBuilder.sideNote")}
             </Text>
             <Button
               onClick={() => {
@@ -992,7 +977,7 @@ function BoardVariants() {
               }}
               disabled={!treeBuilderRunning && treeBuilderMode === "engine" && !selectedEngine}
             >
-              {treeBuilderRunning ? t("common.cancel") : t("features.board.variants.treeBuilder.run", "Ejecutar")}
+              {treeBuilderRunning ? t("common.cancel") : t("features.board.variants.treeBuilder.run")}
             </Button>
           </Group>
         </Stack>
