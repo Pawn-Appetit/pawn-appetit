@@ -13,6 +13,7 @@ import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import { createTreeStore } from "@/state/store/tree";
 import { keyMapAtom } from "@/state/keybindings";
 import { createTab, genID, saveToFile, type Tab } from "@/utils/tabs";
+import { getTabState as getTabStateRaw, removeTabState, setTabState } from "@/utils/tabStateStorage";
 import { unwrap } from "@/utils/unwrap";
 
 function isValidTabState(value: unknown): value is { version: number; state: { dirty?: boolean } } {
@@ -27,9 +28,9 @@ function isValidTabState(value: unknown): value is { version: number; state: { d
   );
 }
 
-function getTabState(tabId: string): { version: number; state: { dirty?: boolean } } | null {
+function getTabStateData(tabId: string): { version: number; state: { dirty?: boolean } } | null {
   try {
-    const rawState = sessionStorage.getItem(tabId);
+    const rawState = getTabStateRaw(tabId);
     if (!rawState) {
       return null;
     }
@@ -39,10 +40,10 @@ function getTabState(tabId: string): { version: number; state: { dirty?: boolean
     if (isValidTabState(parsedState)) {
       return parsedState;
     }
-    sessionStorage.removeItem(tabId);
+    removeTabState(tabId);
     return null;
   } catch {
-    sessionStorage.removeItem(tabId);
+    removeTabState(tabId);
     return null;
   }
 }
@@ -66,7 +67,7 @@ export function useTabManagement() {
   const closeTab = useCallback(
     async (value: string | null, forced?: boolean) => {
       if (value !== null) {
-        const tabState = getTabState(value);
+        const tabState = getTabStateData(value);
         const tab = tabs.find((t) => t.value === value);
         const isDirty = !!tabState?.state?.dirty;
 
@@ -185,9 +186,9 @@ export function useTabManagement() {
         const tab = prevTabs.find((tab) => tab.value === value);
 
         try {
-          const existingState = sessionStorage.getItem(value);
+          const existingState = getTabStateRaw(value);
           if (existingState) {
-            sessionStorage.setItem(id, existingState);
+            setTabState(id, existingState);
           }
         } catch {}
 

@@ -6,6 +6,7 @@ import { commands } from "@/bindings";
 import { fileMetadataSchema } from "@/features/files/utils/file";
 import type { TreeStoreState } from "@/state/store/tree";
 import { createFile, getFileNameWithoutExtension, isTempImportFile } from "@/utils/files";
+import { setTabState } from "@/utils/tabStateStorage";
 import { unwrap } from "@/utils/unwrap";
 import { getMoveText, getPGN, parsePGN } from "./chess";
 import { formatDateToPGN } from "./format";
@@ -118,7 +119,7 @@ export async function createTab({
         tree.position = position;
       }
     }
-    sessionStorage.setItem(id, JSON.stringify({ version: 0, state: tree }));
+    setTabState(id, JSON.stringify({ version: 0, state: tree }));
   }
 
   // Store initial view configuration if provided
@@ -133,7 +134,9 @@ export async function createTab({
     if (initialNotationView) {
       config.notationView = initialNotationView;
     }
-    sessionStorage.setItem(`${id}_initialConfig`, JSON.stringify(config));
+    try {
+      sessionStorage.setItem(`${id}_initialConfig`, JSON.stringify(config));
+    } catch {}
   }
 
   setTabs((prev) => {
@@ -375,7 +378,7 @@ export async function reloadTab(tab: Tab): Promise<TreeState | undefined> {
   }
 
   if (tree != null) {
-    sessionStorage.setItem(tab.value, JSON.stringify({ version: 0, state: tree }));
+    setTabState(tab.value, JSON.stringify({ version: 0, state: tree }));
     return tree;
   }
 }

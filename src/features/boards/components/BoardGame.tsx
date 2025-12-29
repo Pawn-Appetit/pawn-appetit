@@ -73,6 +73,7 @@ import type { LocalEngine } from "@/utils/engines";
 import { createFile } from "@/utils/files";
 import { formatDateToPGN } from "@/utils/format";
 import { type GameRecord, saveGameRecord } from "@/utils/gameRecords";
+import { getTabState as getTabStateRaw } from "@/utils/tabStateStorage";
 import { createTab } from "@/utils/tabs";
 import { type GameHeaders, type TreeNode, treeIteratorMainLine } from "@/utils/treeReducer";
 import GameNotationWrapper from "./GameNotationWrapper";
@@ -1181,7 +1182,7 @@ function BoardGame() {
       // Get the PGN and FEN initial from the newly created tab
       // The tab stores its state in sessionStorage with the tab ID
       try {
-        const tabStateJson = sessionStorage.getItem(newTabId);
+        const tabStateJson = getTabStateRaw(newTabId);
         if (tabStateJson) {
           const tabState = JSON.parse(tabStateJson);
           if (tabState?.state) {

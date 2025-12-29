@@ -13,74 +13,16 @@ import {
 } from "@mantine/core";
 import { useColorScheme, useHotkeys, useToggle } from "@mantine/hooks";
 import { IconArticle, IconArticleOff, IconEye, IconEyeOff } from "@tabler/icons-react";
-import { useVirtualizer } from "@tanstack/react-virtual";
 import { useAtom, useAtomValue } from "jotai";
-import { useContext, useDeferredValue, useEffect, useMemo, useRef } from "react";
+import { useCallback, useContext, useDeferredValue, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { Comment } from "@/components/Comment";
-import CompleteMoveCell from "@/components/CompleteMoveCell";
 import OpeningName from "@/components/OpeningName";
 import { TreeStateContext } from "@/components/TreeStateContext";
-import { currentInvisibleAtom, fontSizeAtom } from "@/state/atoms";
+import { currentInvisibleAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
-
-import type { TreeNode } from "@/utils/treeReducer";
-
-type NotationItem =
-  | { kind: "rootComment"; comment: string }
-  | { kind: "empty" }
-  | { kind: "move"; node: TreeNode; pathKey: string; indent: number }
-  | { kind: "result"; result: string };
-
-function buildNotationItems({
-  root,
-  headers,
-  showComments,
-}: {
-  root: TreeNode;
-  headers: { result?: string };
-  showComments: boolean;
-}) {
-  const items: NotationItem[] = [];
-  const pathToIndex = new Map<string, number>();
-
-  if (showComments && root.comment) {
-    items.push({ kind: "rootComment", comment: root.comment });
-  }
-
-  const walkLine = (node: TreeNode, pathKey: string, indent: number) => {
-    items.push({ kind: "move", node, pathKey, indent });
-    pathToIndex.set(pathKey, items.length - 1);
-
-    if (!node.children.length) return;
-
-    if (node.children.length === 1) {
-      walkLine(node.children[0], `${pathKey}.0`, indent);
-      return;
-    }
-
-    for (let i = 0; i < node.children.length; i++) {
-      walkLine(node.children[i], `${pathKey}.${i}`, indent + 1);
-    }
-  };
-
-  if (root.children.length === 0) {
-    items.push({ kind: "empty" });
-  } else {
-    for (let i = 0; i < root.children.length; i++) {
-      const child = root.children[i];
-      if (!child) continue;
-      walkLine(child, `${i}`, 0);
-    }
-  }
-
-  if (headers.result && headers.result !== "*") {
-    items.push({ kind: "result", result: headers.result });
-  }
-
-  return { items, pathToIndex };
-}
+import { VariantsNotationTree } from "./VariantsNotationTree";
 
 function VariantsNotation({ topBar }: { topBar?: boolean; editingMode?: boolean }) {
   const store = useContext(TreeStateContext);
@@ -90,53 +32,35 @@ function VariantsNotation({ topBar }: { topBar?: boolean; editingMode?: boolean 
 
   const root = useStore(store, (s) => s.root);
   const headers = useStore(store, (s) => s.headers);
-  const position = useStore(store, (s) => s.position);
-  const startKey = headers.start?.join(".") ?? null;
-
   const viewportRef = useRef<HTMLDivElement>(null);
   const [invisibleValue, setInvisible] = useAtom(currentInvisibleAtom);
   const [showComments, toggleComments] = useToggle([true, false]);
+  const [expandedDepths, setExpandedDepths] = useState<Map<string, number>>(() => new Map());
   const invisible = topBar && invisibleValue;
   const { colorScheme } = useMantineColorScheme();
   const osColorScheme = useColorScheme();
   const keyMap = useAtomValue(keyMapAtom);
-  const fontSize = useAtomValue(fontSizeAtom);
   const { t } = useTranslation();
 
   useHotkeys([[keyMap.TOGGLE_BLUR.keys, () => setInvisible((prev: boolean) => !prev)]]);
 
   const deferredRoot = useDeferredValue(root);
-  const { items, pathToIndex } = useMemo(
-    () => buildNotationItems({ root: deferredRoot, headers, showComments }),
-    [deferredRoot, headers, showComments],
-  );
-
-  const rowVirtualizer = useVirtualizer({
-    count: items.length,
-    getScrollElement: () => viewportRef.current,
-    estimateSize: () => 32 * (fontSize / 100),
-    overscan: 8,
-    measureElement: (element) => element.getBoundingClientRect().height,
-  });
-
-  useEffect(() => {
-    rowVirtualizer.measure();
-  }, [rowVirtualizer, fontSize, showComments]);
-
-  useEffect(() => {
-    if (!viewportRef.current) return;
-
-    if (position.length === 0) {
-      rowVirtualizer.scrollToIndex(0, { align: "start" });
-      return;
-    }
-
-    const key = position.join(".");
-    const index = pathToIndex.get(key);
-    if (index == null) return;
-
-    rowVirtualizer.scrollToIndex(index, { align: "center" });
-  }, [pathToIndex, position, rowVirtualizer]);
+  const maxVariationDepth = 5;
+  const [expansionVersion, setExpansionVersion] = useState(0);
+  const toggleExpandedPath = useCallback((pathKey: string) => {
+    setExpandedDepths((prev) => {
+      const next = new Map(prev);
+      const current = next.get(pathKey) ?? 0;
+      if (current > 0) {
+        next.delete(pathKey);
+      } else {
+        next.set(pathKey, Number.POSITIVE_INFINITY);
+      }
+      return next;
+    });
+    setExpansionVersion((prev) => prev + 1);
+  }, []);
+  const getExtraDepth = useCallback((pathKey: string) => expandedDepths.get(pathKey) ?? 0, [expandedDepths]);
 
   const currentMoveRef = useRef<HTMLSpanElement | null>(null);
 
@@ -165,63 +89,29 @@ function VariantsNotation({ topBar }: { topBar?: boolean; editingMode?: boolean 
             )}
             <Box
               style={{
-                height: rowVirtualizer.getTotalSize(),
                 width: "100%",
                 position: "relative",
               }}
             >
-              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const item = items[virtualRow.index];
-                return (
-                  <Box
-                    key={virtualRow.index}
-                    ref={rowVirtualizer.measureElement}
-                    data-index={virtualRow.index}
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      transform: `translateY(${virtualRow.start}px)`,
-                      paddingLeft: item?.kind === "move" ? `${item.indent * 0.75}rem` : undefined,
-                    }}
-                  >
-                    {item?.kind === "rootComment" ? (
-                      <Comment comment={item.comment} />
-                    ) : item?.kind === "empty" ? (
-                      <Text c="dimmed" size="sm">
-                        {t("features.gameNotation.noMoves")}
-                      </Text>
-                    ) : item?.kind === "move" ? (
-                      <CompleteMoveCell
-                        targetRef={currentMoveRef}
-                        annotations={item.node.annotations}
-                        comment={item.node.comment}
-                        halfMoves={item.node.halfMoves}
-                        move={item.node.san}
-                        fen={item.node.fen}
-                        movePath={item.pathKey.split(".").map((v) => Number.parseInt(v, 10))}
-                        showComments={showComments}
-                        isStart={startKey === item.pathKey}
-                        first
-                        enableTranspositions={false}
-                      />
-                    ) : item?.kind === "result" ? (
-                      <Text ta="center">
-                        {item.result}
-                        <br />
-                        <Text span fs="italic">
-                          {item.result === "1/2-1/2"
-                            ? t("chess.outcome.draw")
-                            : item.result === "1-0"
-                              ? t("chess.outcome.whiteWins")
-                              : t("chess.outcome.blackWins")}
-                        </Text>
-                      </Text>
-                    ) : null}
-                  </Box>
-                );
-              })}
+              {deferredRoot.children.length === 0 ? (
+                <Text c="dimmed" size="sm">
+                  {t("features.gameNotation.noMoves")}
+                </Text>
+              ) : (
+                <>
+                  {showComments && deferredRoot.comment && <Comment comment={deferredRoot.comment} />}
+                  <VariantsNotationTree
+                    root={deferredRoot}
+                    start={headers.start}
+                    showComments={showComments}
+                    targetRef={currentMoveRef}
+                    maxVariationDepth={maxVariationDepth}
+                    getExtraDepth={getExtraDepth}
+                    onToggleExpanded={toggleExpandedPath}
+                    expansionVersion={expansionVersion}
+                  />
+                </>
+              )}
             </Box>
           </Box>
         </ScrollArea>

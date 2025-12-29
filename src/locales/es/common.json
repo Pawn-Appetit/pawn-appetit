@@ -1150,6 +1150,8 @@
       "hideMoves": "Ocultar movimientos",
       "showComments": "Mostrar comentarios",
       "hideComments": "Ocultar comentarios",
+      "showMore": "Mostrar más",
+      "showLess": "Mostrar menos",
       "showVariations": "Mostrar variaciones",
       "repertoireView": "Vista de repertorio",
       "reportView": "Vista de informe",
