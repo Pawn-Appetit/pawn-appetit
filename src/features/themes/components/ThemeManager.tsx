@@ -69,7 +69,7 @@ function ThemeCard({ theme, onEdit, onDelete, onDuplicate, onExport, onApply }: 
           )}
           {theme.author && (
             <Text size="xs" c="dimmed">
-              by {theme.author}
+              {t("common.by")} {theme.author}
             </Text>
           )}
         </div>

@@ -23,8 +23,7 @@ export async function checkEngineInstalled(
     }
 
     return false;
-  } catch (error) {
-    console.error("Error checking engine installation:", error);
+  } catch {
     return false;
   }
 }
@@ -54,8 +53,7 @@ export async function findEngineExecutablePath(
     }
 
     return null;
-  } catch (error) {
-    console.error("Error finding engine executable:", error);
+  } catch {
     return null;
   }
 }

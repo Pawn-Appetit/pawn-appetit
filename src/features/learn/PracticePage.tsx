@@ -24,7 +24,6 @@ import { useTranslation } from "react-i18next";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useUserStatsStore } from "@/state/userStatsStore";
 import { applyUciMoveToFen } from "@/utils/applyUciMoveToFen";
-import { devLog } from "@/utils/devLog";
 import { CompletionModal } from "./components/CompletionModal";
 import { PracticeBoard } from "./components/PracticeBoard";
 import { PracticeContent } from "./components/PracticeContent";
@@ -62,8 +61,6 @@ export default function PracticePage() {
   } = useExerciseState<PracticeExercise, PracticeCategory>({
     initialFen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     onExerciseComplete: (practiceId, exerciseId, evaluation) => {
-      devLog("Exercise completed with evaluation:", evaluation);
-
       const prevCompleted = userStats.completedPractice?.[practiceId] || [];
       if (!prevCompleted.includes(exerciseId)) {
         const updatedCompleted = {

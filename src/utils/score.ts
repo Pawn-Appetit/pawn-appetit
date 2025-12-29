@@ -11,28 +11,18 @@ export const INITIAL_SCORE: Score = {
 
 const CP_CEILING = 1000;
 
-// Hopeless (desde POV del jugador)
 const HOPELESS_CP = -900;
 const HOPELESS_MARGIN = 50;
 
-// -----------------------------
-// Tuning (más estricto = menos "!!")
-// -----------------------------
-const BRILLIANT_NEAR_BEST_CP = 25; // tolerancia si el SAN no matchea pero el eval sí
-const BRILLIANT_MIN_POST_CP = 150; // después del sac, no debes quedar mal
-const BRILLIANT_MIN_GAP_CP_BASE = 180; // gap vs 2do para “narrow/única”
+const BRILLIANT_NEAR_BEST_CP = 25;
+const BRILLIANT_MIN_GAP_CP_BASE = 180;
 
-// Si ya estás mega ganado, subimos el estándar para no spamear “!!”
 function brilliantGapThreshold(prevCP: number, bestCP: number): number {
-  // cuanto más ganado, más exigente
   if (prevCP >= 800 || bestCP >= 800) return 260;
   if (prevCP >= 600 || bestCP >= 600) return 220;
-  return BRILLIANT_MIN_GAP_CP_BASE; // ~180
+  return BRILLIANT_MIN_GAP_CP_BASE;
 }
 
-// -----------------------------
-// FORMAT & UTILS
-// -----------------------------
 export function formatScore(score: ScoreValue, precision = 2): string {
   let scoreText = match(score.type)
     .with("cp", () => Math.abs(score.value / 100).toFixed(precision))
@@ -54,10 +44,8 @@ export function getWinChance(centipawns: number) {
 export function normalizeScore(score: ScoreValue, color: Color): number {
   let cp = score.value;
 
-  // Asumiendo score “white POV”, invertimos para negro
   if (color === "black") cp *= -1;
 
-  // Mate/DTZ => saturamos (decisivo)
   if (score.type === "mate" || score.type === "dtz") {
     cp = CP_CEILING * Math.sign(cp || 1);
   }
@@ -82,9 +70,6 @@ export function getCPLoss(prev: ScoreValue, next: ScoreValue, color: Color): num
   return Math.max(0, prevCP - nextCP);
 }
 
-// -----------------------------
-// Mate / Hopeless helpers
-// -----------------------------
 function isMateAgainst(score: ScoreValue | null, color: Color): boolean {
   if (!score || score.type !== "mate") return false;
   return normalizeScore(score, color) < 0;
@@ -107,17 +92,12 @@ function allAlternativesHopeless(prevMoves: BestMoves[], color: Color): boolean 
   return prevMoves.every((m) => normalizeScore(m.score.value, color) <= HOPELESS_CP + HOPELESS_MARGIN);
 }
 
-// -----------------------------
-// SAN normalization (para match best move)
-// -----------------------------
 function normalizeSan(s: string | undefined | null): string {
   if (!s) return "";
   let x = s.trim();
 
-  // 0-0 -> O-O
   x = x.replace(/^0-0-0$/, "O-O-O").replace(/^0-0$/, "O-O");
 
-  // quita sufijos tipo + # ! ? (incluye "!!" "??" etc)
   x = x.replace(/[!?+#]+$/g, "");
 
   return x;
@@ -135,9 +115,6 @@ function sanDestSquare(s: string | undefined | null): string | null {
   return matches && matches.length ? matches[matches.length - 1] : null;
 }
 
-// -----------------------------
-// Better-alternative detector (para negativas)
-// -----------------------------
 function hasClearlyBetterAlternative(prevMoves: BestMoves[], playedScore: ScoreValue, color: Color): boolean {
   if (prevMoves.length === 0) return false;
 
@@ -155,7 +132,6 @@ function hasClearlyBetterAlternative(prevMoves: BestMoves[], playedScore: ScoreV
     if (playedIsLosingMate && !altIsLosingMate) return true;
     if (altIsWinningMate && !playedIsWinningMate) return true;
 
-    // Si ambos son hopeless, no lo tratamos como “claramente mejor”
     if (playedCP <= HOPELESS_CP && altCP <= HOPELESS_CP + HOPELESS_MARGIN) continue;
 
     if (altCP > playedCP + 100) return true;
@@ -164,9 +140,6 @@ function hasClearlyBetterAlternative(prevMoves: BestMoves[], playedScore: ScoreV
   return false;
 }
 
-// -----------------------------
-// BRILLIANT detector (estricto)
-// -----------------------------
 function isNearBestByEval(best: ScoreValue | null, played: ScoreValue, color: Color): boolean {
   if (!best) return false;
   const bestCP = normalizeScore(best, color);
@@ -174,13 +147,10 @@ function isNearBestByEval(best: ScoreValue | null, played: ScoreValue, color: Co
   return bestCP - playedCP <= BRILLIANT_NEAR_BEST_CP;
 }
 
-// Detecta “recaptura forzada” del sacrificio usando currentBestMoves (opcional).
-// Heurística: si tu move aterriza en sq, y la mejor respuesta del rival captura en esa misma sq,
-// y la 2ª respuesta del rival es MUCHO peor (para tu POV), entonces el rival “está obligado”.
 function forcedRecaptureSignal(
   move: string | undefined,
   currentBestMoves: BestMoves[] | undefined,
-  color: Color,
+  replyingSide: Color,
 ): boolean {
   if (!move || !currentBestMoves || currentBestMoves.length < 2) return false;
 
@@ -195,60 +165,17 @@ function forcedRecaptureSignal(
 
   if (!isCaptureToSame) return false;
 
-  const bestReplyCP = normalizeScore(currentBestMoves[0].score.value, color);
-  const secondReplyCP = normalizeScore(currentBestMoves[1].score.value, color);
+  const bestReplyCP = normalizeScore(currentBestMoves[0].score.value, replyingSide);
+  const secondReplyCP = normalizeScore(currentBestMoves[1].score.value, replyingSide);
 
-  // Si no recaptura, la alternativa empeora MUCHO (para ti mejora mucho)
   return bestReplyCP - secondReplyCP >= 180;
-}
-
-function isBrilliantStrict(args: {
-  prevCP: number;
-  playedCP: number;
-  bestCP: number | null;
-  secondCP: number | null;
-  isBestBySan: boolean;
-  isNearBest: boolean;
-  isSacrifice: boolean;
-  move?: string;
-  currentBestMoves?: BestMoves[];
-}): boolean {
-  const { prevCP, playedCP, bestCP, secondCP, isBestBySan, isNearBest, isSacrifice, move, currentBestMoves } = args;
-
-  // CLAVE: sin sacrificio => NO hay "!!" (evita Rc1+ / Qc5+)
-  // Esto alinea con la definición pública más común (Chess.com: “good piece sacrifice”). :contentReference[oaicite:2]{index=2}
-  if (!isSacrifice) return false;
-
-  // Debe ser best o near-best
-  if (!isBestBySan && !isNearBest) return false;
-
-  // No debes quedar mal después del sac
-  if (playedCP < -50) return false;
-
-  // Si ya era hopeless, no regales “!!” (salvo que revierta, cosa que aquí no medimos sin más info)
-  if (prevCP <= HOPELESS_CP && playedCP <= HOPELESS_CP + HOPELESS_MARGIN) return false;
-
-  // Debe mantener una ventaja razonable (o al menos no caer)
-  if (playedCP < BRILLIANT_MIN_POST_CP && prevCP > 0) return false;
-
-  const gapNeed = brilliantGapThreshold(prevCP, bestCP ?? playedCP);
-
-  const gapVsSecond = bestCP != null && secondCP != null ? bestCP - secondCP : 0;
-
-  const forcedCapture = forcedRecaptureSignal(move, currentBestMoves, "white" /* placeholder */ as any /* not used */);
-
-  // Nota: forcedRecaptureSignal necesita color; arriba no lo pasamos por evitar “as any”.
-  // Mejor: lo calculamos afuera en getAnnotation donde sí tenemos color real.
-
-  // “narrow/única” por gap o por recaptura forzada (la señal la pasamos por otro lado)
-  return gapVsSecond >= gapNeed;
 }
 
 // -----------------------------
 // ANNOTATION ENGINE
 // -----------------------------
 export function getAnnotation(
-  prevprev: ScoreValue | null,
+  _prevprev: ScoreValue | null,
   prev: ScoreValue | null,
   next: ScoreValue,
   color: Color,
@@ -266,12 +193,12 @@ export function getAnnotation(
   const winChanceNext = getWinChance(nextCP);
   const winChanceDiff = winChancePrev - winChanceNext;
 
-  // hopeless handling (no “??” si no hay escape real)
+  // Hopeless handling (avoid negative annotations when there is no real escape).
   const wasHopeless = isHopelessScore(prev, color);
   const noRealEscape = wasHopeless && (prevMoves.length === 0 || allAlternativesHopeless(prevMoves, color));
   if (noRealEscape) return "";
 
-  // ========= NEGATIVAS =========
+  // Negative annotations
   const hasBetterAlternativeFlag = hasClearlyBetterAlternative(prevMoves, next, color);
   const nextIsLosingMate = isMateAgainst(next, color);
   const prevWasWinningMate = isMateFor(prev, color);
@@ -287,7 +214,7 @@ export function getAnnotation(
 
   if (prevMoves.length === 0) return "";
 
-  // ========= POSITIVAS =========
+  // Positive annotations
   const bestScore = prevMoves[0]?.score?.value ?? null;
   const secondScore = prevMoves[1]?.score?.value ?? null;
 
@@ -298,13 +225,10 @@ export function getAnnotation(
   const isBestBySan = move !== undefined && sameMove(move, bestMoveSan);
   const isNearBest = !isBestBySan && bestScore != null && isNearBestByEval(bestScore, next, color);
 
-  const isCheck = !!move && (move.includes("+") || move.includes("#"));
-
-  // BRILLIANT (!!) - estrictamente sacrificio sound + “narrow/única” o recaptura forzada
-  // (esto evita que jaques “normales” como Rc1+ / Qc5+ salgan como !!)
+  // Brilliant (!!): sound sacrifice + either "narrow/only" or forced recapture.
   if (is_sacrifice) {
-    // señal extra: recaptura “obligada” (si la tienes)
-    const forcedCapture = forcedRecaptureSignal(move, currentBestMoves, color);
+    const replyingSide: Color = color === "white" ? "black" : "white";
+    const forcedCapture = forcedRecaptureSignal(move, currentBestMoves, replyingSide);
 
     const gapNeed = brilliantGapThreshold(prevCP, bestCP ?? nextCP);
     const gapVsSecond = bestCP != null && secondCP != null ? bestCP - secondCP : 0;
@@ -313,7 +237,7 @@ export function getAnnotation(
     const narrowEnough = gapVsSecond >= gapNeed;
     const bestEnough = isBestBySan || isNearBest;
 
-    // No premiar “sacrificio” en posición ya totalmente trivial (evita spam)
+    // Avoid "!!" inflation in already trivial positions.
     const competitiveEnough = prevCP < 900;
 
     if (bestEnough && postOk && competitiveEnough && (narrowEnough || forcedCapture)) {
@@ -321,7 +245,7 @@ export function getAnnotation(
     }
   }
 
-  // GOOD (!) - táctica fuerte / muy superior al 2do / mate / decisivo
+  // Good (!) - tactical / decisive / clearly best
   if (isBestBySan || isNearBest) {
     if (bestScore && isMateFor(bestScore, color)) return "!";
     if (bestCP != null && bestCP >= 500) return "!";
@@ -330,7 +254,7 @@ export function getAnnotation(
       if (bestCP - secondCP > 150) return "!";
     }
 
-    // mejora apreciable (aunque no sea sac)
+    // Appreciable improvement (even if it was not a sacrifice)
     if (winChanceNext - winChancePrev > 5) return "!";
     if (prevCP < -100 && nextCP >= 0) return "!";
   }
@@ -338,10 +262,10 @@ export function getAnnotation(
   // BEST
   if (isBestBySan || isNearBest) return "Best";
 
-  // INTERESTING (!?) - sacrificio jugable pero no “narrow/único”
+  // Interesting (!?) - playable sacrifice but not "narrow/only"
   if (is_sacrifice && nextCP > -250) return "!?";
 
-  // no-best pero cerca del best
+  // Not-best but still close to best
   if (bestCP != null) {
     const bestWC = getWinChance(bestCP);
     const curWC = getWinChance(nextCP);

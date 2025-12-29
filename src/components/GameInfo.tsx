@@ -60,7 +60,7 @@ function GameInfo({
             html={event}
             data-placeholder={
               simplified === "repertoire"
-                ? t("features.repertoire.enterOpeningTitle")
+                ? t("repertoire.enterOpeningTitle")
                 : simplified === "puzzle"
                   ? t("features.puzzle.enterTitle")
                   : t("gameInfo.unknownEvent")

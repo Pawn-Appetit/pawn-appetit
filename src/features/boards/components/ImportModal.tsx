@@ -418,7 +418,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
           id={"PGN"}
           isSelected={importType === "PGN"}
           setSelected={setImportType}
-          content={<Text ta="center">PGN</Text>}
+          content={<Text ta="center">{t("common.pgn")}</Text>}
         />
 
         <GenericCard
@@ -432,7 +432,7 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
           id={"FEN"}
           isSelected={importType === "FEN"}
           setSelected={setImportType}
-          content={<Text ta="center">FEN</Text>}
+          content={<Text ta="center">{t("common.fenAbbr")}</Text>}
         />
       </Group>
 

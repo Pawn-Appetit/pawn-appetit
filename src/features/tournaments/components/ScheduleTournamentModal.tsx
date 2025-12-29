@@ -32,11 +32,8 @@ export function ScheduleTournamentModal({
   const handleSchedule = async () => {
     if (!lichessToken) {
       notifications.show({
-        title: t("common.error", "Error"),
-        message: t(
-          "features.tournaments.create.noToken",
-          "Lichess token not found. Please add your Lichess token in the main account settings.",
-        ),
+        title: t("common.error"),
+        message: t("features.tournaments.importTab.noToken"),
         color: "red",
       });
       return;
@@ -44,8 +41,8 @@ export function ScheduleTournamentModal({
 
     if (!startDate) {
       notifications.show({
-        title: t("common.error", "Error"),
-        message: t("features.tournaments.schedule.dateRequired", "Start date is required"),
+        title: t("common.error"),
+        message: t("features.tournaments.schedule.dateRequired"),
         color: "red",
       });
       return;
@@ -60,8 +57,8 @@ export function ScheduleTournamentModal({
       }
     } catch (error) {
       notifications.show({
-        title: t("common.error", "Error"),
-        message: t("features.tournaments.schedule.invalidDate", "Invalid date format"),
+        title: t("common.error"),
+        message: t("features.tournaments.schedule.invalidDate"),
         color: "red",
       });
       return;
@@ -168,8 +165,6 @@ export function ScheduleTournamentModal({
       }
       // Don't close the modal - let user see the ID and URL
     } catch (error) {
-      console.error("Error scheduling tournament:", error);
-
       // Try to parse error message for better user feedback
       let errorMessage = t("features.tournaments.schedule.error", "Failed to schedule tournament");
       if (error instanceof Error) {
@@ -208,7 +203,6 @@ export function ScheduleTournamentModal({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error("Failed to copy URL:", error);
       notifications.show({
         title: t("common.error", "Error"),
         message: t("features.tournaments.schedule.copyError", "Failed to copy URL"),
@@ -225,7 +219,6 @@ export function ScheduleTournamentModal({
       setShared(true);
       setTimeout(() => setShared(false), 2000);
     } catch (error) {
-      console.error("Failed to copy URL:", error);
       notifications.show({
         title: t("common.error", "Error"),
         message: t("features.tournaments.schedule.copyError", "Failed to copy URL"),
@@ -242,7 +235,6 @@ export function ScheduleTournamentModal({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error("Failed to copy ID:", error);
       notifications.show({
         title: t("common.error", "Error"),
         message: t("features.tournaments.schedule.copyError", "Failed to copy ID"),

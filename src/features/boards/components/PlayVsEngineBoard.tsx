@@ -1,12 +1,5 @@
-/**
- * PlayVsEngineBoard - Specialized component for playing against an engine.
- *
- * Layout: GAME mode
- * - Board centered
- * - Left panel: game headers/info
- * - Right panel: clocks + controls + opening + PGN
- */
 import { Box, Button, Divider, Group, Paper, ScrollArea, Stack, Text } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import {
   IconArrowLeft,
   IconArrowsExchange,
@@ -19,7 +12,7 @@ import {
 import { useNavigate } from "@tanstack/react-router";
 import { INITIAL_FEN } from "chessops/fen";
 import { useAtom, useAtomValue } from "jotai";
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Mosaic } from "react-mosaic-component";
 import { useStore } from "zustand";
@@ -31,12 +24,20 @@ import { activeTabAtom, currentGameStateAtom, currentPlayersAtom, tabsAtom } fro
 import { getMainLine, getOpening, getPGN } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import { type GameRecord, saveGameRecord } from "@/utils/gameRecords";
-import { treeIteratorMainLine } from "@/utils/treeReducer";
+import type { TreeNode } from "@/utils/treeReducer";
 import { createFullLayout, DEFAULT_MOSAIC_LAYOUT } from "../constants";
 import BoardGame, { useClockTimer } from "./BoardGame";
 import { GameTimeProvider, useGameTime } from "./GameTimeContext";
 import { useEngineMoves } from "./hooks/useEngineMoves";
 import ResponsiveBoard from "./ResponsiveBoard";
+
+function getMainlineLastNode(root: TreeNode): TreeNode {
+  let node = root;
+  while (node.children.length > 0) {
+    node = node.children[0];
+  }
+  return node;
+}
 
 function PlayVsEngineBoardContent() {
   const { t } = useTranslation();
@@ -79,18 +80,19 @@ function PlayVsEngineBoardContent() {
     setBlackTime,
   ]);
 
-  const mainLine = useMemo(() => Array.from(treeIteratorMainLine(root)), [root]);
-  const lastNode = useMemo(() => mainLine[mainLine.length - 1].node, [mainLine]);
+  const lastNode = useMemo(() => getMainlineLastNode(root), [root]);
   const [pos] = useMemo(() => positionFromFen(lastNode.fen), [lastNode.fen]);
 
   // Use clock timer to update times when game is playing
   useClockTimer(gameState, pos, whiteTime, blackTime, setWhiteTime, setBlackTime, players, setGameState, setResult);
 
-  // PGN + opening (panel derecho)
+  // PGN + opening (right panel). Defer heavy PGN generation to avoid stutter.
+  const deferredRoot = useDeferredValue(root);
+  const deferredHeaders = useDeferredValue(headers);
   const pgn = useMemo(() => {
     try {
-      return getPGN(root, {
-        headers,
+      return getPGN(deferredRoot, {
+        headers: deferredHeaders,
         comments: true,
         extraMarkups: true,
         glyphs: true,
@@ -99,13 +101,15 @@ function PlayVsEngineBoardContent() {
     } catch {
       return "";
     }
-  }, [root, headers]);
+  }, [deferredHeaders, deferredRoot]);
 
   // Calculate opening dynamically based on current position
   const [openingLabel, setOpeningLabel] = useState<string>("");
 
   useEffect(() => {
-    getOpening(root, position).then((v) => {
+    let cancelled = false;
+    getOpening(deferredRoot, position).then((v) => {
+      if (cancelled) return;
       // If we found an opening, update it
       if (v && v !== "") {
         setOpeningLabel(v);
@@ -114,7 +118,10 @@ function PlayVsEngineBoardContent() {
       // This ensures the opening label persists even when moving to positions
       // that don't have a named opening in the database
     });
-  }, [root, position]);
+    return () => {
+      cancelled = true;
+    };
+  }, [deferredRoot, position]);
 
   // Engine logic
   useEngineMoves(
@@ -155,8 +162,7 @@ function PlayVsEngineBoardContent() {
         const initialFen = headers.fen || INITIAL_FEN;
 
         // Get the last node for final FEN
-        const mainLineArray = Array.from(treeIteratorMainLine(root));
-        const lastNode = mainLineArray[mainLineArray.length - 1].node;
+        const lastNode = getMainlineLastNode(root);
 
         // Get UCI moves for the moves array
         const uciMoves = getMainLine(root, headers.variant === "Chess960");
@@ -201,16 +207,17 @@ function PlayVsEngineBoardContent() {
           pgn: gamePgn, // Full PGN
         };
 
-        // Save the game record
         await saveGameRecord(record);
-
-        // Mark as saved
         gameSavedRef.current = gameKey;
-      } catch (error) {
-        console.error("[PlayVsEngineBoard] Error saving game:", error);
+      } catch {
+        notifications.show({
+          title: t("common.error"),
+          message: t("errors.failedToSaveGame"),
+          color: "red",
+        });
       }
     },
-    [root, headers, players],
+    [root, headers, players, t],
   );
 
   // Reset saved game ref when a new game starts
@@ -225,15 +232,17 @@ function PlayVsEngineBoardContent() {
     // Only save if game is over and has a result (not "*")
     if (gameState === "gameOver" && headers.result && headers.result !== "*" && root.children.length > 0) {
       // Save the game with the current result
-      saveGame(headers.result).catch((error) => {
-        console.error("[PlayVsEngineBoard] Error saving game on gameOver:", error);
+      saveGame(headers.result).catch(() => {
+        notifications.show({
+          title: t("common.error"),
+          message: t("errors.failedToSaveGame"),
+          color: "red",
+        });
       });
     }
-  }, [gameState, headers.result, root.children.length, saveGame]);
+  }, [gameState, headers.result, root.children.length, saveGame, t]);
 
   const handleNewGame = async () => {
-    console.log("[PlayVsEngineBoard] handleNewGame called, current gameState:", gameState);
-
     // Save the current game before going to setup (if there are moves and game is playing)
     if (root.children.length > 0 && (gameState === "playing" || gameState === "gameOver")) {
       // Determine result: loss for the player whose turn it is (or was playing)
@@ -267,7 +276,6 @@ function PlayVsEngineBoardContent() {
     });
     // Reset game state to settingUp - this should trigger the BoardGame component to show
     setGameState("settingUp");
-    console.log("[PlayVsEngineBoard] handleNewGame - set gameState to settingUp");
   };
 
   const handleAgain = async () => {
@@ -334,7 +342,7 @@ function PlayVsEngineBoardContent() {
     const current = (headers.orientation ?? "white") as "white" | "black";
     setHeaders({
       ...headers,
-      fen: root.fen, // conservar posición actual
+      fen: root.fen, // Preserve current position
       orientation: current === "black" ? "white" : "black",
     });
   };
@@ -347,10 +355,10 @@ function PlayVsEngineBoardContent() {
 
     const result = humanColor === "white" ? "0-1" : "1-0";
 
-    // Set result en headers para que useEngineMoves deje de pedir jugadas
+    // Set result in headers so useEngineMoves stops requesting moves
     setHeaders({
       ...headers,
-      fen: root.fen, // conservar posición actual
+      fen: root.fen, // Preserve current position
       result,
     });
 
@@ -379,9 +387,7 @@ function PlayVsEngineBoardContent() {
       // Kill engines for this tab
       try {
         await commands.killEngines(activeTab);
-      } catch (error) {
-        console.error(`Failed to kill engines for tab: ${activeTab}`, error);
-      }
+      } catch {}
 
       // Remove the tab and update active tab
       const index = tabs.findIndex((tab) => tab.value === activeTab);
@@ -437,11 +443,11 @@ function PlayVsEngineBoardContent() {
 
   const SIDE_W = 340;
 
-  // Fallback: si mainLine está vacío, mostrar un mensaje
-  if (mainLine.length === 0) {
+  // Fallback: invalid/unknown position.
+  if (!pos) {
     return (
       <Box style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Text>Loading game...</Text>
+        <Text>{t("common.loading")}</Text>
       </Box>
     );
   }
@@ -465,9 +471,9 @@ function PlayVsEngineBoardContent() {
         <Paper withBorder shadow="sm" p="md" style={{ minHeight: 0, overflow: "hidden" }}>
           <Stack gap="sm" style={{ height: "100%", minHeight: 0 }}>
             <Group justify="space-between" align="center">
-              <Text fw={700}>Game info</Text>
+              <Text fw={700}>{t("common.gameInfo")}</Text>
               <Button variant="subtle" size="sm" onClick={handleBack} leftSection={<IconArrowLeft size={16} />}>
-                Back
+                {t("common.back")}
               </Button>
             </Group>
 
@@ -475,7 +481,7 @@ function PlayVsEngineBoardContent() {
             {(gameState === "playing" || gameState === "gameOver") && (
               <>
                 <Text fw={600} size="sm">
-                  Clocks
+                  {t("common.clocks")}
                 </Text>
                 <Stack gap="xs">
                   <Clock
@@ -541,7 +547,7 @@ function PlayVsEngineBoardContent() {
               topBar={false}
               currentTabType="play"
               gameState={gameState}
-              // opcional: permite hotkey/orientación desde Board internamente
+              // Optional: allow Board-level hotkeys/orientation handling
               toggleOrientation={flipBoard}
               hideClockSpaces={true}
               hideEvalBar={true}
@@ -553,10 +559,10 @@ function PlayVsEngineBoardContent() {
         {/* Right panel */}
         <Paper withBorder shadow="sm" p="md" style={{ minHeight: 0, overflow: "hidden" }}>
           <Stack gap="sm" style={{ height: "100%", minHeight: 0 }}>
-            <Text fw={700}>Game panel</Text>
+            <Text fw={700}>{t("common.gamePanel")}</Text>
 
             <Text fw={600} size="sm">
-              Controls
+              {t("common.controls")}
             </Text>
 
             {(gameState === "playing" || gameState === "gameOver") && (
@@ -566,16 +572,16 @@ function PlayVsEngineBoardContent() {
                     {t("keybindings.newGame")}
                   </Button>
                   <Button variant="default" onClick={handleAgain} leftSection={<IconRepeat size={16} />}>
-                    Again
+                    {t("common.again")}
                   </Button>
                 </Group>
 
                 <Group grow>
                   <Button variant="default" onClick={changeToAnalysisMode} leftSection={<IconZoomCheck size={16} />}>
-                    Analyze
+                    {t("common.analyze")}
                   </Button>
                   <Button variant="default" onClick={flipBoard} leftSection={<IconArrowsExchange size={16} />}>
-                    Flip
+                    {t("common.flip")}
                   </Button>
                 </Group>
 
@@ -586,7 +592,7 @@ function PlayVsEngineBoardContent() {
                     disabled={gameState !== "playing"}
                     leftSection={<IconFlag size={16} />}
                   >
-                    Resign
+                    {t("common.resign")}
                   </Button>
                   <Button variant="default" onClick={clearShapes} leftSection={<IconEraser size={16} />}>
                     {t("keybindings.clearShapes")}
@@ -598,7 +604,7 @@ function PlayVsEngineBoardContent() {
             <Divider />
 
             <Text fw={600} size="sm">
-              Opening
+              {t("common.opening")}
             </Text>
             <Text size="sm" c="dimmed">
               {openingLabel === "Empty Board"
@@ -611,7 +617,7 @@ function PlayVsEngineBoardContent() {
             <Divider />
 
             <Text fw={600} size="sm">
-              PGN
+              {t("common.pgn")}
             </Text>
 
             <ScrollArea style={{ flex: 1 }} type="auto">

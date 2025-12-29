@@ -130,7 +130,6 @@ export async function createFile({
       lastModified: new Date().getUTCSeconds(),
     });
   } catch (err) {
-    console.error("[createFile] Error creating file:", err);
     return Result.err(err instanceof Error ? err : Error(String(err)));
   }
 }

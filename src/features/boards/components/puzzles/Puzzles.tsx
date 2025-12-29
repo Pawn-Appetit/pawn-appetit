@@ -1,7 +1,7 @@
 import { Divider, Paper, Portal, ScrollArea, Stack } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtom } from "jotai";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "zustand";
 import ChallengeHistory from "@/components/ChallengeHistory";
 import GameNotation from "@/components/GameNotation";
@@ -73,7 +73,10 @@ function Puzzles({ id }: { id: string }) {
 
   // Computed values
   const currentPuzzleData = puzzles?.[currentPuzzle];
-  const turnToMove = currentPuzzleData ? (positionFromFen(currentPuzzleData?.fen)[0]?.turn ?? null) : null;
+  const turnToMove = useMemo(() => {
+    if (!currentPuzzleData?.fen) return null;
+    return positionFromFen(currentPuzzleData.fen)[0]?.turn ?? null;
+  }, [currentPuzzleData?.fen]);
 
   // Event handlers
   const handleGeneratePuzzle = async () => {

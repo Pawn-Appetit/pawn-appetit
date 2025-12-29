@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import MoveControls from "@/components/MoveControls";
 import { TreeStateContext } from "@/components/TreeStateContext";
+import { useDebouncedAutoSave } from "@/features/boards/hooks/useDebouncedAutoSave";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import {
   allEnabledAtom,
@@ -49,31 +50,47 @@ function BoardAnalysis() {
   const setAnnotation = useStore(store, (s) => s.setAnnotation);
   const setStoreState = useStore(store, (s) => s.setState);
   const setStoreSave = useStore(store, (s) => s.save);
-  const root = useStore(store, (s) => s.root);
-  const headers = useStore(store, (s) => s.headers);
   const setFen = useStore(store, (s) => s.setFen);
   const setHeaders = useStore(store, (s) => s.setHeaders);
-  const position = useStore(store, (s) => s.position);
   const promoteVariation = useStore(store, (s) => s.promoteVariation);
   const deleteMove = useStore(store, (s) => s.deleteMove);
 
-  const saveFile = useCallback(async () => {
-    if (
-      currentTab?.source != null &&
-      currentTab?.source?.type === "file" &&
-      !isTempImportFile(currentTab?.source?.path)
-    ) {
-      saveTab(currentTab, store);
-      setStoreSave();
-    } else {
-      saveToFile({
-        dir: documentDir,
-        setCurrentTab,
-        tab: currentTab,
-        store,
-      });
-    }
-  }, [setCurrentTab, currentTab, documentDir, store, setStoreSave]);
+  const saveFile = useCallback(
+    async (showNotification = true) => {
+      try {
+        if (
+          currentTab?.source != null &&
+          currentTab?.source?.type === "file" &&
+          !isTempImportFile(currentTab?.source?.path)
+        ) {
+          await saveTab(currentTab, store);
+          setStoreSave();
+        } else {
+          await saveToFile({
+            dir: documentDir,
+            setCurrentTab,
+            tab: currentTab,
+            store,
+          });
+        }
+
+        if (showNotification) {
+          notifications.show({
+            title: t("common.save"),
+            message: t("common.fileSavedSuccessfully"),
+            color: "green",
+          });
+        }
+      } catch (error) {
+        notifications.show({
+          title: t("common.error"),
+          message: t("common.failedToSaveFile"),
+          color: "red",
+        });
+      }
+    },
+    [currentTab, documentDir, setCurrentTab, setStoreSave, store, t],
+  );
 
   const reloadBoard = useCallback(async () => {
     if (currentTab != null) {
@@ -85,15 +102,25 @@ function BoardAnalysis() {
     }
   }, [currentTab, setStoreState]);
 
-  useEffect(() => {
-    if (currentTab?.source?.type === "file" && autoSave && dirty) {
-      saveFile();
-    }
-  }, [currentTab?.source, saveFile, autoSave, dirty]);
+  useDebouncedAutoSave({
+    store,
+    enabled: autoSave,
+    isFileTab: currentTab?.source?.type === "file",
+    save: () => saveFile(false),
+  });
 
   const filePath = currentTab?.source?.type === "file" ? currentTab.source.path : undefined;
 
   const addGame = useCallback(() => {
+    if (!filePath) {
+      notifications.show({
+        title: t("common.error"),
+        message: t("errors.missingFilePath"),
+        color: "red",
+      });
+      return;
+    }
+
     setCurrentTab((prev) => {
       if (prev.source?.type === "file") {
         prev.gameNumber = prev.source.numGames;
@@ -104,7 +131,7 @@ function BoardAnalysis() {
       return prev;
     });
     reset();
-    writeTextFile(filePath!, `\n\n${defaultPGN()}\n\n`, {
+    writeTextFile(filePath, `\n\n${defaultPGN()}\n\n`, {
       append: true,
     });
   }, [setCurrentTab, reset, filePath]);
@@ -115,22 +142,27 @@ function BoardAnalysis() {
 
   const copyFen = useCallback(async () => {
     try {
-      const currentNode = getNodeAtPath(root, store.getState().position);
+      const currentNode = getNodeAtPath(store.getState().root, store.getState().position);
       await navigator.clipboard.writeText(currentNode.fen);
       notifications.show({
         title: t("keybindings.copyFen"),
-        message: t("Copied FEN to clipboard"),
+        message: t("common.copiedFenToClipboard"),
         color: "green",
       });
-    } catch (error) {
-      console.error("Failed to copy FEN:", error);
+    } catch {
+      notifications.show({
+        title: t("common.error"),
+        message: t("errors.failedToCopyFen"),
+        color: "red",
+      });
     }
-  }, [root, store, t]);
+  }, [store, t]);
 
   const copyPgn = useCallback(async () => {
     try {
+      const { root, headers } = store.getState();
       const pgn = getPGN(root, {
-        headers,
+        headers: headers,
         glyphs: true,
         comments: true,
         variations: true,
@@ -139,13 +171,17 @@ function BoardAnalysis() {
       await navigator.clipboard.writeText(pgn);
       notifications.show({
         title: t("keybindings.copyPgn"),
-        message: t("Copied PGN to clipboard"),
+        message: t("common.copiedPgnToClipboard"),
         color: "green",
       });
-    } catch (error) {
-      console.error("Failed to copy PGN:", error);
+    } catch {
+      notifications.show({
+        title: t("common.error"),
+        message: t("errors.failedToCopyPgn"),
+        color: "red",
+      });
     }
-  }, [root, headers, t]);
+  }, [store, t]);
 
   const pasteFen = useCallback(async () => {
     try {
@@ -154,12 +190,16 @@ function BoardAnalysis() {
         setFen(text.trim());
         notifications.show({
           title: t("keybindings.pasteFen"),
-          message: t("Pasted FEN from clipboard"),
+          message: t("common.pastedFenFromClipboard"),
           color: "green",
         });
       }
-    } catch (error) {
-      console.error("Failed to paste FEN:", error);
+    } catch {
+      notifications.show({
+        title: t("common.error"),
+        message: t("errors.failedToPasteFen"),
+        color: "red",
+      });
     }
   }, [setFen, t]);
 
@@ -167,24 +207,25 @@ function BoardAnalysis() {
     await saveFile();
     notifications.show({
       title: t("keybindings.exportGame"),
-      message: t("Game exported successfully"),
+      message: t("common.gameExportedSuccessfully"),
       color: "green",
     });
   }, [saveFile, t]);
 
   const flipBoard = useCallback(() => {
-    const newOrientation = headers.orientation === "black" ? "white" : "black";
+    const currentHeaders = store.getState().headers;
+    const newOrientation = currentHeaders.orientation === "black" ? "white" : "black";
     setHeaders({
-      ...headers,
+      ...currentHeaders,
       orientation: newOrientation,
     });
-  }, [headers, setHeaders]);
+  }, [setHeaders, store]);
 
   const resetPosition = useCallback(() => {
     reset();
     notifications.show({
       title: t("keybindings.resetPosition"),
-      message: t("Position reset to start"),
+      message: t("common.positionResetToStart"),
       color: "blue",
     });
   }, [reset, t]);
@@ -202,33 +243,35 @@ function BoardAnalysis() {
       enable(false);
       notifications.show({
         title: t("keybindings.stopEngine"),
-        message: t("Engines stopped"),
+        message: t("common.enginesStopped"),
         color: "orange",
       });
     }
   }, [enable, allEnabled, t]);
 
   const promoteCurrentVariation = useCallback(() => {
-    if (position.length > 0) {
-      promoteVariation(position);
+    const currentPosition = store.getState().position;
+    if (currentPosition.length > 0) {
+      promoteVariation(currentPosition);
       notifications.show({
         title: t("keybindings.promoteVariation"),
-        message: t("Variation promoted"),
+        message: t("common.variationPromoted"),
         color: "blue",
       });
     }
-  }, [position, promoteVariation, t]);
+  }, [promoteVariation, store, t]);
 
   const deleteCurrentVariation = useCallback(() => {
-    if (position.length > 0) {
-      deleteMove(position);
+    const currentPosition = store.getState().position;
+    if (currentPosition.length > 0) {
+      deleteMove(currentPosition);
       notifications.show({
         title: t("keybindings.deleteVariation"),
-        message: t("Variation deleted"),
+        message: t("common.variationDeleted"),
         color: "red",
       });
     }
-  }, [position, deleteMove, t]);
+  }, [deleteMove, store, t]);
 
   const keyMap = useAtomValue(keyMapAtom);
   useHotkeys([

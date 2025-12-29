@@ -75,9 +75,7 @@ function ReportModal({
     if (analysisEngineRef.current) {
       try {
         await commands.stopEngine(analysisEngineRef.current.engine, analysisEngineRef.current.tab);
-      } catch (error) {
-        console.error("Error stopping engine:", error);
-      }
+      } catch {}
       analysisEngineRef.current = null;
       setInProgress(false);
     }
@@ -120,9 +118,7 @@ function ReportModal({
           addAnalysis(analysisData);
         }
       })
-      .catch((error) => {
-        console.error("Analysis error:", error);
-      })
+      .catch(() => {})
       .finally(() => {
         analysisEngineRef.current = null;
         setInProgress(false);

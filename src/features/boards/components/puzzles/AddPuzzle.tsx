@@ -66,8 +66,7 @@ export function AddPuzzle({
 
       setPuzzleDbs(await getPuzzleDatabases());
     } catch (error) {
-      console.error("Failed to import puzzle file:", error);
-      setImportError(error instanceof Error ? error.message : "Failed to import puzzle file");
+      setImportError(error instanceof Error ? error.message : t("errors.failedToImportPuzzleFile"));
     } finally {
       setImporting(false);
     }

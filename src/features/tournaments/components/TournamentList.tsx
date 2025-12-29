@@ -29,8 +29,7 @@ export function TournamentList({ lichessToken, accountName, onRefresh }: Tournam
     try {
       const loadedTemplates = await getTournamentTemplates(accountName);
       setTemplates(loadedTemplates);
-    } catch (error) {
-      console.error("Error loading tournament templates:", error);
+    } catch {
       notifications.show({
         title: t("common.error", "Error"),
         message: t("features.tournaments.browse.loadError", "Failed to load tournament templates"),
@@ -61,12 +60,11 @@ export function TournamentList({ lichessToken, accountName, onRefresh }: Tournam
       await deleteTournamentTemplate(id, accountName);
       await loadTemplates();
       notifications.show({
-        title: t("common.success", "Success"),
+        title: t("common.success"),
         message: t("features.tournaments.browse.deleted", "Tournament template deleted"),
         color: "green",
       });
-    } catch (error) {
-      console.error("Error deleting tournament template:", error);
+    } catch {
       notifications.show({
         title: t("common.error", "Error"),
         message: t("features.tournaments.browse.deleteError", "Failed to delete tournament template"),

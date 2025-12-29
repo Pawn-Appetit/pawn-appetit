@@ -22,7 +22,6 @@ import type { ChessComGame } from "@/utils/chess.com/api";
 import { getAllFavoriteGames, isFavoriteGame, removeFavoriteGame, saveFavoriteGame, type FavoriteGame } from "@/utils/favoriteGames";
 import { type DailyGoal, getDailyGoals } from "@/utils/dailyGoals";
 import { getDatabases, query_games } from "@/utils/db";
-import { devLog } from "@/utils/devLog";
 import { calculateEstimatedElo } from "@/utils/eloEstimation";
 import type { LocalEngine } from "@/utils/engines";
 import {
@@ -134,7 +133,6 @@ export default function DashboardPage() {
       // Load main account (with FIDE ID if available)
       const account = await loadMainAccount();
       if (account) {
-        devLog("[Dashboard] Loading main account data for:", account.name);
         setMainAccountName(account.name);
 
         // Load display name for this account
@@ -160,10 +158,8 @@ export default function DashboardPage() {
 
         // Load FIDE ID for this account (from account_fide_ids.json or from account.fideId)
         const accountFideId = account.fideId || (await getAccountFideId(account.name));
-        console.log("[Dashboard] FIDE ID for account:", account.name, "is:", accountFideId);
 
         if (accountFideId) {
-          console.log("[Dashboard] Found FIDE ID", accountFideId, "for account", account.name);
           setFideId(accountFideId);
 
           // Load profile by FIDE ID (supports multiple profiles - each account can have its own FIDE profile)
@@ -178,22 +174,6 @@ export default function DashboardPage() {
               break;
             }
           }
-
-          console.log(
-            "[Dashboard] Loaded FIDE profile for ID",
-            accountFideId,
-            ":",
-            profile
-              ? {
-                  name: profile.name,
-                  title: profile.title,
-                  standardRating: profile.standardRating,
-                  rapidRating: profile.rapidRating,
-                  blitzRating: profile.blitzRating,
-                  photo: profile.photo ? "present" : "missing",
-                }
-              : "not found after retries",
-          );
 
           if (profile) {
             const playerData = {
@@ -210,14 +190,6 @@ export default function DashboardPage() {
               age: profile.age,
               birthYear: profile.birthYear,
             };
-            console.log("[Dashboard] Setting FIDE player data for account", account.name, ":", {
-              name: playerData.name,
-              title: playerData.title,
-              standardRating: playerData.standardRating,
-              rapidRating: playerData.rapidRating,
-              blitzRating: playerData.blitzRating,
-              photo: playerData.photo ? "present" : "missing",
-            });
             // Force a new object reference to ensure React detects the change
             setFidePlayer({ ...playerData });
 
@@ -228,13 +200,11 @@ export default function DashboardPage() {
             }
           } else {
             // No FIDE profile found for this FIDE ID, clear FIDE data
-            console.log("[Dashboard] No FIDE profile found for ID", accountFideId, "after retries, clearing FIDE data");
             setFideId(null);
             setFidePlayer(null);
           }
         } else {
           // No FIDE ID for this account, clear FIDE data
-          console.log("[Dashboard] No FIDE ID for account", account.name, ", clearing FIDE data");
           setFideId(null);
           setFidePlayer(null);
         }
@@ -242,7 +212,6 @@ export default function DashboardPage() {
         // Fallback to localStorage for backward compatibility
         const stored = localStorage.getItem("mainAccount");
         if (stored) {
-          console.log("[Dashboard] Loading from localStorage fallback:", stored);
           setMainAccountName(stored);
           // Save to new format
           await saveMainAccount({ name: stored });
@@ -263,7 +232,6 @@ export default function DashboardPage() {
           // Try to load FIDE ID for this account
           const fideId = await getAccountFideId(stored);
           if (fideId) {
-            console.log("[Dashboard] Found FIDE ID", fideId, "for account", stored);
             setFideId(fideId);
             // Load profile by FIDE ID (supports multiple profiles - each account can have its own FIDE profile)
             // Retry logic to handle potential file write delays
@@ -293,18 +261,9 @@ export default function DashboardPage() {
                 age: profile.age,
                 birthYear: profile.birthYear,
               };
-              console.log("[Dashboard] Setting FIDE player data for account", stored, ":", {
-                name: playerData.name,
-                title: playerData.title,
-                standardRating: playerData.standardRating,
-                rapidRating: playerData.rapidRating,
-                blitzRating: playerData.blitzRating,
-                photo: playerData.photo ? "present" : "missing",
-              });
               // Force a new object reference to ensure React detects the change
               setFidePlayer({ ...playerData });
             } else {
-              console.log("[Dashboard] No FIDE profile found for ID", fideId, "after retries");
               setFideId(null);
               setFidePlayer(null);
             }
@@ -318,9 +277,7 @@ export default function DashboardPage() {
           setDisplayName("");
         }
       }
-    } catch (error) {
-      console.error("[Dashboard] Error loading main account data:", error);
-    }
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -466,9 +423,7 @@ export default function DashboardPage() {
         return g.moves.length >= 5;
       });
       setRecentGames(filteredGames);
-    } catch (err) {
-      console.error("Failed to load recent games:", err);
-    }
+    } catch {}
   }, [gameHistoryLimit]);
 
   useEffect(() => {
@@ -569,9 +524,7 @@ export default function DashboardPage() {
 
                   allGames.push(...filteredGames);
                 }
-              } catch (error) {
-                console.error(`Error loading games from database for ${username}:`, error);
-              }
+              } catch {}
             }
           }
 
@@ -611,8 +564,7 @@ export default function DashboardPage() {
           });
 
           setLichessGames(gamesWithAnalysis);
-        } catch (error) {
-          console.error("Error loading Lichess games from database:", error);
+        } catch {
         } finally {
           setIsLoadingLichessGames(false);
         }
@@ -693,9 +645,7 @@ export default function DashboardPage() {
 
                   allGames.push(...filteredGames);
                 }
-              } catch (error) {
-                console.error(`Error loading games from database for ${username}:`, error);
-              }
+              } catch {}
             }
           }
 
@@ -735,8 +685,7 @@ export default function DashboardPage() {
           });
 
           setChessComGames(gamesWithAnalysis);
-        } catch (error) {
-          console.error("Error loading Chess.com games from database:", error);
+        } catch {
         } finally {
           setIsLoadingChessComGames(false);
         }
@@ -767,9 +716,7 @@ export default function DashboardPage() {
     try {
       const favorites = await getAllFavoriteGames();
       setFavoriteGames(favorites);
-    } catch (err) {
-      console.error("Failed to load favorite games:", err);
-    }
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -1104,14 +1051,6 @@ export default function DashboardPage() {
             customName={displayName}
             platform={platform}
             onFideUpdate={async (newFideId, newFidePlayer, newDisplayName, newLichessToken) => {
-              console.log("[Dashboard] onFideUpdate called:", {
-                newFideId,
-                newFidePlayer,
-                newDisplayName,
-                newLichessToken,
-                mainAccountName,
-              });
-
               // Save display name if provided (can be empty string)
               if (newDisplayName !== undefined && mainAccountName) {
                 setDisplayName(newDisplayName);
@@ -1150,7 +1089,6 @@ export default function DashboardPage() {
                   age: newFidePlayer.age,
                   birthYear: newFidePlayer.birthYear,
                 };
-                console.log("[Dashboard] Saving FIDE profile:", profileToSave);
                 await saveFideProfile(profileToSave);
 
                 // Update main account with FIDE ID after profile is saved
@@ -1421,8 +1359,8 @@ export default function DashboardPage() {
                 setPlayerStatsGameType(gameType);
                 setPlayerStatsAccountName(playerName);
                 notifications.show({
-                  title: t("features.dashboard.generatingStats", "Generating Stats"),
-                  message: t("features.dashboard.generatingStatsMessage", "Processing analyzed games..."),
+                  title: t("features.dashboard.generatingStats"),
+                  message: t("features.dashboard.generatingStatsMessage"),
                   color: "blue",
                 });
 
@@ -1486,12 +1424,9 @@ export default function DashboardPage() {
 
                 // Process normally (cache disabled for now)
                 // Add opening headers (ECO, Opening, Variation) to each PGN
-                console.log("[onGenerateStats] Adding opening headers to", analyzedPgns.length, "PGNs");
                 const { addOpeningHeadersToPgns } = await import("@/utils/pgnWithOpenings");
                 const enrichedPgns = await addOpeningHeadersToPgns(analyzedPgns);
-                console.log("[onGenerateStats] Enriched PGNs count:", enrichedPgns.length);
                 const combinedPgn = enrichedPgns.join("\n\n");
-                console.log("[onGenerateStats] Combined PGN length:", combinedPgn.length);
 
                 // Store debug PGNs
                 setPlayerStatsDebugPgns(combinedPgn);
@@ -1505,15 +1440,17 @@ export default function DashboardPage() {
                 setPlayerStatsModalOpened(true);
                 
                 notifications.show({
-                  title: t("features.dashboard.statsGenerated", "Stats Generated"),
-                  message: t("features.dashboard.statsGeneratedMessage", `Analyzed ${result.gamesMatchedPlayer} games. Found ${result.issues.length} issues.`),
+                  title: t("features.dashboard.statsGenerated"),
+                  message: t("features.dashboard.statsGeneratedMessage", {
+                    gamesMatchedPlayer: result.gamesMatchedPlayer,
+                    issuesCount: result.issues.length,
+                  }),
                   color: "green",
                 });
-              } catch (error) {
-                console.error("Error generating stats:", error);
+              } catch {
                 notifications.show({
-                  title: t("features.dashboard.statsError", "Error"),
-                  message: t("features.dashboard.statsErrorMessage", "Failed to generate stats. Please try again."),
+                  title: t("features.dashboard.statsError"),
+                  message: t("features.dashboard.statsErrorMessage"),
                   color: "red",
                 });
               }
@@ -1682,10 +1619,6 @@ export default function DashboardPage() {
           // Detect available CPU threads and calculate parallel analysis count (25% of available threads)
           const availableThreads = navigator.hardwareConcurrency || 4;
           const parallelAnalyses = Math.max(1, Math.floor(availableThreads / 4));
-
-          console.log(
-            `[AnalyzeAll] Detected ${availableThreads} CPU threads, running ${parallelAnalyses} analyses in parallel (25% of available threads)`,
-          );
 
           // Force Threads to 1 for each individual analysis, regardless of engine configuration
           const threadsSetting = engineSettings.find((s) => s.name.toLowerCase() === "threads");

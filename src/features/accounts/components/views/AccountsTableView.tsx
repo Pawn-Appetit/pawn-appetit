@@ -87,11 +87,11 @@ function AccountsTableView({
       getAccountFideId(mainAccount)
         .then((fideId) => {
           // Also save to new JSON format with FIDE ID if it exists
-          saveMainAccount({ name: mainAccount, fideId: fideId || undefined }).catch(console.error);
+          saveMainAccount({ name: mainAccount, fideId: fideId || undefined }).catch(() => {});
         })
         .catch(() => {
           // If no FIDE ID, just save the account name
-          saveMainAccount({ name: mainAccount }).catch(console.error);
+          saveMainAccount({ name: mainAccount }).catch(() => {});
         });
     }
   }, [mainAccount]);
@@ -317,12 +317,8 @@ function AccountsTableView({
         try {
           const { removeAnalyzedGamesForAccount } = await import("@/utils/analyzedGames");
           await removeAnalyzedGamesForAccount(username, "lichess");
-        } catch (error) {
-          console.error("Error deleting analyzed games:", error);
-        }
-      } catch (error) {
-        console.error("Error deleting account files:", error);
-      }
+        } catch {}
+      } catch {}
 
       // Remove session
       setSessions((sessions) => sessions.filter((s) => s.lichess?.account.id !== session.lichess?.account.id));
@@ -353,12 +349,8 @@ function AccountsTableView({
         try {
           const { removeAnalyzedGamesForAccount } = await import("@/utils/analyzedGames");
           await removeAnalyzedGamesForAccount(username, "chesscom");
-        } catch (error) {
-          console.error("Error deleting analyzed games:", error);
-        }
-      } catch (error) {
-        console.error("Error deleting account files:", error);
-      }
+        } catch {}
+      } catch {}
 
       // Remove session
       setSessions((sessions) => sessions.filter((s) => s.chessCom?.username !== session.chessCom?.username));

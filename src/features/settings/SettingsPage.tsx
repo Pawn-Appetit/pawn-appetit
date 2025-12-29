@@ -1,5 +1,6 @@
 import { Box, Button, Card, Group, Progress, ScrollArea, Select, Stack, Tabs, Text, TextInput, Title, useDirection } from "@mantine/core";
 
+import { notifications } from "@mantine/notifications";
 import { IconBook, IconBrush, IconChess, IconFlag, IconFolder, IconMouse, IconVolume } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -136,7 +137,11 @@ export default function Page() {
 
   const handlePrecacheOpenings = useCallback(async () => {
     if (!referenceDatabase) {
-      alert("Please select a reference database first");
+      notifications.show({
+        title: t("common.error"),
+        message: t("features.board.analysis.refDBRequired"),
+        color: "red",
+      });
       return;
     }
 
@@ -146,16 +151,22 @@ export default function Page() {
     try {
       const result = await commands.precacheOpenings(referenceDatabase);
       if (result.status === "error") {
-        console.error("Failed to pre-cache openings:", result.error);
-        alert(`Failed to pre-cache openings: ${result.error}`);
-        setPrecaching(false);
+        notifications.show({
+          title: t("common.error"),
+          message: result.error,
+          color: "red",
+        });
       }
     } catch (error) {
-      console.error("Error pre-caching openings:", error);
-      alert(`Error pre-caching openings: ${error}`);
+      notifications.show({
+        title: t("common.error"),
+        message: error instanceof Error ? error.message : t("errors.unknownError"),
+        color: "red",
+      });
+    } finally {
       setPrecaching(false);
     }
-  }, [referenceDatabase]);
+  }, [referenceDatabase, t]);
 
   const dateFormatModes = useMemo(
     () => [
@@ -568,7 +579,7 @@ export default function Page() {
       },
       {
         id: "theme",
-        title: t("settings.appearance.theme"),
+        title: t("settings.appearance.theme.theme"),
         description: t("settings.appearance.themeDesc"),
         tab: "appearance",
         component: (

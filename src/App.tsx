@@ -23,7 +23,6 @@ import "@/styles/chessgroundColorsOverride.css";
 import "@/styles/global.css";
 
 import ErrorComponent from "@/components/ErrorComponent";
-import { EventMonitor } from "@/components/EventMonitor";
 import { showUpdateNotification, UpdateNotificationModal } from "@/components/UpdateNotification";
 import { VERSION_CHECK_SETTINGS } from "@/config";
 import ThemeProvider from "@/features/themes/components/ThemeProvider";
@@ -385,7 +384,6 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <ContextMenuProvider>
-          {IS_DEV && <EventMonitor />}
           <Notifications />
           <Suspense fallback={<AppLoading />}>
             <RouterProvider router={router} />

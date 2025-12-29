@@ -3693,7 +3693,7 @@ export const monochromeTheme: Theme = {
 export const academiaMayaTheme: Theme = {
   id: "academia-maya",
   name: "Academia Maya",
-  description: "Tema prehispánico con colores clásicos del ajedrez inspirado en la cultura maya",
+  description: "Pre-Hispanic theme with classic chess colors inspired by Mayan culture",
   author: "Pawn-Appetit Team",
   version: "1.0.0",
   isBuiltIn: true,

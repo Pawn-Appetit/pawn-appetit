@@ -119,11 +119,19 @@ function PracticeBoard({
           }
         })
         .catch((error) => {
-          console.error("Engine move failed:", error);
+          notifications.show({
+            title: "Engine error",
+            message: error instanceof Error ? error.message : String(error),
+            color: "red",
+          });
           engineThinkingRef.current = false;
         });
     } catch (error) {
-      console.error("Engine move failed:", error);
+      notifications.show({
+        title: "Engine error",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
       engineThinkingRef.current = false;
     }
   }, [pos, engineColor, currentFen, engine]);
@@ -154,12 +162,9 @@ function PracticeBoard({
               if (fromSquare && toSquare) {
                 onChessMove?.(fromSquare, toSquare);
               }
-            } else {
-              console.error("Engine suggested illegal move:", bestUciMove);
             }
           }
         } else {
-          console.log("No moves received from engine");
         }
 
         engineThinkingRef.current = false;
@@ -182,7 +187,7 @@ function PracticeBoard({
   useEffect(() => {
     return () => {
       if (engineColor && engine) {
-        commands.stopEngine(engine.path, engineTabRef.current).catch(console.error);
+        commands.stopEngine(engine.path, engineTabRef.current).catch(() => {});
       }
     };
   }, [engineColor, engine]);

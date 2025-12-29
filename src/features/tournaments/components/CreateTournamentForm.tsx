@@ -74,7 +74,7 @@ export function CreateTournamentForm({ lichessToken, accountName, onTemplateSave
       await saveTournamentTemplate(formData, accountName as string);
 
       notifications.show({
-        title: t("common.success", "Success"),
+        title: t("common.success"),
         message: t("features.tournaments.createTab.templateSaved", "Tournament template saved successfully!"),
         color: "green",
       });
@@ -112,7 +112,6 @@ export function CreateTournamentForm({ lichessToken, accountName, onTemplateSave
         },
       });
     } catch (error) {
-      console.error("Error saving tournament template:", error);
       notifications.show({
         title: t("common.error", "Error"),
         message:

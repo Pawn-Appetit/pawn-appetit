@@ -14,6 +14,7 @@ import {
   TextInput,
   Tooltip,
 } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import {
   IconArrowDownRight,
   IconArrowRight,
@@ -470,7 +471,11 @@ export function AccountCard({
                       try {
                         await convert(p, lastGameDate);
                       } catch (e) {
-                        console.error(e);
+                        notifications.show({
+                          title: t("common.error"),
+                          message: e instanceof Error ? e.message : t("errors.unknownError"),
+                          color: "red",
+                        });
                       }
                       setLoading(false);
                     }}

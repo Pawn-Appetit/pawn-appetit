@@ -260,7 +260,6 @@ function EngineCard({ engine, engineId }: { engine: LocalEngine; engineId: numbe
           },
         ]);
       } catch (error) {
-        console.error("Engine installation failed:", error);
         notifications.show({
           title: t("common.error"),
           message: error instanceof Error ? error.message : String(error),

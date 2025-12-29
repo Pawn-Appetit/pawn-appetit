@@ -1,5 +1,6 @@
 import { ActionIcon, Button, Checkbox, Group, Stack, Text, useMantineTheme } from "@mantine/core";
 import { useForceUpdate } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
 import { IconDownload, IconEye } from "@tabler/icons-react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { DataTable } from "mantine-datatable";
@@ -152,10 +153,18 @@ function GamesTable({
       
       const result = await commands.exportPositionGamesToPgn(databasePath, fen, destFile);
       if (result.status === "error") {
-        console.error("Failed to export games:", result.error);
+        notifications.show({
+          title: t("common.error"),
+          message: result.error,
+          color: "red",
+        });
       }
     } catch (error) {
-      console.error("Error exporting games:", error);
+      notifications.show({
+        title: t("common.error"),
+        message: error instanceof Error ? error.message : t("errors.unknownError"),
+        color: "red",
+      });
     } finally {
       setExporting(false);
     }
@@ -179,10 +188,18 @@ function GamesTable({
       const gameIdsArray = Array.from(selectedGameIds);
       const result = await commands.exportSelectedGamesToPgn(databasePath, gameIdsArray, destFile);
       if (result.status === "error") {
-        console.error("Failed to export selected games:", result.error);
+        notifications.show({
+          title: t("common.error"),
+          message: result.error,
+          color: "red",
+        });
       }
     } catch (error) {
-      console.error("Error exporting selected games:", error);
+      notifications.show({
+        title: t("common.error"),
+        message: error instanceof Error ? error.message : t("errors.unknownError"),
+        color: "red",
+      });
     } finally {
       setExporting(false);
     }

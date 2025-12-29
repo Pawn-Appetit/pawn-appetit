@@ -566,7 +566,7 @@ function DatabaseTableView({
       rowClassName={(database) =>
         selectedDatabase?.filename === database.filename ? "mantine-datatable-row-selected" : ""
       }
-      noRecordsText={t("common.noRecordsFound", "No records found")}
+      noRecordsText={t("common.noRecordsFound")}
       onRowClick={({ record }) => {
         onSelectDatabase(record.file);
       }}
@@ -776,7 +776,7 @@ function DatabaseDetails({
             )}
             {isPuzzleDatabase(selectedDatabase) && (
               <Text size="sm" c="dimmed" ta="center">
-                {t("features.puzzle.useInPuzzleBoard", "Use this database in the puzzle board to solve puzzles")}
+                {t("features.puzzle.useInPuzzleBoard")}
               </Text>
             )}
           </div>
@@ -1084,10 +1084,10 @@ function IndexInput({
 
   return (
     <Group>
-      <Tooltip label={t("features.databases.settings.indexed.Desc")}>
+      <Tooltip label={t("features.databases.settings.indexedDesc")}>
         <Switch
-          onLabel="On"
-          offLabel="Off"
+          onLabel={t("common.on")}
+          offLabel={t("common.off")}
           label={t("features.databases.settings.indexed")}
           disabled={loading}
           checked={indexed}

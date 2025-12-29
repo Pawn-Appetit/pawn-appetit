@@ -23,6 +23,7 @@ import {
 } from "@/utils/treeReducer";
 
 export interface TreeStoreState extends TreeState {
+  saveVersion: number;
   currentNode: () => TreeNode;
 
   goToNext: (playSoundOnMove?: boolean) => void;
@@ -90,17 +91,16 @@ export type TreeStore = ReturnType<typeof createTreeStore>;
 export const createTreeStore = (id?: string, initialTree?: TreeState) => {
   const stateCreator: StateCreator<TreeStoreState> = (set, get) => ({
     ...(initialTree ?? defaultTree()),
+    saveVersion: 0,
 
     currentNode: () => getNodeAtPath(get().root, get().position),
 
     setState: (state) => {
-      set(() => state);
+      set(() => ({ ...state, saveVersion: 0 }));
     },
 
     reset: () =>
-      set(() => {
-        return defaultTree();
-      }),
+      set(() => ({ ...defaultTree(), saveVersion: 0 })),
 
     save: () => {
       set((state) => ({
@@ -113,6 +113,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
       set(
         produce((state) => {
           state.dirty = true;
+          state.saveVersion += 1;
           state.root = defaultTree(fen).root;
           state.position = [];
         }),
@@ -198,6 +199,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
       set(
         produce((state) => {
           state.dirty = true;
+          state.saveVersion += 1;
           const node = getNodeAtPath(state.root, state.position);
           const [pos] = positionFromFen(node.fen);
           if (!pos) return;
@@ -338,6 +340,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
       set(
         produce((state) => {
           state.dirty = true;
+          state.saveVersion += 1;
           deleteMove(state, path ?? state.position);
         }),
       ),
@@ -345,6 +348,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
       set(
         produce((state) => {
           state.dirty = true;
+          state.saveVersion += 1;
           promoteVariation(state, path);
         }),
       ),
@@ -352,6 +356,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
       set(
         produce((state) => {
           state.dirty = true;
+          state.saveVersion += 1;
           while (path.some((v) => v !== 0)) {
             promoteVariation(state, path);
             path = state.position;
@@ -374,6 +379,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
       set(
         produce((state) => {
           state.dirty = true;
+          state.saveVersion += 1;
           state.headers.start = start;
         }),
       ),
@@ -381,6 +387,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
       set(
         produce((state) => {
           state.dirty = true;
+          state.saveVersion += 1;
           const node = getNodeAtPath(state.root, state.position);
           if (node) {
             if (node.annotations.includes(payload)) {
@@ -403,6 +410,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
       set(
         produce((state) => {
           state.dirty = true;
+          state.saveVersion += 1;
           const node = getNodeAtPath(state.root, state.position);
           if (node) {
             node.comment = payload;
@@ -413,6 +421,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
       set(
         produce((state) => {
           state.dirty = true;
+          state.saveVersion += 1;
           // Only update headers metadata, don't reset tree if it has moves
           // This prevents losing game history when headers are updated
           const hasMoves = state.root.children.length > 0;
@@ -434,6 +443,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
       set(
         produce((state) => {
           state.dirty = true;
+          state.saveVersion += 1;
           state.headers.result = result;
         }),
       ),
@@ -441,6 +451,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
       set(
         produce((state) => {
           state.dirty = true;
+          state.saveVersion += 1;
           setShapes(state, shapes);
         }),
       ),
@@ -459,6 +470,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
       set(
         produce((state) => {
           state.dirty = true;
+          state.saveVersion += 1;
           addAnalysis(state, analysis);
         }),
       ),
@@ -489,6 +501,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
           const node = getNodeAtPath(state.root, state.position);
           if (node && node.shapes.length > 0) {
             state.dirty = true;
+            state.saveVersion += 1;
             node.shapes = [];
           }
         }),
@@ -516,7 +529,7 @@ function makeMove({
   clock,
   sound = true,
 }: {
-  state: TreeState;
+  state: Draft<TreeStoreState>;
   move: Move;
   last: boolean;
   changePosition?: boolean;
@@ -563,6 +576,7 @@ function makeMove({
     }
   } else {
     state.dirty = true;
+    state.saveVersion += 1;
     const newMoveNode = createNode({
       fen: newFen,
       move,

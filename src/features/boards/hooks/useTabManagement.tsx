@@ -4,14 +4,15 @@ import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { useLoaderData } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
-import { useCallback, useContext, useEffect } from "react";
+import type { Dispatch, SetStateAction } from "react";
+import { useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { commands } from "@/bindings";
-import { TreeStateContext } from "@/components/TreeStateContext";
 import { MAX_TABS } from "@/features/boards/constants";
-import { activeTabAtom, currentTabAtom, tabsAtom } from "@/state/atoms";
+import { activeTabAtom, tabsAtom } from "@/state/atoms";
+import { createTreeStore } from "@/state/store/tree";
 import { keyMapAtom } from "@/state/keybindings";
-import { createTab, genID, saveToFile } from "@/utils/tabs";
+import { createTab, genID, saveToFile, type Tab } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
 
 function isValidTabState(value: unknown): value is { version: number; state: { dirty?: boolean } } {
@@ -38,11 +39,10 @@ function getTabState(tabId: string): { version: number; state: { dirty?: boolean
     if (isValidTabState(parsedState)) {
       return parsedState;
     }
-
-    console.warn(`Invalid tab state structure for tab: ${tabId}`);
+    sessionStorage.removeItem(tabId);
     return null;
-  } catch (error) {
-    console.error(`Failed to retrieve tab state for tab: ${tabId}`, error);
+  } catch {
+    sessionStorage.removeItem(tabId);
     return null;
   }
 }
@@ -51,10 +51,7 @@ export function useTabManagement() {
   const { t } = useTranslation();
   const [tabs, setTabs] = useAtom(tabsAtom);
   const [activeTab, setActiveTab] = useAtom(activeTabAtom);
-  const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
   const { documentDir } = useLoaderData({ from: "/boards" });
-
-  const store = useContext(TreeStateContext);
 
   useEffect(() => {
     if (tabs.length === 0) {
@@ -70,15 +67,10 @@ export function useTabManagement() {
     async (value: string | null, forced?: boolean) => {
       if (value !== null) {
         const tabState = getTabState(value);
+        const tab = tabs.find((t) => t.value === value);
+        const isDirty = !!tabState?.state?.dirty;
 
-        let hasSource = false;
-        setTabs((prevTabs) => {
-          const closedTab = prevTabs.find((tab) => tab.value === value);
-          hasSource = !!closedTab?.source;
-          return prevTabs;
-        });
-
-        if (tabState?.state?.dirty && hasSource && !forced && store) {
+        if (isDirty && !forced && tab?.type !== "new") {
           modals.openConfirmModal({
             title: t("common.unsavedChanges.title"),
             withCloseButton: false,
@@ -87,14 +79,18 @@ export function useTabManagement() {
               confirm: t("common.unsavedChanges.saveAndClose"),
               cancel: t("common.unsavedChanges.closeWithoutSaving"),
             },
-            onConfirm: async () => {
-              saveToFile({
-                dir: documentDir,
-                setCurrentTab,
-                tab: currentTab,
-                store,
-              });
-              closeTab(value, true);
+            onConfirm: () => {
+              void (async () => {
+                const noopSetCurrentTab: Dispatch<SetStateAction<Tab>> = () => {};
+                const tabStore = createTreeStore(value);
+                await saveToFile({
+                  dir: documentDir,
+                  setCurrentTab: noopSetCurrentTab,
+                  tab: tab,
+                  store: tabStore,
+                });
+                await closeTab(value, true);
+              })();
             },
             onCancel: () => {
               closeTab(value, true);
@@ -127,12 +123,10 @@ export function useTabManagement() {
 
         try {
           unwrap(await commands.killEngines(value));
-        } catch (error) {
-          console.error(`Failed to kill engines for tab: ${value}`, error);
-        }
+        } catch {}
       }
     },
-    [setTabs, setActiveTab, documentDir, currentTab, setCurrentTab, store, t],
+    [documentDir, setActiveTab, setTabs, t, tabs],
   );
 
   const selectTab = useCallback(
@@ -195,9 +189,7 @@ export function useTabManagement() {
           if (existingState) {
             sessionStorage.setItem(id, existingState);
           }
-        } catch (error) {
-          console.error(`Failed to duplicate tab state from ${value} to ${id}`, error);
-        }
+        } catch {}
 
         if (tab) {
           setActiveTab(id);

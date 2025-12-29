@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import MoveControls from "@/components/MoveControls";
 import { TreeStateContext } from "@/components/TreeStateContext";
+import { useDebouncedAutoSave } from "@/features/boards/hooks/useDebouncedAutoSave";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import {
   activeTabAtom,
@@ -252,16 +253,25 @@ function BoardVariants() {
     }
   }, [currentTab, setStoreState]);
 
-  useEffect(() => {
-    if (currentTab?.source?.type === "file" && autoSave && dirty) {
-      // Auto-save without showing notifications
-      saveFile(false);
-    }
-  }, [currentTab?.source, saveFile, autoSave, dirty]);
+  useDebouncedAutoSave({
+    store,
+    enabled: autoSave,
+    isFileTab: currentTab?.source?.type === "file",
+    save: () => saveFile(false),
+  });
 
   const filePath = currentTab?.source?.type === "file" ? currentTab.source.path : undefined;
 
   const addGame = useCallback(() => {
+    if (!filePath) {
+      notifications.show({
+        title: t("common.error"),
+        message: t("errors.missingFilePath"),
+        color: "red",
+      });
+      return;
+    }
+
     setCurrentTab((prev: Tab) => {
       if (prev.source?.type === "file") {
         prev.gameNumber = prev.source.numGames;
@@ -272,7 +282,7 @@ function BoardVariants() {
       return prev;
     });
     reset();
-    writeTextFile(filePath!, `\n\n${defaultPGN()}\n\n`, {
+    writeTextFile(filePath, `\n\n${defaultPGN()}\n\n`, {
       append: true,
     });
   }, [setCurrentTab, reset, filePath]);
@@ -286,8 +296,12 @@ function BoardVariants() {
         message: t("common.copiedFenToClipboard"),
         color: "green",
       });
-    } catch (error) {
-      console.error(t("errors.failedToCopyFen"), error);
+    } catch {
+      notifications.show({
+        title: t("common.error"),
+        message: t("errors.failedToCopyFen"),
+        color: "red",
+      });
     }
   }, [store, t]);
 
@@ -307,8 +321,12 @@ function BoardVariants() {
         message: t("common.copiedPgnToClipboard"),
         color: "green",
       });
-    } catch (error) {
-      console.error(t("errors.failedToCopyPgn"), error);
+    } catch {
+      notifications.show({
+        title: t("common.error"),
+        message: t("errors.failedToCopyPgn"),
+        color: "red",
+      });
     }
   }, [store, t]);
 
@@ -323,7 +341,7 @@ function BoardVariants() {
   const practiceTabSelected = useAtomValue(currentPracticeTabAtom);
   const { layout } = useResponsiveLayout();
   const isMobileLayout = layout.chessBoard.layoutType === "mobile";
-  const [topBar] = useState(true);
+  const topBar = true;
 
   const isRepertoire = currentTab?.source?.type === "file" && currentTab.source.metadata?.type === "repertoire";
   const isPuzzle = currentTab?.source?.type === "file" && currentTab.source.metadata?.type === "puzzle";
@@ -712,9 +730,13 @@ function BoardVariants() {
           color: "red",
         });
       }
-
+ 
       if (!treeBuilderCancelRef.current) {
-        window.alert(t("features.board.variants.treeBuilder.done"));
+        notifications.show({
+          title: t("common.success"),
+          message: t("features.board.variants.treeBuilder.done"),
+          color: "green",
+        });
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : t("errors.unknownError");

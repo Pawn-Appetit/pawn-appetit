@@ -43,7 +43,7 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
               {t("themes.preview.title")}
             </Title>
             <Text c="dimmed" size="sm">
-              {theme.name} by {theme.author || t("themes.preview.unknown")}
+              {theme.name} {t("common.by")} {theme.author || t("themes.preview.unknown")}
             </Text>
           </div>
           <Group>

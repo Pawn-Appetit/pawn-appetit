@@ -169,10 +169,8 @@ export function GamesHistoryCard({
 
         if (!cancelled) {
           setAnalyzedCount(count);
-          console.log(`[GenerateStats] Counted ${count} analyzed games for ${activeTab === "local" ? selectedPlayerName : activeTab === "chesscom" ? selectedChessComUser : selectedLichessUser}`);
         }
       } catch (error) {
-        console.error("[GenerateStats] Error counting games:", error);
         if (!cancelled) {
           setAnalyzedCount(0);
         }

@@ -76,59 +76,40 @@ const replaceSelection = (element: HTMLInputElement | HTMLTextAreaElement, newTe
   element.dispatchEvent(new Event("change", { bubbles: true }));
 };
 
-const writeToClipboard = async (text: string): Promise<void> => {
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch (error) {
-    console.error("Failed to write to clipboard:", error);
-    throw error;
-  }
-};
+const writeToClipboard = (text: string): Promise<void> => navigator.clipboard.writeText(text);
 
-const readFromClipboard = async (): Promise<string> => {
-  try {
-    return await navigator.clipboard.readText();
-  } catch (error) {
-    console.error("Failed to read from clipboard:", error);
-    throw error;
-  }
-};
+const readFromClipboard = (): Promise<string> => navigator.clipboard.readText();
 
 async function createMenu(menuActions: MenuGroup[]): Promise<Menu> {
-  try {
-    const items = await Promise.all(
-      menuActions.map(async (group) => {
-        const submenuItems = await Promise.all(
-          group.options.map(async (option) => {
-            return match(option.label)
-              .with("divider", () =>
-                PredefinedMenuItem.new({
-                  item: "Separator",
-                }),
-              )
-              .otherwise(() => {
-                return MenuItem.new({
-                  id: option.id,
-                  text: option.label,
-                  accelerator: option.shortcut,
-                  action: option.action,
-                });
+  const items = await Promise.all(
+    menuActions.map(async (group) => {
+      const submenuItems = await Promise.all(
+        group.options.map(async (option) => {
+          return match(option.label)
+            .with("divider", () =>
+              PredefinedMenuItem.new({
+                item: "Separator",
+              }),
+            )
+            .otherwise(() => {
+              return MenuItem.new({
+                id: option.id,
+                text: option.label,
+                accelerator: option.shortcut,
+                action: option.action,
               });
-          }),
-        );
+            });
+        }),
+      );
 
-        return Submenu.new({
-          text: group.label,
-          items: submenuItems,
-        });
-      }),
-    );
+      return Submenu.new({
+        text: group.label,
+        items: submenuItems,
+      });
+    }),
+  );
 
-    return Menu.new({ items });
-  } catch (error) {
-    console.error("Failed to create menu:", error);
-    throw error;
-  }
+  return Menu.new({ items });
 }
 
 export const Route = createRootRouteWithContext<{
@@ -157,8 +138,7 @@ function RootLayout() {
         navigate({ to: "/" });
         openFile(selected, setTabs, setActiveTab);
       }
-    } catch (error) {
-      console.error("Failed to open file:", error);
+    } catch {
       notifications.show({
         title: t("common.error"),
         message: t("notifications.failedToOpenFile"),
@@ -198,8 +178,7 @@ function RootLayout() {
       } else {
         await message("You're running the latest version!");
       }
-    } catch (error) {
-      console.error("Update check failed:", error);
+    } catch {
       await message("Failed to check for updates. Please try again later.");
     }
   }, [t]);
@@ -217,16 +196,12 @@ function RootLayout() {
       } catch {
         try {
           document.execCommand(CLIPBOARD_OPERATIONS.CUT);
-        } catch (execError) {
-          console.error("All cut operations failed:", execError);
-        }
+        } catch {}
       }
     } else {
       try {
         document.execCommand(CLIPBOARD_OPERATIONS.CUT);
-      } catch (error) {
-        console.error("Cut operation failed:", error);
-      }
+      } catch {}
     }
   }, []);
 
@@ -252,9 +227,7 @@ function RootLayout() {
         } catch {
           try {
             document.execCommand(CLIPBOARD_OPERATIONS.COPY);
-          } catch (error) {
-            console.error("All copy operations failed:", error);
-          }
+          } catch {}
         }
       }
     }
@@ -272,16 +245,12 @@ function RootLayout() {
       } catch {
         try {
           document.execCommand(CLIPBOARD_OPERATIONS.PASTE);
-        } catch (error) {
-          console.error("All paste operations failed:", error);
-        }
+        } catch {}
       }
     } else {
       try {
         document.execCommand(CLIPBOARD_OPERATIONS.PASTE);
-      } catch (error) {
-        console.error("Paste operation failed:", error);
-      }
+      } catch {}
     }
   }, []);
 
@@ -293,9 +262,7 @@ function RootLayout() {
     } else {
       try {
         document.execCommand(CLIPBOARD_OPERATIONS.SELECT_ALL);
-      } catch (error) {
-        console.error("Select all operation failed:", error);
-      }
+      } catch {}
     }
   }, []);
 
@@ -412,8 +379,7 @@ function RootLayout() {
           message: t("notifications.dataClearedMessage"),
         });
         setTimeout(() => location.reload(), 1000);
-      } catch (error) {
-        console.error("Failed to clear data:", error);
+      } catch {
         notifications.show({
           title: t("common.error"),
           message: t("notifications.failedToClearData"),
@@ -434,8 +400,7 @@ function RootLayout() {
       });
 
       await openPath(logPath);
-    } catch (error) {
-      console.error("Failed to open logs:", error);
+    } catch {
       notifications.show({
         title: t("common.error"),
         message: t("notifications.failedToOpenLogFile"),
@@ -478,18 +443,14 @@ function RootLayout() {
     try {
       const webviewWindow = getCurrentWebviewWindow();
       await webviewWindow.minimize();
-    } catch (error) {
-      console.error("Failed to minimize window:", error);
-    }
+    } catch {}
   }, []);
 
   const handleToggleMaximize = useCallback(async () => {
     try {
       const webviewWindow = getCurrentWebviewWindow();
       await webviewWindow.toggleMaximize();
-    } catch (error) {
-      console.error("Failed to toggle maximize:", error);
-    }
+    } catch {}
   }, []);
 
   const handleToggleFullScreen = useCallback(async () => {
@@ -497,9 +458,7 @@ function RootLayout() {
       const webviewWindow = getCurrentWebviewWindow();
       const isFullscreen = await webviewWindow.isFullscreen();
       await webviewWindow.setFullscreen(!isFullscreen);
-    } catch (error) {
-      console.error("Failed to toggle fullscreen:", error);
-    }
+    } catch {}
   }, []);
 
   const menuActions: MenuGroup[] = useMemo(
@@ -794,7 +753,6 @@ function RootLayout() {
 
   useEffect(() => {
     if (menuError) {
-      console.error("Menu creation failed:", menuError);
       notifications.show({
         title: t("notifications.menuError"),
         message: t("notifications.failedToCreateMenu"),
@@ -819,9 +777,7 @@ function RootLayout() {
           await emptyMenu.setAsAppMenu();
           await webviewWindow.setDecorations(false);
         }
-      } catch (error) {
-        console.error("Failed to apply menu configuration:", error);
-      }
+      } catch {}
     };
 
     applyMenu();

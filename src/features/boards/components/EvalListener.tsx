@@ -35,19 +35,21 @@ function EvalListener() {
     useShallow((s) => getVariationLine(s.root, s.position, is960)),
   );
 
-  const [pos] = positionFromFen(fen);
-  if (pos) {
+  const { finalFen, isGameOver } = useMemo(() => {
+    const [pos] = positionFromFen(fen);
+    if (!pos) return { finalFen: null as string | null, isGameOver: false };
+
     for (const uci of moves) {
       const move = parseUci(uci);
-      if (!move) {
-        break;
-      }
+      if (!move) break;
       pos.play(move);
     }
-  }
 
-  const isGameOver = pos?.isEnd() ?? false;
-  const finalFen = useMemo(() => (pos ? makeFen(pos.toSetup()) : null), [pos]);
+    return {
+      finalFen: makeFen(pos.toSetup()),
+      isGameOver: pos.isEnd(),
+    };
+  }, [fen, moves]);
 
   const { searchingFen, searchingMoves } = useMemo(
     () =>

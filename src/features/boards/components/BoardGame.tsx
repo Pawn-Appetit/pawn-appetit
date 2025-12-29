@@ -839,7 +839,6 @@ function BoardGame() {
   }, [applyFenString, customFen]);
 
   const startGame = useCallback(() => {
-    console.log("[BoardGame] startGame called");
     // Kill any existing engines to start fresh (but don't wait)
     // Note: When used via PlayVsEngineBoard, engine logic is handled by that component
     if (activeTab) {
@@ -855,16 +854,6 @@ function BoardGame() {
     setGameState("playing");
 
     const newPlayers = getPlayers();
-    console.log("[BoardGame] startGame - new players:", {
-      white: {
-        type: newPlayers.white.type,
-        engine: newPlayers.white.type === "engine" ? newPlayers.white.engine?.name : null,
-      },
-      black: {
-        type: newPlayers.black.type,
-        engine: newPlayers.black.type === "engine" ? newPlayers.black.engine?.name : null,
-      },
-    });
 
     if (newPlayers.white.timeControl) {
       setWhiteTime(newPlayers.white.timeControl.seconds);

@@ -164,8 +164,7 @@ export function EditProfileModal({
       } else {
         setError(t("features.dashboard.editProfile.playerNotFound"));
       }
-    } catch (err) {
-      console.error("Error fetching FIDE player:", err);
+    } catch {
       setError(t("features.dashboard.editProfile.searchError"));
     } finally {
       setLoading(false);

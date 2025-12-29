@@ -11,21 +11,6 @@ import { getMainLine } from "@/utils/chess";
 import type { positionFromFen } from "@/utils/chessops";
 import type { TreeNode } from "@/utils/treeReducer";
 import { treeIteratorMainLine } from "@/utils/treeReducer";
-
-/**
- * useEngineMoves - Hook for engine move requests and responses in play vs engine mode.
- *
- * This hook is ONLY used by PlayVsEngineBoard component, not by BoardGame or BoardAnalysis.
- *
- * Responsibilities:
- * - Requests engine moves when it's the engine's turn
- * - Listens for bestMovesPayload events and applies engine moves
- * - Manages engine request state (prevents duplicate requests)
- * - Handles engine errors and timeouts
- * - Verifies move legality before applying
- *
- * This hook is separate from analysis engine evaluation (handled by EvalListener in BoardAnalysis).
- */
 export function useEngineMoves(
   root: TreeNode,
   headers: { variant?: string; result?: string },
@@ -70,7 +55,6 @@ export function useEngineMoves(
     if (gameState !== "playing" || headers.result !== "*") {
       // Clear all refs and timeouts when game ends
       if (engineRequestRef.current) {
-        console.log(`[useEngineMoves] Clearing engine request - game ended or not playing`);
         engineRequestRef.current = null;
         engineRequestDetailsRef.current = null;
       }
@@ -165,7 +149,6 @@ export function useEngineMoves(
         // If no response after 1s, clear the request and force a retry
         timeoutRef.current = setTimeout(() => {
           if (engineRequestRef.current === requestKey) {
-            console.warn(`[useEngineMoves] Engine request timeout after 1s for ${requestKey}, forcing retry`);
             engineRequestRef.current = null;
             engineRequestDetailsRef.current = null;
             // Force re-request by incrementing retry counter
@@ -199,7 +182,7 @@ export function useEngineMoves(
               engineRequestDetailsRef.current = null;
               notifications.show({
                 title: t("common.error", "Error"),
-                message: typeof res.error === "string" ? res.error : t("common.unknownError", "Unknown error"),
+                message: typeof res.error === "string" ? res.error : t("errors.unknownError"),
                 color: "red",
               });
               return;
@@ -232,7 +215,7 @@ export function useEngineMoves(
               engineRequestDetailsRef.current = null;
               notifications.show({
                 title: t("common.error", "Error"),
-                message: e instanceof Error ? e.message : t("common.unknownError", "Unknown error"),
+                message: e instanceof Error ? e.message : t("errors.unknownError"),
                 color: "red",
               });
             }
@@ -276,7 +259,7 @@ export function useEngineMoves(
     headers.result,
     activeTab,
     root.fen,
-    moves.join(","),
+    moves,
     retryCounter,
     appendMove,
     t,
@@ -436,9 +419,12 @@ export function useEngineMoves(
           }
         }
       })
-      .catch((err) => {
-        // Ignore errors if listener setup fails
-        console.error("Failed to set up bestMovesPayload listener:", err);
+      .catch(() => {
+        notifications.show({
+          title: t("common.error"),
+          message: t("errors.failedToInitializeListener"),
+          color: "red",
+        });
       });
 
     return () => {

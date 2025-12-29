@@ -253,47 +253,6 @@ function DatabasePanel() {
     0,
   );
 
-  useEffect(() => {
-    if (error) {
-      console.error("[DatabasePanel] query error", {
-        message: error.message,
-        error: error,
-        stack: error.stack,
-        db,
-        tab: tabValue,
-        tabType,
-        localFen: localOptions.fen,
-        path: localOptions.path,
-        gameLimit,
-      });
-    }
-  }, [error, db, tab?.value, tabType, localOptions.fen, localOptions.path, gameLimit]);
-
-  useEffect(() => {
-    console.debug("[DatabasePanel] query params", {
-      db,
-      tab: tabValue,
-      tabType,
-      enabled: queryEnabled,
-      fenLive: fen,
-      fenDebounced: debouncedFen,
-      localFen: localOptions.fen,
-      localPath: localOptions.path,
-      limit: gameLimit,
-    });
-  }, [db, tab?.value, tabType, queryEnabled, fen, debouncedFen, localOptions.fen, localOptions.path, gameLimit]);
-
-  useEffect(() => {
-    if (openingData) {
-      console.debug("[DatabasePanel] query result", {
-        openings: openingData.openings?.length ?? 0,
-        games: openingData.games?.length ?? 0,
-        sampleOpening: openingData.openings?.[0],
-        sampleGame: openingData.games?.[0]?.id,
-      });
-    }
-  }, [openingData]);
-
   return (
     <Stack h="100%" gap={0}>
       <Group justify="space-between" w="100%">

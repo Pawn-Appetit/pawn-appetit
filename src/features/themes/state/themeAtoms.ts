@@ -20,11 +20,9 @@ export const cleanupDuplicateThemesAtom = atom(null, (get, set) => {
   const seenIds = new Set<string>();
   const cleanedThemes = customThemes.filter((theme) => {
     if (builtInThemeIds.has(theme.id)) {
-      console.warn(`Removing custom theme "${theme.name}" (${theme.id}) as it conflicts with a built-in theme`);
       return false;
     }
     if (seenIds.has(theme.id)) {
-      console.warn(`Removing duplicate custom theme "${theme.name}" (${theme.id})`);
       return false;
     }
     seenIds.add(theme.id);

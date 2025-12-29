@@ -28,7 +28,6 @@ const useFileDirectory = (dir: string) => {
         const allEntries = await processEntriesRecursively(dir, entries);
         return allEntries;
       } catch (err) {
-        console.error("[FilesPage] Error reading directory:", dir, err);
         throw err;
       }
     },

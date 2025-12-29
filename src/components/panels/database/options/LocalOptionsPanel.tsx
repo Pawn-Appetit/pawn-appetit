@@ -1,5 +1,6 @@
 import { Box, Button, Group, NativeSelect, SegmentedControl, Stack, Text } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
+import { notifications } from "@mantine/notifications";
 import { parseSquare } from "chessops";
 import { EMPTY_BOARD_FEN, makeFen, parseFen } from "chessops/fen";
 import { useAtom } from "jotai";
@@ -187,16 +188,25 @@ function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
             try {
               const result = await commands.downloadPositionCache();
               if (result.status === "error") {
-                console.error("Failed to download position cache:", result.error);
-                alert(`Failed to download position cache: ${result.error}`);
-                setDownloadingCache(false);
+                notifications.show({
+                  title: t("common.error"),
+                  message: result.error,
+                  color: "red",
+                });
               } else {
-                alert(t("databaseOptions.positionCacheDownloaded"));
-                setDownloadingCache(false);
+                notifications.show({
+                  title: t("common.success"),
+                  message: t("databaseOptions.positionCacheDownloaded"),
+                  color: "green",
+                });
               }
             } catch (error) {
-              console.error("Failed to download position cache:", error);
-              alert(`Failed to download position cache: ${error}`);
+              notifications.show({
+                title: t("common.error"),
+                message: error instanceof Error ? error.message : t("errors.unknownError"),
+                color: "red",
+              });
+            } finally {
               setDownloadingCache(false);
             }
           }}

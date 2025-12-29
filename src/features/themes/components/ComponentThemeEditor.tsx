@@ -174,7 +174,7 @@ function ComponentEditor({ componentName, componentTheme, onChange, onDelete, av
           <Text fw={500}>{componentName}</Text>
         </Group>
         <Group>
-          <Tooltip label={t("Delete component theme")}>
+          <Tooltip label={t("common.deleteComponentTheme")}>
             <ActionIcon variant="light" color="red" onClick={onDelete}>
               <IconTrash size={16} />
             </ActionIcon>

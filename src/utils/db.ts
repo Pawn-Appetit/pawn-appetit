@@ -258,17 +258,12 @@ export async function searchPosition(options: LocalOptions, tab: string) {
       fen,
       type_: type,
     },
-    // Send as number - Tauri's JSON serialization doesn't handle BigInt well
-    // The Rust deserializer (bigint_serde) can handle numbers (u64, i64, f64, etc.)
-    // and will convert them to u64. This avoids serialization errors.
-    // TypeScript type expects bigint, but we send number which Rust accepts
     game_details_limit: gameDetailsLimitValue as any,
     options: {
       skipCount: true,
       sort: (options.sort || "averageElo") as "id" | "date" | "whiteElo" | "blackElo" | "averageElo" | "ply_count",
       direction: (options.direction || "desc") as "asc" | "desc",
     },
-    // Only include optional fields if they have values
     ...(options.color === "white" && options.player !== null ? { player1: options.player } : {}),
     ...(options.color === "black" && options.player !== null ? { player2: options.player } : {}),
     ...(options.start_date ? { start_date: options.start_date } : {}),
@@ -276,52 +271,14 @@ export async function searchPosition(options: LocalOptions, tab: string) {
     ...(wantedResult ? { wanted_result: wantedResult } : {}),
   };
 
-  // Helper to safely stringify payload for logging (BigInt is not JSON serializable)
-  const safeStringify = (obj: any) => {
-    try {
-      return JSON.stringify(obj, (key, value) => (typeof value === "bigint" ? value.toString() : value));
-    } catch (e) {
-      return String(obj);
+  const res = await commands.searchPosition(options.path!, payload, tab);
+
+  if (res.status === "error") {
+    if (res.error !== "Search stopped") {
+      unwrap(res);
     }
-  };
-
-  console.debug("[db] searchPosition payload", {
-    tab,
-    path: options.path,
-    fen,
-    type,
-    gameDetailsLimitValue,
-    payload: safeStringify(payload),
-  });
-
-  try {
-    const res = await commands.searchPosition(options.path!, payload, tab);
-
-    if (res.status === "error") {
-      console.error("[db] searchPosition error response", {
-        error: res.error,
-        path: options.path,
-        fen,
-        type,
-        payload: safeStringify(payload),
-      });
-      if (res.error !== "Search stopped") {
-        unwrap(res);
-      }
-      return Promise.reject(res.error);
-    }
-
-    return res.data;
-  } catch (error) {
-    // Don't try to stringify the error or payload in catch - it might contain BigInt
-    console.error("[db] searchPosition exception", {
-      error: error instanceof Error ? error.message : String(error),
-      errorType: error instanceof Error ? error.constructor.name : typeof error,
-      path: options.path,
-      fen,
-      type,
-      gameDetailsLimit: gameDetailsLimitValue,
-    });
-    throw error;
+    throw new Error(res.error);
   }
+
+  return res.data;
 }

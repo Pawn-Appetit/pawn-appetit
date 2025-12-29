@@ -196,8 +196,8 @@ export function PlayerStatsModal({
   const copyFenToClipboard = (fen: string) => {
     navigator.clipboard.writeText(fen);
     notifications.show({
-      title: t("features.dashboard.fenCopied", "FEN Copied"),
-      message: t("features.dashboard.fenCopiedMessage", "FEN copied to clipboard"),
+      title: t("features.dashboard.fenCopied"),
+      message: t("features.dashboard.fenCopiedMessage"),
       color: "green",
     });
   };
@@ -216,17 +216,8 @@ export function PlayerStatsModal({
   
   const openGameInNewTab = async (fenBefore: string, gameIndex: number) => {
     const sourcePgns = pawnSearchPgns ?? debugPgns ?? pgnText ?? null;
-    console.debug("[pawn-structures] openGameInNewTab", {
-      gameIndex,
-      hasDebugPgns: Boolean(debugPgns),
-      hasPawnSearchPgns: Boolean(pawnSearchPgns),
-      hasPgnText: Boolean(pgnText),
-      sourceLength: sourcePgns?.length ?? 0,
-      fenBefore,
-    });
     if (sourcePgns) {
       const games = splitPgnGames(sourcePgns);
-      console.debug("[pawn-structures] splitPgnGames", { count: games.length });
       
       let game = games[gameIndex];
       let targetPosition: number[] = [];
@@ -245,14 +236,12 @@ export function PlayerStatsModal({
       };
 
       if (!game && games.length > 0) {
-        console.debug("[pawn-structures] game index missing, scanning for fen match");
         for (let i = 0; i < games.length; i++) {
           try {
             const tree = await parsePGN(games[i]);
             targetPosition = [];
             if (findPosition(tree.root)) {
               game = games[i];
-              console.debug("[pawn-structures] found fen match in game index", { index: i });
               break;
             }
           } catch {
@@ -262,10 +251,9 @@ export function PlayerStatsModal({
       }
 
       if (!game) {
-        console.debug("[pawn-structures] game not found in PGNs", { gameIndex });
         notifications.show({
-          title: t("features.dashboard.gameNotFound", "Game Not Found"),
-          message: t("features.dashboard.gameNotFoundMessage", "Could not find game in PGNs"),
+          title: t("features.dashboard.gameNotFound"),
+          message: t("features.dashboard.gameNotFoundMessage"),
           color: "orange",
         });
         return;
@@ -292,23 +280,18 @@ export function PlayerStatsModal({
           position: targetPosition.length > 0 ? targetPosition : undefined,
         });
         
+        notifications.show({ title: t("features.dashboard.gameOpened"), message: t("features.dashboard.gameOpenedMessage"), color: "green" });
+      } catch {
         notifications.show({
-          title: t("features.dashboard.gameOpened", "Game Opened"),
-          message: t("features.dashboard.gameOpenedMessage", "Game opened in new tab"),
-          color: "green",
-        });
-      } catch (error) {
-        console.error("Error opening game:", error);
-        notifications.show({
-          title: t("features.dashboard.error", "Error"),
-          message: t("features.dashboard.errorOpeningGame", "Failed to open game"),
+          title: t("features.dashboard.error"),
+          message: t("features.dashboard.errorOpeningGame"),
           color: "red",
         });
       }
     } else {
       notifications.show({
-        title: t("features.dashboard.gameNotFound", "Game Not Found"),
-        message: t("features.dashboard.gameNotFoundMessage", "Could not find game in PGNs"),
+        title: t("features.dashboard.gameNotFound"),
+        message: t("features.dashboard.gameNotFoundMessage"),
         color: "orange",
       });
     }
@@ -388,8 +371,7 @@ export function PlayerStatsModal({
       }
 
       return matches;
-    } catch (error) {
-      console.error("Failed to collect analyzed PGNs from storage:", error);
+    } catch {
       return [];
     }
   };
@@ -542,8 +524,8 @@ export function PlayerStatsModal({
       const pgns = await gatherPawnPgns((value) => setPawnProgress(value));
       if (!pgns.length) {
         notifications.show({
-          title: t("features.dashboard.noPawnStructures", "No pawn structures found."),
-          message: t("features.dashboard.noPawnStructuresMessage", "No games available for the selected filter."),
+          title: t("features.dashboard.noPawnStructures"),
+          message: t("features.dashboard.noPawnStructuresMessage"),
           color: "orange",
         });
         setPawnStructures([]);
@@ -558,11 +540,10 @@ export function PlayerStatsModal({
       });
       setPawnStructures(analysisResult.pawnStructures || []);
       setPawnProgress(100);
-    } catch (error) {
-      console.error("Error analyzing pawn structures:", error);
+    } catch {
       notifications.show({
-        title: t("features.dashboard.error", "Error"),
-        message: t("features.dashboard.errorAnalyzingPawns", "Failed to analyze pawn structures"),
+        title: t("features.dashboard.error"),
+        message: t("features.dashboard.errorAnalyzingPawns"),
         color: "red",
       });
     } finally {
@@ -575,7 +556,7 @@ export function PlayerStatsModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      title={`${t("features.dashboard.playerStats", "Player Statistics")}: ${player}`}
+      title={`${t("features.dashboard.playerStats")}: ${player}`}
       size="90%"
       styles={{
         body: { minHeight: "80vh", padding: "20px" },
@@ -585,38 +566,38 @@ export function PlayerStatsModal({
     >
       <Tabs defaultValue="overview">
         <Tabs.List>
-          <Tabs.Tab value="overview">{t("features.dashboard.overview", "Overview")}</Tabs.Tab>
-          <Tabs.Tab value="issues">{t("features.dashboard.issues", "Issues")}</Tabs.Tab>
-          <Tabs.Tab value="openings">{t("features.dashboard.openings", "Openings")}</Tabs.Tab>
-          <Tabs.Tab value="pawn-structures">{t("features.dashboard.pawnStructures", "Pawn Structures")}</Tabs.Tab>
-          <Tabs.Tab value="debug">{t("features.dashboard.debug", "Debug")}</Tabs.Tab>
+          <Tabs.Tab value="overview">{t("features.dashboard.overview")}</Tabs.Tab>
+          <Tabs.Tab value="issues">{t("features.dashboard.issues")}</Tabs.Tab>
+          <Tabs.Tab value="openings">{t("features.dashboard.openings")}</Tabs.Tab>
+          <Tabs.Tab value="pawn-structures">{t("features.dashboard.pawnStructures")}</Tabs.Tab>
+          <Tabs.Tab value="debug">{t("features.dashboard.debug")}</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="overview" pt="md">
           <ScrollArea h="calc(90vh - 180px)">
             <Stack gap="md">
               <Group>
-                <Text size="sm" c="dimmed">{t("features.dashboard.gamesAnalyzed", "Games Analyzed")}:</Text>
+                <Text size="sm" c="dimmed">{t("features.dashboard.gamesAnalyzed")}:</Text>
                 <Text fw={600}>{gamesAnalyzed}</Text>
               </Group>
               <Group>
-                <Text size="sm" c="dimmed">{t("features.dashboard.gamesMatched", "Games Matched")}:</Text>
+                <Text size="sm" c="dimmed">{t("features.dashboard.gamesMatched")}:</Text>
                 <Text fw={600}>{gamesMatchedPlayer}</Text>
               </Group>
               <Group>
-                <Text size="sm" c="dimmed">{t("features.dashboard.totalIssues", "Total Issues")}:</Text>
+                <Text size="sm" c="dimmed">{t("features.dashboard.totalIssues")}:</Text>
                 <Text fw={600}>{issues.length}</Text>
               </Group>
 
               <Divider />
 
-              <Title order={4}>{t("features.dashboard.issueCounts", "Issue Counts")}</Title>
+              <Title order={4}>{t("features.dashboard.issueCounts")}</Title>
               <Table>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th style={{ width: 150 }}>{t("features.dashboard.issueType", "Issue Type")}</Table.Th>
-                    <Table.Th style={{ width: 120 }}>{t("features.dashboard.count", "Count")}</Table.Th>
-                    <Table.Th style={{ width: 200 }}>{t("features.dashboard.byColor", "By Color")}</Table.Th>
+                    <Table.Th style={{ width: 150 }}>{t("features.dashboard.issueType")}</Table.Th>
+                    <Table.Th style={{ width: 120 }}>{t("features.dashboard.count")}</Table.Th>
+                    <Table.Th style={{ width: 200 }}>{t("features.dashboard.byColor")}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -648,13 +629,13 @@ export function PlayerStatsModal({
 
               <Divider />
 
-              <Title order={4}>{t("features.dashboard.themeCounts", "Theme Counts")}</Title>
+              <Title order={4}>{t("features.dashboard.themeCounts")}</Title>
               <Table>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th style={{ width: 150 }}>{t("features.dashboard.theme", "Theme")}</Table.Th>
-                    <Table.Th style={{ width: 120 }}>{t("features.dashboard.count", "Count")}</Table.Th>
-                    <Table.Th style={{ width: 200 }}>{t("features.dashboard.byColor", "By Color")}</Table.Th>
+                    <Table.Th style={{ width: 150 }}>{t("features.dashboard.theme")}</Table.Th>
+                    <Table.Th style={{ width: 120 }}>{t("features.dashboard.count")}</Table.Th>
+                    <Table.Th style={{ width: 200 }}>{t("features.dashboard.byColor")}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -686,7 +667,7 @@ export function PlayerStatsModal({
 
               <Divider />
 
-              <Title order={4}>{t("features.dashboard.mostCommonSchemes", "Most Common Schemes")}</Title>
+              <Title order={4}>{t("features.dashboard.mostCommonSchemes")}</Title>
               <Stack gap="xs">
                 {stats.global.mostCommonSchemes.slice(0, 10).map((scheme, idx) => (
                   <Group key={idx} justify="space-between">
@@ -704,8 +685,8 @@ export function PlayerStatsModal({
             {/* Filters and Sort */}
             <Group gap="md" wrap="wrap">
               <MultiSelect
-                label={t("features.dashboard.filterByTheme", "Filter by Theme")}
-                placeholder={t("features.dashboard.allThemes", "All Themes")}
+                label={t("features.dashboard.filterByTheme")}
+                placeholder={t("features.dashboard.allThemes")}
                 data={uniqueThemes}
                 value={themeFilter}
                 onChange={setThemeFilter}
@@ -714,8 +695,8 @@ export function PlayerStatsModal({
                 style={{ flex: 1, minWidth: 180 }}
               />
               <Select
-                label={t("features.dashboard.filterBySeverity", "Filter by Severity")}
-                placeholder={t("features.dashboard.allSeverities", "All Severities")}
+                label={t("features.dashboard.filterBySeverity")}
+                placeholder={t("features.dashboard.allSeverities")}
                 data={uniqueSeverities.map((s) => ({ value: s, label: s }))}
                 value={severityFilter}
                 onChange={setSeverityFilter}
@@ -723,22 +704,22 @@ export function PlayerStatsModal({
                 style={{ flex: 1, minWidth: 150 }}
               />
               <Select
-                label={t("features.dashboard.sortBy", "Sort By")}
+                label={t("features.dashboard.sortBy")}
                 data={[
-                  { value: "cpSwing", label: t("features.dashboard.cpSwing", "CP Swing") },
-                  { value: "moveNumber", label: t("features.dashboard.moveNumber", "Move Number") },
-                  { value: "theme", label: t("features.dashboard.theme", "Theme") },
-                  { value: "severity", label: t("features.dashboard.severity", "Severity") },
+                  { value: "cpSwing", label: t("features.dashboard.cpSwing") },
+                  { value: "moveNumber", label: t("features.dashboard.moveNumber") },
+                  { value: "theme", label: t("features.dashboard.theme") },
+                  { value: "severity", label: t("features.dashboard.severity") },
                 ]}
                 value={sortBy}
                 onChange={(v) => v && setSortBy(v as typeof sortBy)}
                 style={{ flex: 1, minWidth: 150 }}
               />
               <Select
-                label={t("features.dashboard.order", "Order")}
+                label={t("features.dashboard.order")}
                 data={[
-                  { value: "desc", label: t("features.dashboard.descending", "Descending") },
-                  { value: "asc", label: t("features.dashboard.ascending", "Ascending") },
+                  { value: "desc", label: t("features.dashboard.descending") },
+                  { value: "asc", label: t("features.dashboard.ascending") },
                 ]}
                 value={sortOrder}
                 onChange={(v) => v && setSortOrder(v as typeof sortOrder)}
@@ -747,24 +728,21 @@ export function PlayerStatsModal({
             </Group>
             
             <Text size="sm" c="dimmed">
-              {t("features.dashboard.showingIssues", "Showing {{count}} of {{total}} issues", {
-                count: filteredAndSortedIssues.length,
-                total: issues.length,
-              })}
+              {t("features.dashboard.showingIssues", { count: filteredAndSortedIssues.length, total: issues.length })}
             </Text>
             
             <ScrollArea h="calc(90vh - 180px)">
               <Table>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th>{t("features.dashboard.game", "Game")}</Table.Th>
-                    <Table.Th>{t("features.dashboard.move", "Move")}</Table.Th>
-                    <Table.Th>{t("features.dashboard.bestLine", "Best Line")}</Table.Th>
-                    <Table.Th>{t("features.dashboard.theme", "Theme")}</Table.Th>
-                    <Table.Th>{t("features.dashboard.severity", "Severity")}</Table.Th>
-                    <Table.Th>{t("features.dashboard.cpSwing", "CP Swing")}</Table.Th>
-                    <Table.Th>{t("features.dashboard.fen", "FEN")}</Table.Th>
-                    <Table.Th>{t("features.dashboard.actions", "Actions")}</Table.Th>
+                    <Table.Th>{t("features.dashboard.game")}</Table.Th>
+                    <Table.Th>{t("features.dashboard.move")}</Table.Th>
+                    <Table.Th>{t("features.dashboard.bestLine")}</Table.Th>
+                    <Table.Th>{t("features.dashboard.theme")}</Table.Th>
+                    <Table.Th>{t("features.dashboard.severity")}</Table.Th>
+                    <Table.Th>{t("features.dashboard.cpSwing")}</Table.Th>
+                    <Table.Th>{t("features.dashboard.fen")}</Table.Th>
+                    <Table.Th>{t("features.dashboard.actions")}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -817,7 +795,7 @@ export function PlayerStatsModal({
                       </Table.Td>
                       <Table.Td>
                         <Group gap="xs">
-                          <Tooltip label={t("features.dashboard.copyFen", "Copy FEN")}>
+                          <Tooltip label={t("features.dashboard.copyFen")}>
                             <ActionIcon
                               size="sm"
                               variant="subtle"
@@ -826,7 +804,7 @@ export function PlayerStatsModal({
                               <IconCopy size={16} />
                             </ActionIcon>
                           </Tooltip>
-                          <Tooltip label={t("features.dashboard.openGame", "Open Game")}>
+                          <Tooltip label={t("features.dashboard.openGame")}>
                             <ActionIcon
                               size="sm"
                               variant="subtle"
@@ -843,9 +821,7 @@ export function PlayerStatsModal({
               </Table>
               {filteredAndSortedIssues.length > 100 && (
                 <Text size="sm" c="dimmed" mt="md" ta="center">
-                  {t("features.dashboard.showingFirst100", "Showing first 100 of {{total}} issues", {
-                    total: filteredAndSortedIssues.length,
-                  })}
+                  {t("features.dashboard.showingFirst100", { total: filteredAndSortedIssues.length })}
                 </Text>
               )}
             </ScrollArea>
@@ -855,14 +831,14 @@ export function PlayerStatsModal({
         <Tabs.Panel value="openings" pt="md">
           <Stack gap="md">
             <Group justify="space-between" align="center">
-              <Text size="sm" fw={500}>{t("features.dashboard.filterByColor", "Filter by Color")}:</Text>
+              <Text size="sm" fw={500}>{t("features.dashboard.filterByColor")}:</Text>
               <SegmentedControl
                 value={openingsColorFilter}
                 onChange={(value) => setOpeningsColorFilter(value as "all" | "white" | "black")}
                 data={[
-                  { label: t("features.dashboard.all", "All"), value: "all" },
-                  { label: "♔ " + t("features.dashboard.white", "White"), value: "white" },
-                  { label: "♚ " + t("features.dashboard.black", "Black"), value: "black" },
+                  { label: t("features.dashboard.all"), value: "all" },
+                  { label: "♔ " + t("features.dashboard.white"), value: "white" },
+                  { label: "♚ " + t("features.dashboard.black"), value: "black" },
                 ]}
                 size="sm"
               />
@@ -885,7 +861,7 @@ export function PlayerStatsModal({
                   <Group justify="space-between">
                     <Group gap="xs">
                       <Text fw={600}>
-                        {opening.opening || opening.eco || t("features.dashboard.unknownOpening", "Unknown Opening")}
+                        {opening.opening || opening.eco || t("features.dashboard.unknownOpening")}
                       </Text>
                       <Badge 
                         size="xs" 
@@ -900,18 +876,18 @@ export function PlayerStatsModal({
                         {opening.playerColor === "white" ? "♔" : "♚"}
                       </Badge>
                     </Group>
-                    <Badge>{opening.games} {t("features.dashboard.games", "games")}</Badge>
+                    <Badge>{opening.games} {t("features.dashboard.games")}</Badge>
                   </Group>
                   <Group gap="xs">
                     <Text size="xs" c="dimmed">
-                      {t("features.dashboard.pliesAnalyzed", "Plies Analyzed")}: {opening.pliesAnalyzed}
+                      {t("features.dashboard.pliesAnalyzed")}: {opening.pliesAnalyzed}
                     </Text>
                   </Group>
                   <Table>
                     <Table.Thead>
                       <Table.Tr>
-                        <Table.Th>{t("features.dashboard.issueType", "Issue Type")}</Table.Th>
-                        <Table.Th>{t("features.dashboard.count", "Count")}</Table.Th>
+                        <Table.Th>{t("features.dashboard.issueType")}</Table.Th>
+                        <Table.Th>{t("features.dashboard.count")}</Table.Th>
                       </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
@@ -929,14 +905,14 @@ export function PlayerStatsModal({
                   </Table>
                   {opening.frequentMistakes.length > 0 && (
                     <Stack gap="xs" mt="xs">
-                      <Text size="xs" fw={600}>{t("features.dashboard.frequentMistakes", "Frequent Mistakes")}:</Text>
+                      <Text size="xs" fw={600}>{t("features.dashboard.frequentMistakes")}:</Text>
                       <Table>
                         <Table.Thead>
                           <Table.Tr>
-                            <Table.Th>{t("features.dashboard.move", "Move")}</Table.Th>
-                            <Table.Th>{t("features.dashboard.kind", "Kind")}</Table.Th>
-                            <Table.Th>{t("features.dashboard.count", "Count")}</Table.Th>
-                            <Table.Th>{t("features.dashboard.fen", "FEN")}</Table.Th>
+                            <Table.Th>{t("features.dashboard.move")}</Table.Th>
+                            <Table.Th>{t("features.dashboard.kind")}</Table.Th>
+                            <Table.Th>{t("features.dashboard.count")}</Table.Th>
+                            <Table.Th>{t("features.dashboard.fen")}</Table.Th>
                           </Table.Tr>
                         </Table.Thead>
                         <Table.Tbody>
@@ -973,22 +949,22 @@ export function PlayerStatsModal({
         <Tabs.Panel value="pawn-structures" pt="md">
           <ScrollArea h="calc(90vh - 180px)">
             <Stack gap="md">
-              <Title order={4}>{t("features.dashboard.pawnStructures", "Pawn Structures")}</Title>
+              <Title order={4}>{t("features.dashboard.pawnStructures")}</Title>
               
               <Group>
               <Select
-                label={t("features.dashboard.inMove", "In Move")}
+                label={t("features.dashboard.inMove")}
                 data={Array.from({ length: 100 }, (_, i) => ({ value: (i + 1).toString(), label: (i + 1).toString() }))}
                 value={pawnMoveFilter.toString()}
                 onChange={(value) => setPawnMoveFilter(parseInt(value || "10"))}
                 style={{ width: 120 }}
               />
               <Select
-                label={t("features.dashboard.playerColor", "Player Color")}
+                label={t("features.dashboard.playerColor")}
                 data={[
-                  { value: "white", label: t("features.dashboard.white", "White") },
-                  { value: "black", label: t("features.dashboard.black", "Black") },
-                  { value: "any", label: t("features.dashboard.any", "Any") },
+                  { value: "white", label: t("features.dashboard.white") },
+                  { value: "black", label: t("features.dashboard.black") },
+                  { value: "any", label: t("features.dashboard.any") },
                 ]}
                 value={pawnColorFilter}
                 onChange={(value) => setPawnColorFilter((value as "white" | "black" | "any") || "any")}
@@ -998,16 +974,16 @@ export function PlayerStatsModal({
                 value={pawnScope}
                 onChange={(value) => setPawnScope(value as typeof pawnScope)}
                 data={[
-                  { value: "analyzed", label: t("features.dashboard.analyzed", "Analizadas") },
-                  { value: "all", label: t("features.dashboard.all", "Todas") },
+                  { value: "analyzed", label: t("features.dashboard.analyzed") },
+                  { value: "all", label: t("features.dashboard.all") },
                 ]}
               />
               <SegmentedControl
                 value={pawnStructureMode}
                 onChange={(value) => setPawnStructureMode(value as typeof pawnStructureMode)}
                 data={[
-                  { value: "player", label: t("features.dashboard.playerStructure", "Solo jugador") },
-                  { value: "both", label: t("features.dashboard.bothStructures", "Ambas estructuras") },
+                  { value: "player", label: t("features.dashboard.playerStructure") },
+                  { value: "both", label: t("features.dashboard.bothStructures") },
                 ]}
               />
               <Button
@@ -1015,7 +991,7 @@ export function PlayerStatsModal({
                 onClick={handlePawnSearch}
                 loading={pawnLoading}
               >
-                {t("features.dashboard.search", "Search")}
+                {t("features.dashboard.search")}
               </Button>
             </Group>
             {pawnLoading && (
@@ -1026,20 +1002,20 @@ export function PlayerStatsModal({
                 <Table>
                   <Table.Thead>
                     <Table.Tr>
-                      <Table.Th style={{ width: 200 }}>{t("features.dashboard.structure", "Structure")}</Table.Th>
+                      <Table.Th style={{ width: 200 }}>{t("features.dashboard.structure")}</Table.Th>
                       <Table.Th
                         style={{ width: 120, cursor: "pointer" }}
                         onClick={() => setPawnSortBy("frequency")}
                       >
-                        {t("features.dashboard.frequency", "Frequency")} {pawnSortBy === "frequency" ? "^" : ""}
+                        {t("features.dashboard.frequency")} {pawnSortBy === "frequency" ? "^" : ""}
                       </Table.Th>
                       <Table.Th
                         style={{ width: 120, cursor: "pointer" }}
                         onClick={() => setPawnSortBy("winRate")}
                       >
-                        {t("features.dashboard.winRate", "Win Rate")} {pawnSortBy === "winRate" ? "^" : ""}
+                        {t("features.dashboard.winRate")} {pawnSortBy === "winRate" ? "^" : ""}
                       </Table.Th>
-                      <Table.Th style={{ width: 120 }}>{t("features.dashboard.actions", "Actions")}</Table.Th>
+                      <Table.Th style={{ width: 120 }}>{t("features.dashboard.actions")}</Table.Th>
                     </Table.Tr>
                   </Table.Thead>
                   <Table.Tbody>
@@ -1060,8 +1036,8 @@ export function PlayerStatsModal({
                                   onClick={() => toggleStructureDetails(structure)}
                                 >
                                   {expandedStructure === structure.structure
-                                    ? t("features.dashboard.hide", "Hide")
-                                    : t("features.dashboard.view", "View")}
+                                    ? t("features.dashboard.hide")
+                                    : t("features.dashboard.view")}
                                 </Button>
                               </Table.Td>
                             </Table.Tr>
@@ -1083,7 +1059,7 @@ export function PlayerStatsModal({
                                           leftSection={<IconCopy size={14} />}
                                           onClick={() => copyFenToClipboard(displayFen)}
                                         >
-                                          {t("features.dashboard.copyFen", "Copy FEN")}
+                                          {t("features.dashboard.copyFen")}
                                         </Button>
                                       )}
                                     </Stack>
@@ -1104,11 +1080,11 @@ export function PlayerStatsModal({
                                           <Table>
                                             <Table.Thead>
                                               <Table.Tr>
-                                                <Table.Th>{t("features.dashboard.game", "Game")}</Table.Th>
-                                                <Table.Th>{t("features.dashboard.white", "White")}</Table.Th>
-                                                <Table.Th>{t("features.dashboard.black", "Black")}</Table.Th>
-                                                <Table.Th>{t("features.dashboard.result", "Result")}</Table.Th>
-                                                <Table.Th>{t("features.dashboard.actions", "Actions")}</Table.Th>
+                                                <Table.Th>{t("features.dashboard.game")}</Table.Th>
+                                                <Table.Th>{t("features.dashboard.white")}</Table.Th>
+                                                <Table.Th>{t("features.dashboard.black")}</Table.Th>
+                                                <Table.Th>{t("features.dashboard.result")}</Table.Th>
+                                                <Table.Th>{t("features.dashboard.actions")}</Table.Th>
                                               </Table.Tr>
                                             </Table.Thead>
                                             <Table.Tbody>
@@ -1131,7 +1107,7 @@ export function PlayerStatsModal({
                                                         variant="light"
                                                         onClick={() => setExpandedFen(game.fen)}
                                                       >
-                                                        {t("features.dashboard.show", "Show")}
+                                                        {t("features.dashboard.show")}
                                                       </Button>
                                                       <ActionIcon
                                                         size="sm"
@@ -1156,7 +1132,7 @@ export function PlayerStatsModal({
                                         </ScrollArea>
                                       ) : (
                                         <Text size="sm" c="dimmed">
-                                          {t("features.dashboard.noGamesFound", "No games found")}
+                                          {t("features.dashboard.noGamesFound")}
                                         </Text>
                                       )}
                                     </Stack>
@@ -1173,7 +1149,7 @@ export function PlayerStatsModal({
 
               {pawnStructures.length === 0 && (
                 <Text size="sm" c="dimmed" ta="center" py="xl">
-                  {t("features.dashboard.noPawnStructures", "No pawn structures found. Click search to analyze.")}
+                  {t("features.dashboard.noPawnStructuresHint")}
                 </Text>
               )}
             </Stack>
@@ -1185,7 +1161,7 @@ export function PlayerStatsModal({
           <ScrollArea h="calc(90vh - 180px)">
             <Stack gap="md">
               <Group justify="space-between">
-                <Title order={4}>{t("features.dashboard.debugPgns", "Debug PGNs")}</Title>
+                <Title order={4}>{t("features.dashboard.debugPgns")}</Title>
                 {debugPgns && (
                   <Button
                     size="xs"
@@ -1194,18 +1170,18 @@ export function PlayerStatsModal({
                     onClick={() => {
                       navigator.clipboard.writeText(debugPgns);
                       notifications.show({
-                        title: t("features.dashboard.copied", "Copied"),
-                        message: t("features.dashboard.pgnsCopied", "PGNs copied to clipboard"),
+                        title: t("features.dashboard.copied"),
+                        message: t("features.dashboard.pgnsCopied"),
                         color: "green",
                       });
                     }}
                   >
-                    {t("features.dashboard.copy", "Copy")}
+                    {t("features.dashboard.copy")}
                   </Button>
                 )}
               </Group>
               <Text size="sm" c="dimmed">
-                {t("features.dashboard.debugPgnsDescription", "PGNs passed to the analysis function:")}
+                {t("features.dashboard.debugPgnsDescription")}
               </Text>
               {debugPgns ? (
                 <Code block style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: "11px" }}>
@@ -1213,7 +1189,7 @@ export function PlayerStatsModal({
                 </Code>
               ) : (
                 <Text size="sm" c="dimmed" ta="center" py="xl">
-                  {t("features.dashboard.noDebugPgns", "No PGNs available for debug")}
+                  {t("features.dashboard.noDebugPgns")}
                 </Text>
               )}
             </Stack>

@@ -15,6 +15,7 @@ import {
   TextInput,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { notifications } from "@mantine/notifications";
 import { IconAlertCircle } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -133,7 +134,6 @@ const useDatabaseOperations = (
         unwrap(await commands.convertPgn(path, dbPath, null, title, description ?? null));
         setDatabases();
       } catch (error) {
-        console.error("Failed to convert database:", error);
         throw error;
       } finally {
         setLoading(false);
@@ -210,15 +210,11 @@ function AddDatabase({
     if (!setPuzzleDbs) return;
 
     const refreshPuzzleDbs = async () => {
-      console.debug("Refreshing puzzle databases...");
       try {
         const updatedPuzzleDbs = await getPuzzleDatabases();
-        console.debug("Updated puzzle databases:", updatedPuzzleDbs.map((db) => db.title));
         setPuzzleDbs(updatedPuzzleDbs);
         setLocalPuzzleDbs(updatedPuzzleDbs);
-      } catch (error) {
-        console.error("Error refreshing puzzle databases:", error);
-      }
+      } catch {}
     };
 
     // Refresh when modal opens - use a small delay to ensure file system is updated
@@ -277,11 +273,15 @@ function AddDatabase({
             navigate({ to: redirectTo });
           }
         } catch (error) {
-          console.error("Database conversion failed:", error);
+          notifications.show({
+            title: t("common.error"),
+            message: error instanceof Error ? error.message : t("errors.unknownError"),
+            color: "red",
+          });
         }
       }
     },
-    [convertDatabase, setOpened, databaseForm, redirectTo, navigate],
+    [convertDatabase, setOpened, databaseForm, redirectTo, navigate, t],
   );
 
   const handlePuzzleSubmit = useCallback(
@@ -298,14 +298,13 @@ function AddDatabase({
             navigate({ to: redirectTo });
           }
         } catch (error) {
-          console.error("Failed to import puzzle file:", error);
-          setImportError(error instanceof Error ? error.message : "Failed to import puzzle file");
+          setImportError(error instanceof Error ? error.message : t("errors.failedToImportPuzzleFile"));
         } finally {
           setImporting(false);
         }
       }
     },
-    [importPuzzleFile, setOpened, puzzleForm, redirectTo, navigate],
+    [importPuzzleFile, setOpened, puzzleForm, redirectTo, navigate, t],
   );
 
   const handleDatabaseFileSelect = useCallback(async () => {
@@ -364,8 +363,7 @@ function AddDatabase({
         const cachePath = await resolve(appDataDirPath, "position_cache.db3");
         const cacheExists = await exists(cachePath);
         setPositionCacheInstalled(cacheExists);
-      } catch (error) {
-        console.error("Failed to check position cache:", error);
+      } catch {
         setPositionCacheInstalled(false);
       }
     };
@@ -391,11 +389,8 @@ function AddDatabase({
     const normalizedTitles = localPuzzleDbs.map((db) => {
       const title = db.title;
       const normalized = title.endsWith(".db3") ? title.slice(0, -4) : title;
-      console.debug(`Normalizing puzzle title: "${title}" -> "${normalized}"`);
       return normalized;
     });
-    console.debug("Installed puzzle titles (normalized):", normalizedTitles);
-    console.debug("Current localPuzzleDbs:", localPuzzleDbs.map((db) => ({ title: db.title, path: db.path })));
     return new Set(normalizedTitles);
   }, [localPuzzleDbs]);
 
@@ -499,12 +494,6 @@ function AddDatabase({
                   <Stack>
                     {defaultPuzzleDbs?.map((db, i) => {
                       const isInstalled = installedPuzzleTitles.has(db.title);
-                      console.debug(`Checking puzzle DB "${db.title}":`, {
-                        isInstalled,
-                        installedTitles: Array.from(installedPuzzleTitles),
-                        localPuzzleDbs: localPuzzleDbs.map((p) => p.title),
-                        propPuzzleDbs: puzzleDbs?.map((p) => p.title),
-                      });
                       return (
                         <PuzzleDbCard
                           key={`puzzle-db-${db.title}-${i}`}
@@ -589,8 +578,11 @@ function DatabaseCard({ setDatabases, database, databaseId, initInstalled }: Dat
           setIsInstalled(true);
         }
       } catch (error) {
-        console.error("Failed to download database:", error);
-        throw error;
+        notifications.show({
+          title: t("common.error"),
+          message: error instanceof Error ? error.message : t("errors.unknownError"),
+          color: "red",
+        });
       } finally {
         setInProgress(false);
       }
@@ -719,11 +711,8 @@ function PuzzleDbCard({ setPuzzleDbs, puzzleDb, databaseId, initInstalled }: Puz
               const { exists, remove: removeFile } = await import("@tauri-apps/plugin-fs");
               if (await exists(dbPath)) {
                 await removeFile(dbPath);
-                console.debug("Removed empty database file after failed import");
               }
-            } catch (cleanupError) {
-              console.warn("Failed to clean up database file after import error:", cleanupError);
-            }
+            } catch {}
             setIsImporting(false);
             setWillImport(false);
             throw error;
@@ -731,21 +720,15 @@ function PuzzleDbCard({ setPuzzleDbs, puzzleDb, databaseId, initInstalled }: Puz
             // Clean up temp file
             try {
               await remove(tempPath);
-            } catch (e) {
-              // Ignore cleanup errors
-              console.warn("Failed to clean up temp file:", e);
-            }
+            } catch {}
           }
         } else {
           // For database files, download directly
           const path = await resolve(await appDataDir(), "puzzles", `${name}.db3`);
-          console.log("Downloading database file directly to:", path);
-          console.log("Download URL:", url);
           const result = await commands.downloadFile(`puzzle_db_${id}`, url, path, null, null, null);
           if (result.status === "error") {
             throw new Error(result.error);
           }
-          console.log("Database download completed successfully");
           
           // Validate the downloaded file is a valid SQLite database
           try {
@@ -755,22 +738,16 @@ function PuzzleDbCard({ setPuzzleDbs, puzzleDb, databaseId, initInstalled }: Puz
               try {
                 const { remove: removeFile } = await import("@tauri-apps/plugin-fs");
                 await removeFile(path);
-                console.debug("Removed invalid database file after validation failed");
-              } catch (cleanupError) {
-                console.warn("Failed to clean up invalid database file:", cleanupError);
-              }
+              } catch {}
               throw new Error(validationResult.error);
             }
-            console.log("Database validation passed");
           } catch (error) {
-            console.error("Database validation failed:", error);
             throw error;
           }
         }
         
         await setPuzzleDbs(await getPuzzleDatabases());
       } catch (error) {
-        console.error("Failed to download puzzle database:", error);
         throw error;
       } finally {
         // Ensure all states are cleared when everything is done
@@ -783,18 +760,12 @@ function PuzzleDbCard({ setPuzzleDbs, puzzleDb, databaseId, initInstalled }: Puz
   );
 
   const handleDownload = useCallback(async () => {
-    console.log("handleDownload called for:", puzzleDb.title);
     try {
-      console.log("Starting download for:", puzzleDb.title, "URL:", puzzleDb.downloadLink);
       if (!puzzleDb.downloadLink) {
         throw new Error("No download link provided");
       }
       await downloadDatabase(databaseId, puzzleDb.downloadLink, puzzleDb.title);
-      console.log("Download completed successfully for:", puzzleDb.title);
     } catch (error) {
-      console.error("Download failed for:", puzzleDb.title, error);
-      // Show error notification
-      const { notifications } = await import("@mantine/notifications");
       notifications.show({
         title: t("common.error"),
         message: error instanceof Error ? error.message : String(error),
@@ -841,8 +812,8 @@ function PuzzleDbCard({ setPuzzleDbs, puzzleDb, databaseId, initInstalled }: Puz
         labels={{
           completed: t("common.installed"),
           action: t("common.install"),
-          inProgress: isCsvFile && isImporting ? t("common.importing") || "Importing..." : t("common.downloading"),
-          finalizing: isCsvFile && isImporting ? t("common.importing") || "Importing..." : t("common.extracting"),
+          inProgress: isCsvFile && isImporting ? t("common.importing") : t("common.downloading"),
+          finalizing: isCsvFile && isImporting ? t("common.importing") : t("common.extracting"),
         }}
         onClick={handleDownload}
         inProgress={combinedInProgress}

@@ -31,8 +31,6 @@ export function PracticeBoard({
         fen={selectedExercise ? currentFen : "8/8/8/8/8/8/8/8 w - - 0 1"}
         orientation="white"
         engineColor="black"
-        onMove={(move) => console.log("Move made:", move)}
-        onPositionChange={(fen) => console.log("Position changed:", fen)}
         onChessMove={onMove}
       />
 

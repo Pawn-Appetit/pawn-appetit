@@ -14,7 +14,6 @@ import { memo, useCallback, useContext, useEffect, useMemo, useState } from "rea
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
-import { useShallow } from "zustand/react/shallow";
 import BoardControlsMenu from "@/components/BoardControlsMenu";
 import { Chessground } from "@/components/Chessground";
 import Clock from "@/components/Clock";
@@ -136,21 +135,10 @@ function Board({
 
   const store = useContext(TreeStateContext)!;
 
-  const root = useStore(store, (s) => s.root);
   const rootFen = useStore(store, (s) => s.root.fen);
-  const moves = useStore(
-    store,
-    useShallow((s) => getVariationLine(s.root, s.position)),
-  );
+  const position = useStore(store, (s) => s.position);
   const headers = useStore(store, (s) => s.headers);
   const currentNode = useStore(store, (s) => s.currentNode());
-
-  const arrows = useAtomValue(
-    bestMovesFamily({
-      fen: rootFen,
-      gameMoves: moves,
-    }),
-  );
 
   const goToNext = useStore(store, (s) => s.goToNext);
   const goToPrevious = useStore(store, (s) => s.goToPrevious);
@@ -161,7 +149,7 @@ function Board({
   const setShapes = useStore(store, (s) => s.setShapes);
   const setFen = useStore(store, (s) => s.setFen);
 
-  const [pos, error] = positionFromFen(currentNode.fen);
+  const [pos, error] = useMemo(() => positionFromFen(currentNode.fen), [currentNode.fen]);
 
   const moveInput = useAtomValue(moveInputAtom);
   const showDests = useAtomValue(showDestsAtom);
@@ -174,10 +162,14 @@ function Board({
   const isBlindfold = useAtomValue(blindfoldAtom);
   const setBlindfold = useSetAtom(blindfoldAtom);
 
-  let dests: Map<SquareName, SquareName[]> = pos ? chessgroundDests(pos) : new Map();
-  if (forcedEP && pos) {
-    dests = forceEnPassant(dests, pos);
-  }
+  const dests: Map<SquareName, SquareName[]> = useMemo(() => {
+    if (!pos) return new Map();
+    let nextDests = chessgroundDests(pos);
+    if (forcedEP) {
+      nextDests = forceEnPassant(nextDests, pos);
+    }
+    return nextDests;
+  }, [forcedEP, pos]);
 
   const [localViewPawnStructure, setLocalViewPawnStructure] = useState(false);
   const [pendingMove, setPendingMove] = useState<NormalMove | null>(null);
@@ -187,7 +179,7 @@ function Board({
   const localToggleOrientation = () =>
     setHeaders({
       ...headers,
-      fen: root.fen, // To keep the current board setup
+      fen: rootFen, // Keep current board setup
       orientation: orientation === "black" ? "white" : "black",
     });
 
@@ -223,6 +215,19 @@ function Board({
   useHotkeys([[keyMap.SWAP_ORIENTATION.keys, () => (toggleOrientation ?? localToggleOrientation)()]]);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
   const [evalOpen, setEvalOpen] = useAtom(currentEvalOpenAtom);
+
+  const emptyMoves = useMemo(() => [] as string[], []);
+  const arrowMoves = useMemo(() => {
+    if (!showArrows || !evalOpen) return emptyMoves;
+    return getVariationLine(store.getState().root, position, headers.variant === "Chess960");
+  }, [emptyMoves, evalOpen, headers.variant, position, rootFen, showArrows, store]);
+
+  const arrows = useAtomValue(
+    bestMovesFamily({
+      fen: rootFen,
+      gameMoves: arrowMoves,
+    }),
+  );
 
   const [deck, setDeck] = useAtom(
     deckAtomFamily({
@@ -271,61 +276,32 @@ function Board({
     }
   }
 
-  let shapes: DrawShape[] = [];
-  if (showArrows && evalOpen && arrows.size > 0 && pos) {
-    const engineLines: Record<
-      number,
-      {
-        engineIndex: number;
-        bestWinChance: number;
-        variations: Array<{
-          variationIndex: number;
-          winChance: number;
-          arrows: Array<{
-            from: string;
-            to: string;
-            color: string;
-            lineWidth: number;
-            isMainLine: boolean;
-            moveNumber: number;
-          }>;
-        }>;
-      }
-    > = {};
+  const shapes = useMemo(() => {
+    const nextShapes: DrawShape[] = [];
+    if (showArrows && evalOpen && arrows.size > 0 && pos) {
+      const entries = Array.from(arrows.entries()).sort((a, b) => a[0] - b[0]);
+      for (const [engineIndex, bestMoves] of entries) {
+        if (engineIndex >= 4) continue;
+        const bestWinChance = bestMoves[0]?.winChance;
+        if (bestWinChance == null) continue;
 
-    const entries = Array.from(arrows.entries()).sort((a, b) => a[0] - b[0]);
-    for (const [i, moves] of entries) {
-      if (i < 4) {
-        const bestWinChance = moves[0].winChance;
-        engineLines[i] = {
-          engineIndex: i,
-          bestWinChance,
-          variations: [],
-        };
-        for (const [j, { pv, winChance }] of moves.entries()) {
-          const variation = {
-            variationIndex: j,
-            winChance,
-            arrows: [] as Array<{
-              from: string;
-              to: string;
-              color: string;
-              lineWidth: number;
-              isMainLine: boolean;
-              moveNumber: number;
-            }>,
-          };
+        for (const [variationIndex, { pv, winChance }] of bestMoves.entries()) {
           const posClone = pos.clone();
-          let prevSquare = null;
-          for (const [ii, uci] of pv.entries()) {
-            const m = parseUci(uci)! as NormalMove;
+          let prevSquare: string | null = null;
 
-            posClone.play(m);
-            const from = makeSquare(m.from)!;
-            const to = makeSquare(m.to)!;
+          for (const [moveIndex, uci] of pv.entries()) {
+            const move = parseUci(uci) as NormalMove | undefined;
+            if (!move) break;
+
+            posClone.play(move);
+            const from = makeSquare(move.from);
+            const to = makeSquare(move.to);
+            if (!from || !to) break;
+
             if (prevSquare === null) {
               prevSquare = from;
             }
+
             const brushSize = match(bestWinChance - winChance)
               .when(
                 (d) => d < 2.5,
@@ -337,46 +313,38 @@ function Board({
               )
               .otherwise(() => SMALL_BRUSH);
 
-            if (ii === 0 || (showConsecutiveArrows && j === 0 && ii % 2 === 0)) {
-              if (
-                ii < 5 && // max 3 arrows
-                !shapes.find((s) => s.orig === from && s.dest === to) &&
-                prevSquare === from
-              ) {
-                const arrowColor = j === 0 ? arrowColors[i].strong : arrowColors[i].pale;
+            const shouldDraw =
+              moveIndex === 0 || (showConsecutiveArrows && variationIndex === 0 && moveIndex % 2 === 0);
+            if (!shouldDraw) continue;
 
-                variation.arrows.push({
-                  from,
-                  to,
-                  color: arrowColor,
-                  lineWidth: brushSize,
-                  isMainLine: j === 0,
-                  moveNumber: ii,
-                });
-                shapes.push({
-                  orig: from,
-                  dest: to,
-                  brush: arrowColor,
-                  modifiers: {
-                    lineWidth: brushSize,
-                  },
-                });
-                prevSquare = to;
-              } else {
-                break;
-              }
-            }
+            const isDuplicate = nextShapes.some((s) => s.orig === from && s.dest === to);
+            const isContinuation = prevSquare === from;
+            if (!isContinuation || isDuplicate) break;
+
+            if (moveIndex >= 5) break; // cap arrow count per line
+
+            const arrowColor = variationIndex === 0 ? arrowColors[engineIndex].strong : arrowColors[engineIndex].pale;
+
+            nextShapes.push({
+              orig: from,
+              dest: to,
+              brush: arrowColor,
+              modifiers: {
+                lineWidth: brushSize,
+              },
+            });
+            prevSquare = to;
           }
-
-          engineLines[i].variations.push(variation);
         }
       }
     }
-  }
 
-  if (currentNode.shapes.length > 0) {
-    shapes = shapes.concat(currentNode.shapes);
-  }
+    if (currentNode.shapes.length > 0) {
+      nextShapes.push(...currentNode.shapes);
+    }
+
+    return nextShapes;
+  }, [arrows, currentNode.shapes, evalOpen, pos, showArrows, showConsecutiveArrows]);
 
   const hasClock =
     whiteTime !== undefined ||

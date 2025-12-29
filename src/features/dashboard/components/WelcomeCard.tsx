@@ -56,12 +56,9 @@ export function WelcomeCard({
     }
 
     try {
-      // convertFileSrc es síncrono y devuelve string
       const url = convertFileSrc(fideInfo.photo);
       setPhotoUrl(url);
-    } catch (error) {
-      console.error("Failed to convert file path to URL:", error);
-      // Fallback to original path - might work in some cases
+    } catch {
       setPhotoUrl(fideInfo.photo);
     }
   }, [fideInfo?.photo]);
@@ -121,7 +118,6 @@ export function WelcomeCard({
               height={140}
               fit="cover"
               onError={(e) => {
-                console.error("Failed to load FIDE photo:", photoUrl);
                 e.currentTarget.style.display = "none";
               }}
             />
@@ -212,7 +208,6 @@ export function WelcomeCard({
           </Group>
         </Stack>
 
-        {/* Columna derecha: Imagen de fondo del tema */}
         <Box style={{ flexShrink: 0 }}>
           <Image
             src={backgroundImageSrc}

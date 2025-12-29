@@ -388,7 +388,7 @@ const ENGINES = [
     path: "koivisto/Koivisto_8.0-x64-windows-sse2.exe",
     elo: 3500,
   },
-// Koivisto (Linux AVX2) — como tu ejemplo
+// Koivisto (Linux AVX2)
 {
   name: "Koivisto",
   version: "8.0",
@@ -401,7 +401,7 @@ const ENGINES = [
   elo: 3500,
 },
 
-// Clover (solo Windows en releases) :contentReference[oaicite:1]{index=1}
+// Clover (Windows-only release binary)
 {
   name: "Clover",
   version: "9.1",
@@ -414,7 +414,7 @@ const ENGINES = [
   elo: 0,
 },
 
-// Obsidian (solo Windows en releases) :contentReference[oaicite:2]{index=2}
+// Obsidian (Windows-only release binary)
 {
   name: "Obsidian",
   version: "16.0",
@@ -427,7 +427,7 @@ const ENGINES = [
   elo: 0,
 },
 
-// Berserk (solo Windows en releases) :contentReference[oaicite:3]{index=3}
+// Berserk (Windows-only release binary)
 {
   name: "Berserk",
   version: "13",
@@ -453,7 +453,7 @@ const ENGINES = [
   },
 
   // ---------------------------
-  // Wasp 6.50 (direct binary) - MUY útil para niveles “humanos”
+  // Wasp 6.50 (direct binary) — useful for human-strength levels
   // ---------------------------
   {
     name: "Wasp",

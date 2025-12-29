@@ -192,7 +192,7 @@ function GraphPanel() {
   return (
     <Paper flex={1} h="100%" style={{ overflow: "hidden", position: "relative" }}>
       <svg ref={svgRef} width="100%" height="100%" />
-      <Tooltip label={t("features.board.tabs.graph.CenterGraph")} position="top">
+      <Tooltip label={t("common.centerGraph")} position="top">
         <ActionIcon
           variant="filled"
           size="lg"

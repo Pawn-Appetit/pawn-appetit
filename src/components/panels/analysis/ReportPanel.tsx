@@ -88,7 +88,6 @@ function ReportPanel() {
 
           // Verify the tree has moves (not just the root)
           if (latestRoot.children.length === 0) {
-            console.error("Tree has no moves, skipping save");
             hasSavedPgnRef.current = false;
             return;
           }
@@ -105,7 +104,6 @@ function ReportPanel() {
           let finalRoot = latestRoot;
           let finalHeaders = latestHeaders;
           if (moveCount < 5) {
-            console.warn(`Tree has only ${moveCount} moves, waiting longer...`);
             // Wait another 300ms and try again
             await new Promise((resolve) => setTimeout(resolve, 300));
             const retryRoot = store.getState().root;
@@ -121,7 +119,6 @@ function ReportPanel() {
             })();
 
             if (retryMoveCount < 5) {
-              console.error(`Tree still incomplete after retry (${retryMoveCount} moves), skipping save`);
               hasSavedPgnRef.current = false;
               return;
             }
@@ -142,7 +139,6 @@ function ReportPanel() {
 
           // Validate PGN: ensure it's not empty
           if (!pgnWithEvals || pgnWithEvals.trim().length === 0) {
-            console.error("Generated PGN is empty, skipping save");
             hasSavedPgnRef.current = false; // Reset flag so we can try again
             return;
           }
@@ -173,7 +169,6 @@ function ReportPanel() {
           // Final validation: ensure PGN is not just headers
           const moveText = pgnWithEvals.split("\n\n")[1] || "";
           if (!moveText || moveText.trim().length === 0) {
-            console.error("Generated PGN has no moves, skipping save");
             hasSavedPgnRef.current = false;
             return;
           }
@@ -182,7 +177,6 @@ function ReportPanel() {
           // Count moves in the PGN text (approximate)
           const moveMatches = moveText.match(/\d+\.\s+\S+/g) || [];
           if (moveMatches.length < 3 && moveCount > 3) {
-            console.error(`PGN has only ${moveMatches.length} moves but tree has ${moveCount}, skipping save`);
             hasSavedPgnRef.current = false;
             return;
           }
@@ -327,8 +321,7 @@ function ReportPanel() {
               }
             }
           }
-        } catch (error) {
-          console.error("Error saving analyzed PGN:", error);
+        } catch {
           hasSavedPgnRef.current = false; // Reset flag on error
         }
       }, 500); // Increased delay to 500ms to ensure tree is fully updated after addAnalysis completes
@@ -395,12 +388,6 @@ function ReportPanel() {
 
 type Stats = ReturnType<typeof getGameStats>;
 
-// -----------------------------
-// CountPill (misma tipografía que tu componente original)
-// - Text size="sm"
-// - fw 700/400
-// - color se pasa por style (como en tu Grid.Col original)
-// -----------------------------
 function CountPill({
   value,
   color,
@@ -434,7 +421,7 @@ function CountPill({
         fw={clickable ? 700 : 400}
         style={{
           lineHeight: 1,
-          color: clickable ? color : undefined, // ✅ igual que tu original
+          color: clickable ? color : undefined,
         }}
       >
         {value}
@@ -451,11 +438,6 @@ function CountPill({
   );
 }
 
-// -----------------------------
-// TagGlyph (idéntico a tu estilo original)
-// - usa el MISMO svg con currentColor
-// - Text size="sm", lineHeight=1, sin monospace
-// -----------------------------
 function TagGlyph({ annotation }: { annotation: string }) {
   return (
     <Center>
@@ -475,9 +457,6 @@ function TagGlyph({ annotation }: { annotation: string }) {
   );
 }
 
-// -----------------------------
-// GameStats (layout bueno + tipografía original)
-// -----------------------------
 const GameStats = memo(
   function GameStats({ whiteAnnotations, blackAnnotations }: Stats) {
     const { t } = useTranslation();
@@ -547,7 +526,7 @@ const GameStats = memo(
 
           <Center>
             <Text size="sm" fw={600} c="dimmed">
-              Annotation
+              {t("common.annotation")}
             </Text>
           </Center>
 
@@ -589,7 +568,7 @@ const GameStats = memo(
                   <Center
                     style={{
                       textAlign: "center",
-                      color: r.w > 0 ? r.color : undefined, // ✅ igual que tu original
+                      color: r.w > 0 ? r.color : undefined,
                     }}
                   >
                     <CountPill
@@ -623,7 +602,6 @@ const GameStats = memo(
                       </Text>
                     </Group>
 
-                    {/* Barra W vs B */}
                     <Box
                       style={{
                         position: "relative",
@@ -663,7 +641,7 @@ const GameStats = memo(
                   <Center
                     style={{
                       textAlign: "center",
-                      color: r.b > 0 ? r.color : undefined, // ✅ igual que tu original
+                      color: r.b > 0 ? r.color : undefined,
                     }}
                   >
                     <CountPill

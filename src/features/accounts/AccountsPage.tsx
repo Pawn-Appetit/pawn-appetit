@@ -23,7 +23,7 @@ function AccountsPage() {
 
   const sortOptions = [
     { value: "name", label: t("common.name", "Name") },
-    { value: "elo", label: t("common.elo", "ELO") },
+    { value: "elo", label: t("common.elo") },
   ];
 
   return (

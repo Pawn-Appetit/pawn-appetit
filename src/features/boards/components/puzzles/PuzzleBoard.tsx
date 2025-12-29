@@ -4,7 +4,7 @@ import { type Move, makeUci, type NormalMove, parseSquare } from "chessops";
 import { chessgroundDests, chessgroundMove } from "chessops/compat";
 import equal from "fast-deep-equal";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useContext, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { useStore } from "zustand";
 import { Chessground } from "@/components/Chessground";
 import { TreeStateContext } from "@/components/TreeStateContext";
@@ -45,47 +45,47 @@ function PuzzleBoard({
   const makeMoves = useStore(store, (s) => s.makeMoves);
   const reset = useForceUpdate();
 
-  const currentNode = getNodeAtPath(root, position);
+  const currentNode = useMemo(() => getNodeAtPath(root, position), [root, position]);
 
-  let puzzle: Puzzle | null = null;
-  if (puzzles.length > 0) {
-    puzzle = puzzles[currentPuzzle];
-  }
+  const puzzle = puzzles[currentPuzzle] ?? null;
   const [ended, setEnded] = useState(false);
 
-  const [pos] = positionFromFen(currentNode.fen);
-  const initialFen = puzzle?.fen || currentNode.fen;
-  const [initialPos] = positionFromFen(initialFen);
+  const [pos] = useMemo(() => positionFromFen(currentNode.fen), [currentNode.fen]);
 
-  const treeIter = treeIteratorMainLine(root);
-  treeIter.next();
-  let currentMove = 0;
-  if (puzzle && initialPos) {
+  const initialFen = puzzle?.fen || currentNode.fen;
+  const [initialPos] = useMemo(() => positionFromFen(initialFen), [initialFen]);
+
+  const currentMove = useMemo(() => {
+    if (!puzzle || !initialPos) return 0;
+
+    const treeIter = treeIteratorMainLine(root);
+    treeIter.next();
+    let moveIndex = 0;
     const iterPos = initialPos.clone();
     for (const { node } of treeIter) {
-      if (node.move && currentMove < puzzle.moves.length) {
-        const normalizedMove = uciNormalize(iterPos, node.move, false);
-        const normalizedPuzzleMove = puzzle.moves[currentMove];
-        if (normalizedMove === normalizedPuzzleMove) {
-          iterPos.play(node.move);
-          currentMove++;
-        } else {
-          break;
-        }
-      } else {
-        break;
-      }
+      if (!node.move || moveIndex >= puzzle.moves.length) break;
+      const normalizedMove = uciNormalize(iterPos, node.move, false);
+      const normalizedPuzzleMove = puzzle.moves[moveIndex];
+      if (normalizedMove !== normalizedPuzzleMove) break;
+      iterPos.play(node.move);
+      moveIndex++;
     }
-  }
+    return moveIndex;
+  }, [initialPos, puzzle, root]);
+
+  const expectedMainlinePath = useMemo(() => Array(currentMove).fill(0), [currentMove]);
   const turn = pos?.turn || "white";
-  let orientation = initialPos?.turn || "white";
-  if ((puzzle?.moves.length || 0) % 2 === 0) {
-    orientation = orientation === "white" ? "black" : "white";
-  }
+  const orientation = useMemo(() => {
+    let nextOrientation = initialPos?.turn || "white";
+    if ((puzzle?.moves.length || 0) % 2 === 0) {
+      nextOrientation = nextOrientation === "white" ? "black" : "white";
+    }
+    return nextOrientation;
+  }, [initialPos?.turn, puzzle?.moves.length]);
 
   const [pendingMove, setPendingMove] = useState<NormalMove | null>(null);
 
-  const dests = pos ? chessgroundDests(pos) : new Map();
+  const dests = useMemo(() => (pos ? chessgroundDests(pos) : new Map()), [pos]);
   const showCoordinates = useAtomValue(showCoordinatesAtom);
   const isBlindfold = useAtomValue(blindfoldAtom);
   const setBlindfold = useSetAtom(blindfoldAtom);
@@ -182,7 +182,7 @@ function PuzzleBoard({
           orientation={orientation}
           movable={{
             free: false,
-            color: puzzle && equal(position, Array(currentMove).fill(0)) ? turn : undefined,
+            color: puzzle && equal(position, expectedMainlinePath) ? turn : undefined,
             dests: dests,
             events: {
               after: (orig, dest) => {
