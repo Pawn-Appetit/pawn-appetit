@@ -284,14 +284,14 @@ function LichessOrChessCom({
             sessions.map((s) =>
               s.lichess?.account.id === account.id
                 ? {
-                  ...s,
-                  lichess: {
-                    account: account,
-                    username: lichessSession.username,
-                    accessToken: lichessSession.accessToken,
-                  },
-                  updatedAt: Date.now(),
-                }
+                    ...s,
+                    lichess: {
+                      account: account,
+                      username: lichessSession.username,
+                      accessToken: lichessSession.accessToken,
+                    },
+                    updatedAt: Date.now(),
+                  }
                 : s,
             ),
           );
@@ -381,13 +381,13 @@ function LichessOrChessCom({
             sessions.map((s) =>
               session.chessCom && s.chessCom?.username === session.chessCom?.username
                 ? {
-                  ...s,
-                  chessCom: {
-                    username: session.chessCom?.username,
-                    stats,
-                  },
-                  updatedAt: Date.now(),
-                }
+                    ...s,
+                    chessCom: {
+                      username: session.chessCom?.username,
+                      stats,
+                    },
+                    updatedAt: Date.now(),
+                  }
                 : s,
             ),
           );

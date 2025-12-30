@@ -257,12 +257,9 @@ export default function DatabasesPage() {
   ];
 
   // Determine title and search placeholder based on current tab
-  const headerTitle = search.tab === "puzzles" 
-    ? t("features.sidebar.puzzles", "Puzzles")
-    : t("features.databases.title");
-  const searchPlaceholder = search.tab === "puzzles"
-    ? "Search puzzles"
-    : "Search databases";
+  const headerTitle =
+    search.tab === "puzzles" ? t("features.sidebar.puzzles", "Puzzles") : t("features.databases.title");
+  const searchPlaceholder = search.tab === "puzzles" ? "Search puzzles" : "Search databases";
 
   return (
     <>

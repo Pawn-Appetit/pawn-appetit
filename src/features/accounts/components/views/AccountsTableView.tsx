@@ -216,14 +216,14 @@ function AccountsTableView({
         sessions.map((s) =>
           s.lichess?.account.id === account.id
             ? {
-              ...s,
-              lichess: {
-                account: account,
-                username: lichessUsername,
-                accessToken: lichessAccessToken,
-              },
-              updatedAt: Date.now(),
-            }
+                ...s,
+                lichess: {
+                  account: account,
+                  username: lichessUsername,
+                  accessToken: lichessAccessToken,
+                },
+                updatedAt: Date.now(),
+              }
             : s,
         ),
       );
@@ -235,13 +235,13 @@ function AccountsTableView({
         sessions.map((s) =>
           s.chessCom?.username === chessComUsername
             ? {
-              ...s,
-              chessCom: {
-                username: chessComUsername,
-                stats,
-              },
-              updatedAt: Date.now(),
-            }
+                ...s,
+                chessCom: {
+                  username: chessComUsername,
+                  stats,
+                },
+                updatedAt: Date.now(),
+              }
             : s,
         ),
       );
@@ -351,8 +351,6 @@ function AccountsTableView({
       </Paper>
     );
   }
-
-
 
   if (sessions.length === 0) {
     return (
