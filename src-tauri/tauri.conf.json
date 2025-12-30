@@ -38,7 +38,9 @@
       "providerShortName": null,
       "signingIdentity": "-"
     },
-    "resources": [],
+    "resources": {
+      "../sound/" : "sound/"
+    },
     "targets": "all",
     "createUpdaterArtifacts": false
   },
@@ -91,7 +93,7 @@
         ],
         "enable": true
       },
-      "csp": "default-src 'self'; img-src 'self' asset: data: blob: https: http:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https://github.com https://api.chess.com https://www.chess.com https://lichess.org https://explorer.lichess.ovh https://tablebase.lichess.ovh https://www.chessdb.cn"
+      "csp": "default-src 'self'; img-src 'self' asset: data: blob: https: http:; media-src 'self' asset:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https://github.com https://api.chess.com https://www.chess.com https://lichess.org https://explorer.lichess.ovh https://tablebase.lichess.ovh https://www.chessdb.cn"
     }
   }
 }
