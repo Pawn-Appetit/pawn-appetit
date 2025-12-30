@@ -1667,6 +1667,7 @@
     "missingReferenceDatabase": "Falta la base de datos de referencia",
     "missingEngine": "Falta el motor",
     "missingPosition": "Falta la posición",
+    "variantPositionsCacheUnavailable": "Caché de posiciones de variantes no disponible: {{message}}",
     "unknownError": "Error desconocido"
   },
   "window": {

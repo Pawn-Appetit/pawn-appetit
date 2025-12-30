@@ -1,5 +1,5 @@
 import type { Piece } from "@lichess-org/chessground/types";
-import type { Move } from "chessops";
+import type { Chess, Move } from "chessops";
 import { makeSan } from "chessops/san";
 import { Box, Button, Group, Modal, NumberInput, Portal, SegmentedControl, Select, Stack, Text } from "@mantine/core";
 import { useHotkeys, useToggle } from "@mantine/hooks";
@@ -39,6 +39,8 @@ import { getBestMoves as lichessGetBestMoves, getLichessGames, getMasterGames } 
 import { createFile, isTempImportFile } from "@/utils/files";
 import { formatDateToPGN } from "@/utils/format";
 import { reloadTab, saveTab, saveToFile, type Tab } from "@/utils/tabs";
+import { getVariantPosition, upsertVariantPosition } from "@/utils/variantPositions";
+import { applyUciMoveToFen } from "@/utils/applyUciMoveToFen";
 import type { Opening } from "@/utils/db";
 import { searchPosition } from "@/utils/db";
 import { getNodeAtPath, type TreeNode } from "@/utils/treeReducer";
@@ -49,6 +51,24 @@ import GameNotationWrapper from "./GameNotationWrapper";
 import ResponsiveAnalysisPanels from "./ResponsiveAnalysisPanels";
 import ResponsiveBoard from "./ResponsiveBoard";
 import VariantsNotation from "./VariantsNotation";
+
+const createExclusiveQueue = () => {
+  let pending = Promise.resolve();
+  return async <T,>(task: () => Promise<T>): Promise<T> => {
+    const result = pending.then(task, task);
+    pending = result.then(
+      () => undefined,
+      () => undefined,
+    );
+    return result;
+  };
+};
+
+const getFenIdentityKey = (fen: string) => {
+  const parts = fen.trim().split(/\s+/);
+  if (parts.length >= 4) return parts.slice(0, 4).join(" ");
+  return fen.trim();
+};
 
 function BoardVariants() {
   const { t } = useTranslation();
@@ -475,110 +495,145 @@ function BoardVariants() {
     return selected;
   }, []);
 
-  const getEngineBestMove = useCallback(
-    async (fen: string) => {
+  const getScoreCp = useCallback((score: unknown) => {
+    if (!score || typeof score !== "object") return null;
+    const value = (score as { value?: unknown }).value;
+    if (!value || typeof value !== "object") return null;
+    const type = (value as { type?: unknown }).type;
+    const rawValue = (value as { value?: unknown }).value;
+    if (type !== "cp" || typeof rawValue !== "number") return null;
+    return rawValue;
+  }, []);
+
+  const getEngineBestLines = useCallback(
+    async (fen: string, minMultiPv: number) => {
       if (!selectedEngine) {
         throw new Error(t("errors.missingEngine"));
       }
+      const requestedMultiPv = Math.max(2, Math.floor(minMultiPv));
       const engineSettings =
         selectedEngineSettings?.settings?.map((s) => ({
           name: s.name,
           value: s.value?.toString() ?? "",
         })) ?? [];
-      if (!engineSettings.find((s) => s.name === "MultiPV")) {
-        engineSettings.push({ name: "MultiPV", value: "1" });
+
+      const multiPvIndex = engineSettings.findIndex((s) => s.name === "MultiPV");
+      if (multiPvIndex >= 0) {
+        const current = Number(engineSettings[multiPvIndex]?.value ?? 1);
+        engineSettings[multiPvIndex] = { name: "MultiPV", value: String(Math.max(2, requestedMultiPv, current || 1)) };
+      } else {
+        engineSettings.push({ name: "MultiPV", value: String(requestedMultiPv) });
       }
+
       if (is960 && !engineSettings.find((s) => s.name === "UCI_Chess960")) {
         engineSettings.push({ name: "UCI_Chess960", value: "true" });
       }
-      const goMode = { t: "Time", c: Math.max(1, Math.floor(treeBuilderEngineMs)) } as const;
+
+      const targetMs = Math.max(1, Math.floor(treeBuilderEngineMs));
+      const goMode = { t: "Time", c: targetMs } as const;
       const options = { fen, moves: [], extraOptions: engineSettings };
 
       const startedAt = Date.now();
       const engineTab = `${activeTab ?? "analysis"}-variants-builder`;
-      const targetMs = Math.max(0, Math.floor(treeBuilderEngineMs));
 
-      if (selectedEngine.type === "local") {
-        const immediate = await localGetBestMoves(selectedEngine as LocalEngine, engineTab, goMode, options);
-        const immediateUci = immediate?.[1]?.[0]?.uciMoves?.[0] ?? null;
-        if (immediateUci) {
-          const elapsed = Date.now() - startedAt;
-          if (targetMs > 0 && elapsed < targetMs) {
-            await new Promise((resolve) => setTimeout(resolve, targetMs - elapsed));
-          }
-          return immediateUci;
-        }
+      const normalizeLines = (lines: Array<{ uciMoves?: string[]; multipv?: number; score?: unknown }>) => {
+        const sorted = [...lines].sort((a, b) => (a.multipv ?? 999) - (b.multipv ?? 999));
+        return sorted
+          .map((line) => {
+            const uci = line.uciMoves?.[0] ?? null;
+            if (!uci) return null;
+            return { uci, cp: getScoreCp(line.score), multipv: line.multipv ?? null };
+          })
+          .filter((line): line is { uci: string; cp: number | null; multipv: number | null } => line != null)
+          .slice(0, requestedMultiPv);
+      };
 
-        const moveFromEvent = await new Promise<string | null>((resolve) => {
-          let timer: number | null = null;
-          let unlisten: (() => void) | null = null;
-
-          const cleanup = () => {
-            if (timer != null) {
-              window.clearTimeout(timer);
-              timer = null;
-            }
-            if (unlisten) {
-              try {
-                unlisten();
-              } catch {
-                // ignore
-              }
-              unlisten = null;
-            }
-          };
-
-          const timeoutMs = Math.max(1000, targetMs + 500);
-          timer = window.setTimeout(() => {
-            cleanup();
-            resolve(null);
-          }, timeoutMs);
-
-          events.bestMovesPayload
-            .listen(({ payload }) => {
-              if (
-                payload.engine === selectedEngine.name &&
-                payload.tab === engineTab &&
-                payload.fen === options.fen &&
-                payload.moves.length === 0 &&
-                payload.progress === 100
-              ) {
-                const bestUci = payload.bestLines?.[0]?.uciMoves?.[0] ?? null;
-                cleanup();
-                resolve(bestUci);
-              }
-            })
-            .then((fn) => {
-              unlisten = fn;
-            })
-            .catch(() => {
-              cleanup();
-              resolve(null);
-            });
-        });
-
-        if (!moveFromEvent) {
-          return null;
-        }
-
+      const ensureMinTime = async () => {
         const elapsed = Date.now() - startedAt;
         if (targetMs > 0 && elapsed < targetMs) {
           await new Promise((resolve) => setTimeout(resolve, targetMs - elapsed));
         }
-        return moveFromEvent;
+      };
+
+      if (selectedEngine.type === "local") {
+        const immediate = await localGetBestMoves(selectedEngine as LocalEngine, engineTab, goMode, options);
+        const immediateLines = normalizeLines(immediate?.[1] ?? []);
+        if (immediateLines.length >= Math.min(2, requestedMultiPv)) {
+          await ensureMinTime();
+          return immediateLines;
+        }
+
+        const linesFromEvent = await new Promise<Array<{ uci: string; cp: number | null; multipv: number | null }>>(
+          (resolve) => {
+            let timer: number | null = null;
+            let unlisten: (() => void) | null = null;
+
+            const cleanup = () => {
+              if (timer != null) {
+                window.clearTimeout(timer);
+                timer = null;
+              }
+              if (unlisten) {
+                try {
+                  unlisten();
+                } catch {
+                  // ignore
+                }
+                unlisten = null;
+              }
+            };
+
+            const timeoutMs = Math.max(1000, targetMs + 500);
+            timer = window.setTimeout(() => {
+              cleanup();
+              resolve([]);
+            }, timeoutMs);
+
+            events.bestMovesPayload
+              .listen(({ payload }) => {
+                if (
+                  payload.engine === selectedEngine.name &&
+                  payload.tab === engineTab &&
+                  payload.fen === options.fen &&
+                  payload.moves.length === 0 &&
+                  payload.progress === 100
+                ) {
+                  const normalized = normalizeLines((payload.bestLines ?? []) as any);
+                  cleanup();
+                  resolve(normalized);
+                }
+              })
+              .then((fn) => {
+                unlisten = fn;
+              })
+              .catch(() => {
+                cleanup();
+                resolve([]);
+              });
+          },
+        );
+
+        await ensureMinTime();
+        return linesFromEvent;
       }
 
       const result =
         selectedEngine.type === "chessdb"
           ? await chessdbGetBestMoves(engineTab, goMode, options)
           : await lichessGetBestMoves(engineTab, goMode, options);
-      const elapsed = Date.now() - startedAt;
-      if (targetMs > 0 && elapsed < targetMs) {
-        await new Promise((resolve) => setTimeout(resolve, targetMs - elapsed));
-      }
-      return result?.[1]?.[0]?.uciMoves?.[0] ?? null;
+      const lines = normalizeLines(result?.[1] ?? []);
+      await ensureMinTime();
+      return lines;
     },
-    [activeTab, is960, selectedEngine, selectedEngineSettings?.settings, t, treeBuilderEngineMs],
+    [activeTab, getScoreCp, is960, selectedEngine, selectedEngineSettings?.settings, t, treeBuilderEngineMs],
+  );
+
+  const getEngineBestMove = useCallback(
+    async (fen: string) => {
+      const lines = await getEngineBestLines(fen, 2);
+      return lines[0]?.uci ?? null;
+    },
+    [getEngineBestLines],
   );
 
   const cancelTreeBuilder = useCallback(() => {
@@ -600,6 +655,126 @@ function BoardVariants() {
     setTreeBuilderRunning(true);
     treeBuilderCancelRef.current = false;
     const engineTab = `${activeTab ?? "analysis"}-variants-builder`;
+    const runExclusive = createExclusiveQueue();
+    const fenKeyOwners = new Map<string, string>();
+    const requestedMs = Math.max(1, Math.floor(treeBuilderEngineMs));
+    let persistentCacheUnavailable = false;
+    const reportPersistentCacheError = (error: unknown) => {
+      if (persistentCacheUnavailable) return;
+      persistentCacheUnavailable = true;
+      const message = error instanceof Error ? error.message : String(error);
+      notifications.show({
+        title: t("common.error"),
+        message: t("errors.variantPositionsCacheUnavailable", { message }),
+        color: "red",
+      });
+    };
+
+    const seedFenOwners = () => {
+      const root = store.getState().root;
+      const stack: Array<{ node: TreeNode; path: number[] }> = [{ node: root, path: [] }];
+      while (stack.length) {
+        const { node, path } = stack.pop()!;
+        const key = getFenIdentityKey(node.fen);
+        if (key && !fenKeyOwners.has(key)) {
+          fenKeyOwners.set(key, getPathKey(path));
+        }
+        node.children.forEach((child, idx) => stack.push({ node: child, path: [...path, idx] }));
+      }
+    };
+
+    const getPathKey = (path: number[]) => path.join(",");
+
+    const pickEngineMoveUci = async (
+      fen: string,
+      turn: "white" | "black",
+      pos: Chess,
+      existingChildren: TreeNode["children"],
+      currentPath: number[],
+    ) => {
+      if (!selectedEngine) return null;
+      const trimmedFen = fen.trim();
+      if (!trimmedFen) return null;
+      const engineKey =
+        selectedEngine.type === "local" ? selectedEngine.path.trim() : selectedEngine.url.trim();
+      const engineName = selectedEngine.name.trim();
+      const engineCandidates = [engineKey, engineName].filter((value, index, arr) => value && arr.indexOf(value) === index);
+      if (!engineCandidates.length) return null;
+      const existingSans = new Set(existingChildren.map((child) => child.san).filter((san): san is string => !!san));
+
+      let bestCached: { recommended_move: string; ms: number; engine: string } | null = null;
+      try {
+        for (const engine of engineCandidates) {
+          const cached = await runExclusive(() => getVariantPosition(trimmedFen, engine));
+          if (!cached?.recommended_move) continue;
+          if (!bestCached || cached.ms > bestCached.ms) {
+            bestCached = { recommended_move: cached.recommended_move, ms: cached.ms, engine };
+          }
+        }
+        if (bestCached && bestCached.ms >= requestedMs) {
+          if (bestCached.engine !== engineKey && engineKey) {
+            try {
+              const cachedMove = bestCached.recommended_move;
+              const cachedMs = bestCached.ms;
+              await runExclusive(() => upsertVariantPosition(trimmedFen, engineKey, cachedMove, cachedMs));
+            } catch (error) {
+              reportPersistentCacheError(error);
+            }
+          }
+          return bestCached.recommended_move;
+        }
+      } catch (error) {
+        reportPersistentCacheError(error);
+      }
+
+      if (treeBuilderCancelRef.current) return null;
+
+      let engineLines: Array<{ uci: string; cp: number | null }> = [];
+      try {
+        engineLines = await runExclusive(async () => {
+          const lines = await getEngineBestLines(trimmedFen, 2);
+          return lines.map((line) => ({ uci: line.uci, cp: line.cp }));
+        });
+      } catch {
+        engineLines = [];
+      }
+
+      const primary = engineLines[0]?.uci ?? null;
+      const second = engineLines[1] ?? null;
+      if (!primary || treeBuilderCancelRef.current) return null;
+
+      try {
+        const key = engineKey || engineName;
+        if (key) {
+          await runExclusive(() => upsertVariantPosition(trimmedFen, key, primary, requestedMs));
+        }
+      } catch (error) {
+        reportPersistentCacheError(error);
+      }
+
+      if (!second || second.cp == null || engineLines[0]?.cp == null) {
+        return primary;
+      }
+
+      const perspective = turn === "white" ? 1 : -1;
+      const diff = (engineLines[0].cp * perspective) - (second.cp * perspective);
+      const withinThreshold = Number.isFinite(diff) && diff >= 0 && diff <= 20;
+      if (!withinThreshold) return primary;
+
+      const moveSecond = parseSanOrUci(pos, second.uci);
+      const secondSan = moveSecond ? makeSan(pos, moveSecond) : null;
+      const secondAlreadyInTree = !!secondSan && existingSans.has(secondSan);
+
+      const secondNextFen = applyUciMoveToFen(trimmedFen, second.uci);
+      const secondNextKey = secondNextFen ? getFenIdentityKey(secondNextFen) : null;
+      const secondTransposesInSession = !!secondNextKey && fenKeyOwners.has(secondNextKey);
+
+      if (secondAlreadyInTree || secondTransposesInSession) {
+        return second.uci;
+      }
+
+      return primary;
+    };
     try {
       if (dbType === "local" && !localOptions.path && !referenceDatabase) {
         notifications.show({
@@ -615,6 +790,7 @@ function BoardVariants() {
       if (!startNode?.fen) {
         throw new Error(t("errors.missingPosition"));
       }
+      seedFenOwners();
       const myColor = boardOrientation === "black" ? "black" : "white";
       const maxDepth = Math.max(1, Math.floor(treeBuilderDepth) * 2);
       const stepDelay = 200;
@@ -626,7 +802,14 @@ function BoardVariants() {
         const state = store.getState();
         state.goToMove([...path]);
         const currentNode = getNodeAtPath(state.root, path);
-        const [pos] = positionFromFen(currentNode.fen);
+        const fen = currentNode.fen.trim();
+        if (!fen) return;
+        const fenKey = getFenIdentityKey(fen);
+        const pathKey = getPathKey(path);
+        const existingOwner = fenKeyOwners.get(fenKey);
+        if (existingOwner && existingOwner !== pathKey) return;
+        if (!existingOwner) fenKeyOwners.set(fenKey, pathKey);
+        const [pos] = positionFromFen(fen);
         if (treeBuilderCancelRef.current || !pos || pos.isEnd()) return;
 
         const sideToMove = pos.turn === "white" ? "white" : "black";
@@ -635,17 +818,17 @@ function BoardVariants() {
         if (sideToMove === myColor) {
           if (treeBuilderMode === "engine") {
             try {
-              const bestUci = await getEngineBestMove(currentNode.fen);
+              const uci = await pickEngineMoveUci(fen, sideToMove, pos, currentNode.children, path);
               if (treeBuilderCancelRef.current) return;
-              if (bestUci) {
-                const move = parseSanOrUci(pos, bestUci);
+              if (uci) {
+                const move = parseSanOrUci(pos, uci);
                 if (move) moves = [move];
               }
             } catch {
               moves = [];
             }
           } else {
-            const openings = await getDbOpeningsForFen(currentNode.fen);
+            const openings = await getDbOpeningsForFen(fen);
             if (treeBuilderCancelRef.current) return;
             const winrateMoves = getWinrateCandidates(openings, myColor);
             for (const candidate of winrateMoves) {
@@ -658,7 +841,7 @@ function BoardVariants() {
           }
 
           if (!moves.length && selectedEngine) {
-            const fallbackUci = await getEngineBestMove(currentNode.fen);
+            const fallbackUci = await pickEngineMoveUci(fen, sideToMove, pos, currentNode.children, path);
             if (treeBuilderCancelRef.current) return;
             if (fallbackUci) {
               const fallbackMove = parseSanOrUci(pos, fallbackUci);
@@ -666,7 +849,7 @@ function BoardVariants() {
             }
           }
         } else {
-          const openings = await getDbOpeningsForFen(currentNode.fen);
+          const openings = await getDbOpeningsForFen(fen);
           if (treeBuilderCancelRef.current) return;
           const coverageMoves = selectCoverageMoves(openings, treeBuilderCoverage, treeBuilderMinMoves);
           moves = coverageMoves.flatMap((opening) => {
@@ -676,7 +859,7 @@ function BoardVariants() {
           });
 
           if (!moves.length && selectedEngine) {
-            const fallbackUci = await getEngineBestMove(currentNode.fen);
+            const fallbackUci = await pickEngineMoveUci(fen, sideToMove, pos, currentNode.children, path);
             if (treeBuilderCancelRef.current) return;
             if (fallbackUci) {
               const fallbackMove = parseSanOrUci(pos, fallbackUci);
@@ -711,8 +894,21 @@ function BoardVariants() {
             continue;
           }
           const newPath = [...path, childIndex];
-          store.getState().goToMove([...newPath]);
           expandedAny = true;
+
+          const createdChild = getNodeAtPath(store.getState().root, newPath);
+          const childFenKey = createdChild?.fen ? getFenIdentityKey(createdChild.fen) : null;
+          const newPathKey = getPathKey(newPath);
+          if (childFenKey) {
+            const childOwner = fenKeyOwners.get(childFenKey);
+            if (!childOwner) {
+              fenKeyOwners.set(childFenKey, newPathKey);
+            } else if (childOwner !== newPathKey) {
+              continue;
+            }
+          }
+
+          store.getState().goToMove([...newPath]);
           await expandFromPath(newPath, depthLeft - 1);
         }
 
@@ -759,7 +955,7 @@ function BoardVariants() {
     boardOrientation,
     dbType,
     getDbOpeningsForFen,
-    getEngineBestMove,
+    getEngineBestLines,
     getWinrateCandidates,
     localOptions.path,
     normalizeDbMove,
@@ -771,6 +967,7 @@ function BoardVariants() {
     t,
     treeBuilderCoverage,
     treeBuilderDepth,
+    treeBuilderEngineMs,
     treeBuilderMinMoves,
     treeBuilderMode,
     treeBuilderRunning,

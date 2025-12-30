@@ -1666,6 +1666,7 @@
     "missingReferenceDatabase": "Missing reference database",
     "missingEngine": "Missing engine",
     "missingPosition": "Missing position",
+    "variantPositionsCacheUnavailable": "Variant positions cache unavailable: {{message}}",
     "unknownError": "Unknown error"
   },
   "window": {

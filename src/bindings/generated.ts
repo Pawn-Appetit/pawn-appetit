@@ -716,6 +716,22 @@ async findExecutablePath(executableName: string) : Promise<Result<string | null,
     else return { status: "error", error: e  as any };
 }
 },
+async getVariantPosition(fen: string, engine: string) : Promise<Result<VariantPosition | null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_variant_position", { fen, engine }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async upsertVariantPosition(fen: string, engine: string, recommendedMove: string, ms: bigint) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("upsert_variant_position", { fen, engine, recommendedMove, ms }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async openExternalLink(url: string) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("open_external_link", { url }) };
@@ -953,6 +969,7 @@ name: string;
  */
 default: string | null } }
 export type UpdateGame = { fen: string; event: string; site: string; date?: string | null; time?: string | null; round?: string | null; white: string; white_elo?: number | null; black: string; black_elo?: number | null; result: Outcome; time_control?: string | null; eco?: string | null; ply_count?: number | null; moves: string }
+export type VariantPosition = { fen: string; engine: string; recommended_move: string; ms: bigint }
 
 /** tauri-specta globals **/
 

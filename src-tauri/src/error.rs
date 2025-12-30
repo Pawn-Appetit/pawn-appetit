@@ -67,6 +67,9 @@ pub enum Error {
     R2d2(#[from] diesel::r2d2::PoolError),
 
     #[error(transparent)]
+    Rusqlite(#[from] rusqlite::Error),
+
+    #[error(transparent)]
     SystemTime(#[from] std::time::SystemTimeError),
 
     #[error(transparent)]
