@@ -1,1 +1,21 @@
+# Standardize to lf
+* text=auto eol=lf
+
+*.rs text diff=rust
+*.svg text
+*.toml text diff=toml
+Cargo.lock text
+Dockerfile text 
+
+*.icns -text
+*.ico -text
+*.jar -text
+*.jpeg -text
+*.jpg -text
+*.mp3 -text
+*.png -text
+
+# Leave .bat files as crlf for Windows
+*.bat text eol=crlf
+
 *.exe filter=lfs diff=lfs merge=lfs -text
