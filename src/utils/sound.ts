@@ -28,10 +28,14 @@ export function playSound(capture: boolean, check: boolean) {
 
   const path = `sound/${collection}/${type}.mp3`;
 
-  resolveResource(path).then((filePath: string) => {
-    const assetUrl = convertFileSrc(filePath);
-    audio.src = assetUrl;
-    audio.volume = volume;
-    audio.play();
-  });
+  resolveResource(path)
+    .then((filePath: string) => {
+      const assetUrl = convertFileSrc(filePath);
+      audio.src = assetUrl;
+      audio.volume = volume;
+      audio.play();
+    })
+    .catch(() => {
+      // fails if Tauri APIs are unavailable (e.g., in tests)
+    });
 }
