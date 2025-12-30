@@ -258,21 +258,21 @@ Pawn Appétit is for chess players **all around the world**! We're committed to 
 | Language  | Progress   | Link                        |
 |-----------|----------|-----------------------------|
 | 🇺🇸 **English US** | ✅ 100% | [View](./src/locales/en-US) |
-| 🇬🇧 **English UK** | 🟡 97% | [View](./src/locales/en-GB) |
-| 🇩🇪 **Deutsch (German)** | 🟡 54% | [View](./src/locales/de) |
-| 🇪🇸 **Español (Spanish)** | 🟡 54% | [View](./src/locales/es) |
-| 🇫🇷 **Français (French)** | 🟡 54% | [View](./src/locales/fr) |
-| 🇦🇲 **Հայերեն (Armenian)** | 🟡 54% | [View](./src/locales/hy) |
-| 🇮🇹 **Italiano (Italian)** | 🟡 54% | [View](./src/locales/it) |
-| 🇷🇺 **Русский (Russian)** | 🟡 54% | [View](./src/locales/ru) |
-| 🇹🇷 **Türkçe (Turkish)** | 🟡 54% | [View](./src/locales/tr) |
-| 🇨🇳 **中文 (Chinese)** | 🟡 54% | [View](./src/locales/zh) |
-| 🇧🇾 **Беларуская (Belarusian)** | 🔴 30% | [View](./src/locales/be) |
-| 🇳🇴 **Norsk (Norwegian Bokmål)** | 🔴 30% | [View](./src/locales/nb) |
-| 🇵🇱 **Polski (Polish)** | 🔴 30% | [View](./src/locales/pl) |
-| 🇵🇹 **Português (Portuguese)** | 🔴 30% | [View](./src/locales/pt) |
-| 🇺🇦 **Українська (Ukrainian)** | 🔴 30% | [View](./src/locales/uk) |
-| 🇸🇦 **العربية (Arabic)** | 🔴 15% | [View](./src/locales/ar) |
+| 🇬🇧 **English UK** | 🟡 91% | [View](./src/locales/en-GB) |
+| 🇪🇸 **Español (Spanish)** | 🟡 68% | [View](./src/locales/es) |
+| 🇩🇪 **Deutsch (German)** | 🟡 50% | [View](./src/locales/de) |
+| 🇫🇷 **Français (French)** | 🟡 50% | [View](./src/locales/fr) |
+| 🇦🇲 **Հայերեն (Armenian)** | 🟡 50% | [View](./src/locales/hy) |
+| 🇮🇹 **Italiano (Italian)** | 🟡 50% | [View](./src/locales/it) |
+| 🇷🇺 **Русский (Russian)** | 🟡 50% | [View](./src/locales/ru) |
+| 🇹🇷 **Türkçe (Turkish)** | 🟡 50% | [View](./src/locales/tr) |
+| 🇨🇳 **中文 (Chinese)** | 🟡 50% | [View](./src/locales/zh) |
+| 🇵🇱 **Polski (Polish)** | 🔴 33% | [View](./src/locales/pl) |
+| 🇧🇾 **Беларуская (Belarusian)** | 🔴 28% | [View](./src/locales/be) |
+| 🇳🇴 **Norsk (Norwegian Bokmål)** | 🔴 28% | [View](./src/locales/nb) |
+| 🇵🇹 **Português (Portuguese)** | 🔴 28% | [View](./src/locales/pt) |
+| 🇺🇦 **Українська (Ukrainian)** | 🔴 28% | [View](./src/locales/uk) |
+| 🇸🇦 **العربية (Arabic)** | 🔴 14% | [View](./src/locales/ar) |
 | 🇯🇵 **日本語 (Japanese)** | 🔴 5% | [View](./src/locales/ja) |
 <!-- TRANSLATIONS_END -->
 
