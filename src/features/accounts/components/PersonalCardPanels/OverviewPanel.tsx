@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, type TooltipProps, XAxis, YAxis } from "recharts";
 import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 import type { PlayerGameInfo, StatsData } from "@/bindings";
+import { ChartSizeGuard } from "@/components/ChartSizeGuard";
 import { getTimeControl } from "@/utils/timeControl";
 import ResultsChart from "./ResultsChart";
 import TimeControlSelector from "./TimeControlSelector";
@@ -160,29 +161,31 @@ function DateChart({ dataPerMonth }: { dataPerMonth: { name: string; count: numb
   }
 
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart
-        data={data}
-        onClick={(e) => {
-          const year = Number.parseInt(`${e?.activeLabel || ""}`, 10);
-          if (year) {
-            setSelectedYear((prev) => (prev === year ? null : year));
-          }
-        }}
-      >
-        <CartesianGrid strokeDasharray="3" vertical={false} />
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip
-          content={<DateChartTooltip isYearSelected={selectedYear === null} />}
-          cursor={{
-            fill: "var(--mantine-color-default-border)",
-            stroke: "1px solid var(--chart-grid-color)",
+    <ChartSizeGuard height={300}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={data}
+          onClick={(e) => {
+            const year = Number.parseInt(`${e?.activeLabel || ""}`, 10);
+            if (year) {
+              setSelectedYear((prev) => (prev === year ? null : year));
+            }
           }}
-        />
-        <Bar dataKey="count" fill="var(--mantine-color-blue-filled)" name="Games" />
-      </BarChart>
-    </ResponsiveContainer>
+        >
+          <CartesianGrid strokeDasharray="3" vertical={false} />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip
+            content={<DateChartTooltip isYearSelected={selectedYear === null} />}
+            cursor={{
+              fill: "var(--mantine-color-default-border)",
+              stroke: "1px solid var(--chart-grid-color)",
+            }}
+          />
+          <Bar dataKey="count" fill="var(--mantine-color-blue-filled)" name="Games" />
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartSizeGuard>
   );
 }
 

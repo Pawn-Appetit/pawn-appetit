@@ -6,6 +6,7 @@ import equal from "fast-deep-equal";
 import React, { useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
+import { ChartSizeGuard } from "@/components/ChartSizeGuard";
 import { TreeStateContext, TreeStateProvider } from "@/components/TreeStateContext";
 import { ANNOTATION_INFO, annotationColors, isBasicAnnotation } from "@/utils/annotation";
 import { getGameStats, parsePGN } from "@/utils/chess";
@@ -139,55 +140,21 @@ function EvalChartCompact() {
         onChange={(v) => setChartType(v as "CP" | "WDL")}
       />
       {chartType === "CP" && (
-        <AreaChart
-          h={100}
-          curveType="monotone"
-          data={data}
-          dataKey={"name"}
-          series={[{ name: "yValue", color: theme.colors[theme.primaryColor][7] }]}
-          connectNulls={false}
-          withXAxis={false}
-          withYAxis={false}
-          yAxisProps={{ domain: [-1, 1] }}
-          type="split"
-          fillOpacity={1}
-          splitColors={["gray.1", "black"]}
-          splitOffset={colouroffset}
-          activeDotProps={{ r: 2, strokeWidth: 1 }}
-          dotProps={{ r: 0 }}
-          referenceLines={[
-            {
-              x: currentPositionName,
-              color: theme.colors[theme.primaryColor][7],
-            },
-          ]}
-          areaChartProps={{
-            style: { cursor: "default" },
-          }}
-          gridAxis="none"
-        />
-      )}
-      {chartType === "WDL" &&
-        (isWDLDisabled ? (
-          <Alert variant="outline" title="Enable WDL" p="xs">
-            {t("features.board.analysis.enableWDL")}
-          </Alert>
-        ) : (
+        <ChartSizeGuard height={100}>
           <AreaChart
             h={100}
             curveType="monotone"
             data={data}
             dataKey={"name"}
-            series={[
-              { name: "White", color: "white" },
-              { name: "Draw", color: "gray" },
-              { name: "Black", color: "black" },
-            ]}
+            series={[{ name: "yValue", color: theme.colors[theme.primaryColor][7] }]}
             connectNulls={false}
             withXAxis={false}
             withYAxis={false}
-            type="percent"
+            yAxisProps={{ domain: [-1, 1] }}
+            type="split"
             fillOpacity={1}
+            splitColors={["gray.1", "black"]}
+            splitOffset={colouroffset}
             activeDotProps={{ r: 2, strokeWidth: 1 }}
             dotProps={{ r: 0 }}
             referenceLines={[
@@ -201,6 +168,44 @@ function EvalChartCompact() {
             }}
             gridAxis="none"
           />
+        </ChartSizeGuard>
+      )}
+      {chartType === "WDL" &&
+        (isWDLDisabled ? (
+          <Alert variant="outline" title="Enable WDL" p="xs">
+            {t("features.board.analysis.enableWDL")}
+          </Alert>
+        ) : (
+          <ChartSizeGuard height={100}>
+            <AreaChart
+              h={100}
+              curveType="monotone"
+              data={data}
+              dataKey={"name"}
+              series={[
+                { name: "White", color: "white" },
+                { name: "Draw", color: "gray" },
+                { name: "Black", color: "black" },
+              ]}
+              connectNulls={false}
+              withXAxis={false}
+              withYAxis={false}
+              type="percent"
+              fillOpacity={1}
+              activeDotProps={{ r: 2, strokeWidth: 1 }}
+              dotProps={{ r: 0 }}
+              referenceLines={[
+                {
+                  x: currentPositionName,
+                  color: theme.colors[theme.primaryColor][7],
+                },
+              ]}
+              areaChartProps={{
+                style: { cursor: "default" },
+              }}
+              gridAxis="none"
+            />
+          </ChartSizeGuard>
         ))}
     </Stack>
   );

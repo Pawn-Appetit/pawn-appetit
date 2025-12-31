@@ -150,7 +150,7 @@ function AnalysisPanel() {
   const navigate = useNavigate();
 
   return (
-    <Stack h="100%">
+    <Stack h="100%" style={{ minHeight: 0, minWidth: 0 }}>
       <Tabs
         h="100%"
         orientation="vertical"
@@ -159,6 +159,10 @@ function AnalysisPanel() {
         onChange={(v) => setTab(v!)}
         style={{
           display: "flex",
+          flex: 1,
+          minHeight: 0,
+          minWidth: 0,
+          overflow: "hidden",
         }}
         keepMounted={false}
       >
@@ -173,13 +177,16 @@ function AnalysisPanel() {
           value="engines"
           style={{
             overflow: "hidden",
-            display: effectiveTab === "engines" ? "flex" : "none",
+            flex: 1,
+            minHeight: 0,
+            minWidth: 0,
             flexDirection: "column",
           }}
         >
           <ScrollArea
             offsetScrollbars
             onScrollPositionChange={() => document.dispatchEvent(new Event("analysis-panel-scroll"))}
+            style={{ flex: 1, minHeight: 0 }}
           >
             {pos && (getPiecesCount(pos) <= 7 || (getPiecesCount(pos) === 8 && hasCaptures(pos))) && (
               <>
@@ -291,7 +298,9 @@ function AnalysisPanel() {
           pt="xs"
           style={{
             overflow: "hidden",
-            display: effectiveTab === "report" ? "flex" : "none",
+            flex: 1,
+            minHeight: 0,
+            minWidth: 0,
             flexDirection: "column",
           }}
         >
@@ -302,7 +311,9 @@ function AnalysisPanel() {
           pt="xs"
           style={{
             overflow: "hidden",
-            display: effectiveTab === "logs" ? "flex" : "none",
+            flex: 1,
+            minHeight: 0,
+            minWidth: 0,
             flexDirection: "column",
           }}
         >

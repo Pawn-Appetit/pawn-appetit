@@ -114,6 +114,11 @@ function ResponsiveAnalysisPanels({
       p="xs"
       style={{
         height: "100%",
+        minHeight: 0,
+        minWidth: 0,
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
       }}
       pos="relative"
     >
@@ -122,11 +127,15 @@ function ResponsiveAnalysisPanels({
         h="100%"
         value={currentTab}
         onChange={onTabChange}
-        keepMounted={true}
+        keepMounted={false}
         activateTabWithKeyboard={false}
         style={{
           display: "flex",
           flexDirection: "column",
+          flex: 1,
+          minHeight: 0,
+          minWidth: 0,
+          overflow: "hidden",
         }}
       >
         <Tabs.List grow mb="1rem">
@@ -160,29 +169,53 @@ function ResponsiveAnalysisPanels({
           </Tabs.Tab>
         </Tabs.List>
         {isRepertoire && (
-          <Tabs.Panel value="practice" flex={1} style={{ overflowY: "hidden" }}>
+          <Tabs.Panel
+            value="practice"
+            flex={1}
+            style={{ overflow: "hidden", minHeight: 0, minWidth: 0, display: "flex", flexDirection: "column" }}
+          >
             <Suspense>
               <PracticePanel />
             </Suspense>
           </Tabs.Panel>
         )}
         {isRepertoire && (
-          <Tabs.Panel value="graph" flex={1} style={{ overflowY: "hidden" }}>
+          <Tabs.Panel
+            value="graph"
+            flex={1}
+            style={{ overflow: "hidden", minHeight: 0, minWidth: 0, display: "flex", flexDirection: "column" }}
+          >
             <Suspense>
               <GraphPanel />
             </Suspense>
           </Tabs.Panel>
         )}
-        <Tabs.Panel value="info" flex={1} style={{ overflowY: "hidden" }}>
+        <Tabs.Panel
+          value="info"
+          flex={1}
+          style={{ overflow: "hidden", minHeight: 0, minWidth: 0, display: "flex", flexDirection: "column" }}
+        >
           <InfoPanel />
         </Tabs.Panel>
-        <Tabs.Panel value="database" flex={1} style={{ overflowY: "hidden" }}>
+        <Tabs.Panel
+          value="database"
+          flex={1}
+          style={{ overflow: "hidden", minHeight: 0, minWidth: 0, display: "flex", flexDirection: "column" }}
+        >
           <DatabasePanel />
         </Tabs.Panel>
-        <Tabs.Panel value="annotate" flex={1} style={{ overflowY: "hidden" }}>
+        <Tabs.Panel
+          value="annotate"
+          flex={1}
+          style={{ overflow: "hidden", minHeight: 0, minWidth: 0, display: "flex", flexDirection: "column" }}
+        >
           <AnnotationPanel />
         </Tabs.Panel>
-        <Tabs.Panel value="analysis" flex={1} style={{ overflowY: "hidden" }}>
+        <Tabs.Panel
+          value="analysis"
+          flex={1}
+          style={{ overflow: "hidden", minHeight: 0, minWidth: 0, display: "flex", flexDirection: "column" }}
+        >
           <Suspense>
             <AnalysisPanel />
           </Suspense>
@@ -203,7 +236,7 @@ function ResponsiveAnalysisPanels({
             {isCollapsed ? <IconChevronDown size="1rem" /> : <IconChevronUp size="1rem" />}
           </ActionIcon>
         </Group>
-        <Collapse in={!isCollapsed}>{analysisContent}</Collapse>
+        <Collapse in={!isCollapsed}>{!isCollapsed ? analysisContent : null}</Collapse>
       </Stack>
     );
   }

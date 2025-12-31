@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { PlayerGameInfo } from "@/bindings";
+import { ChartSizeGuard } from "@/components/ChartSizeGuard";
 import { getTimeControl } from "@/utils/timeControl";
 import DateRangeTabs, { DateRange } from "./DateRangeTabs";
 import { gradientStops, linearGradientProps, tooltipContentStyle, tooltipCursorStyle } from "./RatingsPanel.css";
@@ -135,41 +136,43 @@ function RatingsPanel({ playerName, info }: { playerName: string; info: PlayerGa
       {dates.length > 1 && (
         <>
           {summary.games > 0 && <ResultsChart won={summary.won} draw={summary.draw} lost={summary.lost} size="2rem" />}
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={ratingData}>
-              <defs>
-                <linearGradient {...linearGradientProps}>
-                  {gradientStops.map((stopProps, index) => (
-                    <stop key={index} {...stopProps} />
-                  ))}
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3" vertical={false} />
-              <XAxis
-                dataKey="date"
-                domain={[dates[timeRange.start], dates[timeRange.end]]}
-                tickFormatter={(date) => new Date(date).toLocaleDateString()}
-                type="number"
-              />
-              {playerEloDomain == null && <YAxis />}
-              {playerEloDomain != null && <YAxis domain={playerEloDomain} />}
-              <Tooltip
-                contentStyle={tooltipContentStyle}
-                cursor={tooltipCursorStyle}
-                labelFormatter={(label) => new Date(label).toLocaleDateString()}
-              />
-              <Area
-                name="Rating"
-                dataKey="player_elo"
-                type="monotone"
-                stroke="var(--mantine-color-blue-filled)"
-                strokeWidth={2}
-                strokeOpacity={1}
-                fillOpacity={0.25}
-                fill={`url(#${linearGradientProps.id})`}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <ChartSizeGuard height={300}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={ratingData}>
+                <defs>
+                  <linearGradient {...linearGradientProps}>
+                    {gradientStops.map((stopProps, index) => (
+                      <stop key={index} {...stopProps} />
+                    ))}
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  domain={[dates[timeRange.start], dates[timeRange.end]]}
+                  tickFormatter={(date) => new Date(date).toLocaleDateString()}
+                  type="number"
+                />
+                {playerEloDomain == null && <YAxis />}
+                {playerEloDomain != null && <YAxis domain={playerEloDomain} />}
+                <Tooltip
+                  contentStyle={tooltipContentStyle}
+                  cursor={tooltipCursorStyle}
+                  labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                />
+                <Area
+                  name="Rating"
+                  dataKey="player_elo"
+                  type="monotone"
+                  stroke="var(--mantine-color-blue-filled)"
+                  strokeWidth={2}
+                  strokeOpacity={1}
+                  fillOpacity={0.25}
+                  fill={`url(#${linearGradientProps.id})`}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </ChartSizeGuard>
           <TimeRangeSlider
             ratingDates={dates}
             dateRange={timeRange}

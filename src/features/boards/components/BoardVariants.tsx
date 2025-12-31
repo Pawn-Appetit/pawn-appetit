@@ -147,12 +147,82 @@ function BoardVariants() {
   );
 
   // Generate puzzles from variants
-  const generatePuzzles = useCallback(async () => {
+  const getFenTurn = useCallback((fen: string): "white" | "black" | null => {
+    const parts = fen.trim().split(/\s+/);
+    const turn = parts[1];
+    if (turn === "w") return "white";
+    if (turn === "b") return "black";
+    return null;
+  }, []);
+
+  const getMaxPuzzleMoveDepth = useCallback(
+    (root: TreeNode, puzzleColor: "white" | "black"): number => {
+      const memo = new WeakMap<TreeNode, number>();
+
+      const maxFromNode = (node: TreeNode): number => {
+        const cached = memo.get(node);
+        if (cached != null) return cached;
+
+        const turn = getFenTurn(node.fen);
+        if (!turn || node.children.length === 0) {
+          memo.set(node, 0);
+          return 0;
+        }
+
+        const add = turn === puzzleColor ? 1 : 0;
+        let best = 0;
+        for (const child of node.children) {
+          if (!child.san) continue;
+          best = Math.max(best, add + maxFromNode(child));
+        }
+
+        memo.set(node, best);
+        return best;
+      };
+
+      const traverse = (node: TreeNode, inVariants: boolean): number => {
+        const nextInVariants = inVariants || node.children.length > 1;
+        let best = 0;
+        if (nextInVariants && getFenTurn(node.fen) === puzzleColor) {
+          best = Math.max(best, maxFromNode(node));
+        }
+        for (const child of node.children) {
+          best = Math.max(best, traverse(child, nextInVariants));
+        }
+        return best;
+      };
+
+      return traverse(root, false);
+    },
+    [getFenTurn],
+  );
+
+  const getVariantBaseName = useCallback(() => {
+    if (currentTab?.source?.type === "file" && currentTab.source.path) {
+      const parts = currentTab.source.path.split(/[/\\]/);
+      const name = parts.pop() ?? "puzzles";
+      return name.replace(/\.pgn$/i, "") || "puzzles";
+    }
+    return "puzzles";
+  }, [currentTab?.source]);
+
+  const generatePuzzles = useCallback(async (selectedDepth: number) => {
     try {
       const root = store.getState().root;
+      const puzzleColor = boardOrientation === "white" ? "white" : "black";
+      const maxDepth = getMaxPuzzleMoveDepth(root, puzzleColor);
+      if (selectedDepth < 1 || selectedDepth > maxDepth) {
+        notifications.show({
+          title: t("common.error"),
+          message: t("errors.puzzleDepthTooDeep", { max: maxDepth }),
+          color: "red",
+        });
+        return;
+      }
       // Open save dialog
+      const baseName = `${getVariantBaseName()}-d${selectedDepth}-${formatDateToPGN(new Date())}`;
       const filePath = await save({
-        defaultPath: `${documentDir}/puzzles-${formatDateToPGN(new Date())}.pgn`,
+        defaultPath: `${documentDir}/${baseName}.pgn`,
         filters: [
           {
             name: "PGN",
@@ -164,19 +234,12 @@ function BoardVariants() {
       if (!filePath) return;
 
       // Get filename without extension
-      const fileName =
-        filePath
-          .replace(/\.pgn$/, "")
-          .split(/[/\\]/)
-          .pop() || `puzzles-${formatDateToPGN(new Date())}`;
+      const fileName = filePath.replace(/\.pgn$/, "").split(/[/\\]/).pop() || baseName;
 
       // Generate puzzles from the current tree
       // Each variation at each position becomes a puzzle
       const puzzles: string[] = [];
       let puzzleCounter = 0; // Counter for puzzle numbering
-
-      // Get the puzzle color based on board orientation
-      const puzzleColor = boardOrientation === "white" ? "white" : "black";
 
       // Get current date for puzzle headers
       const currentDate = formatDateToPGN(new Date());
@@ -185,34 +248,87 @@ function BoardVariants() {
       // We traverse the tree and only generate puzzles at positions where there are actual variations
       const MAX_DEPTH = 80; // increase if you want to traverse longer lines
 
-      const generatePuzzlesFromNode = (node: TreeNode, depth = 0, puzzlePhaseStarted = false): void => {
-        if (depth > MAX_DEPTH) return;
-
-        const [pos] = positionFromFen(node.fen);
-        if (!pos) return;
-
-        // 1) Detect the start: first position with variations
-        if (!puzzlePhaseStarted && node.children.length >= 2) {
-          puzzlePhaseStarted = true;
-        }
-
-        // 2) If we're already in the puzzle phase and it's the puzzle color's turn,
-        //    generate a puzzle for each available move from this position.
-        if (puzzlePhaseStarted && pos.turn === puzzleColor && node.children.length > 0) {
-          for (const child of node.children) {
-            if (!child.san) continue;
-
-            puzzleCounter++;
-
-            const solutionMoveText = getMoveText(child, {
+      const buildSolutionText = (moves: TreeNode[]) => {
+        return moves
+          .map((move, index) =>
+            getMoveText(move, {
               glyphs: false,
               comments: false,
               extraMarkups: false,
-              isFirst: true,
-            }).trim();
+              isFirst: index === 0 || move.halfMoves % 2 === 0,
+            }),
+          )
+          .join("")
+          .trim();
+      };
 
-            const solutionMove = solutionMoveText.trim();
+      const memoMaxFromNode = new WeakMap<TreeNode, number>();
+      const maxMovesFromNode = (node: TreeNode): number => {
+        const cached = memoMaxFromNode.get(node);
+        if (cached != null) return cached;
 
+        const turn = getFenTurn(node.fen);
+        if (!turn || node.children.length === 0) {
+          memoMaxFromNode.set(node, 0);
+          return 0;
+        }
+
+        const add = turn === puzzleColor ? 1 : 0;
+        let best = 0;
+        for (const child of node.children) {
+          if (!child.san) continue;
+          best = Math.max(best, add + maxMovesFromNode(child));
+        }
+        memoMaxFromNode.set(node, best);
+        return best;
+      };
+
+      const collectLinesFromPosition = (startNode: TreeNode): TreeNode[][] => {
+        if (maxMovesFromNode(startNode) < selectedDepth) return [];
+        if (startNode.children.length === 0) return [];
+
+        const lines: TreeNode[][] = [];
+
+        const step = (node: TreeNode, movesByPuzzleSide: number, moves: TreeNode[], depth: number) => {
+          if (depth > MAX_DEPTH) return;
+          if (movesByPuzzleSide >= selectedDepth) {
+            lines.push(moves);
+            return;
+          }
+
+          const turn = getFenTurn(node.fen);
+          if (!turn) return;
+
+          const remaining = selectedDepth - movesByPuzzleSide;
+          if (maxMovesFromNode(node) < remaining) return;
+
+          if (node.children.length === 0) return;
+
+          const add = turn === puzzleColor ? 1 : 0;
+          for (const child of node.children) {
+            if (!child.san) continue;
+            step(child, movesByPuzzleSide + add, [...moves, child], depth + 1);
+          }
+        };
+
+        step(startNode, 0, [], 0);
+        return lines;
+      };
+
+      const generatePuzzlesFromTree = (node: TreeNode, depth: number, inVariants: boolean): void => {
+        if (depth > MAX_DEPTH) return;
+
+        const nextInVariants = inVariants || node.children.length > 1;
+        const turn = getFenTurn(node.fen);
+
+        if (nextInVariants && turn === puzzleColor) {
+          const lines = collectLinesFromPosition(node);
+          for (const line of lines) {
+            if (line.length === 0) continue;
+            const solution = buildSolutionText(line);
+            if (!solution) continue;
+
+            puzzleCounter++;
             let puzzlePGN = `[Event "Mini puzzle ${puzzleCounter}"]\n`;
             puzzlePGN += `[Site "Local"]\n`;
             puzzlePGN += `[Date "${currentDate}"]\n`;
@@ -221,22 +337,20 @@ function BoardVariants() {
             puzzlePGN += `[Black "?"]\n`;
             puzzlePGN += `[Result "*"]\n`;
             puzzlePGN += `[SetUp "1"]\n`;
-            puzzlePGN += `[FEN "${node.fen}"]\n`; // position before the puzzle move
-            puzzlePGN += `[Solution "${solutionMove}"]\n`;
-            puzzlePGN += `\n${solutionMove} *\n\n`;
+            puzzlePGN += `[FEN "${node.fen}"]\n`;
+            puzzlePGN += `[Solution "${solution}"]\n`;
+            puzzlePGN += `\n${solution} *\n\n`;
 
             puzzles.push(puzzlePGN);
           }
         }
 
-        // 3) Continue traversing the tree
         for (const child of node.children) {
-          generatePuzzlesFromNode(child, depth + 1, puzzlePhaseStarted);
+          generatePuzzlesFromTree(child, depth + 1, nextInVariants);
         }
       };
 
-      // Start from root - this will process all positions in the tree
-      generatePuzzlesFromNode(root);
+      generatePuzzlesFromTree(root, 0, false);
 
       // Combine all puzzles into a single PGN string
       const puzzlesPGN = puzzles.join("");
@@ -261,7 +375,7 @@ function BoardVariants() {
         color: "red",
       });
     }
-  }, [store, boardOrientation, documentDir, t]);
+  }, [store, boardOrientation, documentDir, getFenTurn, getMaxPuzzleMoveDepth, getVariantBaseName, t]);
 
   const reloadBoard = useCallback(async () => {
     if (currentTab != null) {
@@ -373,6 +487,9 @@ function BoardVariants() {
   const [treeBuilderCoverage, setTreeBuilderCoverage] = useState(90);
   const [treeBuilderMinMoves, setTreeBuilderMinMoves] = useState(2);
   const [treeBuilderEngineMs, setTreeBuilderEngineMs] = useState(800);
+  const [puzzleModalOpened, setPuzzleModalOpened] = useState(false);
+  const [puzzleDepth, setPuzzleDepth] = useState(1);
+  const [maxPuzzleDepth, setMaxPuzzleDepth] = useState(1);
   const [selectedEngineKey, setSelectedEngineKey] = useState<string | null>(null);
   const loadedEngines = engines.filter((engine) => engine.loaded && engine.type === "local");
   const treeBuilderCancelRef = useRef(false);
@@ -1073,7 +1190,19 @@ function BoardVariants() {
         <>
           <VariantsNotation topBar={topBar} editingMode={editingMode} />
           <MoveControls readOnly />
-          <Button leftSection={<IconPuzzle size={18} />} onClick={generatePuzzles} variant="light" fullWidth mt="xs">
+          <Button
+            leftSection={<IconPuzzle size={18} />}
+            onClick={() => {
+              const puzzleColor = boardOrientation === "white" ? "white" : "black";
+              const depth = Math.max(1, getMaxPuzzleMoveDepth(store.getState().root, puzzleColor));
+              setMaxPuzzleDepth(depth);
+              setPuzzleDepth(Math.min(puzzleDepth, depth));
+              setPuzzleModalOpened(true);
+            }}
+            variant="light"
+            fullWidth
+            mt="xs"
+          >
             {t("common.generatePuzzles")}
           </Button>
           <Button
@@ -1095,6 +1224,43 @@ function BoardVariants() {
           </Button>
         </>
       </GameNotationWrapper>
+      <Modal
+        opened={puzzleModalOpened}
+        onClose={() => setPuzzleModalOpened(false)}
+        title={t("common.generatePuzzles")}
+        centered
+        size="sm"
+      >
+        <Stack gap="md">
+          <NumberInput
+            label={t("puzzles.depthLabel")}
+            description={t("puzzles.depthHelper", { max: maxPuzzleDepth })}
+            value={puzzleDepth}
+            onChange={(value) => setPuzzleDepth(Math.min(Math.max(1, Number(value) || 1), maxPuzzleDepth))}
+            min={1}
+            max={maxPuzzleDepth}
+          />
+          <Group justify="flex-end">
+            <Button
+              onClick={() => {
+                if (puzzleDepth < 1 || puzzleDepth > maxPuzzleDepth) {
+                  notifications.show({
+                    title: t("common.error"),
+                    message: t("errors.puzzleDepthTooDeep", { max: maxPuzzleDepth }),
+                    color: "red",
+                  });
+                  return;
+                }
+                setPuzzleModalOpened(false);
+                void generatePuzzles(puzzleDepth);
+              }}
+            >
+              {t("common.generate")}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
       <Modal
         opened={treeBuilderOpened}
         onClose={() => setTreeBuilderOpened(false)}

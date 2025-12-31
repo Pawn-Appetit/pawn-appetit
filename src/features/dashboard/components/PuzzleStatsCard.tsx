@@ -2,6 +2,7 @@ import { BarChart } from "@mantine/charts";
 import { Box, Button, Card, Group, RingProgress, Stack, Text, ThemeIcon } from "@mantine/core";
 import { IconFlame, IconPuzzle } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import { ChartSizeGuard } from "@/components/ChartSizeGuard";
 
 interface PuzzleStats {
   currentStreak: number;
@@ -46,17 +47,19 @@ export function PuzzleStatsCard({ stats, onStartPuzzles }: PuzzleStatsCardProps)
           <Text size="sm" c="dimmed" mb={6}>
             {t("features.dashboard.thisWeek")}
           </Text>
-          <BarChart
-            h={120}
-            data={stats.history}
-            dataKey="day"
-            series={[{ name: "solved", color: "yellow.6" }]}
-            withLegend={false}
-            gridAxis="none"
-            xAxisProps={{ hide: true }}
-            yAxisProps={{ hide: true }}
-            barProps={{ radius: 4 }}
-          />
+          <ChartSizeGuard height={120}>
+            <BarChart
+              h={120}
+              data={stats.history}
+              dataKey="day"
+              series={[{ name: "solved", color: "yellow.6" }]}
+              withLegend={false}
+              gridAxis="none"
+              xAxisProps={{ hide: true }}
+              yAxisProps={{ hide: true }}
+              barProps={{ radius: 4 }}
+            />
+          </ChartSizeGuard>
         </Box>
       </Group>
     </Card>

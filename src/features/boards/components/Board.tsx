@@ -478,13 +478,15 @@ function Board({
           </Group>
         )}
         <Group
+          align="stretch"
           style={{
             position: "relative",
             flexWrap: "nowrap",
-            flex: hideClockSpaces ? "1 1 0" : undefined,
+            flex: "1 1 0",
             minHeight: 0,
             minWidth: 0,
             height: hideClockSpaces ? "100%" : undefined,
+            overflow: "hidden",
           }}
           gap="sm"
         >
@@ -507,14 +509,22 @@ function Board({
             </Box>
           )}
           <Box
-            style={
-              isBasicAnnotation(currentNode.annotations[0])
+            style={{
+              ...(isBasicAnnotation(currentNode.annotations[0])
                 ? {
                     "--light-color": lightColor,
                     "--dark-color": darkColor,
                   }
-                : undefined
-            }
+                : {}),
+              // Keep the board square and prevent overflow when the container is wider than it is tall.
+              flex: "0 0 auto",
+              height: "100%",
+              width: "auto",
+              maxWidth: "100%",
+              maxHeight: "100%",
+              minWidth: 0,
+              minHeight: 0,
+            }}
             className={`${chessboard} ${isBlindfold ? blindfold : ""}`}
             ref={boardRef}
             onClick={() => {

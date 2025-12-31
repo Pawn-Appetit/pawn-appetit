@@ -6,6 +6,7 @@ import { useCallback, useContext, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { CategoricalChartFunc } from "recharts/types/chart/types";
 import { useStore } from "zustand";
+import { ChartSizeGuard } from "@/components/ChartSizeGuard";
 import { reportTypeAtom } from "@/state/atoms";
 import { ANNOTATION_INFO } from "@/utils/annotation";
 import { positionFromFen } from "@/utils/chessops";
@@ -161,59 +162,21 @@ function EvalChart(props: EvalChartProps) {
           onChange={(v) => setChartType(v as "CP" | "WDL")}
         />
         {chartType === "CP" && (
-          <AreaChart
-            h={150}
-            curveType="monotone"
-            data={data}
-            dataKey={"name"}
-            series={[{ name: "yValue", color: theme.colors[theme.primaryColor][7] }]}
-            connectNulls={false}
-            withXAxis={false}
-            withYAxis={false}
-            yAxisProps={{ domain: [-1, 1] }}
-            type="split"
-            fillOpacity={1}
-            splitColors={["gray.1", "black"]}
-            splitOffset={colouroffset}
-            activeDotProps={{ r: 3, strokeWidth: 1 }}
-            dotProps={{ r: 0 }}
-            referenceLines={[
-              {
-                x: currentPositionName,
-                color: theme.colors[theme.primaryColor][7],
-              },
-            ]}
-            areaChartProps={{
-              onClick: onChartClick,
-              style: { cursor: "pointer" },
-            }}
-            gridAxis="none"
-            tooltipProps={{
-              content: ({ payload, active }) => <CustomTooltip active={active} payload={payload} type="cp" />,
-            }}
-          />
-        )}
-        {chartType === "WDL" &&
-          (isWDLDisabled ? (
-            <Alert variant="outline" title="Enable WDL" mt="sm">
-              {t("features.board.analysis.enableWDL")}
-            </Alert>
-          ) : (
+          <ChartSizeGuard height={150}>
             <AreaChart
               h={150}
               curveType="monotone"
               data={data}
               dataKey={"name"}
-              series={[
-                { name: "White", color: "white" },
-                { name: "Draw", color: "gray" },
-                { name: "Black", color: "black" },
-              ]}
+              series={[{ name: "yValue", color: theme.colors[theme.primaryColor][7] }]}
               connectNulls={false}
               withXAxis={false}
               withYAxis={false}
-              type="percent"
+              yAxisProps={{ domain: [-1, 1] }}
+              type="split"
               fillOpacity={1}
+              splitColors={["gray.1", "black"]}
+              splitOffset={colouroffset}
               activeDotProps={{ r: 3, strokeWidth: 1 }}
               dotProps={{ r: 0 }}
               referenceLines={[
@@ -228,9 +191,51 @@ function EvalChart(props: EvalChartProps) {
               }}
               gridAxis="none"
               tooltipProps={{
-                content: ({ payload, active }) => <CustomTooltip active={active} payload={payload} type="wdl" />,
+                content: ({ payload, active }) => <CustomTooltip active={active} payload={payload} type="cp" />,
               }}
             />
+          </ChartSizeGuard>
+        )}
+        {chartType === "WDL" &&
+          (isWDLDisabled ? (
+            <Alert variant="outline" title="Enable WDL" mt="sm">
+              {t("features.board.analysis.enableWDL")}
+            </Alert>
+          ) : (
+            <ChartSizeGuard height={150}>
+              <AreaChart
+                h={150}
+                curveType="monotone"
+                data={data}
+                dataKey={"name"}
+                series={[
+                  { name: "White", color: "white" },
+                  { name: "Draw", color: "gray" },
+                  { name: "Black", color: "black" },
+                ]}
+                connectNulls={false}
+                withXAxis={false}
+                withYAxis={false}
+                type="percent"
+                fillOpacity={1}
+                activeDotProps={{ r: 3, strokeWidth: 1 }}
+                dotProps={{ r: 0 }}
+                referenceLines={[
+                  {
+                    x: currentPositionName,
+                    color: theme.colors[theme.primaryColor][7],
+                  },
+                ]}
+                areaChartProps={{
+                  onClick: onChartClick,
+                  style: { cursor: "pointer" },
+                }}
+                gridAxis="none"
+                tooltipProps={{
+                  content: ({ payload, active }) => <CustomTooltip active={active} payload={payload} type="wdl" />,
+                }}
+              />
+            </ChartSizeGuard>
           ))}
       </Box>
     </Stack>

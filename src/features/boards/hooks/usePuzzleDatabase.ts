@@ -220,19 +220,30 @@ export const usePuzzleDatabase = () => {
     const headers = getPgnHeaders(selectedGame.tokens);
     const puzzleFen = headers.fen.trim() || INITIAL_BOARD_FEN;
     const [pos, error] = positionFromFen(puzzleFen);
+    const isChess960 = headers.variant === "Chess960";
 
     if (error) {
       logger.error("createPuzzleFromGame: error parsing positionFromFen", error);
       throw new Error("Failed to parse position");
     }
 
+    const normalizePuzzleSan = (san: string) => {
+      return san
+        .replace(/^([kqbnr])/i, (_, match) => match.toUpperCase())
+        .replace(/0-0-0/gi, "O-O-O")
+        .replace(/0-0/gi, "O-O")
+        .replace(/o-o-o/gi, "O-O-O")
+        .replace(/o-o/gi, "O-O");
+    };
+
     const parsedMoves = selectedGame.tokens
       .filter((t) => t.type === "San")
       .map((t) => t.value)
+      .map(normalizePuzzleSan)
       .map((san) => {
         if (pos) {
           const move = parseSan(pos, san);
-          const uciMove = move ? uciNormalize(pos, move, false) : null;
+          const uciMove = move ? uciNormalize(pos, move, isChess960) : null;
           if (move) {
             pos.play(move);
           }

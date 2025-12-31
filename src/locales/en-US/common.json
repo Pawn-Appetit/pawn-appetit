@@ -8,10 +8,10 @@
     "version": "Version",
     "enabled": "Enabled",
     "remove": "Remove",
-    "delete": "Delete", 
-    "add": "Add", 
+    "delete": "Delete",
+    "add": "Add",
     "deleteComponentTheme": "Delete component theme",
-    "open": "Open", 
+    "open": "Open",
     "create": "Create",
     "save": "Save",
     "download": "Download",
@@ -22,9 +22,10 @@
     "extracting": "Extracting",
     "error": "Error",
     "addNew": "Add New",
+    "generate": "Generate",
     "openFolder": "Open folder in file explorer",
-    "unknown": "Unknown", 
-    "cancel": "Cancel", 
+    "unknown": "Unknown",
+    "cancel": "Cancel",
     "success": "Success",
     "search": "Search",
     "annotation": "Annotation",
@@ -48,9 +49,9 @@
     "renameTab": "Rename Tab",
     "closeTab": "Close Tab",
     "centerGraph": "Center graph",
-    "cannotUndo": "This action cannot be undone.", 
-    "nameAlreadyUsed": "Name already used", 
-    "requireName": "Name is required", 
+    "cannotUndo": "This action cannot be undone.",
+    "nameAlreadyUsed": "Name already used",
+    "requireName": "Name is required",
     "requirePath": "Path is required",
     "pgnFile": "PGN file",
     "pgnFiles": "PGN files",
@@ -877,7 +878,7 @@
       "unknown": "Unknown",
       "engine": "Engine",
       "editProfile": {
-        "title": "Edit Profile",
+        "title": "FIDE Title",
         "fideIdLabel": "FIDE ID",
         "fideIdPlaceholder": "Enter your FIDE ID",
         "invalidFideId": "FIDE ID must be a number",
@@ -893,7 +894,6 @@
         "lichessToken": "Lichess Token",
         "lichessTokenPlaceholder": "Enter your Lichess API token",
         "lichessTokenDescription": "Required for creating tournaments on Lichess. Get your token from https://lichess.org/account/oauth/token/create",
-        "title": "FIDE Title",
         "gender": "Gender",
         "male": "Male",
         "female": "Female",
@@ -1667,7 +1667,8 @@
     "missingEngine": "Missing engine",
     "missingPosition": "Missing position",
     "variantPositionsCacheUnavailable": "Variant positions cache unavailable: {{message}}",
-    "unknownError": "Unknown error"
+    "unknownError": "Unknown error",
+    "puzzleDepthTooDeep": "Depth cannot exceed the available puzzle depth (max {{max}})"
   },
   "window": {
     "minimize": "Minimize Window",
@@ -1798,5 +1799,9 @@
   "language:DisplayName": "English (US)",
   "about": {
     "tauriVersion": "Tauri version: {{version}}"
+  },
+  "puzzles": {
+    "depthLabel": "Depth",
+    "depthHelper": "Select how many moves to include (max {{max}})"
   }
 }

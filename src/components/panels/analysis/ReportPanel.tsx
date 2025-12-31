@@ -338,7 +338,7 @@ function ReportPanel() {
   }, [isCompleted, inProgress, activeTab, store]); // Removed root and headers from dependencies - we get them from store directly
 
   return (
-    <ScrollArea offsetScrollbars>
+    <ScrollArea offsetScrollbars style={{ flex: 1, minHeight: 0 }}>
       <Suspense>
         <ReportModal
           tab={activeTab!}
