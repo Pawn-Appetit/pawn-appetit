@@ -75,7 +75,7 @@ function RenderVariationLineBase({
           showComments={showComments}
           isStart={equal(path, start)}
           first={first}
-          enableTranspositions={false}
+          enableTranspositions
         />
         {reachedDepthLimit || reachedVariationLimit ? (
           <ActionIcon
@@ -154,7 +154,7 @@ function RenderVariationLineBase({
         showComments={showComments}
         isStart={equal(newPath, start)}
         first={first}
-        enableTranspositions={false}
+        enableTranspositions
       />
       {reachedDepthLimit || reachedVariationLimit ? (
         <ActionIcon
@@ -271,7 +271,7 @@ function VariationBranchBase({
         showComments={showComments}
         isStart={equal(path, start)}
         first={false}
-        enableTranspositions={false}
+        enableTranspositions
       />
       {reachedDepthLimit || reachedVariationLimit ? (
         <ActionIcon
