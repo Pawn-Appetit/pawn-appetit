@@ -15,6 +15,7 @@ import { Spotlight, type SpotlightActionData, type SpotlightActionGroupData, spo
 import { IconSearch, IconSettings } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { platform } from "@tauri-apps/plugin-os";
 import { useAtom } from "jotai";
 import { type JSX, type SVGProps, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -247,8 +248,14 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
               h={25}
               w={25}
               radius="lg"
-              onClick={() => {
-                appWindow?.toggleMaximize();
+              onClick={async () => {
+                if (platform() === "macos") {
+                  const isFullscreen = await appWindow?.isFullscreen();
+                  await appWindow?.setFullscreen(!isFullscreen);
+                } else {
+                  appWindow?.toggleMaximize();
+                }
+
                 setMaximized((prev) => !prev);
               }}
               className={classes.icon}
