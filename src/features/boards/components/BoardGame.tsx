@@ -107,6 +107,18 @@ function EnginesSelect({ engine, setEngine, engines = [], enginesState }: Engine
     }
   }, [engine, engines, setEngine]);
 
+  const engineOptions = useMemo(
+    () => engines?.map((engine) => ({ label: engine.name, value: engine.path })),
+    [engines],
+  );
+
+  const handleEngineChange = useCallback(
+    (path: string | null) => {
+      setEngine(engines?.find((engine) => engine.path === path) ?? null);
+    },
+    [engines, setEngine],
+  );
+
   if (enginesState !== "loading" && engines.length === 0) {
     return (
       <Stack gap="md">
@@ -119,18 +131,6 @@ function EnginesSelect({ engine, setEngine, engines = [], enginesState }: Engine
       </Stack>
     );
   }
-
-  const engineOptions = useMemo(
-    () => engines?.map((engine) => ({ label: engine.name, value: engine.path })),
-    [engines],
-  );
-
-  const handleEngineChange = useCallback(
-    (path: string | null) => {
-      setEngine(engines?.find((engine) => engine.path === path) ?? null);
-    },
-    [engines, setEngine],
-  );
 
   return (
     <Suspense>
