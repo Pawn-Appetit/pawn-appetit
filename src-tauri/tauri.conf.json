@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Pawn Appetit",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "mainBinaryName": "pawn-appetit",
   "identifier": "com.pawnappetit",
   "bundle": {
@@ -39,7 +39,7 @@
       "signingIdentity": "-"
     },
     "resources": {
-      "../sound/" : "sound/"
+      "../sound/": "sound/"
     },
     "targets": "all",
     "createUpdaterArtifacts": true

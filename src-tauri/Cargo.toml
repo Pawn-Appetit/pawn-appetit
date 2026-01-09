@@ -1,6 +1,6 @@
 [package]
 name = "pawn-appetit"
-version = "0.10.0"
+version = "0.11.0"
 description = "A Modern Chess Database"
 authors = ["Pawn-Appetit Team"]
 license = "GPL-3.0-only"
@@ -24,9 +24,9 @@ serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "2.9.5", features = ["protocol-asset"] }
 zip = "2.4.2"
-tokio = { version = "1.48", features = ["full"] }
+tokio = { version = "1.49", features = ["full"] }
 futures-util = "0.3.31"
-reqwest = { version = "0.12.26", features = ["stream", "blocking", "json", "rustls-tls"], default-features = false }
+reqwest = { version = "0.12.28", features = ["stream", "blocking", "json", "rustls-tls"], default-features = false }
 shakmaty = "0.27.3"
 pgn-reader = "0.26.0"
 csv = "1.4.0"
@@ -50,7 +50,7 @@ vampirc-uci = { git = "https://github.com/Pawn-Appetit/vampirc-uci.git", rev = "
     "specta",
     "serde",
 ] }
-tempfile = "3.23.0"
+tempfile = "3.24.0"
 quick-xml = { version = "0.31.0", features = ["serialize"] }
 specta = { version = "^2.0.0-rc.20", features = ["derive"] }
 tauri-specta = { version = "^2.0.0-rc.20", features = ["derive", "typescript"] }
@@ -65,10 +65,10 @@ sysinfo = "0.29.11"
 governor = "0.6.3"
 nonzero_ext = "0.3.0"
 specta-typescript = "0.0.7"
-tauri-plugin-shell = "2.3.3"
-tauri-plugin-http = "2.5.4"
-tauri-plugin-fs = "2.4.4"
-tauri-plugin-dialog = "2.4.2"
+tauri-plugin-shell = "2.3.4"
+tauri-plugin-http = "2.5.5"
+tauri-plugin-fs = "2.4.5"
+tauri-plugin-dialog = "2.5.0"
 tauri-plugin-os = "2.3.2"
 tauri-plugin-cli = "2.4.1"
 tauri-plugin-updater = "2.9.0"

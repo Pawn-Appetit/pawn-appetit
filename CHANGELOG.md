@@ -1,5 +1,27 @@
 # Pawn Appétit Changelog
 
+## [0.11.0]
+
+### Added
+- Platform-specific window maximize/fullscreen behavior with fullscreen capability
+- Dashboard on startup option with quick actions in sidebar and settings
+- Sound bundling in resources (thanks @snue)
+
+### Changed
+- Reordered engine options and changed handler definitions in BoardGame component
+- Updated dependencies across the project
+- Improved error handling for sound resource resolution
+- Enhanced accounts empty state
+- Optimized repertoire practice animation to skip already-played moves - @sahinakkaya
+- Ensured practice positions become available when due date arrives - @sahinakkaya
+
+### Fixed
+- Fixed content security policy by removing unnecessary URLs
+- Fixed divider rendering when quick action links are present
+- Standardized line endings across codebase - @BurnhamG
+- Added final newlines where necessary - @BurnhamG
+- Disabled createUpdaterArtifacts when testing builds - @BurnhamG
+
 ## [0.10.0]
 
 ### Added
