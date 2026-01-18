@@ -1,6 +1,14 @@
-import { Badge, Box, Group } from "@mantine/core";
+import { Badge, Box, Button, Group, Paper, Stack, Text } from "@mantine/core";
 import { useForceUpdate } from "@mantine/hooks";
-import { IconChevronRight, IconEye, IconTarget, IconTrash } from "@tabler/icons-react";
+import {
+  IconChevronRight,
+  IconEye,
+  IconFileText,
+  IconPlus,
+  IconSearch,
+  IconTarget,
+  IconTrash,
+} from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { remove } from "@tauri-apps/plugin-fs";
 import clsx from "clsx";
@@ -91,6 +99,7 @@ export default function DirectoryTable({
   setSelectedFile,
   search,
   filter,
+  onCreateFile,
 }: {
   files: (FileMetadata | Directory)[] | undefined;
   isLoading: boolean;
@@ -99,8 +108,10 @@ export default function DirectoryTable({
   setSelectedFile: (file: FileMetadata) => void;
   search: string;
   filter: string;
+  onCreateFile?: () => void;
 }) {
   const [sort, setSort] = useAtom<SortStatus>(sortStatusAtom);
+  const { t } = useTranslation();
 
   const flattedFiles = useMemo(() => flattenFiles(files ?? []), [files]);
   const fuse = useMemo(
@@ -141,6 +152,47 @@ export default function DirectoryTable({
   }
 
   filteredFiles = recursiveSort(filteredFiles, sort);
+
+  // Check if there are no files at all (before filtering)
+  if (!isLoading && !flattedFiles.length) {
+    return (
+      <Paper withBorder p="xl" radius="md">
+        <Stack align="center" justify="center" gap="md" py="xl">
+          <IconFileText size={48} stroke={1.5} style={{ opacity: 0.5 }} />
+          <Stack gap="xs" align="center">
+            <Text size="lg" fw={700}>
+              {t("features.files.noFilesTitle")}
+            </Text>
+            <Text size="sm" c="dimmed" ta="center" maw={400}>
+              {t("features.files.noFilesDescription")}
+            </Text>
+          </Stack>
+          {onCreateFile && (
+            <Button onClick={onCreateFile} size="sm" leftSection={<IconPlus size="1rem" />}>
+              {t("common.create")}
+            </Button>
+          )}
+        </Stack>
+      </Paper>
+    );
+  }
+
+  // Check if filters/search returned no results
+  if (!isLoading && flattedFiles.length > 0 && !filteredFiles.length) {
+    return (
+      <Paper withBorder p="xl" radius="md">
+        <Stack align="center" justify="center" gap="md" py="xl">
+          <IconSearch size={48} stroke={1.5} style={{ opacity: 0.5 }} />
+          <Text size="lg" fw={500}>
+            {t("features.files.noFilesFound")}
+          </Text>
+          <Text size="sm" c="dimmed">
+            {t("features.files.noFilesFoundDescription")}
+          </Text>
+        </Stack>
+      </Paper>
+    );
+  }
 
   return (
     <Table

@@ -108,7 +108,7 @@ export interface FileRoutesByFullPath {
   '/learn/lessons': typeof LearnLessonsRoute
   '/learn/practice': typeof LearnPracticeRoute
   '/settings/keyboard-shortcuts': typeof SettingsKeyboardShortcutsRoute
-  '/databases': typeof DatabasesIndexRoute
+  '/databases/': typeof DatabasesIndexRoute
   '/learn/': typeof LearnIndexRoute
   '/settings/': typeof SettingsIndexRoute
 }
@@ -157,7 +157,7 @@ export interface FileRouteTypes {
     | '/learn/lessons'
     | '/learn/practice'
     | '/settings/keyboard-shortcuts'
-    | '/databases'
+    | '/databases/'
     | '/learn/'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
@@ -272,7 +272,7 @@ declare module '@tanstack/react-router' {
     '/databases/': {
       id: '/databases/'
       path: '/databases'
-      fullPath: '/databases'
+      fullPath: '/databases/'
       preLoaderRoute: typeof DatabasesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }

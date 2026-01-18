@@ -116,6 +116,7 @@ function FilesPage() {
             selectedFile={selected}
             search={search}
             filter={filter || ""}
+            onCreateFile={() => toggleCreateModal()}
           />
         ) : (
           <FileGridView
@@ -126,6 +127,7 @@ function FilesPage() {
             search={search}
             filter={filter || ""}
             gridCols={gridCols}
+            onCreateFile={() => toggleCreateModal()}
           />
         )}
       </Stack>

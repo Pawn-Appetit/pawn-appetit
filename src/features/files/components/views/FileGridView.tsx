@@ -1,5 +1,14 @@
-import { Badge, Box, Group, SimpleGrid, Skeleton, Stack, Text } from "@mantine/core";
-import { IconArrowsSplit, IconBook, IconChess, IconFileText, IconTarget, IconTrophy } from "@tabler/icons-react";
+import { Badge, Box, Button, Group, Paper, SimpleGrid, Skeleton, Stack, Text } from "@mantine/core";
+import {
+  IconArrowsSplit,
+  IconBook,
+  IconChess,
+  IconFileText,
+  IconPlus,
+  IconSearch,
+  IconTarget,
+  IconTrophy,
+} from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import Fuse from "fuse.js";
 import { useAtom, useSetAtom } from "jotai";
@@ -44,6 +53,7 @@ export default function FileGridView({
   search,
   filter,
   gridCols,
+  onCreateFile,
 }: {
   files: (FileMetadata | Directory)[] | undefined;
   isLoading: boolean;
@@ -52,6 +62,7 @@ export default function FileGridView({
   search: string;
   filter: string;
   gridCols: number | { base: number; md?: number; lg?: number };
+  onCreateFile?: () => void;
 }) {
   const { t } = useTranslation();
 
@@ -99,11 +110,42 @@ export default function FileGridView({
     );
   }
 
+  if (!flattedFiles.length) {
+    return (
+      <Paper withBorder p="xl" radius="md">
+        <Stack align="center" justify="center" gap="md" py="xl">
+          <IconFileText size={48} stroke={1.5} style={{ opacity: 0.5 }} />
+          <Stack gap="xs" align="center">
+            <Text size="lg" fw={700}>
+              {t("features.files.noFilesTitle")}
+            </Text>
+            <Text size="sm" c="dimmed" ta="center" maw={400}>
+              {t("features.files.noFilesDescription")}
+            </Text>
+          </Stack>
+          {onCreateFile && (
+            <Button onClick={onCreateFile} size="sm" leftSection={<IconPlus size="1rem" />}>
+              {t("common.create")}
+            </Button>
+          )}
+        </Stack>
+      </Paper>
+    );
+  }
+
   if (!filteredFiles.length) {
     return (
-      <Box p="md">
-        <Text c="dimmed">{t("features.files.noFiles")}</Text>
-      </Box>
+      <Paper withBorder p="xl" radius="md">
+        <Stack align="center" justify="center" gap="md" py="xl">
+          <IconSearch size={48} stroke={1.5} style={{ opacity: 0.5 }} />
+          <Text size="lg" fw={500}>
+            {t("features.files.noFilesFound")}
+          </Text>
+          <Text size="sm" c="dimmed">
+            {t("features.files.noFilesFoundDescription")}
+          </Text>
+        </Stack>
+      </Paper>
     );
   }
 
