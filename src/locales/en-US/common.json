@@ -684,8 +684,12 @@
       },
       "tabs": {
         "practice": "Practice",
-        "graph": "Graph",
-        "centerGraph": "Center on current move",
+        "graph": {
+          "label": "Graph",
+          "CenterGraph": "Center on current move",
+          "MainLineOnly": "Toggle main line only view",
+          "Transpositions": "Show/hide transposition links"
+        },
         "analysis": "Analysis",
         "database": "Database",
         "annotate": "Annotate",

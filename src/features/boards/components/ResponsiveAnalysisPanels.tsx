@@ -137,7 +137,7 @@ function ResponsiveAnalysisPanels({
           )}
           {isRepertoire && (
             <Tabs.Tab value="graph" leftSection={<IconGraphFilled size="1rem" />}>
-              {t("features.board.tabs.graph")}
+              {t("features.board.tabs.graph.label")}
             </Tabs.Tab>
           )}
           {!isPuzzle && (
