@@ -10,7 +10,7 @@ export const requiredEngineSettings = ["MultiPV", "Threads", "Hash"];
 const ENGINES = [
   {
     name: "Stockfish",
-    version: "17.1",
+    version: "18",
     os: "windows",
     bmi2: true,
     image: "https://upload.wikimedia.org/wikipedia/commons/3/3a/NewLogoSF.png",
@@ -19,11 +19,11 @@ const ENGINES = [
       "https://github.com/official-stockfish/Stockfish/releases/latest/download/stockfish-windows-x86-64-avx2.zip",
     path: "stockfish/stockfish-windows-x86-64-avx2.exe",
     elo: 3635,
-    downloadSize: 65412642,
+    downloadSize: 76955020,
   },
   {
     name: "Stockfish",
-    version: "17.1",
+    version: "18",
     os: "windows",
     bmi2: false,
     image: "https://upload.wikimedia.org/wikipedia/commons/3/3a/NewLogoSF.png",
@@ -36,7 +36,7 @@ const ENGINES = [
   },
   {
     name: "Stockfish",
-    version: "17.1",
+    version: "18",
     os: "macos",
     bmi2: true,
     image: "https://upload.wikimedia.org/wikipedia/commons/3/3a/NewLogoSF.png",
@@ -47,7 +47,7 @@ const ENGINES = [
   },
   {
     name: "Stockfish",
-    version: "17.1",
+    version: "18",
     os: "macos",
     bmi2: false,
     image: "https://upload.wikimedia.org/wikipedia/commons/3/3a/NewLogoSF.png",
@@ -58,7 +58,7 @@ const ENGINES = [
   },
   {
     name: "Stockfish",
-    version: "17.1",
+    version: "18",
     os: "linux",
     bmi2: true,
     image: "https://upload.wikimedia.org/wikipedia/commons/3/3a/NewLogoSF.png",
@@ -71,7 +71,7 @@ const ENGINES = [
   },
   {
     name: "Stockfish",
-    version: "17.1",
+    version: "18",
     os: "linux",
     bmi2: false,
     image: "https://upload.wikimedia.org/wikipedia/commons/3/3a/NewLogoSF.png",
