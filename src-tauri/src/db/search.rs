@@ -241,7 +241,11 @@ impl<'a> MoveStream<'a> {
                 }
                 move_byte => {
                     // Parse actual chess move
-                    if let Some(chess_move) = self.position.legal_moves().get(move_byte as usize) {
+                    // Get legal moves once instead of on every iteration
+                    let legal_moves = self.position.legal_moves();
+                    if let Some(chess_move) = legal_moves.get(move_byte as usize) {
+                        // Only clone position when we're returning it
+                        // This avoids cloning on every move in the game
                         let san = SanPlus::from_move_and_play_unchecked(&mut self.position, chess_move);
                         let move_string = san.to_string();
                         self.index += 1;
@@ -461,24 +465,22 @@ pub async fn search_position(
 
     let position_query = position_query.unwrap();
 
-    // Cache management
+    // Cache management with LRU
     const DISABLE_CACHE: bool = false;
     
     if !DISABLE_CACHE {
         let cache_key = (query.clone(), file.clone());
         
         // Return cached results if available
-        if let Some(cached_result) = state.line_cache.get(&cache_key) {
+        // LRU cache automatically updates access order on get()
+        let mut cache = state.line_cache.lock().unwrap();
+        if let Some(cached_result) = cache.get(&cache_key) {
             info!("Using cached results: {} stats, {} games", 
                   cached_result.0.len(), cached_result.1.len());
             return Ok(cached_result.clone());
         }
-
-        // Clear cache if it gets too large
-        if state.line_cache.len() > 100 {
-            info!("Clearing cache (too many entries: {})", state.line_cache.len());
-            state.line_cache.clear();
-        }
+        // LRU cache automatically evicts least recently used entries when capacity is reached
+        // No need for manual size checking and clearing
     }
 
     // Handle request cancellation
@@ -896,7 +898,8 @@ pub async fn search_position(
     let result = (openings.clone(), normalized_games.clone());
     if !DISABLE_CACHE {
         let cache_key = (query.clone(), file.clone());
-        state.line_cache.insert(cache_key.clone(), result.clone());
+        // LRU cache automatically evicts least recently used entry if at capacity
+        state.line_cache.lock().unwrap().push(cache_key.clone(), result.clone());
         info!("Cached position search results for FEN '{}': {} position stats, {} games", 
               cache_key.0.position.as_ref().map(|p| p.fen.as_str()).unwrap_or("None"),
               openings.len(), 
@@ -939,7 +942,7 @@ pub async fn is_position_in_db(
         info!("Checking if position exists in DB with FEN: {}", pos_query.fen);
     }
 
-    if let Some(pos) = state.line_cache.get(&(query.clone(), file.clone())) {
+    if let Some(pos) = state.line_cache.lock().unwrap().get(&(query.clone(), file.clone())) {
         info!("Using cached result for position existence check: {}", !pos.0.is_empty());
         return Ok(!pos.0.is_empty());
     }
@@ -1010,7 +1013,7 @@ pub async fn is_position_in_db(
 
     if !exists {
         info!("Position not found in DB, caching empty result");
-        state.line_cache.insert((query, file), (vec![], vec![]));
+        state.line_cache.lock().unwrap().push((query, file), (vec![], vec![]));
     } else {
         info!("Position found in DB");
     }

@@ -77,7 +77,8 @@ pub struct AppState {
         String,
         diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::SqliteConnection>>,
     >,
-    line_cache: DashMap<(GameQueryJs, std::path::PathBuf), (Vec<PositionStats>, Vec<NormalizedGame>)>,
+    #[derivative(Default(value = "Mutex::new(lru::LruCache::new(std::num::NonZeroUsize::new(100).unwrap()))"))]
+    line_cache: Mutex<lru::LruCache<(GameQueryJs, std::path::PathBuf), (Vec<PositionStats>, Vec<NormalizedGame>)>>,
     db_cache: Mutex<Vec<GameData>>,
     #[derivative(Default(value = "Arc::new(Semaphore::new(2))"))]
     new_request: Arc<Semaphore>,

@@ -46,6 +46,7 @@ derivative = "2.2.0"
 dashmap = "6.1.0"
 once_cell = "1.21.3"
 rand = "0.8.5"
+lru = "0.12"
 vampirc-uci = { git = "https://github.com/Pawn-Appetit/vampirc-uci.git", rev = "5d0ee12d5804d71c9eec6132325b9ac6d72a022a", features = [
     "specta",
     "serde",
