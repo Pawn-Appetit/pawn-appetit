@@ -4,10 +4,8 @@ import { getDefaultStore } from "jotai";
 import { soundCollectionAtom, soundVolumeAtom } from "@/state/atoms";
 
 let lastTime = 0;
-const audio = new Audio();
 
-export function playSound(capture: boolean, check: boolean) {
-  // only play at most 1 sound every 75ms
+export async function playSound(capture: boolean, check: boolean) {
   const now = Date.now();
   if (now - lastTime < 75) {
     return;
@@ -28,14 +26,18 @@ export function playSound(capture: boolean, check: boolean) {
 
   const path = `sound/${collection}/${type}.mp3`;
 
-  resolveResource(path)
-    .then((filePath: string) => {
-      const assetUrl = convertFileSrc(filePath);
-      audio.src = assetUrl;
-      audio.volume = volume;
-      audio.play();
-    })
-    .catch(() => {
-      // fails if Tauri APIs are unavailable (e.g., in tests)
-    });
+  try {
+    const filePath = await resolveResource(path);
+    const assetUrl = convertFileSrc(filePath);
+    
+    const audio = new Audio();
+    audio.volume = volume;
+    audio.src = assetUrl;
+    
+    await audio.play();
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error('Failed to play sound:', error);
+    }
+  }
 }
