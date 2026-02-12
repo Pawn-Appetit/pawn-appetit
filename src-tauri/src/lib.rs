@@ -15,6 +15,7 @@ mod opening;
 mod package_manager;
 mod pgn;
 mod puzzle;
+mod sound;
 mod telemetry;
 
 use std::sync::{Arc, Mutex};
@@ -47,6 +48,7 @@ use crate::package_manager::{
 };
 use crate::pgn::{count_pgn_games, delete_game, read_games, write_game};
 use crate::puzzle::{get_puzzle, get_puzzle_db_info, get_puzzle_rating_range, import_puzzle_file};
+use crate::sound::get_sound_server_port;
 use crate::telemetry::{get_telemetry_config, get_telemetry_enabled, set_telemetry_enabled, get_user_country_api, get_user_country_locale, get_user_id_command, get_platform_info_command};
 use crate::{
     db::{
@@ -156,7 +158,8 @@ pub async fn run() {
             install_package,
             check_package_installed,
             find_executable_path,
-            open_external_link
+            open_external_link,
+            get_sound_server_port
         ))
         .events(tauri_specta::collect_events!(
             BestMovesPayload,
