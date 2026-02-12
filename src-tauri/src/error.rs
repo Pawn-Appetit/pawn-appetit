@@ -112,8 +112,12 @@ pub enum Error {
     PackageManager(String),
 
     #[allow(dead_code)]
-    #[error("Engine timeout")]
-    EngineTimeout,
+    #[error("Engine timeout: {0}")]
+    EngineTimeout(String),
+
+    #[allow(dead_code)]
+    #[error("Engine initialization failed: {0}")]
+    EngineInitFailed(String),
 
     #[allow(dead_code)]
     #[error("Engine stop timeout")]

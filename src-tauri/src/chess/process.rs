@@ -20,6 +20,7 @@ pub const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 /// Represents a running UCI engine process and its state.
 pub struct EngineProcess {
+    pub child: tokio::process::Child,
     pub stdin: tokio::process::ChildStdin,
     pub last_depth: u32,
     pub best_moves: Vec<BestMoves>,
@@ -37,30 +38,77 @@ impl EngineProcess {
     /// Spawn a new UCI engine process and initialize it.
     ///
     /// Returns the process and a line reader for its stdout.
+    /// 
+    /// # Errors
+    /// Returns `Error::EngineTimeout` if engine doesn't respond within 10 seconds.
     pub async fn new(path: PathBuf) -> Result<(Self, tokio::io::Lines<tokio::io::BufReader<tokio::process::ChildStdout>>), Error> {
         let mut comm = UciCommunicator::spawn(path).await?;
 
         let mut logs = Vec::new();
 
+        // Send UCI command with timeout
         comm.write_line("uci\n").await?;
         logs.push(EngineLog::Gui("uci\n".to_string()));
-        while let Some(line) = comm.stdout_lines.next_line().await? {
-            logs.push(EngineLog::Engine(line.clone()));
-            if line == "uciok" {
+        
+        // Wait for uciok with timeout (10 seconds)
+        let uci_timeout = tokio::time::Duration::from_secs(10);
+        let uciok_received = tokio::time::timeout(uci_timeout, async {
+            while let Some(line) = comm.stdout_lines.next_line().await? {
+                logs.push(EngineLog::Engine(line.clone()));
+                if line == "uciok" {
+                    return Ok::<_, Error>(true);
+                }
+            }
+            Ok(false)
+        }).await;
+
+        match uciok_received {
+            Ok(Ok(true)) => {
+                // uciok received, proceed with isready
                 comm.write_line("isready\n").await?;
                 logs.push(EngineLog::Gui("isready\n".to_string()));
-                while let Some(line_is_ready) = comm.stdout_lines.next_line().await? {
-                    logs.push(EngineLog::Engine(line_is_ready.clone()));
-                    if line_is_ready == "readyok" {
-                        break;
+                
+                // Wait for readyok with timeout (5 seconds)
+                let ready_timeout = tokio::time::Duration::from_secs(5);
+                let readyok_received = tokio::time::timeout(ready_timeout, async {
+                    while let Some(line_is_ready) = comm.stdout_lines.next_line().await? {
+                        logs.push(EngineLog::Engine(line_is_ready.clone()));
+                        if line_is_ready == "readyok" {
+                            return Ok::<_, Error>(true);
+                        }
+                    }
+                    Ok(false)
+                }).await;
+
+                match readyok_received {
+                    Ok(Ok(true)) => {
+                        // Engine initialized successfully
+                    }
+                    Ok(Ok(false)) => {
+                        return Err(Error::EngineInitFailed("Engine closed before sending readyok".to_string()));
+                    }
+                    Ok(Err(e)) => {
+                        return Err(e);
+                    }
+                    Err(_) => {
+                        return Err(Error::EngineTimeout("Engine did not respond to isready command".to_string()));
                     }
                 }
-                break;
+            }
+            Ok(Ok(false)) => {
+                return Err(Error::EngineInitFailed("Engine closed before sending uciok".to_string()));
+            }
+            Ok(Err(e)) => {
+                return Err(e);
+            }
+            Err(_) => {
+                return Err(Error::EngineTimeout("Engine did not respond to uci command".to_string()));
             }
         }
 
         Ok((
             Self {
+                child: comm.child,
                 stdin: comm.stdin,
                 last_depth: 0,
                 best_moves: Vec::new(),
@@ -170,12 +218,50 @@ impl EngineProcess {
         Ok(())
     }
 
-    /// Kill the engine process.
+    /// Kill the engine process gracefully, with force-kill fallback.
+    /// 
+    /// First sends "quit" command and waits up to 2 seconds for graceful shutdown.
+    /// If engine doesn't terminate, forcefully kills the process.
     pub async fn kill(&mut self) -> Result<(), Error> {
-        self.stdin.write_all(b"quit\n").await?;
-        self.logs.push(EngineLog::Gui("quit\n".to_string()));
+        use log::warn;
+        
+        // Try graceful shutdown first
+        if let Err(e) = self.stdin.write_all(b"quit\n").await {
+            warn!("Failed to send quit command to engine: {}", e);
+        } else {
+            self.logs.push(EngineLog::Gui("quit\n".to_string()));
+        }
+        
         self.running = false;
-        Ok(())
+        
+        // Wait for process to exit gracefully (2 second timeout)
+        let wait_result = tokio::time::timeout(
+            tokio::time::Duration::from_secs(2),
+            self.child.wait()
+        ).await;
+        
+        match wait_result {
+            Ok(Ok(status)) => {
+                log::info!("Engine process exited gracefully with status: {:?}", status);
+                Ok(())
+            }
+            Ok(Err(e)) => {
+                warn!("Error waiting for engine process: {}", e);
+                // Try force kill
+                self.child.kill().await?;
+                log::info!("Engine process force-killed");
+                Ok(())
+            }
+            Err(_) => {
+                // Timeout - force kill
+                warn!("Engine did not exit gracefully, force-killing");
+                self.child.kill().await?;
+                // Wait for kill to complete
+                let _ = self.child.wait().await;
+                log::info!("Engine process force-killed after timeout");
+                Ok(())
+            }
+        }
     }
 }
 

@@ -13,7 +13,6 @@ use crate::error::Error;
 
 /// Async communicator for a running UCI engine process.
 pub struct UciCommunicator {
-    #[allow(dead_code)]
     pub child: Child,
     pub stdin: ChildStdin,
     pub stdout_lines: Lines<BufReader<ChildStdout>>,

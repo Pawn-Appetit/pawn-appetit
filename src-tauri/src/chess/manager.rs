@@ -58,25 +58,32 @@ impl<'a> EngineManager<'a> {
         let key = (tab.clone(), engine.clone());
 
         // If an engine process already exists for this key, reuse or update it.
-        if self.state.engine_processes.contains_key(&key) {
-            {
-                let process = self.state.engine_processes.get_mut(&key).unwrap();
-                let mut process = process.lock().await;
-                // If options and mode match and engine is running, return cached result.
-                if options == process.options && go_mode == process.go_mode && process.running {
-                    return Ok(Some((process.last_progress, process.last_best_moves.clone())));
-                }
-                // Otherwise, stop and reconfigure the engine.
-                process.stop().await?;
+        if let Some(process_arc) = self.state.engine_processes.get(&key) {
+            let mut process = process_arc.lock().await;
+            
+            // If options and mode match and engine is running, return cached result.
+            if options == process.options && go_mode == process.go_mode && process.running {
+                return Ok(Some((process.last_progress, process.last_best_moves.clone())));
             }
-            tokio::time::sleep(std::time::Duration::from_millis(50)).await;
-            {
-                let process = self.state.engine_processes.get_mut(&key).unwrap();
-                let mut process = process.lock().await;
+            
+            // Otherwise, stop and reconfigure the engine.
+            process.stop().await?;
+            
+            // Wait for stop to complete (engine should respond quickly)
+            // This is more reliable than a fixed sleep
+            drop(process); // Release lock before waiting
+            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+            
+            // Re-acquire lock and reconfigure
+            if let Some(process_arc) = self.state.engine_processes.get(&key) {
+                let mut process = process_arc.lock().await;
                 process.set_options(options.clone()).await?;
                 process.go(&go_mode).await?;
+                return Ok(None);
+            } else {
+                // Engine was removed while we were waiting, fall through to create new one
+                debug!("Engine was removed during reconfiguration, creating new instance");
             }
-            return Ok(None);
         }
 
         let (mut process, mut reader) = EngineProcess::new(path).await?;
@@ -102,29 +109,37 @@ impl<'a> EngineManager<'a> {
                     let mut proc = proc_arc.lock().await;
                     match vampirc_uci::parse_one(&line) {
                         vampirc_uci::UciMessage::Info(attrs) => {
-                            if let Ok(best_moves) = super::process::parse_uci_attrs(attrs, &proc.options.fen.parse().unwrap(), &proc.options.moves) {
-                                let multipv = best_moves.multipv;
-                                let cur_depth = best_moves.depth;
-                                let cur_nodes = best_moves.nodes;
-                                if multipv as usize == proc.best_moves.len() + 1 {
-                                    proc.best_moves.push(best_moves);
-                                    if multipv == proc.real_multipv {
-                                        // Only emit if all lines are at the same depth and rate limit allows.
-                                        if proc.best_moves.iter().all(|x| x.depth == cur_depth) && cur_depth >= proc.last_depth && lim.check().is_ok() {
-                                            let progress = match proc.go_mode {
-                                                GoMode::Depth(depth) => (cur_depth as f64 / depth as f64) * 100.0,
-                                                GoMode::Time(time) => (proc.start.elapsed().as_millis() as f64 / time as f64) * 100.0,
-                                                GoMode::Nodes(nodes) => (cur_nodes as f64 / nodes as f64) * 100.0,
-                                                GoMode::PlayersTime(_) => 99.99,
-                                                GoMode::Infinite => 99.99,
-                                            };
-                                            super::types::BestMovesPayload { best_lines: proc.best_moves.clone(), engine: id_cloned.clone(), tab: tab_cloned.clone(), fen: proc.options.fen.clone(), moves: proc.options.moves.clone(), progress }.emit(&app_cloned).ok();
-                                            proc.last_depth = cur_depth;
-                                            proc.last_best_moves = proc.best_moves.clone();
-                                            proc.last_progress = progress as f32;
+                            // Parse FEN safely without unwrap
+                            match proc.options.fen.parse() {
+                                Ok(fen) => {
+                                    if let Ok(best_moves) = super::process::parse_uci_attrs(attrs, &fen, &proc.options.moves) {
+                                        let multipv = best_moves.multipv;
+                                        let cur_depth = best_moves.depth;
+                                        let cur_nodes = best_moves.nodes;
+                                        if multipv as usize == proc.best_moves.len() + 1 {
+                                            proc.best_moves.push(best_moves);
+                                            if multipv == proc.real_multipv {
+                                                // Only emit if all lines are at the same depth and rate limit allows.
+                                                if proc.best_moves.iter().all(|x| x.depth == cur_depth) && cur_depth >= proc.last_depth && lim.check().is_ok() {
+                                                    let progress = match proc.go_mode {
+                                                        GoMode::Depth(depth) => (cur_depth as f64 / depth as f64) * 100.0,
+                                                        GoMode::Time(time) => (proc.start.elapsed().as_millis() as f64 / time as f64) * 100.0,
+                                                        GoMode::Nodes(nodes) => (cur_nodes as f64 / nodes as f64) * 100.0,
+                                                        GoMode::PlayersTime(_) => 99.99,
+                                                        GoMode::Infinite => 99.99,
+                                                    };
+                                                    super::types::BestMovesPayload { best_lines: proc.best_moves.clone(), engine: id_cloned.clone(), tab: tab_cloned.clone(), fen: proc.options.fen.clone(), moves: proc.options.moves.clone(), progress }.emit(&app_cloned).ok();
+                                                    proc.last_depth = cur_depth;
+                                                    proc.last_best_moves = proc.best_moves.clone();
+                                                    proc.last_progress = progress as f32;
+                                                }
+                                                proc.best_moves.clear();
+                                            }
                                         }
-                                        proc.best_moves.clear();
                                     }
+                                }
+                                Err(e) => {
+                                    log::error!("Failed to parse FEN in engine output: {} - FEN: {}", e, proc.options.fen);
                                 }
                             }
                         }
