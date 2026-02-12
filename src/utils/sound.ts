@@ -4,10 +4,17 @@ import { platform } from "@tauri-apps/plugin-os";
 import { getDefaultStore } from "jotai";
 import { soundCollectionAtom, soundVolumeAtom } from "@/state/atoms";
 
+function isLinux(): boolean {
+  try {
+    return platform() === "linux";
+  } catch {
+    return false;
+  }
+}
+
 let lastTime = 0;
 
-const isLinux = platform() === "linux";
-const soundServerPort: Promise<number> = isLinux
+const soundServerPort: Promise<number> = isLinux()
   ? invoke<number>("get_sound_server_port")
   : Promise.resolve(0);
 
@@ -35,7 +42,7 @@ export async function playSound(capture: boolean, check: boolean) {
   try {
     let audioSrc: string;
 
-    if (isLinux) {
+    if (isLinux()) {
       const port = await soundServerPort;
       audioSrc = `http://127.0.0.1:${port}/${path}`;
     } else {
