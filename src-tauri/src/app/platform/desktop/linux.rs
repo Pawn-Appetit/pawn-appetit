@@ -8,8 +8,13 @@ pub enum LinuxError {
 
 /// Linux-specific platform initialization and configuration
 #[cfg(target_os = "linux")]
-pub fn init_linux_platform() -> Result<(), Box<dyn std::error::Error>> {
+pub fn init_linux_platform(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Initializing Linux-specific features");
+
+    use tauri::Manager;
+    let resource_dir = app.path().resource_dir()?;
+    crate::sound::start_sound_server(resource_dir)?;
+
     Ok(())
 }
 

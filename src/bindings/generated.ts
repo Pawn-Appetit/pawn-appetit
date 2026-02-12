@@ -568,6 +568,9 @@ async openExternalLink(url: string) : Promise<Result<null, string>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+async getSoundServerPort() : Promise<number> {
+    return await TAURI_INVOKE("get_sound_server_port");
 }
 }
 

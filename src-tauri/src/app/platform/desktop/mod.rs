@@ -30,7 +30,7 @@ pub fn init_desktop_platform(app: &tauri::App) -> Result<(), Box<dyn std::error:
     macos::init_macos_platform()?;
     
     #[cfg(target_os = "linux")]
-    linux::init_linux_platform()?;
+    linux::init_linux_platform(app)?;
     
     Ok(())
 }

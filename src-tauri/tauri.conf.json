@@ -89,7 +89,7 @@
         ],
         "enable": true
       },
-      "csp": "default-src 'self'; img-src 'self' asset: data: blob: https:; media-src 'self' asset:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https://github.com"
+      "csp": "default-src 'self'; img-src 'self' asset: data: blob: https:; media-src 'self' asset: http://127.0.0.1:*; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https://github.com http://127.0.0.1:*"
     }
   }
 }
