@@ -553,7 +553,7 @@ function VariationCell({
   }
   const positionPath = useStore(store, (s) => s.position);
 
-  const currentPath = childInPath ? [...path.slice(0, -1)] : [...path];
+  const currentPath = childInPath ? path.slice(0, -1) : [...path];
   const childIndex = childInPath ? path[path.length - 1] : 0;
   const remainingPositionPath = positionPath.slice(currentPath.length);
 

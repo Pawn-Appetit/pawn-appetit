@@ -11,11 +11,11 @@
     "android:build": "tauri android build",
     "android:dev": "tauri android dev",
     "tauri": "tauri",
-    "format": "biome format --write ./src",
     "test": "vitest run",
-    "lint": "tsc --noEmit && biome check ./src",
-    "lint:ci": "tsc --noEmit && biome ci ./src --diagnostic-level=error",
-    "lint:fix": "npx @biomejs/biome check --write src",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
     "update-readme": "npx tsx scripts/update-readme.ts",
     "update-missing-translations": "npx tsx scripts/update-missing-translations.ts",
     "update-version": "npx tsx scripts/update-version.ts"
@@ -89,7 +89,6 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.14",
     "@commitlint/cli": "^20.4.1",
     "@commitlint/config-conventional": "^20.4.1",
     "@tanstack/router-plugin": "^1.159.5",
@@ -102,6 +101,8 @@
     "@vanilla-extract/css": "^1.18.0",
     "@vanilla-extract/vite-plugin": "^5.1.4",
     "jsdom": "^28.0.0",
+    "oxfmt": "^0.31.0",
+    "oxlint": "^1.46.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }
