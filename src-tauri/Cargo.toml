@@ -17,12 +17,12 @@ name = "pawn_appetit_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.5.3", features = [] }
+tauri-build = { version = "2.5.5", features = [] }
 
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "2.9.5", features = ["protocol-asset"] }
+tauri = { version = "2.10.2", features = ["protocol-asset"] }
 zip = "2.4.2"
 tokio = { version = "1.49", features = ["full"] }
 futures-util = "0.3.31"
@@ -35,13 +35,13 @@ btoi = "0.4.3"
 rusqlite = { version = "0.28.0", features = ["bundled"] }
 bzip2 = "0.4.4"
 zstd = "0.13"
-diesel = { version = "2.3.5", features = [
+diesel = { version = "2.3.6", features = [
     "sqlite",
     "returning_clauses_for_sqlite_3_35",
     "r2d2",
 ] }
 rayon = "1.11.0"
-chrono = "0.4.42"
+chrono = "0.4.43"
 derivative = "2.2.0"
 dashmap = "6.1.0"
 once_cell = "1.21.3"
@@ -50,7 +50,7 @@ vampirc-uci = { git = "https://github.com/Pawn-Appetit/vampirc-uci.git", rev = "
     "specta",
     "serde",
 ] }
-tempfile = "3.24.0"
+tempfile = "3.25.0"
 quick-xml = { version = "0.31.0", features = ["serialize"] }
 specta = { version = "^2.0.0-rc.20", features = ["derive"] }
 tauri-specta = { version = "^2.0.0-rc.20", features = ["derive", "typescript"] }
@@ -65,20 +65,20 @@ sysinfo = "0.29.11"
 governor = "0.6.3"
 nonzero_ext = "0.3.0"
 specta-typescript = "0.0.7"
-tauri-plugin-shell = "2.3.4"
-tauri-plugin-http = "2.5.5"
+tauri-plugin-shell = "2.3.5"
+tauri-plugin-http = "2.5.7"
 tauri-plugin-fs = "2.4.5"
 tauri-plugin-dialog = "2.6"
 tauri-plugin-os = "2.3.2"
 tauri-plugin-cli = "2.4.1"
-tauri-plugin-updater = "2.9.0"
+tauri-plugin-updater = "2.10.0"
 tauri-plugin-process = "2"
 tauri-plugin-log = "2"
 tauri-plugin-window-state = "2"
 tauri-plugin-opener = "2"
-regex = "1.12.2"
+regex = "1.12.3"
 postgrest = "1.6"
-uuid = { version = "1.19.0", features = ["v4"] }
+uuid = { version = "1.20.0", features = ["v4"] }
 fs_extra = "1.3.0"
 
 [features]
