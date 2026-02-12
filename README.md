@@ -258,8 +258,8 @@ Pawn Appétit is for chess players **all around the world**! We're committed to 
 | Language  | Progress   | Link                        |
 |-----------|----------|-----------------------------|
 | 🇺🇸 **English US** | ✅ 100% | [View](./src/locales/en-US) |
-| 🇬🇧 **English UK** | 🟡 91% | [View](./src/locales/en-GB) |
-| 🇪🇸 **Español (Spanish)** | 🟡 68% | [View](./src/locales/es) |
+| 🇬🇧 **English UK** | 🟡 90% | [View](./src/locales/en-GB) |
+| 🇪🇸 **Español (Spanish)** | 🟡 67% | [View](./src/locales/es) |
 | 🇩🇪 **Deutsch (German)** | 🟡 50% | [View](./src/locales/de) |
 | 🇫🇷 **Français (French)** | 🟡 50% | [View](./src/locales/fr) |
 | 🇦🇲 **Հայերեն (Armenian)** | 🟡 50% | [View](./src/locales/hy) |
@@ -267,12 +267,12 @@ Pawn Appétit is for chess players **all around the world**! We're committed to 
 | 🇷🇺 **Русский (Russian)** | 🟡 50% | [View](./src/locales/ru) |
 | 🇹🇷 **Türkçe (Turkish)** | 🟡 50% | [View](./src/locales/tr) |
 | 🇨🇳 **中文 (Chinese)** | 🟡 50% | [View](./src/locales/zh) |
-| 🇵🇱 **Polski (Polish)** | 🔴 33% | [View](./src/locales/pl) |
+| 🇵🇱 **Polski (Polish)** | 🔴 32% | [View](./src/locales/pl) |
 | 🇧🇾 **Беларуская (Belarusian)** | 🔴 28% | [View](./src/locales/be) |
 | 🇳🇴 **Norsk (Norwegian Bokmål)** | 🔴 28% | [View](./src/locales/nb) |
 | 🇵🇹 **Português (Portuguese)** | 🔴 28% | [View](./src/locales/pt) |
 | 🇺🇦 **Українська (Ukrainian)** | 🔴 28% | [View](./src/locales/uk) |
-| 🇸🇦 **العربية (Arabic)** | 🔴 14% | [View](./src/locales/ar) |
+| 🇸🇦 **العربية (Arabic)** | 🔴 13% | [View](./src/locales/ar) |
 | 🇯🇵 **日本語 (Japanese)** | 🔴 5% | [View](./src/locales/ja) |
 <!-- TRANSLATIONS_END -->
 
