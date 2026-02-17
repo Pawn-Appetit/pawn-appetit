@@ -116,9 +116,9 @@ function AccountCards({
   return (
     <ScrollArea offsetScrollbars>
       {sessions.length === 0 ? (
-        <Paper withBorder p="xl" radius="md" mt="xl">
+        <Paper withBorder p="xl" radius="md">
           <Stack align="center" justify="center" gap="md">
-            <IconUserPlus size={64} stroke={1.5} style={{ opacity: 0.5 }} />
+            <IconUserPlus size={48} stroke={1.5} style={{ opacity: 0.5 }} />
             <Stack gap="xs" align="center">
               <Text size="xl" fw={700}>
                 No accounts added
@@ -133,9 +133,9 @@ function AccountCards({
           </Stack>
         </Paper>
       ) : filteredAndSorted.length === 0 ? (
-        <Paper withBorder p="xl" radius="md" mt="xl">
+        <Paper withBorder p="xl" radius="md">
           <Stack align="center" justify="center" gap="md">
-            <IconSearch size={64} stroke={1.5} style={{ opacity: 0.5 }} />
+            <IconSearch size={48} stroke={1.5} style={{ opacity: 0.5 }} />
             <Text size="xl" fw={700}>
               No accounts found
             </Text>

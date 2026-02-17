@@ -1,6 +1,6 @@
-import { Alert, Button, Drawer, ScrollArea, Stack } from "@mantine/core";
+import { Button, Drawer, Paper, ScrollArea, Stack, Text } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
-import { IconPlus } from "@tabler/icons-react";
+import { IconCpu, IconPlus, IconSearch } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtom } from "jotai";
 import { useState } from "react";
@@ -73,10 +73,35 @@ export default function EnginesPage() {
       />
       <Stack px="md" pb="md">
         <ScrollArea h="calc(100vh - 190px)" offsetScrollbars aria-live="polite">
-          {filteredIndices.length === 0 && !isLoading ? (
-            <Alert title={t("features.engines.noEnginesFound")} color="gray" variant="light">
-              {t("features.engines.noEnginesFoundMessage")}
-            </Alert>
+          {!isLoading && engines.length === 0 ? (
+            <Paper withBorder p="xl" radius="md">
+              <Stack align="center" justify="center" gap="md" py="xl">
+                <IconCpu size={48} stroke={1.5} style={{ opacity: 0.5 }} />
+                <Stack gap="xs" align="center">
+                  <Text size="lg" fw={700}>
+                    {t("features.engines.noEnginesFound")}
+                  </Text>
+                  <Text size="sm" c="dimmed" ta="center" maw={400}>
+                    {t("features.engines.noEnginesFoundMessage")}
+                  </Text>
+                </Stack>
+                <Button onClick={() => setOpened(true)} size="sm" leftSection={<IconPlus size="1rem" />}>
+                  {t("common.addNew")}
+                </Button>
+              </Stack>
+            </Paper>
+          ) : !isLoading && filteredIndices.length === 0 ? (
+            <Paper withBorder p="xl" radius="md">
+              <Stack align="center" justify="center" gap="md" py="xl">
+                <IconSearch size={48} stroke={1.5} style={{ opacity: 0.5 }} />
+                <Text size="lg" fw={500}>
+                  {t("features.engines.noEnginesFound")}
+                </Text>
+                <Text size="sm" c="dimmed">
+                  {t("features.engines.noEnginesFoundMessage")}
+                </Text>
+              </Stack>
+            </Paper>
           ) : viewMode === "grid" ? (
             <EnginesGrid
               engines={engines}

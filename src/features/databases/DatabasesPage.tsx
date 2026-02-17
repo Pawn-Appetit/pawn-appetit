@@ -1,5 +1,4 @@
 import {
-  Alert,
   Badge,
   Box,
   Button,
@@ -21,7 +20,7 @@ import {
 } from "@mantine/core";
 import { useDebouncedValue, useToggle } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
-import { IconArrowRight, IconDatabase, IconPlus, IconPuzzle, IconStar } from "@tabler/icons-react";
+import { IconArrowRight, IconDatabase, IconPlus, IconPuzzle, IconSearch, IconStar } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { listen } from "@tauri-apps/api/event";
@@ -315,11 +314,13 @@ export default function DatabasesPage() {
         <DatabaseList
           isLoading={isLoading}
           databases={filteredDatabases}
+          hasAnyDatabases={unifiedDatabases.length > 0}
           selectedDatabase={selectedDatabase}
           onSelectDatabase={setSelected}
           onDatabaseDoubleClick={handleDatabaseDoubleClick}
           referenceDatabase={referenceDatabase}
           viewMode={viewMode}
+          onCreateDatabase={() => setOpen(true)}
         />
         <Drawer
           opened={selectedDatabase !== null}
@@ -362,22 +363,68 @@ export default function DatabasesPage() {
 interface DatabaseListProps {
   isLoading: boolean;
   databases: UnifiedDatabase[];
+  hasAnyDatabases: boolean;
   selectedDatabase: UnifiedDatabase | null;
   onSelectDatabase: (id: string | null) => void;
   onDatabaseDoubleClick: (database: UnifiedDatabase) => void;
   referenceDatabase: string | null;
   viewMode: "grid" | "table";
+  onCreateDatabase: () => void;
 }
 
 function DatabaseList({
   isLoading,
   databases,
+  hasAnyDatabases,
   selectedDatabase,
   onSelectDatabase,
   onDatabaseDoubleClick,
   referenceDatabase,
   viewMode,
+  onCreateDatabase,
 }: DatabaseListProps) {
+  const { t } = useTranslation();
+
+  if (!isLoading && !hasAnyDatabases) {
+    return (
+      <Paper withBorder p="xl" radius="md">
+        <Stack align="center" justify="center" gap="md" py="xl">
+          <IconDatabase size={48} stroke={1.5} style={{ opacity: 0.5 }} />
+          <Stack gap="xs" align="center">
+            <Text size="lg" fw={700}>
+              {t("databases.noDatabasesFound")}
+            </Text>
+            <Text size="sm" c="dimmed" ta="center" maw={400}>
+              {t(
+                "features.databases.noDatabasesFoundMessage",
+                "Try adjusting your search or create a new database.",
+              )}
+            </Text>
+          </Stack>
+          <Button onClick={onCreateDatabase} size="sm" leftSection={<IconPlus size="1rem" />}>
+            {t("common.addNew")}
+          </Button>
+        </Stack>
+      </Paper>
+    );
+  }
+
+  if (!isLoading && hasAnyDatabases && databases.length === 0) {
+    return (
+      <Paper withBorder p="xl" radius="md">
+        <Stack align="center" justify="center" gap="md" py="xl">
+          <IconSearch size={48} stroke={1.5} style={{ opacity: 0.5 }} />
+          <Text size="lg" fw={500}>
+            {t("databases.noDatabasesFound")}
+          </Text>
+          <Text size="sm" c="dimmed">
+            {t("features.practice.adjustSearchCriteria")}
+          </Text>
+        </Stack>
+      </Paper>
+    );
+  }
+
   return (
     <Stack>
       <ScrollArea h="calc(100vh - 240px)" offsetScrollbars aria-busy={isLoading} aria-live="polite">
@@ -448,14 +495,6 @@ function DatabaseGrid({
     );
   }
 
-  if (databases.length === 0) {
-    return (
-      <Alert title="No databases found" color="gray" variant="light">
-        Try adjusting your search or create a new database.
-      </Alert>
-    );
-  }
-
   return (
     <SimpleGrid cols={gridCols} spacing={{ base: "md", md: "sm" }}>
       {databases.map((database) => (
@@ -498,14 +537,6 @@ function DatabaseTableView({
         <Skeleton h="3rem" />
         <Skeleton h="3rem" />
       </Stack>
-    );
-  }
-
-  if (databases.length === 0) {
-    return (
-      <Alert title="No databases found" color="gray" variant="light">
-        Try adjusting your search or create a new database.
-      </Alert>
     );
   }
 
