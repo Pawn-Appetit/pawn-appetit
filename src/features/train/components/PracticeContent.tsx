@@ -1,7 +1,7 @@
 import { Box, Group, Paper, Select, Stack, Text, ThemeIcon, Title } from "@mantine/core";
 import { IconClock, IconTarget, IconTrophy } from "@tabler/icons-react";
-import { PracticeExerciseCard } from "@/features/learn/components/practice/PracticeExerciseCard";
-import { type PracticeCategory, type PracticeExercise, uiConfig } from "@/features/learn/constants/practices";
+import { PracticeExerciseCard } from "./practice/PracticeExerciseCard";
+import { type PracticeCategory, type PracticeExercise, uiConfig } from "../constants/practices";
 import type { LayoutType } from "@/hooks/useResponsiveLayout";
 import { useUserStatsStore } from "@/state/userStatsStore";
 

@@ -11,8 +11,7 @@ import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { commands, type GoMode } from "@/bindings";
-import { lessons } from "@/features/learn/constants/lessons";
-import { practices } from "@/features/learn/constants/practices";
+import { practices } from "@/features/train/constants/practices";
 import { activeTabAtom, enginesAtom, sessionsAtom, tabsAtom } from "@/state/atoms";
 import { useUserStatsStore } from "@/state/userStatsStore";
 import { type Achievement, getAchievements } from "@/utils/achievements";
@@ -265,22 +264,6 @@ export default function DashboardPage() {
     const picked: Suggestion[] = [];
 
     try {
-      const nextLesson = lessons.find((l) => {
-        const done = userStats.completedExercises?.[l.id]?.length ?? 0;
-        return (l.exercises?.length ?? 0) > 0 && done < (l.exercises?.length ?? 0);
-      });
-      if (nextLesson) {
-        picked.push({
-          id: `lesson:${nextLesson.id}`,
-          title: `Continue: ${nextLesson.title.default}`,
-          tag: "Lessons",
-          difficulty: nextLesson.difficulty?.toString?.().replace(/^./, (c) => c.toUpperCase()) ?? "All",
-          to: "/learn/lessons",
-        });
-      }
-    } catch {}
-
-    try {
       const withExercises = practices.filter((c) => (c.exercises?.length ?? 0) > 0);
       const scored = withExercises
         .map((c) => {
@@ -302,10 +285,10 @@ export default function DashboardPage() {
           title: `Practice: ${target.title}`,
           tag,
           difficulty: "All",
-          to: "/learn/practice",
+          to: "/train/practice",
         });
       }
-    } catch {}
+    } catch { }
 
     try {
       const today = getTodayPuzzleCount();
@@ -315,10 +298,10 @@ export default function DashboardPage() {
           title: today === 0 ? "Start today’s puzzle streak" : "Keep the streak: solve more puzzles",
           tag: "Tactics",
           difficulty: "All",
-          to: "/learn/practice",
+          to: "/train/practice",
         });
       }
-    } catch {}
+    } catch { }
 
     try {
       const last: GameRecord | undefined = recentGames?.[0];
@@ -351,7 +334,7 @@ export default function DashboardPage() {
           });
         }
       }
-    } catch {}
+    } catch { }
 
     while (picked.length < 3) {
       const fallbackId = `fallback:${picked.length}`;
@@ -360,7 +343,7 @@ export default function DashboardPage() {
         title: t("dashboard.suggestions.exploreOpenings"),
         tag: "Openings",
         difficulty: "All",
-        to: "/learn/practice",
+        to: "/train/practice",
       });
     }
 
@@ -424,115 +407,115 @@ export default function DashboardPage() {
     onClick: () => void;
     color: MantineColor;
   }[] = [
-    {
-      icon: <IconClock />,
-      title: t("chess.timeControl.classical"),
-      description: t("dashboard.timeControlCards.classicalDesc"),
-      onClick: () => {
-        const uuid = genID();
-        setTabs((prev: Tab[]) => {
-          return [
-            ...prev,
-            {
-              value: uuid,
-              name: t("chess.timeControl.classical"),
-              type: "play",
-              meta: {
-                timeControl: {
-                  seconds: 30 * 60 * 1000,
-                  increment: 0,
+      {
+        icon: <IconClock />,
+        title: t("chess.timeControl.classical"),
+        description: t("dashboard.timeControlCards.classicalDesc"),
+        onClick: () => {
+          const uuid = genID();
+          setTabs((prev: Tab[]) => {
+            return [
+              ...prev,
+              {
+                value: uuid,
+                name: t("chess.timeControl.classical"),
+                type: "play",
+                meta: {
+                  timeControl: {
+                    seconds: 30 * 60 * 1000,
+                    increment: 0,
+                  },
                 },
               },
-            },
-          ];
-        });
-        setActiveTab(uuid);
-        navigate({ to: "/boards" });
+            ];
+          });
+          setActiveTab(uuid);
+          navigate({ to: "/boards" });
+        },
+        color: "blue.6",
       },
-      color: "blue.6",
-    },
-    {
-      icon: <IconStopwatch />,
-      title: t("chess.timeControl.rapid"),
-      description: t("dashboard.timeControlCards.rapidDesc"),
-      onClick: () => {
-        const uuid = genID();
-        setTabs((prev: Tab[]) => {
-          return [
-            ...prev,
-            {
-              value: uuid,
-              name: t("chess.timeControl.rapid"),
-              type: "play",
-              meta: {
-                timeControl: {
-                  seconds: 10 * 60 * 1000,
-                  increment: 0,
+      {
+        icon: <IconStopwatch />,
+        title: t("chess.timeControl.rapid"),
+        description: t("dashboard.timeControlCards.rapidDesc"),
+        onClick: () => {
+          const uuid = genID();
+          setTabs((prev: Tab[]) => {
+            return [
+              ...prev,
+              {
+                value: uuid,
+                name: t("chess.timeControl.rapid"),
+                type: "play",
+                meta: {
+                  timeControl: {
+                    seconds: 10 * 60 * 1000,
+                    increment: 0,
+                  },
                 },
               },
-            },
-          ];
-        });
-        setActiveTab(uuid);
-        navigate({ to: "/boards" });
+            ];
+          });
+          setActiveTab(uuid);
+          navigate({ to: "/boards" });
+        },
+        color: "teal.6",
       },
-      color: "teal.6",
-    },
-    {
-      icon: <IconBolt />,
-      title: t("chess.timeControl.blitz"),
-      description: t("dashboard.timeControlCards.blitzDesc"),
-      onClick: () => {
-        const uuid = genID();
-        setTabs((prev: Tab[]) => {
-          return [
-            ...prev,
-            {
-              value: uuid,
-              name: t("chess.timeControl.blitz"),
-              type: "play",
-              meta: {
-                timeControl: {
-                  seconds: 3 * 60 * 1000,
-                  increment: 0,
+      {
+        icon: <IconBolt />,
+        title: t("chess.timeControl.blitz"),
+        description: t("dashboard.timeControlCards.blitzDesc"),
+        onClick: () => {
+          const uuid = genID();
+          setTabs((prev: Tab[]) => {
+            return [
+              ...prev,
+              {
+                value: uuid,
+                name: t("chess.timeControl.blitz"),
+                type: "play",
+                meta: {
+                  timeControl: {
+                    seconds: 3 * 60 * 1000,
+                    increment: 0,
+                  },
                 },
               },
-            },
-          ];
-        });
-        setActiveTab(uuid);
-        navigate({ to: "/boards" });
+            ];
+          });
+          setActiveTab(uuid);
+          navigate({ to: "/boards" });
+        },
+        color: "yellow.6",
       },
-      color: "yellow.6",
-    },
-    {
-      icon: <IconBolt />,
-      title: t("chess.timeControl.bullet"),
-      description: t("dashboard.timeControlCards.bulletDesc"),
-      onClick: () => {
-        const uuid = genID();
-        setTabs((prev: Tab[]) => {
-          return [
-            ...prev,
-            {
-              value: uuid,
-              name: t("chess.timeControl.bullet"),
-              type: "play",
-              meta: {
-                timeControl: {
-                  seconds: 1 * 60 * 1000,
-                  increment: 0,
+      {
+        icon: <IconBolt />,
+        title: t("chess.timeControl.bullet"),
+        description: t("dashboard.timeControlCards.bulletDesc"),
+        onClick: () => {
+          const uuid = genID();
+          setTabs((prev: Tab[]) => {
+            return [
+              ...prev,
+              {
+                value: uuid,
+                name: t("chess.timeControl.bullet"),
+                type: "play",
+                meta: {
+                  timeControl: {
+                    seconds: 1 * 60 * 1000,
+                    increment: 0,
+                  },
                 },
               },
-            },
-          ];
-        });
-        setActiveTab(uuid);
-        navigate({ to: "/boards" });
+            ];
+          });
+          setActiveTab(uuid);
+          navigate({ to: "/boards" });
+        },
+        color: "blue.6",
       },
-      color: "blue.6",
-    },
-  ];
+    ];
 
   return (
     <Stack p="md" gap="md">
@@ -684,7 +667,7 @@ export default function DashboardPage() {
             onSuggestionClick={(s) => {
               if (s.onClick) s.onClick();
               else if (s.to) navigate({ to: s.to });
-              else navigate({ to: "/learn" });
+              else navigate({ to: "/train" });
             }}
           />
         </Grid.Col>

@@ -61,8 +61,6 @@ export default function PracticePage() {
   } = useExerciseState<PracticeExercise, PracticeCategory>({
     initialFen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     onExerciseComplete: (practiceId, exerciseId, evaluation) => {
-      console.log(`Exercise completed with evaluation:`, evaluation);
-
       const prevCompleted = userStats.completedPractice?.[practiceId] || [];
       if (!prevCompleted.includes(exerciseId)) {
         const updatedCompleted = {
@@ -121,12 +119,13 @@ export default function PracticePage() {
   };
 
   const filteredPractices = practices.filter((practice) => {
+    const hasExercises = practice.exercises && practice.exercises.length > 0;
     const practiceGroupName = uiConfig.groups[practice.group]?.label || practice.group;
     const matchesGroup = activeTab === "All" || practiceGroupName === activeTab;
     const matchesSearch =
       practice.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       practice.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesGroup && matchesSearch;
+    return matchesGroup && matchesSearch && hasExercises;
   });
 
   return (
@@ -151,9 +150,9 @@ export default function PracticePage() {
               <ActionIcon
                 variant="light"
                 size="md"
-                onClick={() => navigate({ to: "/learn" })}
-                aria-label="Back to Learn"
-                title="Back to Learn"
+                onClick={() => navigate({ to: "/train" })}
+                aria-label="Back to Train"
+                title="Back to Train"
               >
                 <IconArrowBackUp size={20} />
               </ActionIcon>
@@ -251,7 +250,7 @@ export default function PracticePage() {
                       }
                     } else {
                       handlePracticeSelect(null);
-                      navigate({ to: "/learn/practice" });
+                      navigate({ to: "/train/practice" });
                     }
                   }}
                   aria-label="Back to Practice"

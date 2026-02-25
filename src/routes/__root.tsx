@@ -687,9 +687,9 @@ function RootLayout() {
             action: () => navigate({ to: "/engines" }),
           },
           {
-            label: t("features.menu.goToLearn"),
-            id: "go_learn",
-            action: () => navigate({ to: "/learn" }),
+            label: t("features.menu.goToTrain"),
+            id: "go_train",
+            action: () => navigate({ to: "/train" }),
           },
           { label: "divider" },
           {

@@ -12,13 +12,13 @@ export async function getAchievements(): Promise<Achievement[]> {
   const todayPuzzles = getTodayPuzzleCount();
   const gamesToday = await countGamesOnDate();
   const todayISO = new Date().toISOString().slice(0, 10);
-  const lessonsToday = (userStats.lessonCompletionDates || []).some((d) => d.slice(0, 10) === todayISO);
+  const practicesToday = (userStats.completionDates || []).some((d: string) => d.slice(0, 10) === todayISO);
   const totalPoints = userStats.totalPoints || 0;
 
   const list: Achievement[] = [];
 
   if (todayPuzzles >= 5) list.push({ id: "tactician", label: "Tactician" });
-  if (lessonsToday) list.push({ id: "student", label: "Student" });
+  if (practicesToday) list.push({ id: "student", label: "Student" });
   if (gamesToday >= 2) list.push({ id: "grinder", label: "Grinder" });
   if (totalPoints >= 100) list.push({ id: "point-collector", label: "Point Collector" });
 

@@ -47,12 +47,8 @@ export default function LearnPage() {
   const { layout } = useResponsiveLayout();
   const userStats = useUserStatsStore((state) => state.userStats);
 
-  const handleExerciseSelect = (_exerciseId: string, type: "lesson" | "practice") => {
-    if (type === "lesson") {
-      navigate({ to: "/learn/lessons" });
-    } else {
-      navigate({ to: "/learn/practice" });
-    }
+  const handleExerciseSelect = (_exerciseId: string, type: "practice") => {
+    navigate({ to: "/train/practice" });
   };
 
   const { practiceExerciseProgress } = useProgressData();
@@ -60,7 +56,7 @@ export default function LearnPage() {
   const [recommendedExercises, setRecommendedExercises] = useState<
     Array<{
       id: string;
-      type: "lesson" | "practice";
+      type: "practice";
       title: string;
       description: string;
       difficulty: string;
@@ -150,17 +146,6 @@ export default function LearnPage() {
 
   const learningPaths = [
     {
-      id: "lessons",
-      icon: <IconBook size={32} />,
-      title: t("features.lessons.title"),
-      description: t("features.lessons.description"),
-      label: t("features.lessons.startLesson"),
-      progress: { completed: userStats.lessonsCompleted, total: userStats.totalLessons },
-      color: "blue",
-      gradient: { from: "blue", to: "cyan" },
-      onClick: () => navigate({ to: "/learn/lessons" }),
-    },
-    {
       id: "practice",
       icon: <IconTargetArrow size={32} />,
       title: t("features.practice.title"),
@@ -169,14 +154,12 @@ export default function LearnPage() {
       progress: { completed: userStats.practiceCompleted, total: userStats.totalPractice },
       color: "green",
       gradient: { from: "green", to: "lime" },
-      onClick: () => navigate({ to: "/learn/practice" }),
+      onClick: () => navigate({ to: "/train/practice" }),
     },
   ];
 
   const currentStreak = calculateCurrentStreak(userStats.completionDates || []);
-  const overallProgress =
-    ((userStats.lessonsCompleted + userStats.practiceCompleted) / (userStats.totalLessons + userStats.totalPractice)) *
-    100;
+  const overallProgress = userStats.totalPractice > 0 ? (userStats.practiceCompleted / userStats.totalPractice) * 100 : 0;
 
   return (
     <>
@@ -196,7 +179,7 @@ export default function LearnPage() {
 
         <Stack gap="md">
           <Title order={3} mb="xs">
-            Learning Modules
+            Training Modules
           </Title>
           <Grid gutter="md">
             {learningPaths.map((path) => (
@@ -361,8 +344,7 @@ export default function LearnPage() {
           {recommendedExercises.length === 0 && (
             <Alert icon={<IconInfoCircle size={16} />} title="No exercises available" color="yellow">
               <Text size="sm">
-                We're preparing personalized exercises for you. Please check back later or try browsing the lesson and
-                practice sections manually.
+                We're preparing personalized exercises for you. Please check back later or try browsing the practice section manually.
               </Text>
             </Alert>
           )}

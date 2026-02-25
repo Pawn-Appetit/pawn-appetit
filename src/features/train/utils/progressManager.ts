@@ -1,5 +1,3 @@
-import type { ExerciseProgress as LessonExerciseProgress, LessonProgress } from "../constants/lessons";
-import { lessonManager } from "../constants/lessons";
 import { practiceManager } from "../constants/practices";
 
 export interface PracticeExerciseProgress {
@@ -15,8 +13,6 @@ export interface PracticeExerciseProgress {
 }
 
 export interface ProgressStats {
-  readonly totalLessonsUnlocked: number;
-  readonly totalLessonsCompleted: number;
   readonly totalExercisesCompleted: number;
   readonly totalPointsEarned: number;
   readonly currentStreak: number;
@@ -30,7 +26,7 @@ export interface ProgressStats {
 }
 
 export interface Recommendation {
-  readonly type: "lesson" | "practice";
+  readonly type: "practice";
   readonly id: string;
   readonly title: string;
   readonly description: string;
@@ -46,13 +42,13 @@ export interface Achievement {
   readonly description: string;
   readonly icon: string;
   readonly unlockedAt: Date;
-  readonly category: "lessons" | "practice" | "streak" | "speed" | "accuracy";
+  readonly category: "practice" | "streak" | "speed" | "accuracy";
 }
 
 export class ProgressManager {
   private static instance: ProgressManager;
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance(): ProgressManager {
     if (!ProgressManager.instance) {
@@ -62,11 +58,8 @@ export class ProgressManager {
   }
 
   calculateStats(
-    lessonProgress: readonly LessonProgress[],
-    lessonExerciseProgress: readonly LessonExerciseProgress[],
     practiceExerciseProgress: readonly PracticeExerciseProgress[],
   ): ProgressStats {
-    const lessons = lessonManager.getLessons();
     const practiceCategories = practiceManager.getCategories();
 
     const difficultyStats = {
@@ -76,24 +69,8 @@ export class ProgressManager {
     };
 
     let totalPointsEarned = 0;
-    let totalTimeSpent = 0;
     let totalScoreSum = 0;
     let scoredExercises = 0;
-
-    for (const lesson of lessons) {
-      difficultyStats[lesson.difficulty].total++;
-
-      const progress = lessonProgress.find((p) => p.lessonId === lesson.id);
-      if (progress?.isCompleted) {
-        difficultyStats[lesson.difficulty].completed++;
-        totalTimeSpent += progress.timeSpent / 60;
-
-        if (progress.averageScore) {
-          totalScoreSum += progress.averageScore;
-          scoredExercises++;
-        }
-      }
-    }
 
     for (const category of practiceCategories) {
       for (const exercise of category.exercises) {
@@ -102,7 +79,7 @@ export class ProgressManager {
         const progress = practiceExerciseProgress.find((p) => p.exerciseId === exercise.id);
         if (progress?.isCompleted) {
           difficultyStats[exercise.difficulty].completed++;
-          totalPointsEarned += exercise.points;
+          totalPointsEarned += exercise.points || 0;
 
           if (progress.bestScore) {
             totalScoreSum += progress.bestScore;
@@ -112,50 +89,26 @@ export class ProgressManager {
       }
     }
 
-    const completedLessons = lessonProgress.filter((p) => p.isCompleted).length;
-    const currentStreak = Math.min(completedLessons, 7);
+    const currentStreak = Math.min(practiceExerciseProgress.filter((p) => p.isCompleted).length, 7);
 
     return {
-      totalLessonsUnlocked: lessonProgress.filter((p) => p.isUnlocked).length,
-      totalLessonsCompleted: lessonProgress.filter((p) => p.isCompleted).length,
-      totalExercisesCompleted:
-        lessonExerciseProgress.filter((p) => p.isCompleted).length +
-        practiceExerciseProgress.filter((p) => p.isCompleted).length,
+      totalExercisesCompleted: practiceExerciseProgress.filter((p) => p.isCompleted).length,
       totalPointsEarned,
       currentStreak,
       averageScore: scoredExercises > 0 ? totalScoreSum / scoredExercises : 0,
-      estimatedTimeSpent: totalTimeSpent,
+      estimatedTimeSpent: 0, // Mock time spent since lessons had estimates but practice relies on real tracking later
       difficultyBreakdown: difficultyStats,
     };
   }
 
   generateRecommendations(
-    lessonProgress: readonly LessonProgress[],
-    lessonExerciseProgress: readonly LessonExerciseProgress[],
     practiceExerciseProgress: readonly PracticeExerciseProgress[],
   ): readonly Recommendation[] {
     const recommendations: Recommendation[] = [];
-    const completedLessonIds = lessonProgress.filter((p) => p.isCompleted).map((p) => p.lessonId);
-    const unlockedLessons = lessonManager.getUnlockedLessons(completedLessonIds);
     const completedExerciseIds = practiceExerciseProgress.filter((p) => p.isCompleted).map((p) => p.exerciseId);
     const unlockedExercises = practiceManager.getUnlockedExercises(completedExerciseIds);
 
-    for (const lesson of unlockedLessons.slice(0, 3)) {
-      const isStarted = lessonProgress.find((p) => p.lessonId === lesson.id)?.isStarted;
-
-      recommendations.push({
-        type: "lesson",
-        id: lesson.id,
-        title: lesson.title.default,
-        description: lesson.description.default,
-        reason: isStarted ? "Continue your progress" : "Next in your learning path",
-        difficulty: lesson.difficulty,
-        estimatedTime: lesson.estimatedTime,
-        priority: isStarted ? "high" : "medium",
-      });
-    }
-
-    const weakAreas = this.identifyWeakAreas(lessonExerciseProgress, practiceExerciseProgress);
+    const weakAreas = this.identifyWeakAreas(practiceExerciseProgress);
     const relevantPractices = unlockedExercises
       .filter((exercise) => exercise.tags?.some((tag) => weakAreas.includes(tag)))
       .slice(0, 2);
@@ -168,7 +121,7 @@ export class ProgressManager {
         description: exercise.description,
         reason: "Strengthen identified weak areas",
         difficulty: exercise.difficulty,
-        estimatedTime: Math.ceil(exercise.timeLimit / 60),
+        estimatedTime: Math.ceil((exercise.timeLimit || 60) / 60),
         priority: "medium",
       });
     }
@@ -183,17 +136,6 @@ export class ProgressManager {
     const newAchievements: Achievement[] = [];
     const now = new Date();
 
-    if (currentStats.totalLessonsCompleted >= 1 && (previousStats?.totalLessonsCompleted ?? 0) === 0) {
-      newAchievements.push({
-        id: "first-lesson",
-        title: "First Steps",
-        description: "Completed your first lesson",
-        icon: "🎓",
-        unlockedAt: now,
-        category: "lessons",
-      });
-    }
-
     if (
       currentStats.difficultyBreakdown.beginner.completed === currentStats.difficultyBreakdown.beginner.total &&
       currentStats.difficultyBreakdown.beginner.total > 0
@@ -201,10 +143,10 @@ export class ProgressManager {
       newAchievements.push({
         id: "beginner-master",
         title: "Beginner Master",
-        description: "Completed all beginner lessons",
+        description: "Completed all beginner practice",
         icon: "🌟",
         unlockedAt: now,
-        category: "lessons",
+        category: "practice",
       });
     }
 
@@ -222,8 +164,8 @@ export class ProgressManager {
     if (currentStats.currentStreak >= 7) {
       newAchievements.push({
         id: "week-streak",
-        title: "Dedicated Learner",
-        description: "7-day learning streak",
+        title: "Dedicated Trainee",
+        description: "7-day practice streak",
         icon: "🔥",
         unlockedAt: now,
         category: "streak",
@@ -245,20 +187,18 @@ export class ProgressManager {
   }
 
   private identifyWeakAreas(
-    lessonExerciseProgress: readonly LessonExerciseProgress[],
-    _practiceExerciseProgress: readonly PracticeExerciseProgress[],
+    practiceExerciseProgress: readonly PracticeExerciseProgress[],
   ): string[] {
     const weakAreas: string[] = [];
-    const lessons = lessonManager.getLessons();
+    const practiceCategories = practiceManager.getCategories();
 
-    for (const lesson of lessons) {
-      const exerciseProgresses = lessonExerciseProgress.filter((p) => p.lessonId === lesson.id);
-      const avgAttempts = exerciseProgresses.reduce((sum, p) => sum + p.attempts, 0) / exerciseProgresses.length;
-      const avgScore = exerciseProgresses.reduce((sum, p) => sum + (p.score ?? 0), 0) / exerciseProgresses.length;
-
-      if (avgAttempts > 3 || avgScore < 70) {
-        if (lesson.tags) {
-          weakAreas.push(...lesson.tags);
+    for (const category of practiceCategories) {
+      for (const exercise of category.exercises) {
+        const progress = practiceExerciseProgress.find((p) => p.exerciseId === exercise.id);
+        if (progress && (progress.attempts > 3 || (progress.score ?? 0) < 70)) {
+          if (exercise.tags) {
+            weakAreas.push(...exercise.tags);
+          }
         }
       }
     }
@@ -278,7 +218,7 @@ export class ProgressManager {
   }
 
   calculateAdaptiveDifficulty(
-    exerciseProgress: readonly (LessonExerciseProgress | PracticeExerciseProgress)[],
+    exerciseProgress: readonly PracticeExerciseProgress[],
   ): "easier" | "maintain" | "harder" {
     const recentProgress = exerciseProgress
       .filter((p) => p.lastAttempted && p.lastAttempted.getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -299,37 +239,29 @@ export class ProgressManager {
   }
 
   exportProgress(
-    lessonProgress: readonly LessonProgress[],
-    lessonExerciseProgress: readonly LessonExerciseProgress[],
     practiceExerciseProgress: readonly PracticeExerciseProgress[],
   ): string {
     const exportData = {
-      version: "1.0",
+      version: "2.0",
       exportedAt: new Date().toISOString(),
-      lessonProgress,
-      lessonExerciseProgress,
       practiceExerciseProgress,
-      stats: this.calculateStats(lessonProgress, lessonExerciseProgress, practiceExerciseProgress),
+      stats: this.calculateStats(practiceExerciseProgress),
     };
 
     return JSON.stringify(exportData, null, 2);
   }
 
   importProgress(exportedData: string): {
-    lessonProgress: readonly LessonProgress[];
-    lessonExerciseProgress: readonly LessonExerciseProgress[];
     practiceExerciseProgress: readonly PracticeExerciseProgress[];
   } {
     try {
       const data = JSON.parse(exportedData);
 
-      if (!data.version || !data.lessonProgress || !data.lessonExerciseProgress || !data.practiceExerciseProgress) {
+      if (!data.version || !data.practiceExerciseProgress) {
         throw new Error("Invalid export data format");
       }
 
       return {
-        lessonProgress: data.lessonProgress,
-        lessonExerciseProgress: data.lessonExerciseProgress,
         practiceExerciseProgress: data.practiceExerciseProgress,
       };
     } catch (error) {

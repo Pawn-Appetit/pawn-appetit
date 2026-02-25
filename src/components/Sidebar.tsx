@@ -11,7 +11,7 @@ import {
   IconMenu2,
   IconPlayerPlay,
   IconPuzzle,
-  IconSchool,
+  IconTarget,
   IconSettings,
   IconUsers,
 } from "@tabler/icons-react";
@@ -101,7 +101,7 @@ export const linksdata = [
   },
   { icon: IconFiles, label: "files", url: "/files" },
   { icon: IconUsers, label: "accounts", url: "/accounts" },
-  { icon: IconSchool, label: "learn", url: "/learn" },
+  { icon: IconTarget, label: "train", url: "/train" },
 ];
 
 export function SideBar() {

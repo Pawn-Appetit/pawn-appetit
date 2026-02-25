@@ -1,5 +1,10 @@
-import { Box, Group, Paper, Text } from "@mantine/core";
-import { IconCheck, IconTarget, IconTrophy, IconX } from "@tabler/icons-react";
+import { Box, Button, Group, Paper, Text } from "@mantine/core";
+import { IconChartLine, IconCheck, IconTarget, IconTrophy, IconX } from "@tabler/icons-react";
+import { useRouter } from "@tanstack/react-router";
+import { useAtom } from "jotai";
+import { useTranslation } from "react-i18next";
+import { activeTabAtom, tabsAtom } from "@/state/atoms";
+import { createTab } from "@/utils/tabs";
 import PracticeBoardWithProvider from "./practice/PracticeBoard";
 
 interface PracticeExercise {
@@ -24,6 +29,22 @@ export function PracticeBoard({
   resetCounter,
   onMove,
 }: PracticeBoardProps) {
+  const { t } = useTranslation();
+  const { navigate } = useRouter();
+  const [, setTabs] = useAtom(tabsAtom);
+  const [, setActiveTab] = useAtom(activeTabAtom);
+
+  const handleAnalyze = () => {
+    createTab({
+      tab: { name: t("features.tabs.analysisBoard.title", "Analysis Board"), type: "analysis" },
+      setTabs,
+      setActiveTab,
+      headers: { fen: currentFen } as any,
+      pgn: "*"
+    });
+    navigate({ to: "/boards" });
+  };
+
   return (
     <Box>
       <PracticeBoardWithProvider
@@ -85,6 +106,17 @@ export function PracticeBoard({
               </Group>
             </Paper>
           )}
+
+          <Button
+            fullWidth
+            mt="md"
+            variant="light"
+            color="blue"
+            leftSection={<IconChartLine size={20} />}
+            onClick={handleAnalyze}
+          >
+            {t("features.practice.analyzePosition", "Analyze Position")}
+          </Button>
         </>
       )}
     </Box>
