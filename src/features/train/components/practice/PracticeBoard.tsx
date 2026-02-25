@@ -189,7 +189,7 @@ function PracticeBoard({
   }, []);
 
   return (
-    <Paper p="md" withBorder>
+    <Paper>
       <Chessground
         setBoardFen={setBoardFen}
         orientation={orientation}

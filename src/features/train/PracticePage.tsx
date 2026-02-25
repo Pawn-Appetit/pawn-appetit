@@ -1,51 +1,72 @@
 import {
-  ActionIcon,
-  Anchor,
   Box,
-  Breadcrumbs,
-  Button,
   Center,
-  Flex,
+  Grid,
   Group,
+  Notification,
   Paper,
   Popover,
-  SimpleGrid,
   Stack,
   Text,
-  TextInput,
   ThemeIcon,
-  Title,
+  Transition,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import { IconArrowBackUp, IconBulb, IconRefresh, IconSearch } from "@tabler/icons-react";
+import { useHotkeys, useInterval } from "@mantine/hooks";
+import { IconCheck, IconSearch, IconX } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useAtom } from "jotai";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+
+import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import { useUserStatsStore } from "@/state/userStatsStore";
 import { applyUciMoveToFen } from "@/utils/applyUciMoveToFen";
-import { CompletionModal } from "./components/CompletionModal";
+import { createTab } from "@/utils/tabs";
+
 import { PracticeBoard } from "./components/PracticeBoard";
-import { PracticeContent } from "./components/PracticeContent";
-import { PracticeCard } from "./components/practice/PracticeCard";
-import { type PracticeCategory, type PracticeExercise, practices, uiConfig } from "./constants/practices";
+import { ExerciseHeader } from "./components/PracticePlayer/ExerciseHeader";
+import { SidebarData } from "./components/PracticePlayer/SidebarData";
+import { type PracticeCategory, type PracticeExercise, practices } from "./constants/practices";
 import { useExerciseState } from "./hooks/useExerciseState";
+
+type FeedbackState = "success" | "failure" | null;
 
 export default function PracticePage() {
   const { t } = useTranslation();
-  const GROUPS = ["All", "Checkmates", "Basic Tactics", "Intermediate Tactics", "Pawn Endgames", "Rook Endgames"];
-  const [activeTab, setActiveTab] = useState<string>(GROUPS[0]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showCompletionModal, setShowCompletionModal] = useState(false);
-  const [completedCategoryTitle, setCompletedCategoryTitle] = useState("");
   const { navigate } = useRouter();
-  const [opened, { close, open }] = useDisclosure(false);
-  const { layout } = useResponsiveLayout();
-
   const { userStats, setUserStats } = useUserStatsStore();
+  const [, setTabs] = useAtom(tabsAtom);
+  const [, setActiveTab] = useAtom(activeTabAtom);
+
+  
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [attempts, setAttempts] = useState(0);
+
+  
+  const [elapsed, setElapsed] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startTimer = useCallback(() => {
+    if (timerRef.current) return;
+    timerRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
+  }, []);
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+  const resetTimer = useCallback(() => {
+    stopTimer();
+    setElapsed(0);
+    startTimer();
+  }, [stopTimer, startTimer]);
+
+  
+  const [hintOpen, setHintOpen] = useState(false);
 
   const {
-    selectedCategory: selectedPractice,
+    selectedCategory,
     selectedExercise,
     currentFen,
     setCurrentFen,
@@ -53,287 +74,260 @@ export default function PracticePage() {
     message,
     playerMoveCount,
     resetCounter,
-    handleCategorySelect: handlePracticeSelect,
+    handleCategorySelect,
     handleExerciseSelect,
     handleMove: handleMoveBase,
-    clearSelection,
     resetExercise,
   } = useExerciseState<PracticeExercise, PracticeCategory>({
     initialFen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-    onExerciseComplete: (practiceId, exerciseId, evaluation) => {
-      const prevCompleted = userStats.completedPractice?.[practiceId] || [];
-      if (!prevCompleted.includes(exerciseId)) {
-        const updatedCompleted = {
-          ...userStats.completedPractice,
-          [practiceId]: [...prevCompleted, exerciseId],
-        };
+    completeOnCorrectMove: false,
+  });
 
-        let totalPoints = 0;
-        for (const [practiceId, exIds] of Object.entries(updatedCompleted)) {
-          const practice = practices.find((c) => c.id === practiceId);
-          if (practice) {
-            for (const exId of exIds) {
-              const exercise = practice.exercises.find((ex) => ex.id === exId);
-              if (exercise?.points) {
-                totalPoints += exercise.points;
-              }
-            }
-          }
-        }
+  
+  const [moveHistory, setMoveHistory] = useState<string[]>([]);
 
-        setUserStats({
-          completedPractice: updatedCompleted,
-          practiceCompleted: Object.values(updatedCompleted).reduce((sum, arr) => sum + arr.length, 0),
-          totalPoints,
-        });
+  
+  useEffect(() => {
+    if (!selectedCategory) {
+      const active =
+        practices.find((p) => {
+          const done = userStats.completedPractice?.[p.id]?.length || 0;
+          return done > 0 && done < p.exercises.length;
+        }) || practices[0];
 
-        const practice = practices.find((c) => c.id === practiceId);
-        if (practice && updatedCompleted[practiceId]?.length === practice.exercises.length) {
-          setCompletedCategoryTitle(practice.title);
-          setShowCompletionModal(true);
-        }
+      if (active) {
+        handleCategorySelect(active);
+        const done = userStats.completedPractice?.[active.id]?.length || 0;
+        const exIdx = done < active.exercises.length ? done : 0;
+        handleExerciseSelect(active.exercises[exIdx]);
       }
+    }
+  }, [selectedCategory, handleCategorySelect, handleExerciseSelect, userStats]);
 
-      if (selectedPractice && selectedExercise) {
-        const currentIndex = selectedPractice.exercises.findIndex(
-          (ex: PracticeExercise) => ex.id === selectedExercise.id,
-        );
-        if (currentIndex < selectedPractice.exercises.length - 1) {
-          setTimeout(() => {
-            const nextExercise = selectedPractice.exercises[currentIndex + 1];
-            handleExerciseSelect(nextExercise);
-            updateExerciseFen(nextExercise?.gameData?.fen);
-          }, 1500);
+  
+  useEffect(() => {
+    if (selectedExercise) startTimer();
+    return () => stopTimer();
+  }, [selectedExercise, startTimer, stopTimer]);
+
+  const handleExerciseCompletion = useCallback(
+    (success: boolean, evalMessage: string) => {
+      stopTimer();
+      setFeedback(success ? "success" : "failure");
+      setFeedbackMsg(evalMessage);
+
+      if (success && selectedCategory && selectedExercise) {
+        const prev = userStats.completedPractice?.[selectedCategory.id] || [];
+        if (!prev.includes(selectedExercise.id)) {
+          setUserStats({
+            completedPractice: {
+              ...userStats.completedPractice,
+              [selectedCategory.id]: [...prev, selectedExercise.id],
+            },
+            practiceCompleted: userStats.practiceCompleted + 1,
+            totalPoints: userStats.totalPoints + (selectedExercise.points || 0),
+          });
         }
+        
+        setTimeout(() => handleNextExercise(), 1500);
       }
     },
-  });
+    [selectedCategory, selectedExercise, userStats, setUserStats, stopTimer],
+  );
 
   const handleMove = (orig: string, dest: string) => {
-    if (!selectedExercise || !selectedPractice) return;
+    if (!selectedExercise || !selectedCategory) return;
     const move = `${orig}${dest}`;
-    handleMoveBase(orig, dest, selectedExercise?.gameData.correctMoves || [], () => {
-      const newFen = applyUciMoveToFen(currentFen, move);
-      if (newFen) setCurrentFen(newFen);
-    });
+
+    setAttempts((a) => a + 1);
+    setMoveHistory((h) => [...h, move]);
+
+    handleMoveBase(orig, dest, selectedExercise?.gameData.correctMoves || [], () => { });
+
+    setTimeout(() => {
+      const isOptimal = selectedExercise.gameData.correctMoves?.includes(move);
+      if (isOptimal) {
+        handleExerciseCompletion(true, "Correct move!");
+      }
+    }, 50);
+
+    const newFen = applyUciMoveToFen(currentFen, move);
+    if (newFen) setCurrentFen(newFen);
   };
 
-  const filteredPractices = practices.filter((practice) => {
-    const hasExercises = practice.exercises && practice.exercises.length > 0;
-    const practiceGroupName = uiConfig.groups[practice.group]?.label || practice.group;
-    const matchesGroup = activeTab === "All" || practiceGroupName === activeTab;
-    const matchesSearch =
-      practice.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      practice.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesGroup && matchesSearch && hasExercises;
-  });
+  useEffect(() => {
+    if (!message) return;
+    if (
+      message.includes("Correct") ||
+      message.includes("Perfect") ||
+      message.includes("Checkmate")
+    ) {
+      handleExerciseCompletion(true, message);
+    } else if (
+      message.includes("not the best move") ||
+      message.includes("incorrect") ||
+      message.includes("Failed")
+    ) {
+      handleExerciseCompletion(false, message);
+    }
+  }, [message, handleExerciseCompletion]);
+
+  const handleNextExercise = useCallback(() => {
+    setFeedback(null);
+    setFeedbackMsg("");
+    setMoveHistory([]);
+    setAttempts(0);
+    resetTimer();
+
+    if (!selectedCategory || !selectedExercise) return;
+    const idx = selectedCategory.exercises.findIndex((ex) => ex.id === selectedExercise.id);
+    if (idx < selectedCategory.exercises.length - 1) {
+      const next = selectedCategory.exercises[idx + 1];
+      handleExerciseSelect(next);
+      updateExerciseFen(next.gameData.fen);
+    } else {
+      navigate({ to: "/train" });
+    }
+  }, [
+    selectedCategory,
+    selectedExercise,
+    handleExerciseSelect,
+    updateExerciseFen,
+    navigate,
+    resetTimer,
+  ]);
+
+  const handleRetry = useCallback(() => {
+    setFeedback(null);
+    setFeedbackMsg("");
+    setMoveHistory([]);
+    setAttempts(0);
+    resetTimer();
+    resetExercise();
+  }, [resetExercise, resetTimer]);
+
+  const handleAnalyze = useCallback(() => {
+    createTab({
+      tab: { name: t("features.tabs.analysisBoard.title", "Analysis Board"), type: "analysis" },
+      setTabs,
+      setActiveTab,
+      headers: { fen: currentFen } as any,
+      pgn: "*",
+    });
+    navigate({ to: "/boards" });
+  }, [currentFen, t, setTabs, setActiveTab, navigate]);
+
+  const handleHint = useCallback(() => {
+    setHintOpen((v) => !v);
+    setTimeout(() => setHintOpen(false), 4000);
+  }, []);
+
+  
+  useHotkeys([
+    ["h", handleHint],
+    ["a", handleAnalyze],
+    ["s", handleNextExercise],
+    ["r", handleRetry],
+  ]);
+
+  
+  if (!selectedCategory || !selectedExercise) {
+    return (
+      <Center h="100vh">
+        <Stack align="center">
+          <ThemeIcon size={64} radius="xl" color="gray" variant="light">
+            <IconSearch size={32} />
+          </ThemeIcon>
+          <Text fw={600} size="lg">
+            Loading exercise…
+          </Text>
+        </Stack>
+      </Center>
+    );
+  }
+
+  const completedCount = userStats.completedPractice?.[selectedCategory.id]?.length || 0;
+  const hint = selectedExercise.gameData.hints?.[0];
 
   return (
-    <>
-      <CompletionModal
-        opened={showCompletionModal}
-        onClose={() => setShowCompletionModal(false)}
-        title={completedCategoryTitle}
-        onContinue={() => {
-          setShowCompletionModal(false);
-        }}
-        onBackToList={() => {
-          setShowCompletionModal(false);
-          clearSelection();
-        }}
+    <Stack gap={0} h="100%" px="md" pb="md" pt="md">
+      <ExerciseHeader
+        categoryTitle={selectedCategory.title}
+        progress={{ completed: completedCount, total: selectedCategory.exercises.length }}
+        onBack={() => navigate({ to: "/train" })}
       />
 
-      <Stack gap="sm" p="md">
-        {!selectedPractice ? (
-          <>
-            <Group gap="lg" align="center" mb="md">
-              <ActionIcon
-                variant="light"
-                size="md"
-                onClick={() => navigate({ to: "/train" })}
-                aria-label="Back to Train"
-                title="Back to Train"
-              >
-                <IconArrowBackUp size={20} />
-              </ActionIcon>
-              <Breadcrumbs separator="→">
-                <Text>Practice</Text>
-              </Breadcrumbs>
-            </Group>
-
-            <Group mb="md" justify="space-between" align="center">
-              <Button.Group>
-                {GROUPS.map((group) => (
-                  <Button
-                    key={group}
-                    variant={activeTab === group ? "filled" : "default"}
-                    onClick={() => setActiveTab(group)}
-                  >
-                    {group}
-                  </Button>
-                ))}
-              </Button.Group>
-
-              <TextInput
-                placeholder={t("features.practice.searchPlaceholder")}
-                leftSection={<IconSearch size={16} />}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.currentTarget.value)}
-                w="300px"
-              />
-            </Group>
-
-            <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg">
-              {filteredPractices.map((practice) => {
-                const completedCount = userStats.completedPractice?.[practice.id]?.length || 0;
-                return (
-                  <PracticeCard
-                    key={practice.id}
-                    category={{
-                      id: practice.id,
-                      title: practice.title,
-                      description: practice.description,
-                      icon: uiConfig.icons[practice.iconName] || uiConfig.icons.crown,
-                      color: practice.color,
-                      exercises: practice.exercises.map((exercise) => ({
-                        id: exercise.id,
-                        title: exercise.title,
-                        description: exercise.description,
-                        difficulty: exercise.difficulty,
-                        fen: exercise.gameData.fen,
-                        correctMoves: exercise.gameData.correctMoves ? [...exercise.gameData.correctMoves] : undefined,
-                        points: exercise.points,
-                        timeLimit: exercise.timeLimit,
-                        stepsCount: exercise.stepsCount,
-                      })),
-                      estimatedTime: practice.estimatedTime,
-                      group: uiConfig.groups[practice.group]?.label || practice.group,
-                    }}
-                    progress={{
-                      completed: completedCount,
-                      total: practice.exercises.length,
-                    }}
-                    onClick={() => handlePracticeSelect(practice)}
-                  />
-                );
-              })}
-            </SimpleGrid>
-
-            {filteredPractices.length === 0 && (
-              <Paper p="xl" radius="md" withBorder>
-                <Center>
-                  <Stack align="center">
-                    <ThemeIcon size={80} radius="md" variant="light" color="gray">
-                      <IconSearch size={40} />
-                    </ThemeIcon>
-                    <Title order={3} c="dimmed">
-                      {t("features.practice.noCategoriesFound")}
-                    </Title>
-                    <Text c="dimmed">{t("features.practice.adjustSearchCriteria")}</Text>
-                  </Stack>
-                </Center>
-              </Paper>
-            )}
-          </>
-        ) : (
-          <>
-            <Group justify="space-between">
-              <Group>
-                <ActionIcon
-                  variant="light"
-                  onClick={() => {
-                    if (selectedExercise) {
-                      const currentPracticeIndex = practices.findIndex((c) => c.id === selectedPractice.id);
-                      if (currentPracticeIndex >= 0) {
-                        clearSelection();
-                        handlePracticeSelect(practices[currentPracticeIndex]);
-                      }
-                    } else {
-                      handlePracticeSelect(null);
-                      navigate({ to: "/train/practice" });
+      <Grid gutter="lg" style={{ flex: 1 }}>
+        <Grid.Col span={{ base: 12, md: 7 }}>
+          <Paper
+            withBorder
+            p="sm"
+            radius="md"
+            h="100%"
+          >
+            <Transition mounted={feedback !== null} transition="slide-down" duration={250}>
+              {(styles) => (
+                <Box style={styles} mb="sm">
+                  <Notification
+                    icon={feedback === "success" ? <IconCheck size={18} /> : <IconX size={18} />}
+                    color={feedback === "success" ? "green" : "red"}
+                    title={
+                      feedback === "success"
+                        ? "Correct! Well played."
+                        : "Incorrect move"
                     }
-                  }}
-                  aria-label="Back to Practice"
-                  title="Back to Practice"
-                >
-                  <IconArrowBackUp size={20} />
-                </ActionIcon>
-                <Breadcrumbs separator="→">
-                  <Anchor component="button" onClick={clearSelection}>
-                    Practice
-                  </Anchor>
-                  <Text>{selectedPractice.title}</Text>
-                  {selectedExercise && <Text>{selectedExercise.title}</Text>}
-                </Breadcrumbs>
-              </Group>
-
-              <Group>
-                <ActionIcon variant="light" color="blue" onClick={resetExercise} title="Reset exercise">
-                  <IconRefresh size={20} />
-                </ActionIcon>
-
-                <Popover position="bottom-end" shadow="md" opened={opened}>
-                  <Popover.Target>
-                    <ActionIcon variant="light" color="yellow" onMouseEnter={open} onMouseLeave={close}>
-                      <IconBulb size={20} />
-                    </ActionIcon>
-                  </Popover.Target>
-                  <Popover.Dropdown style={{ pointerEvents: "none" }}>
-                    <Text>Look for the best move in this position. Consider all tactical motifs!</Text>
-                  </Popover.Dropdown>
-                </Popover>
-              </Group>
-            </Group>
-
-            {/* Responsive layout: vertical stacking for mobile, side-by-side for desktop */}
-            {layout.learn.layoutType === "mobile" ? (
-              // Mobile layout: vertical stacking
-              <Stack gap="xl">
-                <PracticeContent
-                  selectedPractice={selectedPractice}
-                  onExerciseSelect={(exercise) => {
-                    handleExerciseSelect(exercise);
-                    updateExerciseFen(exercise?.gameData?.fen);
-                  }}
-                  layoutOrientation={layout.learn.layoutType}
-                />
-                <PracticeBoard
-                  selectedExercise={selectedExercise}
-                  currentFen={currentFen}
-                  message={message}
-                  playerMoveCount={playerMoveCount}
-                  resetCounter={resetCounter}
-                  onMove={handleMove}
-                />
-              </Stack>
-            ) : (
-              // Desktop layout: side-by-side
-              <Flex gap="xl" align="flex-start">
-                <Box flex={1}>
-                  <PracticeContent
-                    selectedPractice={selectedPractice}
-                    onExerciseSelect={(exercise) => {
-                      handleExerciseSelect(exercise);
-                      updateExerciseFen(exercise?.gameData?.fen);
-                    }}
-                    layoutOrientation={layout.learn.layoutType}
-                  />
+                    withCloseButton
+                    onClose={() => setFeedback(null)}
+                  >
+                    <Text size="sm">{feedbackMsg}</Text>
+                  </Notification>
                 </Box>
-                <Box flex={1}>
-                  <PracticeBoard
-                    selectedExercise={selectedExercise}
-                    currentFen={currentFen}
-                    message={message}
-                    playerMoveCount={playerMoveCount}
-                    resetCounter={resetCounter}
-                    onMove={handleMove}
-                  />
-                </Box>
-              </Flex>
-            )}
-          </>
-        )}
-      </Stack>
-    </>
+              )}
+            </Transition>
+
+            <Box style={{ flex: 1 }}>
+              <PracticeBoard
+                selectedExercise={selectedExercise}
+                currentFen={currentFen}
+                resetCounter={resetCounter}
+                onMove={handleMove}
+              />
+            </Box>
+          </Paper>
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, md: 5 }}>
+          <Popover opened={hintOpen} position="top-end" withArrow>
+            <Popover.Target>
+              <Box h="100%">
+                <SidebarData
+                  objective={{
+                    title: selectedExercise.title,
+                    description: selectedExercise.description as string,
+                    turns: "white",
+                  }}
+                  moveHistory={moveHistory}
+                  stats={{ timeSeconds: elapsed, attempts }}
+                  actions={{
+                    onHint: handleHint,
+                    onAnalyze: handleAnalyze,
+                    onSkip: handleNextExercise,
+                    onReset: handleRetry,
+                  }}
+                />
+              </Box>
+            </Popover.Target>
+            <Popover.Dropdown style={{ maxWidth: 300 }}>
+              <Text size="sm" fw={500}>
+                💡 Hint
+              </Text>
+              <Text size="sm" c="dimmed" mt={4}>
+                {hint || "Look for the best tactical sequence!"}
+              </Text>
+            </Popover.Dropdown>
+          </Popover>
+        </Grid.Col>
+      </Grid>
+    </Stack>
   );
 }

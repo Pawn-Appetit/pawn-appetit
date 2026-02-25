@@ -1,0 +1,10 @@
+.card {
+    transition: transform 150ms ease, box-shadow 150ms ease;
+    cursor: pointer;
+    height: 100%;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--mantine-shadow-md);
+}

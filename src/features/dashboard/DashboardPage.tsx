@@ -279,7 +279,7 @@ export default function DashboardPage() {
           ? "Endgames"
           : /Checkmates|Tactics/i.test(group)
             ? "Tactics"
-            : "Lessons";
+            : "Practice";
         picked.push({
           id: `practice:${target.id}`,
           title: `Practice: ${target.title}`,
@@ -312,7 +312,7 @@ export default function DashboardPage() {
           picked.push({
             id: `analyze:${last.id}`,
             title: t("dashboard.suggestions.analyzeLastGame"),
-            tag: "Lessons",
+            tag: "Practice",
             difficulty: "All",
             onClick: () => {
               const headers = createLocalGameHeaders(last);

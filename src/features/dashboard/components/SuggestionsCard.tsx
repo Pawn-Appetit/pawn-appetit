@@ -4,7 +4,7 @@ import { IconArrowRight, IconBook2, IconBrain, IconTrophy } from "@tabler/icons-
 export type Suggestion = {
   id: string;
   title: string;
-  tag: "Lessons" | "Openings" | "Endgames" | "Tactics";
+  tag: "Practice" | "Openings" | "Endgames" | "Tactics";
   difficulty: string;
   to?: string;
   onClick?: () => void;
@@ -21,8 +21,8 @@ export function SuggestionsCard({ suggestions, onSuggestionClick }: SuggestionsC
       <Group justify="space-between" mb="sm">
         <Text fw={700}>Suggested for you</Text>
         <Group gap="xs">
-          <Badge variant="light" color="grape">
-            Lessons
+          <Badge variant="light" color="teal">
+            Practice
           </Badge>
           <Badge variant="light" color="blue">
             Openings
