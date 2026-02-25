@@ -242,9 +242,9 @@
       "files": "Fichiers",
       "databases": "Bases de données",
       "engines": "Moteurs",
-      "learn": "Apprentissage",
       "settings": "Paramètres",
-      "keyboardShortcuts": "Raccourcis clavier"
+      "keyboardShortcuts": "Raccourcis clavier",
+      "train": "Apprentissage"
     },
     "dashboard": {
       "welcome": {

@@ -242,9 +242,9 @@
       "files": "Dateien",
       "databases": "Datenbanken",
       "engines": "Engines",
-      "learn": "Lernen",
       "settings": "Einstellungen",
-      "keyboardShortcuts": "Tastenkombinationen"
+      "keyboardShortcuts": "Tastenkombinationen",
+      "train": "Lernen"
     },
     "dashboard": {
       "welcome": {

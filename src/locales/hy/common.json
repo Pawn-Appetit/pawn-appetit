@@ -242,9 +242,9 @@
       "files": "Ֆայլեր",
       "databases": "Տվյալների բազաներ",
       "engines": "Շարժիչներ",
-      "learn": "Սովորել",
       "settings": "Կարգավորումներ",
-      "keyboardShortcuts": "Ստեղնաշարի կարճ ճանապարհներ"
+      "keyboardShortcuts": "Ստեղնաշարի կարճ ճանապարհներ",
+      "train": "Սովորել"
     },
     "dashboard": {
       "welcome": {

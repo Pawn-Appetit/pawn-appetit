@@ -56,8 +56,8 @@
     },
     "sidebar": {
       "dashboard": "لوحة التحكم",
-      "learn": "تعلّم",
-      "keyboardShortcuts": "اختصارات لوحة المفاتيح"
+      "keyboardShortcuts": "اختصارات لوحة المفاتيح",
+      "train": "تعلّم"
     },
     "dashboard": {
       "welcome": {

@@ -503,9 +503,9 @@
       "databases": "Bases de datos",
       "engines": "Motores",
       "puzzles": "Puzzles",
-      "learn": "Aprender",
       "settings": "Configuración",
-      "keyboardShortcuts": "Atajos de teclado"
+      "keyboardShortcuts": "Atajos de teclado",
+      "train": "Aprender"
     },
     "dashboard": {
       "welcome": {

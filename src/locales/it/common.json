@@ -242,9 +242,9 @@
       "files": "Archivio",
       "databases": "Database",
       "engines": "Motori",
-      "learn": "Impara",
       "settings": "Impostazioni",
-      "keyboardShortcuts": "Scorciatoie da tastiera"
+      "keyboardShortcuts": "Scorciatoie da tastiera",
+      "train": "Impara"
     },
     "dashboard": {
       "welcome": {

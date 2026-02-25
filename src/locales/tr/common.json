@@ -242,9 +242,9 @@
       "files": "Dosyalar",
       "databases": "Veritabanları",
       "engines": "Motorlar",
-      "learn": "Öğren",
       "settings": "Ayarlar",
-      "keyboardShortcuts": "Klavye Kısayolları"
+      "keyboardShortcuts": "Klavye Kısayolları",
+      "train": "Öğren"
     },
     "dashboard": {
       "welcome": {

@@ -242,9 +242,9 @@
       "files": "Файлы",
       "databases": "Базы данных",
       "engines": "Движки",
-      "learn": "Обучение",
       "settings": "Настройки",
-      "keyboardShortcuts": "Горячие клавиши"
+      "keyboardShortcuts": "Горячие клавиши",
+      "train": "Обучение"
     },
     "dashboard": {
       "welcome": {

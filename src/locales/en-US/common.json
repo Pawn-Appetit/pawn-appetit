@@ -504,7 +504,6 @@
       "goToFiles": "Go to Files",
       "goToDatabases": "Go to Databases",
       "goToEngines": "Go to Engines",
-      "goToLearn": "Go to Learn",
       "goToSettings": "Go to Settings",
       "goToKeyboardShortcuts": "Go to Keyboard Shortcuts",
       "window": "Window",
@@ -524,7 +523,8 @@
       "promoteToMainLine": "Promote to Main Line",
       "promoteVariation": "Promote Variation",
       "copyVariationPGN": "Copy Variation PGN",
-      "deleteMove": "Delete Move"
+      "deleteMove": "Delete Move",
+      "goToTrain": "Go to Learn"
     },
     "updater": {
       "newVersionAvailable": "New Version Available",
@@ -1344,20 +1344,6 @@
     },
     "choosePromotionPiece": "Choose promotion piece:"
   },
-  "learn": {
-    "chessMasteryHub": "Chess Mastery Hub",
-    "progressTooltip": "Progress",
-    "yourProgress": "Your Progress",
-    "overallProgress": "Overall Progress",
-    "streak": "Streak",
-    "streakDays": "{{count}} days",
-    "level": "Level",
-    "totalPoints": "Total Points",
-    "beginner": "Beginner",
-    "intermediate": "Intermediate",
-    "advanced": "Advanced",
-    "master": "Master"
-  },
   "themes": {
     "preview": {
       "title": "Theme Preview",
@@ -1414,5 +1400,19 @@
   },
   "about": {
     "tauriVersion": "Tauri version: {{version}}"
+  },
+  "train": {
+    "chessMasteryHub": "Chess Mastery Hub",
+    "progressTooltip": "Progress",
+    "yourProgress": "Your Progress",
+    "overallProgress": "Overall Progress",
+    "streak": "Streak",
+    "streakDays": "{{count}} days",
+    "level": "Level",
+    "totalPoints": "Total Points",
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "master": "Master"
   }
 }

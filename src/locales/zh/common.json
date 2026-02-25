@@ -242,9 +242,9 @@
       "files": "文件",
       "databases": "数据库",
       "engines": "引擎",
-      "learn": "学习",
       "settings": "设置",
-      "keyboardShortcuts": "键盘快捷键"
+      "keyboardShortcuts": "键盘快捷键",
+      "train": "学习"
     },
     "dashboard": {
       "welcome": {

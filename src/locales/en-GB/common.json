@@ -1228,20 +1228,6 @@
     },
     "choosePromotionPiece": "Choose promotion piece:"
   },
-  "learn": {
-    "chessMasteryHub": "Chess Mastery Hub",
-    "progressTooltip": "Progress",
-    "yourProgress": "Your Progress",
-    "overallProgress": "Overall Progress",
-    "streak": "Streak",
-    "streakDays": "{{count}} days",
-    "level": "Level",
-    "totalPoints": "Total Points",
-    "beginner": "Beginner",
-    "intermediate": "Intermediate",
-    "advanced": "Advanced",
-    "master": "Master"
-  },
   "themes": {
     "preview": {
       "title": "Theme Preview",
@@ -1298,5 +1284,19 @@
   },
   "about": {
     "tauriVersion": "Tauri version: {{version}}"
+  },
+  "train": {
+    "chessMasteryHub": "Chess Mastery Hub",
+    "progressTooltip": "Progress",
+    "yourProgress": "Your Progress",
+    "overallProgress": "Overall Progress",
+    "streak": "Streak",
+    "streakDays": "{{count}} days",
+    "level": "Level",
+    "totalPoints": "Total Points",
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "master": "Master"
   }
 }
