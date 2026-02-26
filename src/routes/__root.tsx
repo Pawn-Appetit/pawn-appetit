@@ -338,6 +338,17 @@ function RootLayout() {
     return () => document.removeEventListener("keydown", handleGlobalKeyDown, true);
   }, [handleGlobalKeyDown]);
 
+  // When the window is hidden (minimised, or another app is in focus), add a
+  // CSS class that pauses all CSS animations. This prevents any running
+  // @keyframes from consuming GPU time and competing with Core Audio.
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      document.documentElement.classList.toggle("app-hidden", document.hidden);
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, []);
+
   const hotkeyBindings = useMemo(
     () =>
       [
