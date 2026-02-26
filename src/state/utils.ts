@@ -5,8 +5,20 @@ import type {
   SyncStorage,
   SyncStringStorage,
 } from "jotai/vanilla/utils/atomWithStorage";
-import type { z } from "zod";
+import { z } from "zod";
 import { logger } from "@/utils/logger";
+
+/**
+ * Creates a Zod array schema that silently filters out items that fail
+ * validation, so a single corrupt entry won't break the whole list.
+ */
+export const zodArray = <S>(itemSchema: z.ZodType<S>): z.ZodType<S[]> => {
+  const catchValue = {} as never;
+  return z
+    .array(itemSchema.catch(catchValue))
+    .transform((a) => a.filter((o) => o !== catchValue))
+    .catch([]) as z.ZodType<S[]>;
+};
 
 const options = { baseDir: BaseDirectory.AppData };
 export const fileStorage: AsyncStringStorage = {
