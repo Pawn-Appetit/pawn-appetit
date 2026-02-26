@@ -1,7 +1,8 @@
-import { convertFileSrc, invoke } from "@tauri-apps/api/core";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { resolveResource } from "@tauri-apps/api/path";
 import { platform } from "@tauri-apps/plugin-os";
 import { getDefaultStore } from "jotai";
+import { commands } from "@/bindings";
 import { soundCollectionAtom, soundVolumeAtom } from "@/state/atoms";
 
 function isLinux(): boolean {
@@ -15,7 +16,7 @@ function isLinux(): boolean {
 let lastTime = 0;
 
 const soundServerPort: Promise<number> = isLinux()
-  ? invoke<number>("get_sound_server_port")
+  ? commands.getSoundServerPort()
   : Promise.resolve(0);
 
 export async function playSound(capture: boolean, check: boolean) {

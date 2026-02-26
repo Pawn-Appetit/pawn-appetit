@@ -16,7 +16,7 @@ import { useForceUpdate, useHotkeys } from "@mantine/hooks";
 import { IconExternalLink, IconFilter, IconFilterFilled } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { invoke } from "@tauri-apps/api/core";
+import { commands } from "@/bindings";
 import { useAtom, useSetAtom } from "jotai";
 import { DataTable } from "mantine-datatable";
 import { useContext, useState } from "react";
@@ -117,7 +117,7 @@ function GameTable() {
       accessor: "site",
       title: t("features.gameTable.site"),
       render: ({ site }: NormalizedGame) => (
-        <ActionIcon onClick={() => invoke("open_external_link", { url: site })}>
+        <ActionIcon onClick={() => commands.openExternalLink(site)}>
           <IconExternalLink size="1rem" />
         </ActionIcon>
       ),
