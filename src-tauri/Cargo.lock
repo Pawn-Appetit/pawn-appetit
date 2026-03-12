@@ -3543,7 +3543,6 @@ dependencies = [
  "oauth2",
  "once_cell",
  "pgn-reader",
- "postgrest",
  "quick-xml 0.31.0",
  "rand 0.8.5",
  "rayon",
@@ -3880,15 +3879,6 @@ name = "portable-atomic"
 version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f89776e4d69bb58bc6993e99ffa1d11f228b839984854c7daeb5d37f87cbe950"
-
-[[package]]
-name = "postgrest"
-version = "1.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a966c650b47a064e7082170b4be74fca08c088d893244fc4b70123e3c1f3ee7"
-dependencies = [
- "reqwest 0.11.27",
-]
 
 [[package]]
 name = "potential_utf"
