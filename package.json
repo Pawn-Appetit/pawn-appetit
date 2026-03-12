@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "start-vite": "vite",
-    "build-vite": "tsc --noEmit && vite build",
+    "build-vite": "tsgo --noEmit && vite build",
     "build": "tauri build --no-bundle",
     "dev": "tauri dev",
     "android:build": "tauri android build",
@@ -90,12 +90,12 @@
     "@types/d3": "^7.4.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@typescript/native-preview": "7.0.0-dev.20260311.1",
     "@vanilla-extract/css": "^1.18.0",
     "@vanilla-extract/vite-plugin": "^5.1.4",
     "jsdom": "^28.1.0",
     "oxfmt": "^0.39.0",
     "oxlint": "^1.54.0",
-    "typescript": "^5.9.3",
     "vite": "8.0.0-beta.15",
     "vitest": "^4.0.18"
   },
