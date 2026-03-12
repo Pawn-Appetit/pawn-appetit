@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": null,
+  "plugins": ["import", "react", "react-perf", "oxc", "typescript", "vitest"],
   "categories": {},
   "rules": {},
   "settings": {
@@ -36,5 +36,11 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": []
+  "ignorePatterns": [
+    "public/**/*",
+    "src-tauri/**/*",
+    ".github/**/*",
+    "src/bindings/generated.ts",
+    "src/routeTree.gen.ts"
+  ]
 }

@@ -2,7 +2,6 @@
   "name": "pawn-appetit",
   "version": "0.11.0",
   "type": "module",
-  "packageManager": "pnpm@10.32.1",
   "scripts": {
     "start-vite": "vite",
     "build-vite": "tsc --noEmit && vite build",
@@ -94,10 +93,11 @@
     "@vanilla-extract/css": "^1.18.0",
     "@vanilla-extract/vite-plugin": "^5.1.4",
     "jsdom": "^28.1.0",
-    "oxfmt": "^0.38.0",
-    "oxlint": "^1.53.0",
+    "oxfmt": "^0.39.0",
+    "oxlint": "^1.54.0",
     "typescript": "^5.9.3",
     "vite": "8.0.0-beta.15",
     "vitest": "^4.0.18"
-  }
+  },
+  "packageManager": "pnpm@10.32.1"
 }
