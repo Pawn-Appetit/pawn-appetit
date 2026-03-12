@@ -32,3 +32,23 @@ jobs:
 
       - name: Run tests
         run: pnpm test
+        
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Check Rust formatting
+        run: cargo fmt --check
+        working-directory: src-tauri
+
+      - name: Rust clippy
+        run: cargo clippy -- -D warnings
+        working-directory: src-tauri
+
+      - name: Rust unit tests
+        run: cargo test
+        working-directory: src-tauri
+
+      - name: Frontend lint
+        run: pnpm lint
