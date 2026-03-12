@@ -17,7 +17,14 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
-import { IconBell, IconHeart, IconSearch, IconSettings, IconStar, IconUser } from "@tabler/icons-react";
+import {
+  IconBell,
+  IconHeart,
+  IconSearch,
+  IconSettings,
+  IconStar,
+  IconUser,
+} from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import type { Theme } from "../types/theme";
 
@@ -29,9 +36,24 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
   const { t } = useTranslation();
   // Sample data for preview
   const tableData = [
-    { id: 1, name: t("themes.preview.demoUser1"), email: "john@example.com", role: t("themes.preview.admin") },
-    { id: 2, name: t("themes.preview.demoUser2"), email: "jane@example.com", role: t("themes.preview.user") },
-    { id: 3, name: t("themes.preview.demoUser3"), email: "bob@example.com", role: t("themes.preview.moderator") },
+    {
+      id: 1,
+      name: t("themes.preview.demoUser1"),
+      email: "john@example.com",
+      role: t("themes.preview.admin"),
+    },
+    {
+      id: 2,
+      name: t("themes.preview.demoUser2"),
+      email: "jane@example.com",
+      role: t("themes.preview.user"),
+    },
+    {
+      id: 3,
+      name: t("themes.preview.demoUser3"),
+      email: "bob@example.com",
+      role: t("themes.preview.moderator"),
+    },
   ];
 
   return (
@@ -69,7 +91,10 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
                   </Text>
                   <Group gap={2}>
                     {shades.map((shade, index) => (
-                      <Tooltip key={`${colorName}-shade-${index}`} label={`${colorName}.${index}: ${shade}`}>
+                      <Tooltip
+                        key={`${colorName}-shade-${index}`}
+                        label={`${colorName}.${index}: ${shade}`}
+                      >
                         <div
                           style={{
                             width: 24,
@@ -156,10 +181,19 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
 
                 <Group grow>
                   <Input.Wrapper label={t("themes.preview.switch")}>
-                    <Switch label={t("themes.preview.enableNotifications")} color={theme.primaryColor} mt={5} />
+                    <Switch
+                      label={t("themes.preview.enableNotifications")}
+                      color={theme.primaryColor}
+                      mt={5}
+                    />
                   </Input.Wrapper>
                   <Input.Wrapper label={t("themes.preview.slider")}>
-                    <Slider mt={5} defaultValue={40} color={theme.primaryColor} radius={theme.defaultRadius} />
+                    <Slider
+                      mt={5}
+                      defaultValue={40}
+                      color={theme.primaryColor}
+                      radius={theme.defaultRadius}
+                    />
                   </Input.Wrapper>
                 </Group>
               </Stack>
@@ -203,7 +237,13 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
 
             <Tabs.Panel value="feedback" pt="md">
               <Stack gap="md">
-                <Progress value={65} color={theme.primaryColor} radius={theme.defaultRadius} striped animated />
+                <Progress
+                  value={65}
+                  color={theme.primaryColor}
+                  radius={theme.defaultRadius}
+                  striped
+                  animated
+                />
 
                 <Group>
                   <Badge variant="filled" color={theme.primaryColor}>
@@ -270,7 +310,9 @@ export default function ThemePreview({ theme }: ThemePreviewProps) {
           </Title>
           <Group gap="md">
             <Paper p="md" withBorder radius={theme.defaultRadius} style={{ flex: 1 }}>
-              <Text fw={500}>{t("themes.preview.cardWithRadius", { radius: theme.defaultRadius })}</Text>
+              <Text fw={500}>
+                {t("themes.preview.cardWithRadius", { radius: theme.defaultRadius })}
+              </Text>
               <Text size="sm" c="dimmed">
                 {t("themes.preview.scaleFactor", { scale: theme.scale })}
               </Text>

@@ -1,4 +1,15 @@
-import { ActionIcon, Badge, Card, Center, Divider, Group, Modal, Stack, Text, Tooltip } from "@mantine/core";
+import {
+  ActionIcon,
+  Badge,
+  Card,
+  Center,
+  Divider,
+  Group,
+  Modal,
+  Stack,
+  Text,
+  Tooltip,
+} from "@mantine/core";
 import { IconCloud } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { BaseDirectory, exists } from "@tauri-apps/plugin-fs";
@@ -62,7 +73,11 @@ function FideInfo({
         <Group>
           <b>FIDE Player Info</b>
           {player && (
-            <a href={`https://ratings.fide.com/profile/${player.fideid}`} target="_blank" rel="noreferrer">
+            <a
+              href={`https://ratings.fide.com/profile/${player.fideid}`}
+              target="_blank"
+              rel="noreferrer"
+            >
               <ActionIcon>
                 <IconCloud />
               </ActionIcon>

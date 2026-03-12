@@ -16,7 +16,12 @@ interface ChessComGamesTabProps {
   onAnalyzeAll?: () => void;
 }
 
-export function ChessComGamesTab({ games, chessComUsernames, onAnalyzeGame, onAnalyzeAll }: ChessComGamesTabProps) {
+export function ChessComGamesTab({
+  games,
+  chessComUsernames,
+  onAnalyzeGame,
+  onAnalyzeAll,
+}: ChessComGamesTabProps) {
   const { t } = useTranslation();
   const [gameStats, setGameStats] = useState<Map<string, GameStats>>(new Map());
 
@@ -131,7 +136,11 @@ export function ChessComGamesTab({ games, chessComUsernames, onAnalyzeGame, onAn
                 <Table.Td>
                   <Badge
                     color={
-                      result === "win" ? "teal" : result === "checkmated" || result === "resigned" ? "red" : "gray"
+                      result === "win"
+                        ? "teal"
+                        : result === "checkmated" || result === "resigned"
+                          ? "red"
+                          : "gray"
                     }
                   >
                     {result}

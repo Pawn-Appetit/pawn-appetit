@@ -27,12 +27,24 @@ function getCastlingRights(setup: Setup) {
     const blackQueenSquare = getCastlingSquare(setup, "b", "q");
 
     whiteCastling = {
-      k: whiteKingSquare !== undefined && whiteKingPos === 4 ? setup.castlingRights.has(whiteKingSquare) : false,
-      q: whiteQueenSquare !== undefined && whiteKingPos === 4 ? setup.castlingRights.has(whiteQueenSquare) : false,
+      k:
+        whiteKingSquare !== undefined && whiteKingPos === 4
+          ? setup.castlingRights.has(whiteKingSquare)
+          : false,
+      q:
+        whiteQueenSquare !== undefined && whiteKingPos === 4
+          ? setup.castlingRights.has(whiteQueenSquare)
+          : false,
     };
     blackCastling = {
-      k: blackKingSquare !== undefined && blackKingPos === 60 ? setup.castlingRights.has(blackKingSquare) : false,
-      q: blackQueenSquare !== undefined && blackKingPos === 60 ? setup.castlingRights.has(blackQueenSquare) : false,
+      k:
+        blackKingSquare !== undefined && blackKingPos === 60
+          ? setup.castlingRights.has(blackKingSquare)
+          : false,
+      q:
+        blackQueenSquare !== undefined && blackKingPos === 60
+          ? setup.castlingRights.has(blackQueenSquare)
+          : false,
     };
   }
 
@@ -66,7 +78,9 @@ function FenInput({ currentFen }: { currentFen: string }) {
     (color: "w" | "b", side: "q" | "k", value: boolean) => {
       if (setup) {
         const castlingSquare = getCastlingSquare(setup, color, side);
-        const kingPos = setup.board[color === "w" ? "white" : "black"].intersect(setup.board.king).singleSquare();
+        const kingPos = setup.board[color === "w" ? "white" : "black"]
+          .intersect(setup.board.king)
+          .singleSquare();
         const initialKingPos = color === "w" ? 4 : 60;
 
         if (castlingSquare !== undefined && kingPos === initialKingPos) {

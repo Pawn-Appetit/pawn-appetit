@@ -74,7 +74,10 @@ export default function BoardsPage() {
       onDragEnd={({ destination, source }) => {
         if (!destination) return;
 
-        if (source.droppableId === DROPPABLE_IDS.TABS && destination.droppableId === DROPPABLE_IDS.TABS) {
+        if (
+          source.droppableId === DROPPABLE_IDS.TABS &&
+          destination.droppableId === DROPPABLE_IDS.TABS
+        ) {
           setTabs((prev) => {
             const result = Array.from(prev);
             const [removed] = result.splice(source.index, 1);
@@ -83,7 +86,10 @@ export default function BoardsPage() {
           });
         }
 
-        if (source.droppableId === DROPPABLE_IDS.ENGINES && destination.droppableId === DROPPABLE_IDS.ENGINES) {
+        if (
+          source.droppableId === DROPPABLE_IDS.ENGINES &&
+          destination.droppableId === DROPPABLE_IDS.ENGINES
+        ) {
           const event = new CustomEvent(CUSTOM_EVENTS.ENGINE_REORDER, {
             detail: { source, destination },
           });
@@ -106,11 +112,19 @@ export default function BoardsPage() {
           <ScrollArea scrollbarSize={SCROLL_AREA_CONFIG.SCROLLBAR_SIZE} scrollbars="x">
             <Droppable droppableId={DROPPABLE_IDS.TABS} direction="horizontal">
               {(provided) => (
-                <div ref={provided.innerRef} {...provided.droppableProps} style={{ display: "flex" }}>
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  style={{ display: "flex" }}
+                >
                   {tabs.map((tab, i) => (
                     <Draggable key={tab.value} draggableId={tab.value} index={i}>
                       {(provided) => (
-                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                        >
                           <BoardTab
                             tab={tab}
                             setActiveTab={setActiveTab}
@@ -216,7 +230,8 @@ const TabSwitch = function TabSwitch({ tab }: { tab: Tab }) {
     ))
     .with("analysis", () => {
       // Check if this is a variants file type
-      const isVariantsFile = tab.source?.type === "file" && tab.source.metadata?.type === "variants";
+      const isVariantsFile =
+        tab.source?.type === "file" && tab.source.metadata?.type === "variants";
 
       return (
         <TreeStateProvider id={tab.value}>

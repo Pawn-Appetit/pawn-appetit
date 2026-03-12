@@ -100,7 +100,9 @@ function TournamentCard({ tournament, file }: { tournament: Event; file: string 
       [] as { name: string; points: number }[],
     ) || [];
 
-  players.sort((a, b) => b.points - a.points || a.name.localeCompare(b.name, "en", { sensitivity: "base" }));
+  players.sort(
+    (a, b) => b.points - a.points || a.name.localeCompare(b.name, "en", { sensitivity: "base" }),
+  );
 
   const paginatedGames = sortedGames.slice((page - 1) * 25, (page - 1) * 25 + 25);
 
@@ -113,7 +115,9 @@ function TournamentCard({ tournament, file }: { tournament: Event; file: string 
         <Tabs
           defaultValue="games"
           value={tournamentsActiveTab}
-          onChange={(tab) => setTournamentsActiveTab(tab as DatabaseViewStore["tournaments"]["activeTab"])}
+          onChange={(tab) =>
+            setTournamentsActiveTab(tab as DatabaseViewStore["tournaments"]["activeTab"])
+          }
           style={{ flexDirection: "column", overflow: "hidden" }}
           display="flex"
           h="100%"
@@ -197,7 +201,10 @@ function TournamentCard({ tournament, file }: { tournament: Event; file: string 
                   accessor: "date",
                   sortable: true,
                   render: ({ date }) =>
-                    t("formatters.dateFormat", { date: parseDate(date), interpolation: { escapeValue: false } }),
+                    t("formatters.dateFormat", {
+                      date: parseDate(date),
+                      interpolation: { escapeValue: false },
+                    }),
                 },
                 { accessor: "result" },
                 { accessor: "ply_count", sortable: true },

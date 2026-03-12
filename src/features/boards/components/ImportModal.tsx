@@ -58,7 +58,10 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
 
   async function parseGamesFromTarget(
     resolvedTarget: ResolvedPgnTarget,
-  ): Promise<{ trees: TreeState[]; errors: { gameIndex: number; error: string; fileName?: string }[] }> {
+  ): Promise<{
+    trees: TreeState[];
+    errors: { gameIndex: number; error: string; fileName?: string }[];
+  }> {
     const trees = [];
     const errors = [];
 
@@ -438,7 +441,14 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
 
       {Input}
 
-      <Button fullWidth mt="md" radius="md" loading={loading} disabled={disabled} onClick={handleSubmit}>
+      <Button
+        fullWidth
+        mt="md"
+        radius="md"
+        loading={loading}
+        disabled={disabled}
+        onClick={handleSubmit}
+      >
         {loading ? t("features.tabs.importGame.importing") : t("features.tabs.importGame.import")}
       </Button>
     </>

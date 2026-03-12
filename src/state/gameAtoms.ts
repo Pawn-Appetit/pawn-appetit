@@ -21,9 +21,9 @@ import { tabValue } from "./uiAtoms";
 export const referenceDbAtom = atomWithStorage<string | null>("reference-database", null);
 export const selectedPuzzleDbAtom = atomWithStorage<string | null>("puzzle-db", null);
 export const selectedDatabaseAtom = atomWithStorage<SuccessDatabaseInfo | null>(
-  "database-view",
-  null,
-  createJSONStorage(() => sessionStorage),
+    "database-view",
+    null,
+    createJSONStorage(() => sessionStorage),
 );
 
 // ---------------------------------------------------------------------------
@@ -33,10 +33,13 @@ export const selectedDatabaseAtom = atomWithStorage<SuccessDatabaseInfo | null>(
 export const hidePuzzleRatingAtom = atomWithStorage<boolean>("hide-puzzle-rating", false);
 export const progressivePuzzlesAtom = atomWithStorage<boolean>("progressive-puzzles", false);
 export const jumpToNextPuzzleAtom = atomWithStorage<"off" | "success" | "success-and-failure">(
-  "puzzle-jump-next",
-  "success",
+    "puzzle-jump-next",
+    "success",
 );
-export const puzzleRatingRangeAtom = atomWithStorage<[number, number]>("puzzle-ratings", [1000, 1500]);
+export const puzzleRatingRangeAtom = atomWithStorage<[number, number]>(
+    "puzzle-ratings",
+    [1000, 1500],
+);
 export const inOrderPuzzlesAtom = atomWithStorage<boolean>("puzzle-in-order", false);
 export const puzzlePlayerRatingAtom = atomWithStorage<number>("puzzle-player-rating", 1500);
 export const maxPuzzlePlayerRatingAtom = atomWithStorage<number>("puzzle-max-player-rating", 1500);
@@ -45,43 +48,52 @@ export const maxPuzzlePlayerRatingAtom = atomWithStorage<number>("puzzle-max-pla
 // Practice / Repertoire training
 // ---------------------------------------------------------------------------
 
-export type PracticeAnimationSpeed = "disabled" | "very-fast" | "fast" | "normal" | "slow" | "very-slow";
-export const practiceAnimationSpeedAtom = atomWithStorage<PracticeAnimationSpeed>("practice-animation-speed", "normal");
+export type PracticeAnimationSpeed =
+    | "disabled"
+    | "very-fast"
+    | "fast"
+    | "normal"
+    | "slow"
+    | "very-slow";
+export const practiceAnimationSpeedAtom = atomWithStorage<PracticeAnimationSpeed>(
+    "practice-animation-speed",
+    "normal",
+);
 
 type TabMap<T> = Record<string, T>;
 export const missingMovesAtom = atomWithStorage<TabMap<MissingMove[] | null>>(
-  "missing-moves",
-  {},
-  createJSONStorage(() => sessionStorage),
+    "missing-moves",
+    {},
+    createJSONStorage(() => sessionStorage),
 );
 
 const reviewLogSchema = z
-  .object({
-    fen: z.string(),
-  })
-  .passthrough();
+    .object({
+        fen: z.string(),
+    })
+    .passthrough();
 
 const practiceDataSchema = z.object({
-  positions: positionSchema.array(),
-  logs: reviewLogSchema.array(),
+    positions: positionSchema.array(),
+    logs: reviewLogSchema.array(),
 });
 
 export type PracticeData = {
-  positions: Position[];
-  logs: (ReviewLog & { fen: string })[];
+    positions: Position[];
+    logs: (ReviewLog & { fen: string })[];
 };
 
 export const deckAtomFamily = atomFamily(
-  ({ file, game }: { file: string; game: number }) =>
-    atomWithStorage<PracticeData>(
-      `deck-${file}-${game}`,
-      {
-        positions: [],
-        logs: [],
-      },
-      createZodStorage(practiceDataSchema, localStorage) as any as SyncStorage<PracticeData>, // TODO: fix types
-    ),
-  (a, b) => a.file === b.file && a.game === b.game,
+    ({ file, game }: { file: string; game: number }) =>
+        atomWithStorage<PracticeData>(
+            `deck-${file}-${game}`,
+            {
+                positions: [],
+                logs: [],
+            },
+            createZodStorage(practiceDataSchema, localStorage) as any as SyncStorage<PracticeData>, // TODO: fix types
+        ),
+    (a, b) => a.file === b.file && a.game === b.game,
 );
 
 // ---------------------------------------------------------------------------
@@ -93,10 +105,10 @@ const gameStateFamily = atomFamily((tab: string) => atom<GameState>("settingUp")
 export const currentGameStateAtom = tabValue(gameStateFamily);
 
 const playersFamily = atomFamily((tab: string) =>
-  atom<{
-    white: OpponentSettings;
-    black: OpponentSettings;
-  }>({ white: {} as OpponentSettings, black: {} as OpponentSettings }),
+    atom<{
+        white: OpponentSettings;
+        black: OpponentSettings;
+    }>({ white: {} as OpponentSettings, black: {} as OpponentSettings }),
 );
 export const currentPlayersAtom = tabValue(playersFamily);
 

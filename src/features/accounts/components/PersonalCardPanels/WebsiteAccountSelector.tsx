@@ -46,7 +46,8 @@ const WebsiteAccountSelector = ({
       .filter(
         (s) =>
           s.player === playerName &&
-          ((website === "Chess.com" && s.chessCom?.username) || (website === "Lichess" && s.lichess?.username)),
+          ((website === "Chess.com" && s.chessCom?.username) ||
+            (website === "Lichess" && s.lichess?.username)),
       )
       .map((s) => s.chessCom?.username || s.lichess?.username)
       .filter((username): username is string => username !== undefined && username !== null),

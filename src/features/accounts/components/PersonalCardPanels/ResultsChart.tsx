@@ -1,6 +1,16 @@
 import { Tooltip as MTTooltip, Progress } from "@mantine/core";
 
-function ResultsChart({ won, draw, lost, size }: { won: number; draw: number; lost: number; size: string }) {
+function ResultsChart({
+  won,
+  draw,
+  lost,
+  size,
+}: {
+  won: number;
+  draw: number;
+  lost: number;
+  size: string;
+}) {
   const total = won + draw + lost;
   return (
     <Progress.Root size={size}>

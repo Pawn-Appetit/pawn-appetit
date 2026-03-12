@@ -29,7 +29,10 @@ export function DailyGoalsCard({ goals, achievements, currentStreak }: DailyGoal
                   {g.current}/{g.total}
                 </Text>
               </Group>
-              <Progress value={value} color={value >= 100 ? "teal" : value > 60 ? "yellow" : "green"} />
+              <Progress
+                value={value}
+                color={value >= 100 ? "teal" : value > 60 ? "yellow" : "green"}
+              />
             </Box>
           );
         })}

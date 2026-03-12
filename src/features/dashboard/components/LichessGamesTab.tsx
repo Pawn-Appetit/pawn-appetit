@@ -29,7 +29,12 @@ interface LichessGamesTabProps {
   onAnalyzeAll?: () => void;
 }
 
-export function LichessGamesTab({ games, lichessUsernames, onAnalyzeGame, onAnalyzeAll }: LichessGamesTabProps) {
+export function LichessGamesTab({
+  games,
+  lichessUsernames,
+  onAnalyzeGame,
+  onAnalyzeAll,
+}: LichessGamesTabProps) {
   const { t } = useTranslation();
   const [gameStats, setGameStats] = useState<Map<string, GameStats>>(new Map());
 
@@ -141,7 +146,9 @@ export function LichessGamesTab({ games, lichessUsernames, onAnalyzeGame, onAnal
                   <Badge variant="light">{color}</Badge>
                 </Table.Td>
                 <Table.Td>
-                  <Badge color={g.winner === color.toLowerCase() ? "teal" : g.winner ? "red" : "gray"}>
+                  <Badge
+                    color={g.winner === color.toLowerCase() ? "teal" : g.winner ? "red" : "gray"}
+                  >
                     {g.status}
                   </Badge>
                 </Table.Td>
@@ -181,7 +188,12 @@ export function LichessGamesTab({ games, lichessUsernames, onAnalyzeGame, onAnal
                 </Table.Td>
                 <Table.Td>
                   <Group gap="xs" wrap="nowrap">
-                    <Button size="xs" variant="light" onClick={() => onAnalyzeGame(g)} disabled={!g.pgn}>
+                    <Button
+                      size="xs"
+                      variant="light"
+                      onClick={() => onAnalyzeGame(g)}
+                      disabled={!g.pgn}
+                    >
                       Analyze
                     </Button>
                     <Button

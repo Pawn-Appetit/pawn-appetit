@@ -14,32 +14,37 @@ import { z } from "zod";
 // Tab management
 // ---------------------------------------------------------------------------
 
-export const tabsAtom = atomWithStorage<Tab[]>("tabs", [], createZodStorage(z.array(tabSchema), sessionStorage));
+export const tabsAtom = atomWithStorage<Tab[]>(
+    "tabs",
+    [],
+    createZodStorage(z.array(tabSchema), sessionStorage),
+);
 
 export const activeTabAtom = atomWithStorage<string | null>(
-  "activeTab",
-  "",
-  createJSONStorage(() => sessionStorage),
+    "activeTab",
+    "",
+    createJSONStorage(() => sessionStorage),
 );
 
 export const currentTabAtom = atom(
-  (get) => {
-    const tabs = get(tabsAtom);
-    const activeTab = get(activeTabAtom);
-    return tabs.find((tab) => tab.value === activeTab);
-  },
-  (get, set, newValue: Tab | ((currentTab: Tab) => Tab)) => {
-    const tabs = get(tabsAtom);
-    const activeTab = get(activeTabAtom);
-    const nextValue = typeof newValue === "function" ? newValue(get(currentTabAtom)!) : newValue;
-    const newTabs = tabs.map((tab) => {
-      if (tab.value === activeTab) {
-        return nextValue;
-      }
-      return tab;
-    });
-    set(tabsAtom, newTabs);
-  },
+    (get) => {
+        const tabs = get(tabsAtom);
+        const activeTab = get(activeTabAtom);
+        return tabs.find((tab) => tab.value === activeTab);
+    },
+    (get, set, newValue: Tab | ((currentTab: Tab) => Tab)) => {
+        const tabs = get(tabsAtom);
+        const activeTab = get(activeTabAtom);
+        const nextValue =
+            typeof newValue === "function" ? newValue(get(currentTabAtom)!) : newValue;
+        const newTabs = tabs.map((tab) => {
+            if (tab.value === activeTab) {
+                return nextValue;
+            }
+            return tab;
+        });
+        set(tabsAtom, newTabs);
+    },
 );
 
 // ---------------------------------------------------------------------------
@@ -47,43 +52,47 @@ export const currentTabAtom = atom(
 // ---------------------------------------------------------------------------
 
 export function tabValue<T extends object | string | boolean | number | null | undefined>(
-  family: AtomFamily<string, PrimitiveAtom<T>>,
+    family: AtomFamily<string, PrimitiveAtom<T>>,
 ) {
-  return atom(
-    (get) => {
-      const tab = get(currentTabAtom);
-      if (!tab) {
-        const newTab: Tab = {
-          name: "New Tab",
-          value: genID(),
-          type: "new",
-        };
-        const a = family(newTab.value);
-        return get(a);
-      }
+    return atom(
+        (get) => {
+            const tab = get(currentTabAtom);
+            if (!tab) {
+                const newTab: Tab = {
+                    name: "New Tab",
+                    value: genID(),
+                    type: "new",
+                };
+                const a = family(newTab.value);
+                return get(a);
+            }
 
-      const a = family(tab.value);
-      return get(a);
-    },
-    (get, set, newValue: T | ((currentValue: T) => T)) => {
-      const tab = get(currentTabAtom);
-      if (!tab) {
-        const newTab: Tab = {
-          name: "New Tab",
-          value: genID(),
-          type: "new",
-        };
-        const nextValue = typeof newValue === "function" ? newValue(get(tabValue(family)) as T) : newValue;
-        const a = family(newTab.value);
-        set(a, nextValue);
-        return;
-      }
+            const a = family(tab.value);
+            return get(a);
+        },
+        (get, set, newValue: T | ((currentValue: T) => T)) => {
+            const tab = get(currentTabAtom);
+            if (!tab) {
+                const newTab: Tab = {
+                    name: "New Tab",
+                    value: genID(),
+                    type: "new",
+                };
+                const nextValue =
+                    typeof newValue === "function"
+                        ? newValue(get(tabValue(family)) as T)
+                        : newValue;
+                const a = family(newTab.value);
+                set(a, nextValue);
+                return;
+            }
 
-      const nextValue = typeof newValue === "function" ? newValue(get(tabValue(family)) as T) : newValue;
-      const a = family(tab.value);
-      set(a, nextValue);
-    },
-  );
+            const nextValue =
+                typeof newValue === "function" ? newValue(get(tabValue(family)) as T) : newValue;
+            const a = family(tab.value);
+            set(a, nextValue);
+        },
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -103,14 +112,14 @@ const tabFamily = atomFamily((tab: string) => atom("info"));
 export const currentTabSelectedAtom = tabValue(tabFamily);
 
 const localOptionsFamily = atomFamily((tab: string) =>
-  atom<LocalOptions>({
-    path: null,
-    type: "exact",
-    fen: "",
-    player: null,
-    color: "white",
-    result: "any",
-  }),
+    atom<LocalOptions>({
+        path: null,
+        type: "exact",
+        fen: "",
+        player: null,
+        color: "white",
+        result: "any",
+    }),
 );
 export const currentLocalOptionsAtom = tabValue(localOptionsFamily);
 
@@ -130,11 +139,11 @@ const expandedEnginesFamily = atomFamily((tab: string) => atom<string[] | undefi
 export const currentExpandedEnginesAtom = tabValue(expandedEnginesFamily);
 
 const pgnOptionsFamily = atomFamily((tab: string) =>
-  atom({
-    comments: true,
-    glyphs: true,
-    variations: true,
-    extraMarkups: true,
-  }),
+    atom({
+        comments: true,
+        glyphs: true,
+        variations: true,
+        extraMarkups: true,
+    }),
 );
 export const currentPgnOptionsAtom = tabValue(pgnOptionsFamily);

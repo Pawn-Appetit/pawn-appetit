@@ -41,7 +41,13 @@ interface EngineSettingsProps {
 type UciOptionWithCurrent =
   | {
       type: "spin";
-      value: { name: string; default: bigint | null; min: bigint | null; max: bigint | null; value: number };
+      value: {
+        name: string;
+        default: bigint | null;
+        min: bigint | null;
+        max: bigint | null;
+        value: number;
+      };
     }
   | { type: "combo"; value: { name: string; default: string | null; var: string[]; value: string } }
   | { type: "string"; value: { name: string; default: string | null; value: string | null } }
@@ -56,7 +62,9 @@ export function EngineSettings({ selected, setSelected, isMobile }: EngineSettin
   const [isLoadingConfig, setIsLoadingConfig] = useState(false);
   const [configError, setConfigError] = useState<string | null>(null);
   const processedEngineRef = useRef<string | null>(null);
-  const configCacheRef = useRef<Map<string, { name: string; options: UciOptionConfig[] }>>(new Map());
+  const configCacheRef = useRef<Map<string, { name: string; options: UciOptionConfig[] }>>(
+    new Map(),
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -145,7 +153,9 @@ export function EngineSettings({ selected, setSelected, isMobile }: EngineSettin
     if (processedEngineRef.current === engineKey) return;
 
     const settings = [...(engine.settings || [])];
-    const missing = requiredEngineSettings.filter((field) => !settings.find((setting) => setting.name === field));
+    const missing = requiredEngineSettings.filter(
+      (field) => !settings.find((setting) => setting.name === field),
+    );
 
     if (missing.length === 0) {
       processedEngineRef.current = engineKey;
@@ -176,7 +186,9 @@ export function EngineSettings({ selected, setSelected, isMobile }: EngineSettin
         switch (option.type) {
           case "spin": {
             const cur =
-              typeof setting?.value === "number" ? (setting.value as number) : Number(option.value.default ?? 0);
+              typeof setting?.value === "number"
+                ? (setting.value as number)
+                : Number(option.value.default ?? 0);
             return { type: "spin", value: { ...option.value, value: cur } };
           }
           case "combo": {
@@ -187,13 +199,18 @@ export function EngineSettings({ selected, setSelected, isMobile }: EngineSettin
             return { type: "combo", value: { ...option.value, value: cur } };
           }
           case "string": {
-            const cur = typeof setting?.value === "string" ? (setting.value as string) : (option.value.default ?? null);
+            const cur =
+              typeof setting?.value === "string"
+                ? (setting.value as string)
+                : (option.value.default ?? null);
             return { type: "string", value: { ...option.value, value: cur } };
           }
           case "check": {
             const opt = option as Extract<UciOptionConfig, { type: "check" }>;
             const cur =
-              typeof setting?.value === "boolean" ? (setting.value as boolean) : Boolean(opt.value.default ?? false);
+              typeof setting?.value === "boolean"
+                ? (setting.value as boolean)
+                : Boolean(opt.value.default ?? false);
             return { type: "check", value: { ...opt.value, value: cur } };
           }
           case "button":
@@ -215,7 +232,11 @@ export function EngineSettings({ selected, setSelected, isMobile }: EngineSettin
   }
 
   const setSetting = useCallback(
-    (name: string, value: string | number | boolean | null, def: string | number | boolean | null) => {
+    (
+      name: string,
+      value: string | number | boolean | null,
+      def: string | number | boolean | null,
+    ) => {
       setEngines(async (prev) => {
         const engines = await prev;
         const currentEngine = engines[selected] as LocalEngine;
@@ -305,7 +326,13 @@ export function EngineSettings({ selected, setSelected, isMobile }: EngineSettin
             <Center>
               {engine.image ? (
                 <Paper withBorder style={{ cursor: "pointer" }} onClick={changeImage}>
-                  <LocalImage src={engine.image} alt={engine.name} mah="8rem" maw="100%" fit="contain" />
+                  <LocalImage
+                    src={engine.image}
+                    alt={engine.name}
+                    mah="8rem"
+                    maw="100%"
+                    fit="contain"
+                  />
                 </Paper>
               ) : (
                 <ActionIcon
@@ -364,7 +391,13 @@ export function EngineSettings({ selected, setSelected, isMobile }: EngineSettin
             <Center>
               {engine.image ? (
                 <Paper withBorder style={{ cursor: "pointer" }} onClick={changeImage}>
-                  <LocalImage src={engine.image} alt={engine.name} mah="10rem" maw="100%" fit="contain" />
+                  <LocalImage
+                    src={engine.image}
+                    alt={engine.name}
+                    mah="10rem"
+                    maw="100%"
+                    fit="contain"
+                  />
                 </Paper>
               ) : (
                 <ActionIcon
@@ -384,7 +417,10 @@ export function EngineSettings({ selected, setSelected, isMobile }: EngineSettin
           </Group>
         )}
         <Divider variant="dashed" label={t("features.engines.settings.searchSettings")} />
-        <GoModeInput goMode={engine.go || null} setGoMode={(v) => setEngine({ ...engine, go: v })} />
+        <GoModeInput
+          goMode={engine.go || null}
+          setGoMode={(v) => setEngine({ ...engine, go: v })}
+        />
 
         <Divider variant="dashed" label={t("features.engines.settings.advancedSettings")} />
         <SimpleGrid cols={isMobile ? 1 : 2}>

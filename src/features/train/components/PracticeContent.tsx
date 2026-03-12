@@ -19,14 +19,17 @@ export function PracticeContent({
   const userStats = useUserStatsStore((state) => state.userStats);
 
   // Create exercise options for the dropdown
-  const exerciseOptions = selectedPractice.exercises.map((exercise: PracticeExercise, index: number) => {
-    const isCompleted = userStats.completedPractice?.[selectedPractice.id]?.includes(exercise.id) || false;
-    return {
-      value: exercise.id,
-      label: `${index + 1}. ${exercise.title}${isCompleted ? " ✓" : ""}`,
-      exercise,
-    };
-  });
+  const exerciseOptions = selectedPractice.exercises.map(
+    (exercise: PracticeExercise, index: number) => {
+      const isCompleted =
+        userStats.completedPractice?.[selectedPractice.id]?.includes(exercise.id) || false;
+      return {
+        value: exercise.id,
+        label: `${index + 1}. ${exercise.title}${isCompleted ? " ✓" : ""}`,
+        exercise,
+      };
+    },
+  );
 
   const handleExerciseSelect = (exerciseId: string | null) => {
     if (exerciseId) {
@@ -41,7 +44,11 @@ export function PracticeContent({
     <Stack gap="md">
       <Paper p="lg" withBorder radius="md">
         <Group gap="md" mb="md">
-          <ThemeIcon size={40} variant="gradient" gradient={{ from: selectedPractice.color, to: "cyan" }}>
+          <ThemeIcon
+            size={40}
+            variant="gradient"
+            gradient={{ from: selectedPractice.color, to: "cyan" }}
+          >
             {uiConfig.icons[selectedPractice.iconName] || uiConfig.icons.crown}
           </ThemeIcon>
           <Box>
@@ -62,7 +69,10 @@ export function PracticeContent({
           <Group gap="xs">
             <IconTrophy size={16} />
             <Text size="sm">
-              {selectedPractice.exercises.reduce((sum: number, ex: PracticeExercise) => sum + (ex.points || 0), 0)}{" "}
+              {selectedPractice.exercises.reduce(
+                (sum: number, ex: PracticeExercise) => sum + (ex.points || 0),
+                0,
+              )}{" "}
               points
             </Text>
           </Group>
@@ -73,12 +83,18 @@ export function PracticeContent({
 
       {layoutOrientation === "mobile" ? (
         // Mobile layout: dropdown
-        <Select placeholder="Select an exercise..." data={exerciseOptions} onChange={handleExerciseSelect} size="md" />
+        <Select
+          placeholder="Select an exercise..."
+          data={exerciseOptions}
+          onChange={handleExerciseSelect}
+          size="md"
+        />
       ) : (
         // Desktop layout: stack of cards
         <Stack gap="md">
           {selectedPractice.exercises.map((exercise: PracticeExercise, index: number) => {
-            const isCompleted = userStats.completedPractice?.[selectedPractice.id]?.includes(exercise.id) || false;
+            const isCompleted =
+              userStats.completedPractice?.[selectedPractice.id]?.includes(exercise.id) || false;
             return (
               <PracticeExerciseCard
                 key={exercise.id}
@@ -88,7 +104,9 @@ export function PracticeContent({
                   description: exercise.description,
                   difficulty: exercise.difficulty,
                   fen: exercise.gameData.fen,
-                  correctMoves: exercise.gameData.correctMoves ? [...exercise.gameData.correctMoves] : undefined,
+                  correctMoves: exercise.gameData.correctMoves
+                    ? [...exercise.gameData.correctMoves]
+                    : undefined,
                   points: exercise.points,
                   timeLimit: exercise.timeLimit,
                   stepsCount: exercise.stepsCount,

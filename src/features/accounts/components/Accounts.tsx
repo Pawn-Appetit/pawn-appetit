@@ -140,7 +140,12 @@ function Accounts({
           onAddAccount={() => setOpen(true)}
         />
       )}
-      <AccountModal open={open} setOpen={setOpen} addLichess={addLichess} addChessCom={addChessCom} />
+      <AccountModal
+        open={open}
+        setOpen={setOpen}
+        addLichess={addLichess}
+        addChessCom={addChessCom}
+      />
     </>
   );
 }

@@ -10,7 +10,13 @@ interface CompletionModalProps {
   onBackToList: () => void;
 }
 
-export function CompletionModal({ opened, onClose, title, onContinue, onBackToList }: CompletionModalProps) {
+export function CompletionModal({
+  opened,
+  onClose,
+  title,
+  onContinue,
+  onBackToList,
+}: CompletionModalProps) {
   const { t } = useTranslation();
 
   return (

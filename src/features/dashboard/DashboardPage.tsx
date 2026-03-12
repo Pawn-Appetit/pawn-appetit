@@ -21,7 +21,12 @@ import { type ChessComGame, fetchLastChessComGames } from "@/utils/chess.com/api
 import { type DailyGoal, getDailyGoals } from "@/utils/dailyGoals";
 import type { LocalEngine } from "@/utils/engines";
 import { createFile } from "@/utils/files";
-import { deleteGameRecord, type GameRecord, getRecentGames, updateGameRecord } from "@/utils/gameRecords";
+import {
+  deleteGameRecord,
+  type GameRecord,
+  getRecentGames,
+  updateGameRecord,
+} from "@/utils/gameRecords";
 import { fetchLastLichessGames } from "@/utils/lichess/api";
 import { getPuzzleStats, getTodayPuzzleCount } from "@/utils/puzzleStreak";
 import { createTab, genID, type Tab } from "@/utils/tabs";
@@ -68,7 +73,9 @@ export default function DashboardPage() {
   const [mainAccountName, setMainAccountName] = useState<string | null>(null);
   const [activeGamesTab, setActiveGamesTab] = useState<string | null>("local");
   const [analyzeAllModalOpened, setAnalyzeAllModalOpened] = useState(false);
-  const [analyzeAllGameType, setAnalyzeAllGameType] = useState<"local" | "chesscom" | "lichess" | null>(null);
+  const [analyzeAllGameType, setAnalyzeAllGameType] = useState<
+    "local" | "chesscom" | "lichess" | null
+  >(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("mainAccount");
@@ -93,7 +100,8 @@ export default function DashboardPage() {
     user = {
       name: acc.username,
       handle: `@${acc.username}`,
-      rating: acc.perfs?.classical?.rating ?? acc.perfs?.rapid?.rating ?? acc.perfs?.blitz?.rating ?? 0,
+      rating:
+        acc.perfs?.classical?.rating ?? acc.perfs?.rapid?.rating ?? acc.perfs?.blitz?.rating ?? 0,
     };
     const classical = acc.perfs?.classical?.rating;
     const rapid = acc.perfs?.rapid?.rating;
@@ -163,9 +171,15 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchGames = async () => {
       const usersToFetch =
-        selectedLichessUser === "all" ? lichessUsernames : selectedLichessUser ? [selectedLichessUser] : [];
+        selectedLichessUser === "all"
+          ? lichessUsernames
+          : selectedLichessUser
+            ? [selectedLichessUser]
+            : [];
       if (usersToFetch.length > 0) {
-        const allGamesPromises = usersToFetch.map((username) => fetchLastLichessGames(username, 50));
+        const allGamesPromises = usersToFetch.map((username) =>
+          fetchLastLichessGames(username, 50),
+        );
         const gamesArrays = await Promise.all(allGamesPromises);
         const combinedGames = gamesArrays.flat();
         combinedGames.sort((a, b) => b.createdAt - a.createdAt);
@@ -204,7 +218,11 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchGames = async () => {
       const usersToFetch =
-        selectedChessComUser === "all" ? chessComUsernames : selectedChessComUser ? [selectedChessComUser] : [];
+        selectedChessComUser === "all"
+          ? chessComUsernames
+          : selectedChessComUser
+            ? [selectedChessComUser]
+            : [];
       if (usersToFetch.length > 0) {
         info(`Fetching Chess.com games for: ${JSON.stringify(usersToFetch)}`);
         const allGamesPromises = usersToFetch.map((username) => fetchLastChessComGames(username));
@@ -288,26 +306,28 @@ export default function DashboardPage() {
           to: "/train/practice",
         });
       }
-    } catch { }
+    } catch {}
 
     try {
       const today = getTodayPuzzleCount();
       if (today < 5) {
         picked.push({
           id: `puzzles:streak`,
-          title: today === 0 ? "Start today’s puzzle streak" : "Keep the streak: solve more puzzles",
+          title:
+            today === 0 ? "Start today’s puzzle streak" : "Keep the streak: solve more puzzles",
           tag: "Tactics",
           difficulty: "All",
           to: "/train/practice",
         });
       }
-    } catch { }
+    } catch {}
 
     try {
       const last: GameRecord | undefined = recentGames?.[0];
       if (last) {
         const isUserWhite = last.white.type === "human";
-        const userLost = (isUserWhite && last.result === "0-1") || (!isUserWhite && last.result === "1-0");
+        const userLost =
+          (isUserWhite && last.result === "0-1") || (!isUserWhite && last.result === "1-0");
         if (userLost) {
           picked.push({
             id: `analyze:${last.id}`,
@@ -334,7 +354,7 @@ export default function DashboardPage() {
           });
         }
       }
-    } catch { }
+    } catch {}
 
     while (picked.length < 3) {
       const fallbackId = `fallback:${picked.length}`;
@@ -407,115 +427,115 @@ export default function DashboardPage() {
     onClick: () => void;
     color: MantineColor;
   }[] = [
-      {
-        icon: <IconClock />,
-        title: t("chess.timeControl.classical"),
-        description: t("dashboard.timeControlCards.classicalDesc"),
-        onClick: () => {
-          const uuid = genID();
-          setTabs((prev: Tab[]) => {
-            return [
-              ...prev,
-              {
-                value: uuid,
-                name: t("chess.timeControl.classical"),
-                type: "play",
-                meta: {
-                  timeControl: {
-                    seconds: 30 * 60 * 1000,
-                    increment: 0,
-                  },
+    {
+      icon: <IconClock />,
+      title: t("chess.timeControl.classical"),
+      description: t("dashboard.timeControlCards.classicalDesc"),
+      onClick: () => {
+        const uuid = genID();
+        setTabs((prev: Tab[]) => {
+          return [
+            ...prev,
+            {
+              value: uuid,
+              name: t("chess.timeControl.classical"),
+              type: "play",
+              meta: {
+                timeControl: {
+                  seconds: 30 * 60 * 1000,
+                  increment: 0,
                 },
               },
-            ];
-          });
-          setActiveTab(uuid);
-          navigate({ to: "/boards" });
-        },
-        color: "blue.6",
+            },
+          ];
+        });
+        setActiveTab(uuid);
+        navigate({ to: "/boards" });
       },
-      {
-        icon: <IconStopwatch />,
-        title: t("chess.timeControl.rapid"),
-        description: t("dashboard.timeControlCards.rapidDesc"),
-        onClick: () => {
-          const uuid = genID();
-          setTabs((prev: Tab[]) => {
-            return [
-              ...prev,
-              {
-                value: uuid,
-                name: t("chess.timeControl.rapid"),
-                type: "play",
-                meta: {
-                  timeControl: {
-                    seconds: 10 * 60 * 1000,
-                    increment: 0,
-                  },
+      color: "blue.6",
+    },
+    {
+      icon: <IconStopwatch />,
+      title: t("chess.timeControl.rapid"),
+      description: t("dashboard.timeControlCards.rapidDesc"),
+      onClick: () => {
+        const uuid = genID();
+        setTabs((prev: Tab[]) => {
+          return [
+            ...prev,
+            {
+              value: uuid,
+              name: t("chess.timeControl.rapid"),
+              type: "play",
+              meta: {
+                timeControl: {
+                  seconds: 10 * 60 * 1000,
+                  increment: 0,
                 },
               },
-            ];
-          });
-          setActiveTab(uuid);
-          navigate({ to: "/boards" });
-        },
-        color: "teal.6",
+            },
+          ];
+        });
+        setActiveTab(uuid);
+        navigate({ to: "/boards" });
       },
-      {
-        icon: <IconBolt />,
-        title: t("chess.timeControl.blitz"),
-        description: t("dashboard.timeControlCards.blitzDesc"),
-        onClick: () => {
-          const uuid = genID();
-          setTabs((prev: Tab[]) => {
-            return [
-              ...prev,
-              {
-                value: uuid,
-                name: t("chess.timeControl.blitz"),
-                type: "play",
-                meta: {
-                  timeControl: {
-                    seconds: 3 * 60 * 1000,
-                    increment: 0,
-                  },
+      color: "teal.6",
+    },
+    {
+      icon: <IconBolt />,
+      title: t("chess.timeControl.blitz"),
+      description: t("dashboard.timeControlCards.blitzDesc"),
+      onClick: () => {
+        const uuid = genID();
+        setTabs((prev: Tab[]) => {
+          return [
+            ...prev,
+            {
+              value: uuid,
+              name: t("chess.timeControl.blitz"),
+              type: "play",
+              meta: {
+                timeControl: {
+                  seconds: 3 * 60 * 1000,
+                  increment: 0,
                 },
               },
-            ];
-          });
-          setActiveTab(uuid);
-          navigate({ to: "/boards" });
-        },
-        color: "yellow.6",
+            },
+          ];
+        });
+        setActiveTab(uuid);
+        navigate({ to: "/boards" });
       },
-      {
-        icon: <IconBolt />,
-        title: t("chess.timeControl.bullet"),
-        description: t("dashboard.timeControlCards.bulletDesc"),
-        onClick: () => {
-          const uuid = genID();
-          setTabs((prev: Tab[]) => {
-            return [
-              ...prev,
-              {
-                value: uuid,
-                name: t("chess.timeControl.bullet"),
-                type: "play",
-                meta: {
-                  timeControl: {
-                    seconds: 1 * 60 * 1000,
-                    increment: 0,
-                  },
+      color: "yellow.6",
+    },
+    {
+      icon: <IconBolt />,
+      title: t("chess.timeControl.bullet"),
+      description: t("dashboard.timeControlCards.bulletDesc"),
+      onClick: () => {
+        const uuid = genID();
+        setTabs((prev: Tab[]) => {
+          return [
+            ...prev,
+            {
+              value: uuid,
+              name: t("chess.timeControl.bullet"),
+              type: "play",
+              meta: {
+                timeControl: {
+                  seconds: 1 * 60 * 1000,
+                  increment: 0,
                 },
               },
-            ];
-          });
-          setActiveTab(uuid);
-          navigate({ to: "/boards" });
-        },
-        color: "blue.6",
+            },
+          ];
+        });
+        setActiveTab(uuid);
+        navigate({ to: "/boards" });
       },
-    ];
+      color: "blue.6",
+    },
+  ];
 
   return (
     <Stack p="md" gap="md">
@@ -673,7 +693,11 @@ export default function DashboardPage() {
         </Grid.Col>
 
         <Grid.Col span={{ base: 12, sm: 12, md: 5, lg: 5, xl: 5 }}>
-          <DailyGoalsCard goals={goals} achievements={achievements} currentStreak={puzzleStats.currentStreak} />
+          <DailyGoalsCard
+            goals={goals}
+            achievements={achievements}
+            currentStreak={puzzleStats.currentStreak}
+          />
         </Grid.Col>
       </Grid>
 
@@ -770,17 +794,22 @@ export default function DashboardPage() {
               let moves: string[];
               let initialFen: string;
               let gameHeaders: ReturnType<
-                typeof createLocalGameHeaders | typeof createChessComGameHeaders | typeof createLichessGameHeaders
+                | typeof createLocalGameHeaders
+                | typeof createChessComGameHeaders
+                | typeof createLichessGameHeaders
               >;
 
               if (analyzeAllGameType === "local") {
                 // For local games, use PGN if available, otherwise reconstruct from moves
                 const gameRecord = game as GameRecord;
                 const pgn =
-                  gameRecord.pgn || createPGNFromMoves(gameRecord.moves, gameRecord.result, gameRecord.initialFen);
+                  gameRecord.pgn ||
+                  createPGNFromMoves(gameRecord.moves, gameRecord.result, gameRecord.initialFen);
                 tree = await parsePGN(pgn, gameRecord.initialFen);
                 moves = gameRecord.moves;
-                initialFen = gameRecord.initialFen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+                initialFen =
+                  gameRecord.initialFen ||
+                  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
                 gameHeaders = createLocalGameHeaders(gameRecord);
               } else {
                 // For Chess.com and Lichess games, parse PGN
@@ -789,7 +818,8 @@ export default function DashboardPage() {
                 // Extract UCI moves from the main line using getMainLine
                 const is960 = tree.headers?.variant === "Chess960";
                 moves = getMainLine(tree.root, is960);
-                initialFen = tree.headers?.fen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+                initialFen =
+                  tree.headers?.fen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
                 gameHeaders =
                   analyzeAllGameType === "chesscom"
                     ? createChessComGameHeaders(game as ChessComGame)
@@ -869,7 +899,8 @@ export default function DashboardPage() {
 
               // Ensure PGN has a result (required for valid PGN)
               const hasResult =
-                /\[Result\s+"[^"]+"\]/.test(analyzedPgn) || /\s+(1-0|0-1|1\/2-1\/2|\*)\s*$/.test(analyzedPgn);
+                /\[Result\s+"[^"]+"\]/.test(analyzedPgn) ||
+                /\s+(1-0|0-1|1\/2-1\/2|\*)\s*$/.test(analyzedPgn);
               if (!hasResult && tree.headers?.result) {
                 // If result is missing but we have it in headers, append it
                 analyzedPgn = analyzedPgn.trim() + ` ${tree.headers.result}`;
@@ -881,7 +912,10 @@ export default function DashboardPage() {
               // Only save if analysis was not cancelled
               if (!isCancelled()) {
                 // Save analyzed PGN to file
-                const fileName = `${gameHeaders.white}-${gameHeaders.black}-${i + 1}`.replace(/[<>:"/\\|?*]/g, "_");
+                const fileName = `${gameHeaders.white}-${gameHeaders.black}-${i + 1}`.replace(
+                  /[<>:"/\\|?*]/g,
+                  "_",
+                );
                 const filePath = await resolve(folderName, `${fileName}.pgn`);
 
                 await writeTextFile(filePath, analyzedPgn);

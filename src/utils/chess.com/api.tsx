@@ -82,7 +82,9 @@ export async function getChessComAccount(player: string): Promise<ChessComStats 
   const data = await response.json();
   const stats = ChessComStatsSchema.safeParse(data);
   if (!stats.success) {
-    error(`Invalid response for Chess.com account: ${response.status} ${response.url}\n${stats.error}`);
+    error(
+      `Invalid response for Chess.com account: ${response.status} ${response.url}\n${stats.error}`,
+    );
     notifications.show({
       title: "Failed to fetch Chess.com account",
       message: `Invalid response for "${player}" on chess.com`,
@@ -259,7 +261,9 @@ export async function getChesscomGame(gameURL: string) {
   const parsedResponse = chessComGameCallbackSchema.safeParse(apiData);
 
   if (!parsedResponse.success) {
-    error(`Invalid response for Chess.com game: ${response.status} ${response.url}\n${parsedResponse.error}`);
+    error(
+      `Invalid response for Chess.com game: ${response.status} ${response.url}\n${parsedResponse.error}`,
+    );
     notifications.show({
       title: "Failed to fetch Chess.com game",
       message: `Invalid response for "${gameURL}" on chess.com`,
@@ -277,7 +281,9 @@ export async function getChesscomGame(gameURL: string) {
   if (!moves) {
     return "";
   }
-  const game = defaultGame<PgnNodeData>(() => new Map(Object.entries(pgnHeaders).map(([k, v]) => [k, v.toString()])));
+  const game = defaultGame<PgnNodeData>(
+    () => new Map(Object.entries(pgnHeaders).map(([k, v]) => [k, v.toString()])),
+  );
   const chess = Chess.default();
 
   let lastNode = game.moves;

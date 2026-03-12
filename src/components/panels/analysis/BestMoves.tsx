@@ -14,7 +14,13 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { useToggle } from "@mantine/hooks";
-import { IconGripVertical, IconPlayerPause, IconPlayerPlay, IconSettings, IconTargetArrow } from "@tabler/icons-react";
+import {
+  IconGripVertical,
+  IconPlayerPause,
+  IconPlayerPlay,
+  IconSettings,
+  IconTargetArrow,
+} from "@tabler/icons-react";
 import { parseUci } from "chessops";
 import { INITIAL_FEN, makeFen } from "chessops/fen";
 import equal from "fast-deep-equal";
@@ -54,7 +60,15 @@ interface BestMovesProps {
   orientation: "white" | "black";
 }
 
-function BestMovesComponent({ id, engine, fen, moves, halfMoves, dragHandleProps, orientation }: BestMovesProps) {
+function BestMovesComponent({
+  id,
+  engine,
+  fen,
+  moves,
+  halfMoves,
+  dragHandleProps,
+  orientation,
+}: BestMovesProps) {
   const { t } = useTranslation();
 
   const activeTab = useAtomValue(activeTabAtom);
@@ -87,7 +101,9 @@ function BestMovesComponent({ id, engine, fen, moves, halfMoves, dragHandleProps
       if (newSettings.synced) {
         setEngines(async (prev) =>
           (await prev).map((o) =>
-            o.name === engine.name ? { ...o, settings: newSettings.settings, go: newSettings.go } : o,
+            o.name === engine.name
+              ? { ...o, settings: newSettings.settings, go: newSettings.go }
+              : o,
           ),
         );
       }
@@ -130,7 +146,10 @@ function BestMovesComponent({ id, engine, fen, moves, halfMoves, dragHandleProps
   );
 
   const engineVariations = useDeferredValue(
-    useMemo(() => ev.get(`${searchingFen}:${searchingMoves.join(",")}`), [ev, searchingFen, searchingMoves]),
+    useMemo(
+      () => ev.get(`${searchingFen}:${searchingMoves.join(",")}`),
+      [ev, searchingFen, searchingMoves],
+    ),
   );
 
   return (
@@ -240,13 +259,15 @@ function BestMovesComponent({ id, engine, fen, moves, halfMoves, dragHandleProps
               !error &&
               !engineVariations &&
               (settings.enabled ? (
-                [...Array(settings.settings.find((s) => s.name === "MultiPV")?.value ?? 1)].map((_, i) => (
-                  <Table.Tr key={i}>
-                    <Table.Td>
-                      <Skeleton height={35} radius="xl" p={5} />
-                    </Table.Td>
-                  </Table.Tr>
-                ))
+                [...Array(settings.settings.find((s) => s.name === "MultiPV")?.value ?? 1)].map(
+                  (_, i) => (
+                    <Table.Tr key={i}>
+                      <Table.Td>
+                        <Skeleton height={35} radius="xl" p={5} />
+                      </Table.Td>
+                    </Table.Tr>
+                  ),
+                )
               ) : (
                 <Table.Tr>
                   <Table.Td>
@@ -306,12 +327,20 @@ function EngineTop({
         <Text fw="bold" fz="xl">
           {name}
         </Text>
-        {enabled && !isGameOver && !error && !engineVariations && <Code fz="xs">{t("common.loading")}</Code>}
-        {progress < 100 && enabled && !isGameOver && engineVariations && engineVariations.length > 0 && (
-          <Tooltip label={t("analysis.engineSpeed")}>
-            <Code fz="xs">{t("units.nodes", { nodes: isComputed ? engineVariations[0].nps : 0 })}</Code>
-          </Tooltip>
+        {enabled && !isGameOver && !error && !engineVariations && (
+          <Code fz="xs">{t("common.loading")}</Code>
         )}
+        {progress < 100 &&
+          enabled &&
+          !isGameOver &&
+          engineVariations &&
+          engineVariations.length > 0 && (
+            <Tooltip label={t("analysis.engineSpeed")}>
+              <Code fz="xs">
+                {t("units.nodes", { nodes: isComputed ? engineVariations[0].nps : 0 })}
+              </Code>
+            </Tooltip>
+          )}
       </Group>
       <Group gap="lg">
         {!isGameOver && engineVariations && engineVariations.length > 0 && (

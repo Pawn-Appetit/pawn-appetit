@@ -16,7 +16,11 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame }: WelcomeC
       <Group align="center" justify="space-between" wrap="nowrap">
         <Stack gap={6} flex={6}>
           <Title order={1} fw={800}>
-            {t(isFirstOpen ? "features.dashboard.welcome.firstOpen" : "features.dashboard.welcome.back")}
+            {t(
+              isFirstOpen
+                ? "features.dashboard.welcome.firstOpen"
+                : "features.dashboard.welcome.back",
+            )}
           </Title>
           <Text size="sm" c="dimmed">
             {t("features.dashboard.welcome.desc")}
@@ -25,7 +29,12 @@ export function WelcomeCard({ isFirstOpen, onPlayChess, onImportGame }: WelcomeC
             <Button radius="md" onClick={onPlayChess} leftSection={<IconChess size={18} />}>
               {t("features.dashboard.cards.playChess.button")}
             </Button>
-            <Button variant="light" radius="md" onClick={onImportGame} leftSection={<IconUpload size={18} />}>
+            <Button
+              variant="light"
+              radius="md"
+              onClick={onImportGame}
+              leftSection={<IconUpload size={18} />}
+            >
               {t("features.tabs.importGame.button")}
             </Button>
           </Group>

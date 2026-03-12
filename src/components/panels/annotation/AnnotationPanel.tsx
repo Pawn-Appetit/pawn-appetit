@@ -1,4 +1,14 @@
-import { ActionIcon, Collapse, Divider, Group, ScrollArea, Stack, Text, Tooltip, useMantineTheme } from "@mantine/core";
+import {
+  ActionIcon,
+  Collapse,
+  Divider,
+  Group,
+  ScrollArea,
+  Stack,
+  Text,
+  Tooltip,
+  useMantineTheme,
+} from "@mantine/core";
 import { IconChevronDown } from "@tabler/icons-react";
 import { atom, useAtom } from "jotai";
 import { memo, useContext } from "react";
@@ -24,7 +34,10 @@ const SymbolButton = memo(function SymbolButton({
   const isActive = curAnnotations.includes(annotation);
   const theme = useMantineTheme();
   return (
-    <Tooltip label={translationKey ? t(`chess.annotate.${translationKey}`) : name} position="bottom">
+    <Tooltip
+      label={translationKey ? t(`chess.annotate.${translationKey}`) : name}
+      position="bottom"
+    >
       <ActionIcon
         onClick={() => setAnnotation(annotation)}
         variant={isActive ? "filled" : "default"}
@@ -53,7 +66,13 @@ function AnnotationPanel() {
       <Stack gap={0}>
         <Group grow>
           {BASIC.map((annotation) => {
-            return <SymbolButton key={annotation} curAnnotations={currentNode.annotations} annotation={annotation} />;
+            return (
+              <SymbolButton
+                key={annotation}
+                curAnnotations={currentNode.annotations}
+                annotation={annotation}
+              />
+            );
           })}
         </Group>
         <Divider
@@ -77,12 +96,20 @@ function AnnotationPanel() {
         <Stack mb="md">
           <Group grow>
             {ADVANTAGE.map((annotation) => (
-              <SymbolButton key={annotation} curAnnotations={currentNode.annotations} annotation={annotation} />
+              <SymbolButton
+                key={annotation}
+                curAnnotations={currentNode.annotations}
+                annotation={annotation}
+              />
             ))}
           </Group>
           <Group grow>
             {EXTRA.map((annotation) => (
-              <SymbolButton key={annotation} curAnnotations={currentNode.annotations} annotation={annotation} />
+              <SymbolButton
+                key={annotation}
+                curAnnotations={currentNode.annotations}
+                annotation={annotation}
+              />
             ))}
           </Group>
         </Stack>

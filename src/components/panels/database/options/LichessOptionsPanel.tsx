@@ -22,7 +22,14 @@ const LichessOptionsPanel = () => {
 
   const [options, setOptions] = useAtom(lichessOptionsAtom);
 
-  const timeControls: LichessGameSpeed[] = ["ultraBullet", "bullet", "blitz", "rapid", "classical", "correspondence"];
+  const timeControls: LichessGameSpeed[] = [
+    "ultraBullet",
+    "bullet",
+    "blitz",
+    "rapid",
+    "classical",
+    "correspondence",
+  ];
   const ratings: LichessRating[] = [0, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2500];
 
   function mapTimeControl(speed: LichessGameSpeed): ToggleButtonGroupOption<LichessGameSpeed> {

@@ -23,12 +23,23 @@ import { useTranslation } from "react-i18next";
 import { commands, events } from "@/bindings";
 import ProgressButton from "@/components/ProgressButton";
 import { enginesAtom } from "@/state/atoms";
-import { type LocalEngine, type RemoteEngine, requiredEngineSettings, useDefaultEngines } from "@/utils/engines";
+import {
+  type LocalEngine,
+  type RemoteEngine,
+  requiredEngineSettings,
+  useDefaultEngines,
+} from "@/utils/engines";
 import { usePlatform } from "@/utils/files";
 import { unwrap } from "@/utils/unwrap";
 import EngineForm from "../EngineForm";
 
-function AddEngine({ opened, setOpened }: { opened: boolean; setOpened: (opened: boolean) => void }) {
+function AddEngine({
+  opened,
+  setOpened,
+}: {
+  opened: boolean;
+  setOpened: (opened: boolean) => void;
+}) {
   const { t } = useTranslation();
 
   const [allEngines, setEngines] = useAtom(enginesAtom);
@@ -188,7 +199,11 @@ function EngineCard({ engine, engineId }: { engine: LocalEngine; engineId: numbe
           const url = engine.downloadLink;
           if (!url) throw new Error("Download link not found");
 
-          let path = await resolve(await appDataDir(), "engines", `${url.slice(url.lastIndexOf("/") + 1)}`);
+          let path = await resolve(
+            await appDataDir(),
+            "engines",
+            `${url.slice(url.lastIndexOf("/") + 1)}`,
+          );
           if (url.endsWith(".zip") || url.endsWith(".tar")) {
             path = await resolve(await appDataDir(), "engines");
           }
@@ -215,7 +230,9 @@ function EngineCard({ engine, engineId }: { engine: LocalEngine; engineId: numbe
           const [manager, ...args] = packageCommand.split(" ");
           const packageName = args[args.length - 1];
 
-          const result = unwrap(await commands.installPackage(manager.replace("sudo", "").trim(), packageName));
+          const result = unwrap(
+            await commands.installPackage(manager.replace("sudo", "").trim(), packageName),
+          );
           if (!result.success) {
             throw new Error(`Package installation failed: ${result.stderr}`);
           }
@@ -225,7 +242,8 @@ function EngineCard({ engine, engineId }: { engine: LocalEngine; engineId: numbe
         }
 
         const configResult = await commands.getEngineConfig(enginePath);
-        const config = configResult.status === "ok" ? configResult.data : { name: engine.name, options: [] };
+        const config =
+          configResult.status === "ok" ? configResult.data : { name: engine.name, options: [] };
 
         setEngines(async (prev) => [
           ...(await prev),

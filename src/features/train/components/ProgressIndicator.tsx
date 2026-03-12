@@ -8,7 +8,13 @@ interface LinearProgressProps {
   width?: number;
 }
 
-export function LinearProgress({ completed, total, size = "md", tooltipLabel, width = 200 }: LinearProgressProps) {
+export function LinearProgress({
+  completed,
+  total,
+  size = "md",
+  tooltipLabel,
+  width = 200,
+}: LinearProgressProps) {
   const percentage = total > 0 ? (completed / total) * 100 : 0;
   const isComplete = percentage === 100;
 
@@ -16,7 +22,13 @@ export function LinearProgress({ completed, total, size = "md", tooltipLabel, wi
 
   return (
     <Tooltip label={tooltipLabel || defaultTooltip}>
-      <Progress value={percentage} size={size} radius="xl" style={{ width }} color={isComplete ? "green" : "blue"} />
+      <Progress
+        value={percentage}
+        size={size}
+        radius="xl"
+        style={{ width }}
+        color={isComplete ? "green" : "blue"}
+      />
     </Tooltip>
   );
 }

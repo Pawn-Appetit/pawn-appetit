@@ -104,8 +104,10 @@ function FileCard({
             </Badge>
 
             <Badge size="md" variant="filled" color="blue">
-              {selected?.numGames === 1 && t("common.games.one", { count: selected?.numGames || 0 })}
-              {selected?.numGames > 1 && t("common.games.other", { count: selected?.numGames || 0 })}
+              {selected?.numGames === 1 &&
+                t("common.games.one", { count: selected?.numGames || 0 })}
+              {selected?.numGames > 1 &&
+                t("common.games.other", { count: selected?.numGames || 0 })}
             </Badge>
           </Group>
           <Group gap="xs">

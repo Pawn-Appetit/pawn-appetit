@@ -212,7 +212,9 @@ function Board({
   };
 
   const keyMap = useAtomValue(keyMapAtom);
-  useHotkeys([[keyMap.SWAP_ORIENTATION.keys, () => (toggleOrientation ?? localToggleOrientation)()]]);
+  useHotkeys([
+    [keyMap.SWAP_ORIENTATION.keys, () => (toggleOrientation ?? localToggleOrientation)()],
+  ]);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
   const [evalOpen, setEvalOpen] = useAtom(currentEvalOpenAtom);
 
@@ -476,7 +478,9 @@ function Board({
     .otherwise((node) => node.move?.to);
 
   const lastMove =
-    currentNode.move && square !== undefined ? [chessgroundMove(currentNode.move)[0], makeSquare(square)!] : undefined;
+    currentNode.move && square !== undefined
+      ? [chessgroundMove(currentNode.move)[0], makeSquare(square)!]
+      : undefined;
 
   return (
     <Box w="100%" h="100%">
@@ -521,7 +525,11 @@ function Board({
           {currentNode.annotations.length > 0 && currentNode.move && square !== undefined && (
             <Box pl="2.5rem" w="100%" h="100%" pos="absolute">
               <Box pos="relative" w="100%" h="100%">
-                <AnnotationHint orientation={orientation} square={square} annotation={currentNode.annotations[0]} />
+                <AnnotationHint
+                  orientation={orientation}
+                  square={square}
+                  annotation={currentNode.annotations[0]}
+                />
               </Box>
             </Box>
           )}
@@ -546,7 +554,8 @@ function Board({
             className={`${chessboard} ${isBlindfold ? blindfold : ""}`}
             ref={boardRef}
             onClick={() => {
-              (eraseDrawablesOnClick ?? storeEraseDrawablesOnClick) && (clearShapes ?? storeClearShapes)();
+              (eraseDrawablesOnClick ?? storeEraseDrawablesOnClick) &&
+                (clearShapes ?? storeClearShapes)();
             }}
             onWheel={(e) => {
               if (enableBoardScroll) {
@@ -602,7 +611,8 @@ function Board({
                       if (pos) {
                         if (
                           pos.board.get(from)?.role === "pawn" &&
-                          ((dest[1] === "8" && turn === "white") || (dest[1] === "1" && turn === "black"))
+                          ((dest[1] === "8" && turn === "white") ||
+                            (dest[1] === "1" && turn === "black"))
                         ) {
                           if (autoPromote && !metadata.ctrlKey) {
                             makeMove({
@@ -656,8 +666,19 @@ function Board({
         <Group justify="space-between" h="2.125rem">
           {materialDiff && (
             <Group ml="2.5rem">
-              {hasClock && <Clock color={orientation} turn={turn} whiteTime={whiteTime} blackTime={blackTime} />}
-              <ShowMaterial diff={materialDiff.diff} pieces={materialDiff.pieces} color={orientation} />
+              {hasClock && (
+                <Clock
+                  color={orientation}
+                  turn={turn}
+                  whiteTime={whiteTime}
+                  blackTime={blackTime}
+                />
+              )}
+              <ShowMaterial
+                diff={materialDiff.diff}
+                pieces={materialDiff.pieces}
+                color={orientation}
+              />
             </Group>
           )}
 

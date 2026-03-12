@@ -21,7 +21,12 @@ export function PuzzleStatsCard({ stats, onStartPuzzles }: PuzzleStatsCardProps)
     <Card withBorder p="lg" radius="md" h="100%">
       <Group justify="space-between" mb="sm">
         <Text fw={700}>{t("features.tabs.puzzle.title")}</Text>
-        <Button size="xs" variant="light" onClick={onStartPuzzles} leftSection={<IconPuzzle size={16} />}>
+        <Button
+          size="xs"
+          variant="light"
+          onClick={onStartPuzzles}
+          leftSection={<IconPuzzle size={16} />}
+        >
           {t("features.tabs.puzzle.button")}
         </Button>
       </Group>

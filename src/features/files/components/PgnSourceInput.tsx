@@ -128,7 +128,9 @@ export function PgnSourceInput({
     <div>
       <FileInput
         label={allowMultiple ? t("common.pgnFiles") : t(fileInputLabelKey)}
-        description={allowMultiple ? t("common.clickToSelectMultiplePGN") : t(fileInputDescriptionKey)}
+        description={
+          allowMultiple ? t("common.clickToSelectMultiplePGN") : t(fileInputDescriptionKey)
+        }
         onClick={async () => {
           const selected = (await open({
             multiple: allowMultiple,

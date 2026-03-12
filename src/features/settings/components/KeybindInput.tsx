@@ -26,7 +26,11 @@ function KeybindInput({
   return (
     <>
       {!isRecording ? (
-        <Box onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)} onClick={() => start()}>
+        <Box
+          onMouseEnter={() => setHovering(true)}
+          onMouseLeave={() => setHovering(false)}
+          onClick={() => start()}
+        >
           <KbdDisplay keys={formatHotkeyDisplay(keybind.keys)} hovering={hovering} />
         </Box>
       ) : (
@@ -50,14 +54,26 @@ function KbdDisplay({ keys, hovering }: { keys: string; hovering: boolean }) {
   );
 }
 
-function ShortcutInput({ keys, action, stop }: { keys: Set<string>; action: string; stop: () => void }) {
+function ShortcutInput({
+  keys,
+  action,
+  stop,
+}: {
+  keys: Set<string>;
+  action: string;
+  stop: () => void;
+}) {
   const { t } = useTranslation();
   const [, setKeymap] = useAtom(keyMapAtom);
   const stringed = Array.from(keys).join("+");
 
   return (
     <Group>
-      {stringed === "" ? <Kbd>{t("settings.pressAnyKey")}</Kbd> : <KbdDisplay keys={stringed} hovering={false} />}
+      {stringed === "" ? (
+        <Kbd>{t("settings.pressAnyKey")}</Kbd>
+      ) : (
+        <KbdDisplay keys={stringed} hovering={false} />
+      )}
       <ActionIcon
         variant="outline"
         color="gray"

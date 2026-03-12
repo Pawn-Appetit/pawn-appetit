@@ -35,7 +35,13 @@ function EvalBar({ score, orientation }: { score: ScoreValue | null; orientation
           flexDirection: "column",
         }}
       >
-        <Text fz="xs" c={theme.colors.gray[2]} ta="center" py={3} mt={orientation === "black" ? "auto" : undefined}>
+        <Text
+          fz="xs"
+          c={theme.colors.gray[2]}
+          ta="center"
+          py={3}
+          mt={orientation === "black" ? "auto" : undefined}
+        >
           {score.value <= 0 && t("units.score", { score, precision: 1 }).replace(/\+|-/, "")}
         </Text>
       </Box>,
@@ -49,7 +55,13 @@ function EvalBar({ score, orientation }: { score: ScoreValue | null; orientation
           flexDirection: "column",
         }}
       >
-        <Text fz="xs" py={3} c={theme.colors.dark[8]} ta="center" mt={orientation === "white" ? "auto" : undefined}>
+        <Text
+          fz="xs"
+          py={3}
+          c={theme.colors.dark[8]}
+          ta="center"
+          mt={orientation === "white" ? "auto" : undefined}
+        >
           {score.value > 0 && t("units.score", { score, precision: 1 }).slice(1)}
         </Text>
       </Box>,

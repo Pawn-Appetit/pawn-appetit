@@ -69,7 +69,12 @@ function AnalysisRow({
     <>
       <Table.Tr style={{ verticalAlign: "top" }}>
         <Table.Td width={70}>
-          <ScoreBubble size="md" score={score} evalDisplay={evalDisplay} setEvalDisplay={setEvalDisplay} />
+          <ScoreBubble
+            size="md"
+            score={score}
+            evalDisplay={evalDisplay}
+            setEvalDisplay={setEvalDisplay}
+          />
         </Table.Td>
         <Table.Td>
           <Flex

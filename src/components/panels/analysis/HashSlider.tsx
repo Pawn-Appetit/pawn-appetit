@@ -5,7 +5,11 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { commands } from "@/bindings";
 
-export default function HashSlider(props: { value: number; setValue: (v: number) => void; color?: string }) {
+export default function HashSlider(props: {
+  value: number;
+  setValue: (v: number) => void;
+  color?: string;
+}) {
   const { t } = useTranslation();
   const [tempValue, setTempValue] = useState(Math.log2(props.value));
 

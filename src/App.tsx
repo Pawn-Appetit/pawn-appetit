@@ -131,7 +131,9 @@ function AppError({ error: errorMsg }: { error: string }) {
   return (
     <div style={ERROR_CONTAINER_STYLES}>
       <h2 style={{ color: "#ef4444", marginBottom: "16px" }}>Initialization Error</h2>
-      <p style={{ color: "#9ca3af", marginBottom: "16px" }}>The application encountered an error during startup:</p>
+      <p style={{ color: "#9ca3af", marginBottom: "16px" }}>
+        The application encountered an error during startup:
+      </p>
       <pre
         style={{
           backgroundColor: "#374151",

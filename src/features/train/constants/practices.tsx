@@ -102,7 +102,8 @@ export const practiceData: readonly PracticeCategory[] = [
       {
         id: "mate-two-rooks",
         title: "Two rooks mate",
-        description: "Use your rooks to restrict the king and deliver checkmate. Mate in 4 if played perfectly.",
+        description:
+          "Use your rooks to restrict the king and deliver checkmate. Mate in 4 if played perfectly.",
         difficulty: DifficultyLevel.BEGINNER,
         points: 4,
         timeLimit: 20,
@@ -346,7 +347,9 @@ export class PracticeDataManager {
   }
 
   getExercisesByDifficulty(difficulty: DifficultyLevel): readonly PracticeExercise[] {
-    return this.data.flatMap((category) => category.exercises.filter((exercise) => exercise.difficulty === difficulty));
+    return this.data.flatMap((category) =>
+      category.exercises.filter((exercise) => exercise.difficulty === difficulty),
+    );
   }
 
   getExercisesByTags(tags: string[]): readonly PracticeExercise[] {
@@ -359,7 +362,8 @@ export class PracticeDataManager {
     return this.data.flatMap((category) =>
       category.exercises.filter(
         (exercise) =>
-          !exercise.prerequisites || exercise.prerequisites.every((prereq) => completedExerciseIds.includes(prereq)),
+          !exercise.prerequisites ||
+          exercise.prerequisites.every((prereq) => completedExerciseIds.includes(prereq)),
       ),
     );
   }
@@ -368,7 +372,9 @@ export class PracticeDataManager {
     return this.data.find((category) => category.id === id);
   }
 
-  getExerciseById(exerciseId: string): { exercise: PracticeExercise; category: PracticeCategory } | undefined {
+  getExerciseById(
+    exerciseId: string,
+  ): { exercise: PracticeExercise; category: PracticeCategory } | undefined {
     for (const category of this.data) {
       const exercise = category.exercises.find((ex) => ex.id === exerciseId);
       if (exercise) {
@@ -382,7 +388,8 @@ export class PracticeDataManager {
     const totalExercises = this.data.reduce((sum, cat) => sum + cat.exercises.length, 0);
     const exercisesByDifficulty = {
       [DifficultyLevel.BEGINNER]: this.getExercisesByDifficulty(DifficultyLevel.BEGINNER).length,
-      [DifficultyLevel.INTERMEDIATE]: this.getExercisesByDifficulty(DifficultyLevel.INTERMEDIATE).length,
+      [DifficultyLevel.INTERMEDIATE]: this.getExercisesByDifficulty(DifficultyLevel.INTERMEDIATE)
+        .length,
       [DifficultyLevel.ADVANCED]: this.getExercisesByDifficulty(DifficultyLevel.ADVANCED).length,
     };
 

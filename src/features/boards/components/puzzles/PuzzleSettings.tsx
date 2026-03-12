@@ -37,8 +37,10 @@ export const PuzzleSettings = ({
 }: PuzzleSettingsProps) => {
   const { t } = useTranslation();
 
-  const isProgressiveDisabled = !dbRatingRange || (dbRatingRange && dbRatingRange[0] === dbRatingRange[1]);
-  const isProgressiveChecked = dbRatingRange && dbRatingRange[0] === dbRatingRange[1] ? false : progressive;
+  const isProgressiveDisabled =
+    !dbRatingRange || (dbRatingRange && dbRatingRange[0] === dbRatingRange[1]);
+  const isProgressiveChecked =
+    dbRatingRange && dbRatingRange[0] === dbRatingRange[1] ? false : progressive;
 
   return (
     <>
@@ -62,10 +64,20 @@ export const PuzzleSettings = ({
             max={maxRating}
             value={ratingRange}
             onChange={onRatingRangeChange}
-            disabled={progressive || !dbRatingRange || (dbRatingRange && dbRatingRange[0] === dbRatingRange[1])}
+            disabled={
+              progressive ||
+              !dbRatingRange ||
+              (dbRatingRange && dbRatingRange[0] === dbRatingRange[1])
+            }
           />
           {!dbRatingRange && selectedDb && (
-            <div style={{ fontSize: "0.75rem", color: "var(--mantine-color-dimmed)", marginTop: "4px" }}>
+            <div
+              style={{
+                fontSize: "0.75rem",
+                color: "var(--mantine-color-dimmed)",
+                marginTop: "4px",
+              }}
+            >
               {t("features.puzzle.loadingRatingRange")}
             </div>
           )}
@@ -81,12 +93,18 @@ export const PuzzleSettings = ({
         </Input.Wrapper>
         <Input.Wrapper label={t("features.puzzle.hideRating")}>
           <Center>
-            <Checkbox checked={hideRating} onChange={(event) => onHideRatingChange(event.currentTarget.checked)} />
+            <Checkbox
+              checked={hideRating}
+              onChange={(event) => onHideRatingChange(event.currentTarget.checked)}
+            />
           </Center>
         </Input.Wrapper>
         <Input.Wrapper label={t("features.puzzle.inOrder")}>
           <Center>
-            <Checkbox checked={inOrder} onChange={(event) => onInOrderChange(event.currentTarget.checked)} />
+            <Checkbox
+              checked={inOrder}
+              onChange={(event) => onInOrderChange(event.currentTarget.checked)}
+            />
           </Center>
         </Input.Wrapper>
       </Group>

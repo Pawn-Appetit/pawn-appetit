@@ -91,7 +91,8 @@ export function PracticeExerciseCard({
                   <Group gap="xs">
                     <IconClock size={16} />
                     <Text size="sm" c="dimmed">
-                      {Math.floor(exercise.timeLimit / 60)}:{(exercise.timeLimit % 60).toString().padStart(2, "0")}
+                      {Math.floor(exercise.timeLimit / 60)}:
+                      {(exercise.timeLimit % 60).toString().padStart(2, "0")}
                     </Text>
                   </Group>
                 )}

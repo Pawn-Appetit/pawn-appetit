@@ -8,12 +8,12 @@ import { useEffect } from "react";
  * @param forceUpdate - The forceUpdate function from useForceUpdate hook
  */
 export function useLanguageChangeListener(forceUpdate: () => void) {
-  useEffect(() => {
-    const handleLanguageChange = () => {
-      forceUpdate();
-    };
+    useEffect(() => {
+        const handleLanguageChange = () => {
+            forceUpdate();
+        };
 
-    window.addEventListener("languageChanged", handleLanguageChange);
-    return () => window.removeEventListener("languageChanged", handleLanguageChange);
-  }, [forceUpdate]);
+        window.addEventListener("languageChanged", handleLanguageChange);
+        return () => window.removeEventListener("languageChanged", handleLanguageChange);
+    }, [forceUpdate]);
 }

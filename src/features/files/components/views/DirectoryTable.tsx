@@ -130,7 +130,9 @@ export default function DirectoryTable({
       .filter((f) => searchResults.some((r) => r.item.path.includes(f.path)))
       .map((f) => {
         if (f.type === "file") return f;
-        const children = f.children.filter((c) => searchResults.some((r) => r.item.path.includes(c.path)));
+        const children = f.children.filter((c) =>
+          searchResults.some((r) => r.item.path.includes(c.path)),
+        );
         return {
           ...f,
           children,
@@ -138,12 +140,16 @@ export default function DirectoryTable({
       });
   }
   if (filter && filter !== "all") {
-    const typeFilteredFiles = flattedFiles.filter((f) => (f.type === "file" && f.metadata.type) === filter);
+    const typeFilteredFiles = flattedFiles.filter(
+      (f) => (f.type === "file" && f.metadata.type) === filter,
+    );
     filteredFiles = filteredFiles
       .filter((f) => typeFilteredFiles.some((r) => r.path.includes(f.path)))
       .map((f) => {
         if (f.type === "file") return f;
-        const children = f.children.filter((c) => typeFilteredFiles.some((r) => r.path.includes(c.path)));
+        const children = f.children.filter((c) =>
+          typeFilteredFiles.some((r) => r.path.includes(c.path)),
+        );
         return {
           ...f,
           children,
@@ -232,7 +238,9 @@ function Table({
   useLanguageChangeListener(forceUpdate);
 
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
-  const expandedFiles = expandedIds.filter((id) => files?.find((f) => f.path === id && f.type === "directory"));
+  const expandedFiles = expandedIds.filter((id) =>
+    files?.find((f) => f.path === id && f.type === "directory"),
+  );
   const navigate = useNavigate();
   const [, setTabs] = useAtom(tabsAtom);
   const setActiveTab = useSetAtom(activeTabAtom);
@@ -294,7 +302,9 @@ function Table({
                   />
                 )}
                 <span>{row.name}</span>
-                {row.type === "file" && row.metadata.type === "repertoire" && <DuePositions file={row.path} />}
+                {row.type === "file" && row.metadata.type === "repertoire" && (
+                  <DuePositions file={row.path} />
+                )}
               </Group>
             </Box>
           ),

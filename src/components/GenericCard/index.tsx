@@ -16,7 +16,14 @@ type Props<T> = {
   onDoubleClick?: () => void;
 };
 
-export default function GenericCard<T>({ id, isSelected, setSelected, error, content, onDoubleClick }: Props<T>) {
+export default function GenericCard<T>({
+  id,
+  isSelected,
+  setSelected,
+  error,
+  content,
+  onDoubleClick,
+}: Props<T>) {
   return (
     <Box
       tabIndex={0}

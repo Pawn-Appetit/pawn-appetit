@@ -12,7 +12,11 @@ interface CloudEngineSettingsProps {
   setSelected: (v: number | null) => void;
 }
 
-export function CloudEngineSettings({ selectedEngine, selected, setSelected }: CloudEngineSettingsProps) {
+export function CloudEngineSettings({
+  selectedEngine,
+  selected,
+  setSelected,
+}: CloudEngineSettingsProps) {
   const { t } = useTranslation();
   const [, setEngines] = useAtom(enginesAtom);
 
@@ -57,11 +61,16 @@ export function CloudEngineSettings({ selectedEngine, selected, setSelected }: C
       <Stack>
         <Text fw="bold">{t("features.engines.settings.numOfLines")}</Text>
         <LinesSlider
-          value={Number(selectedEngine.settings?.find((setting) => setting.name === "MultiPV")?.value) || 1}
+          value={
+            Number(selectedEngine.settings?.find((setting) => setting.name === "MultiPV")?.value) ||
+            1
+          }
           setValue={(v) => {
             setEngines(async (prev) => {
               const copy = [...(await prev)];
-              const setting = copy[selected].settings?.find((setting) => setting.name === "MultiPV");
+              const setting = copy[selected].settings?.find(
+                (setting) => setting.name === "MultiPV",
+              );
               if (setting) {
                 setting.value = v;
               } else {

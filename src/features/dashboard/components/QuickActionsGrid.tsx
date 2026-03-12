@@ -30,7 +30,11 @@ export function QuickActionsGrid({ actions }: QuickActionsGridProps) {
               <Text size="sm" c="dimmed">
                 {qa.description}
               </Text>
-              <Button variant="light" rightSection={<IconArrowRight size={16} />} onClick={qa.onClick}>
+              <Button
+                variant="light"
+                rightSection={<IconArrowRight size={16} />}
+                onClick={qa.onClick}
+              >
                 Open
               </Button>
             </Stack>

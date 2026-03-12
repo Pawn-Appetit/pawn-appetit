@@ -274,8 +274,10 @@ function BoardAnalysis() {
 
   const [currentTabSelected, setCurrentTabSelected] = useAtom(currentTabSelectedAtom);
   const practiceTabSelected = useAtomValue(currentPracticeTabAtom);
-  const isRepertoire = currentTab?.source?.type === "file" && currentTab.source.metadata.type === "repertoire";
-  const isPuzzle = currentTab?.source?.type === "file" && currentTab.source.metadata.type === "puzzle";
+  const isRepertoire =
+    currentTab?.source?.type === "file" && currentTab.source.metadata.type === "repertoire";
+  const isPuzzle =
+    currentTab?.source?.type === "file" && currentTab.source.metadata.type === "puzzle";
   const practicing = currentTabSelected === "practice" && practiceTabSelected === "train";
 
   const { layout } = useResponsiveLayout();

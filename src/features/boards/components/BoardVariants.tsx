@@ -151,7 +151,11 @@ function BoardVariants() {
       // We traverse the tree and only generate puzzles at positions where there are actual variations
       const MAX_DEPTH = 80; // súbelo si quieres recorrer líneas más largas
 
-      const generatePuzzlesFromNode = (node: TreeNode, depth = 0, puzzlePhaseStarted = false): void => {
+      const generatePuzzlesFromNode = (
+        node: TreeNode,
+        depth = 0,
+        puzzlePhaseStarted = false,
+      ): void => {
         if (depth > MAX_DEPTH) return;
 
         const [pos] = positionFromFen(node.fen);
@@ -315,8 +319,10 @@ function BoardVariants() {
   const isMobileLayout = layout.chessBoard.layoutType === "mobile";
   const [topBar] = useState(true);
 
-  const isRepertoire = currentTab?.source?.type === "file" && currentTab.source.metadata?.type === "repertoire";
-  const isPuzzle = currentTab?.source?.type === "file" && currentTab.source.metadata?.type === "puzzle";
+  const isRepertoire =
+    currentTab?.source?.type === "file" && currentTab.source.metadata?.type === "repertoire";
+  const isPuzzle =
+    currentTab?.source?.type === "file" && currentTab.source.metadata?.type === "puzzle";
   const practicing = currentTabSelected === "practice" && practiceTabSelected === "train";
 
   return (
@@ -419,7 +425,13 @@ function BoardVariants() {
         <>
           <VariantsNotation topBar={topBar} editingMode={editingMode} />
           <MoveControls readOnly />
-          <Button leftSection={<IconPuzzle size={18} />} onClick={generatePuzzles} variant="light" fullWidth mt="xs">
+          <Button
+            leftSection={<IconPuzzle size={18} />}
+            onClick={generatePuzzles}
+            variant="light"
+            fullWidth
+            mt="xs"
+          >
             {t("common.generatePuzzles")}
           </Button>
         </>

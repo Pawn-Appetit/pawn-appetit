@@ -29,8 +29,10 @@ function InfoPanel() {
   const currentNode = getNodeAtPath(root, position);
   const [games, setGames] = useState<Map<number, string>>(new Map());
   const currentTab = useAtomValue(currentTabAtom);
-  const isRepertoire = currentTab?.source?.type === "file" && currentTab.source.metadata.type === "repertoire";
-  const isPuzzle = currentTab?.source?.type === "file" && currentTab.source.metadata.type === "puzzle";
+  const isRepertoire =
+    currentTab?.source?.type === "file" && currentTab.source.metadata.type === "repertoire";
+  const isPuzzle =
+    currentTab?.source?.type === "file" && currentTab.source.metadata.type === "puzzle";
 
   const { t } = useTranslation();
 

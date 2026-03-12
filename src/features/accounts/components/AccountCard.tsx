@@ -143,7 +143,15 @@ export function AccountCard({
     const dbPath = await resolve(await appDataDir(), "db", expectedDbFilename);
     info(`Converting PGN to database: ${filepath} -> ${dbPath}`);
     try {
-      unwrap(await commands.convertPgn(filepath, dbPath, timestamp ? timestamp / 1000 : null, filename, null));
+      unwrap(
+        await commands.convertPgn(
+          filepath,
+          dbPath,
+          timestamp ? timestamp / 1000 : null,
+          filename,
+          null,
+        ),
+      );
       info(`Conversion complete, database saved to: ${dbPath}`);
       // Wait a bit to ensure the file is fully written and indexed
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -169,7 +177,8 @@ export function AccountCard({
       if (!found) {
         // Try case-insensitive match
         const foundCaseInsensitive =
-          dbs.find((db) => db.filename.toLowerCase() === `${title}_${type}.db3`.toLowerCase()) ?? null;
+          dbs.find((db) => db.filename.toLowerCase() === `${title}_${type}.db3`.toLowerCase()) ??
+          null;
         setCurrentDatabase(foundCaseInsensitive);
       } else {
         setCurrentDatabase(found);
@@ -195,7 +204,9 @@ export function AccountCard({
           if (!found) {
             // Try case-insensitive match
             found =
-              updatedDatabases.find((db) => db.filename.toLowerCase() === `${title}_${type}.db3`.toLowerCase()) ?? null;
+              updatedDatabases.find(
+                (db) => db.filename.toLowerCase() === `${title}_${type}.db3`.toLowerCase(),
+              ) ?? null;
           }
 
           // If still not found, retry after a short delay
@@ -206,8 +217,9 @@ export function AccountCard({
             found = updatedDatabases.find((db) => db.filename === `${title}_${type}.db3`) ?? null;
             if (!found) {
               found =
-                updatedDatabases.find((db) => db.filename.toLowerCase() === `${title}_${type}.db3`.toLowerCase()) ??
-                null;
+                updatedDatabases.find(
+                  (db) => db.filename.toLowerCase() === `${title}_${type}.db3`.toLowerCase(),
+                ) ?? null;
             }
           }
 
@@ -234,11 +246,14 @@ export function AccountCard({
   // If total is 0 or less than downloadedGames, use downloadedGames as minimum total
   // This handles cases where account.count.all might not be available or is outdated
   // If we have downloaded games, the total should be at least equal to downloadedGames
-  const effectiveTotal = total === 0 || (downloadedGames > 0 && total < downloadedGames) ? downloadedGames : total;
+  const effectiveTotal =
+    total === 0 || (downloadedGames > 0 && total < downloadedGames) ? downloadedGames : total;
   // Calculate percentage: if effectiveTotal is 0, return "0"; otherwise calculate normally
   // Cap percentage at 100% to handle edge cases
   const percentage =
-    effectiveTotal === 0 ? "0" : Math.min(100, Math.max(0, (downloadedGames / effectiveTotal) * 100)).toFixed(2);
+    effectiveTotal === 0
+      ? "0"
+      : Math.min(100, Math.max(0, (downloadedGames / effectiveTotal) * 100)).toFixed(2);
 
   async function getLastGameDate({ database: db }: { database: DatabaseInfo }) {
     const games = await query_games(db.file, {
@@ -286,7 +301,10 @@ export function AccountCard({
           size="xs"
           radius={0}
           styles={{
-            root: { borderTopLeftRadius: "var(--mantine-radius-md)", borderTopRightRadius: "var(--mantine-radius-md)" },
+            root: {
+              borderTopLeftRadius: "var(--mantine-radius-md)",
+              borderTopRightRadius: "var(--mantine-radius-md)",
+            },
           }}
         />
       )}
@@ -339,7 +357,11 @@ export function AccountCard({
             </Group>
 
             <Tooltip
-              label={isMain ? t("accounts.accountCard.mainAccount") : t("accounts.accountCard.setAsMainAccount")}
+              label={
+                isMain
+                  ? t("accounts.accountCard.mainAccount")
+                  : t("accounts.accountCard.setAsMainAccount")
+              }
               position="left"
             >
               <ActionIcon
@@ -347,7 +369,11 @@ export function AccountCard({
                 variant={isMain ? "light" : "subtle"}
                 color={isMain ? "blue" : "gray"}
                 onClick={setMain}
-                aria-label={isMain ? t("accounts.accountCard.mainAccount") : t("accounts.accountCard.setAsMainAccount")}
+                aria-label={
+                  isMain
+                    ? t("accounts.accountCard.mainAccount")
+                    : t("accounts.accountCard.setAsMainAccount")
+                }
                 radius="xl"
               >
                 {isMain ? (
@@ -379,7 +405,11 @@ export function AccountCard({
             </Group>
           </Group>
           <Progress.Root size="sm" radius="xl">
-            <Tooltip label={t("accounts.accountCard.gamesCount", { count: downloadedGames })} position="top" withArrow>
+            <Tooltip
+              label={t("accounts.accountCard.gamesCount", { count: downloadedGames })}
+              position="top"
+              withArrow
+            >
               <Progress.Section
                 value={Number(percentage)}
                 color={percentage === "100.00" ? "teal" : "blue"}
@@ -441,12 +471,24 @@ export function AccountCard({
             ) : (
               <>
                 <Tooltip label={t("accounts.accountCard.editName")} position="top">
-                  <ActionIcon size="md" variant="subtle" color="gray" onClick={() => setEdit(true)} radius="md">
+                  <ActionIcon
+                    size="md"
+                    variant="subtle"
+                    color="gray"
+                    onClick={() => setEdit(true)}
+                    radius="md"
+                  >
                     <IconEdit style={{ width: rem(16), height: rem(16) }} />
                   </ActionIcon>
                 </Tooltip>
                 <Tooltip label={t("accounts.accountCard.updateStats")} position="top">
-                  <ActionIcon size="md" variant="subtle" color="blue" onClick={() => reload()} radius="md">
+                  <ActionIcon
+                    size="md"
+                    variant="subtle"
+                    color="blue"
+                    onClick={() => reload()}
+                    radius="md"
+                  >
                     <IconRefresh style={{ width: rem(16), height: rem(16) }} />
                   </ActionIcon>
                 </Tooltip>
@@ -462,7 +504,13 @@ export function AccountCard({
                         ? await getLastGameDate({ database: currentDatabase })
                         : null;
                       if (type === "lichess") {
-                        await downloadLichess(title, lastGameDate, total - downloadedGames, setProgress, token);
+                        await downloadLichess(
+                          title,
+                          lastGameDate,
+                          total - downloadedGames,
+                          setProgress,
+                          token,
+                        );
                       } else {
                         await downloadChessCom(title, lastGameDate);
                       }
@@ -476,11 +524,21 @@ export function AccountCard({
                     }}
                     radius="md"
                   >
-                    {loading ? <Loader size={16} /> : <IconDownload style={{ width: rem(16), height: rem(16) }} />}
+                    {loading ? (
+                      <Loader size={16} />
+                    ) : (
+                      <IconDownload style={{ width: rem(16), height: rem(16) }} />
+                    )}
                   </ActionIcon>
                 </Tooltip>
                 <Tooltip label={t("accounts.accountCard.removeAccount")} position="top">
-                  <ActionIcon size="md" variant="subtle" color="red" onClick={() => logout()} radius="md">
+                  <ActionIcon
+                    size="md"
+                    variant="subtle"
+                    color="red"
+                    onClick={() => logout()}
+                    radius="md"
+                  >
                     <IconX style={{ width: rem(16), height: rem(16) }} />
                   </ActionIcon>
                 </Tooltip>

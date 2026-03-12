@@ -14,7 +14,12 @@ export interface ChessgroundProps extends Config {
   setSelectedPiece?: (piece: Piece | null) => void;
 }
 
-export function Chessground({ setBoardFen, selectedPiece, setSelectedPiece, ...chessgroundConfig }: ChessgroundProps) {
+export function Chessground({
+  setBoardFen,
+  selectedPiece,
+  setSelectedPiece,
+  ...chessgroundConfig
+}: ChessgroundProps) {
   const [api, setApi] = useState<Api | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const moveMethod = useAtomValue(moveMethodAtom);

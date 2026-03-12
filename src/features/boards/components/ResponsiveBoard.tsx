@@ -147,7 +147,13 @@ function ResponsiveBoard({
     return (
       <Box
         ref={containerRef}
-        style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
       >
         <ResponsiveLoadingWrapper isLoading={true}>
           <ResponsiveSkeleton type="board" />
@@ -161,7 +167,13 @@ function ResponsiveBoard({
     return (
       <Box
         ref={containerRef}
-        style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
       >
         <Stack align="center" gap="md">
           <div>{t("errors.failedToInitializeChessBoard")}</div>
@@ -178,7 +190,13 @@ function ResponsiveBoard({
     return (
       <Box
         ref={containerRef}
-        style={{ width: "100%", height: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}
+        style={{
+          width: "100%",
+          height: "100%",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}
       >
         <ResponsiveLoadingWrapper isLoading={false}>
           <Stack h="100%" gap="xs">
@@ -232,7 +250,13 @@ function ResponsiveBoard({
   return (
     <Box
       ref={containerRef}
-      style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
     >
       <ResponsiveLoadingWrapper isLoading={false}>
         <Box style={boardContainerStyle}>

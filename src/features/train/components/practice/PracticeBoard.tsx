@@ -41,9 +41,10 @@ function PracticeBoard({
   const engine = engines?.[0] || null;
 
   const [currentFen, setCurrentFen] = useState(fen);
-  const [pendingMove, setPendingMove] = useState<{ move: NormalMove; squares: { orig: string; dest: string } } | null>(
-    null,
-  );
+  const [pendingMove, setPendingMove] = useState<{
+    move: NormalMove;
+    squares: { orig: string; dest: string };
+  } | null>(null);
   const [shapes, setShapes] = useState<DrawShape[]>([]);
   const [showCoordinates] = useState(true);
   const [showDests] = useState(true);

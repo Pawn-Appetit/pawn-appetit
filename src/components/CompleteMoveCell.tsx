@@ -1,6 +1,13 @@
 import { ActionIcon, Box, Menu, Portal, Tooltip } from "@mantine/core";
 import { useClickOutside } from "@mantine/hooks";
-import { IconArrowsJoin, IconChevronsUp, IconChevronUp, IconCopy, IconFlag, IconX } from "@tabler/icons-react";
+import {
+  IconArrowsJoin,
+  IconChevronsUp,
+  IconChevronUp,
+  IconCopy,
+  IconFlag,
+  IconX,
+} from "@tabler/icons-react";
 import equal from "fast-deep-equal";
 import { useAtomValue } from "jotai";
 import { memo, useContext, useState } from "react";
@@ -106,24 +113,41 @@ function CompleteMoveCell({
 
             <Portal>
               <Menu.Dropdown>
-                {currentTab?.source?.type === "file" && currentTab.source.metadata.type === "repertoire" && (
-                  <Menu.Item leftSection={<IconFlag size="0.875rem" />} onClick={() => setStart(movePath)}>
-                    {t("features.menu.markAsStart")}
-                  </Menu.Item>
-                )}
-                <Menu.Item leftSection={<IconChevronsUp size="0.875rem" />} onClick={() => promoteToMainline(movePath)}>
+                {currentTab?.source?.type === "file" &&
+                  currentTab.source.metadata.type === "repertoire" && (
+                    <Menu.Item
+                      leftSection={<IconFlag size="0.875rem" />}
+                      onClick={() => setStart(movePath)}
+                    >
+                      {t("features.menu.markAsStart")}
+                    </Menu.Item>
+                  )}
+                <Menu.Item
+                  leftSection={<IconChevronsUp size="0.875rem" />}
+                  onClick={() => promoteToMainline(movePath)}
+                >
                   {t("features.menu.promoteToMainLine")}
                 </Menu.Item>
 
-                <Menu.Item leftSection={<IconChevronUp size="0.875rem" />} onClick={() => promoteVariation(movePath)}>
+                <Menu.Item
+                  leftSection={<IconChevronUp size="0.875rem" />}
+                  onClick={() => promoteVariation(movePath)}
+                >
                   {t("features.menu.promoteVariation")}
                 </Menu.Item>
 
-                <Menu.Item leftSection={<IconCopy size="0.875rem" />} onClick={() => copyVariationPgn(movePath)}>
+                <Menu.Item
+                  leftSection={<IconCopy size="0.875rem" />}
+                  onClick={() => copyVariationPgn(movePath)}
+                >
                   {t("features.menu.copyVariationPGN")}
                 </Menu.Item>
 
-                <Menu.Item color="red" leftSection={<IconX size="0.875rem" />} onClick={() => deleteMove(movePath)}>
+                <Menu.Item
+                  color="red"
+                  leftSection={<IconX size="0.875rem" />}
+                  onClick={() => deleteMove(movePath)}
+                >
                   {t("features.menu.deleteMove")}
                 </Menu.Item>
               </Menu.Dropdown>

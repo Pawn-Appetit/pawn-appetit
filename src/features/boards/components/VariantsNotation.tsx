@@ -449,13 +449,23 @@ function NotationHeader({
       <Group justify="space-between">
         <OpeningName />
         <Group gap="sm">
-          <Tooltip label={invisible ? t("features.gameNotation.showMoves") : t("features.gameNotation.hideMoves")}>
+          <Tooltip
+            label={
+              invisible
+                ? t("features.gameNotation.showMoves")
+                : t("features.gameNotation.hideMoves")
+            }
+          >
             <ActionIcon onClick={() => setInvisible((prev: boolean) => !prev)}>
               {invisible ? <IconEyeOff size="1rem" /> : <IconEye size="1rem" />}
             </ActionIcon>
           </Tooltip>
           <Tooltip
-            label={showComments ? t("features.gameNotation.hideComments") : t("features.gameNotation.showComments")}
+            label={
+              showComments
+                ? t("features.gameNotation.hideComments")
+                : t("features.gameNotation.showComments")
+            }
           >
             <ActionIcon onClick={toggleComments}>
               {showComments ? <IconArticle size="1rem" /> : <IconArticleOff size="1rem" />}

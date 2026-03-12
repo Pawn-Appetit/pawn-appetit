@@ -89,7 +89,9 @@ function ReportPanel() {
             })();
 
             if (retryMoveCount < 5) {
-              console.error(`Tree still incomplete after retry (${retryMoveCount} moves), skipping save`);
+              console.error(
+                `Tree still incomplete after retry (${retryMoveCount} moves), skipping save`,
+              );
               hasSavedPgnRef.current = false;
               return;
             }
@@ -150,13 +152,18 @@ function ReportPanel() {
           // Count moves in the PGN text (approximate)
           const moveMatches = moveText.match(/\d+\.\s+\S+/g) || [];
           if (moveMatches.length < 3 && moveCount > 3) {
-            console.error(`PGN has only ${moveMatches.length} moves but tree has ${moveCount}, skipping save`);
+            console.error(
+              `PGN has only ${moveMatches.length} moves but tree has ${moveCount}, skipping save`,
+            );
             hasSavedPgnRef.current = false;
             return;
           }
 
           // Check if this tab is associated with a local game
-          const localGameId = typeof window !== "undefined" ? sessionStorage.getItem(`${activeTab}_localGameId`) : null;
+          const localGameId =
+            typeof window !== "undefined"
+              ? sessionStorage.getItem(`${activeTab}_localGameId`)
+              : null;
 
           if (localGameId) {
             // Update the GameRecord with the new PGN that includes evaluations
@@ -168,9 +175,13 @@ function ReportPanel() {
           } else {
             // Check if this tab is associated with a Chess.com or Lichess game
             const chessComGameUrl =
-              typeof window !== "undefined" ? sessionStorage.getItem(`${activeTab}_chessComGameUrl`) : null;
+              typeof window !== "undefined"
+                ? sessionStorage.getItem(`${activeTab}_chessComGameUrl`)
+                : null;
             const lichessGameId =
-              typeof window !== "undefined" ? sessionStorage.getItem(`${activeTab}_lichessGameId`) : null;
+              typeof window !== "undefined"
+                ? sessionStorage.getItem(`${activeTab}_lichessGameId`)
+                : null;
 
             if (chessComGameUrl) {
               // Save analyzed PGN for Chess.com game
@@ -223,8 +234,16 @@ function ReportPanel() {
         <Group grow style={{ textAlign: "center" }}>
           {stats.whiteAccuracy && stats.blackAccuracy && (
             <>
-              <AccuracyCard color={t("chess.white")} accuracy={stats.whiteAccuracy} cpl={stats.whiteCPL} />
-              <AccuracyCard color={t("chess.black")} accuracy={stats.blackAccuracy} cpl={stats.blackCPL} />
+              <AccuracyCard
+                color={t("chess.white")}
+                accuracy={stats.whiteAccuracy}
+                cpl={stats.whiteCPL}
+              />
+              <AccuracyCard
+                color={t("chess.black")}
+                accuracy={stats.blackAccuracy}
+                cpl={stats.blackCPL}
+              />
             </>
           )}
           <div>
@@ -305,7 +324,12 @@ const GameStats = memo(
                     {annotation === "Best" ? (
                       <svg
                         viewBox="0 0 100 100"
-                        style={{ width: "1em", height: "1em", display: "inline-block", verticalAlign: "middle" }}
+                        style={{
+                          width: "1em",
+                          height: "1em",
+                          display: "inline-block",
+                          verticalAlign: "middle",
+                        }}
                       >
                         <path
                           fill="currentColor"
@@ -339,7 +363,10 @@ const GameStats = memo(
     );
   },
   (prev, next) => {
-    return equal(prev.whiteAnnotations, next.whiteAnnotations) && equal(prev.blackAnnotations, next.blackAnnotations);
+    return (
+      equal(prev.whiteAnnotations, next.whiteAnnotations) &&
+      equal(prev.blackAnnotations, next.blackAnnotations)
+    );
   },
 );
 

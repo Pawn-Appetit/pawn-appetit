@@ -93,8 +93,8 @@ export function AnalyzeAllModal({ opened, onClose, onAnalyze, gameCount }: Analy
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack gap="md">
           <Text size="sm" c="dimmed">
-            Select analysis depth for {gameCount} {gameCount === 1 ? "game" : "games"}. This will analyze all games
-            shown in the dashboard using the default engine.
+            Select analysis depth for {gameCount} {gameCount === 1 ? "game" : "games"}. This will
+            analyze all games shown in the dashboard using the default engine.
           </Text>
 
           <Radio.Group {...form.getInputProps("speed")} disabled={isAnalyzing}>

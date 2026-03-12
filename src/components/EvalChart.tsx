@@ -1,5 +1,14 @@
 import { AreaChart } from "@mantine/charts";
-import { Alert, Box, LoadingOverlay, Paper, SegmentedControl, Stack, Text, useMantineTheme } from "@mantine/core";
+import {
+  Alert,
+  Box,
+  LoadingOverlay,
+  Paper,
+  SegmentedControl,
+  Stack,
+  Text,
+  useMantineTheme,
+} from "@mantine/core";
 import equal from "fast-deep-equal";
 import { useAtom } from "jotai";
 import { useCallback, useContext, useMemo } from "react";
@@ -189,7 +198,9 @@ function EvalChart(props: EvalChartProps) {
             }}
             gridAxis="none"
             tooltipProps={{
-              content: ({ payload, active }) => <CustomTooltip active={active} payload={payload} type="cp" />,
+              content: ({ payload, active }) => (
+                <CustomTooltip active={active} payload={payload} type="cp" />
+              ),
             }}
           />
         )}
@@ -228,7 +239,9 @@ function EvalChart(props: EvalChartProps) {
               }}
               gridAxis="none"
               tooltipProps={{
-                content: ({ payload, active }) => <CustomTooltip active={active} payload={payload} type="wdl" />,
+                content: ({ payload, active }) => (
+                  <CustomTooltip active={active} payload={payload} type="wdl" />
+                ),
               }}
             />
           ))}
@@ -237,12 +250,23 @@ function EvalChart(props: EvalChartProps) {
   );
 }
 
-function CustomTooltip({ active, payload, type }: { active?: boolean; payload: any; type: "cp" | "wdl" }) {
+function CustomTooltip({
+  active,
+  payload,
+  type,
+}: {
+  active?: boolean;
+  payload: any;
+  type: "cp" | "wdl";
+}) {
   if (active && payload && payload.length && payload[0].payload) {
     const dataPoint: DataPoint = payload[0].payload;
     return (
       <Paper px="md" py="sm" withBorder shadow="md" radius="md">
-        <Text className={classes.tooltipTitle} c={dataPoint.color === "gray" ? undefined : dataPoint.color}>
+        <Text
+          className={classes.tooltipTitle}
+          c={dataPoint.color === "gray" ? undefined : dataPoint.color}
+        >
           {dataPoint.name}
         </Text>
         <Text>{type === "cp" ? dataPoint.cpText : dataPoint.wdlText}</Text>

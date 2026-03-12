@@ -83,7 +83,9 @@ export function UpdateNotificationModal({
       title={
         <Group gap="sm">
           <IconInfoCircle size={24} />
-          <Title order={4}>{t("features.updater.newVersionAvailable", "New Version Available")}</Title>
+          <Title order={4}>
+            {t("features.updater.newVersionAvailable", "New Version Available")}
+          </Title>
         </Group>
       }
       centered
@@ -156,7 +158,9 @@ export function UpdateNotificationModal({
             loading={isUpdating}
             disabled={isUpdating}
           >
-            {isUpdating ? t("features.updater.updating", "Updating...") : t("features.updater.updateNow", "Update Now")}
+            {isUpdating
+              ? t("features.updater.updating", "Updating...")
+              : t("features.updater.updateNow", "Update Now")}
           </Button>
         </Group>
       </Stack>
@@ -177,7 +181,9 @@ export function showUpdateNotification(
     title: t("notifications.newVersionAvailable"),
     message: (
       <Stack gap="xs">
-        <Text size="sm">{t("notifications.versionReadyToInstall", { version: versionInfo.version })}</Text>
+        <Text size="sm">
+          {t("notifications.versionReadyToInstall", { version: versionInfo.version })}
+        </Text>
         <Group gap="xs">
           <Button
             size="xs"

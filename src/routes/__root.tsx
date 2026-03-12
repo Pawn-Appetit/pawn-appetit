@@ -64,7 +64,10 @@ const getSelectedText = (element: HTMLInputElement | HTMLTextAreaElement): strin
   return element.value.substring(start, end);
 };
 
-const replaceSelection = (element: HTMLInputElement | HTMLTextAreaElement, newText: string): void => {
+const replaceSelection = (
+  element: HTMLInputElement | HTMLTextAreaElement,
+  newText: string,
+): void => {
   const start = element.selectionStart ?? 0;
   const end = element.selectionEnd ?? 0;
   const currentValue = element.value;
@@ -465,7 +468,9 @@ function RootLayout() {
 
   const handleCloseTab = useCallback(() => {
     setTabs((prevTabs) => {
-      const activeIndex = prevTabs.findIndex((tab) => tab.value === prevTabs.find((t) => t.value)?.value);
+      const activeIndex = prevTabs.findIndex(
+        (tab) => tab.value === prevTabs.find((t) => t.value)?.value,
+      );
       if (activeIndex !== -1) {
         const newTabs = prevTabs.filter((_, i) => i !== activeIndex);
         if (newTabs.length > 0) {

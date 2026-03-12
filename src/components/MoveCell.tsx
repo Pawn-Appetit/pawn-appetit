@@ -14,7 +14,10 @@ interface MoveCellProps {
   onContextMenu: (e: React.MouseEvent) => void;
 }
 
-const MoveCell = forwardRef(function MoveCell(props: MoveCellProps, ref: ForwardedRef<HTMLButtonElement>) {
+const MoveCell = forwardRef(function MoveCell(
+  props: MoveCellProps,
+  ref: ForwardedRef<HTMLButtonElement>,
+) {
   const { t } = useTranslation();
 
   const color = ANNOTATION_INFO[props.annotations[0]]?.color || "gray";

@@ -3,11 +3,13 @@
 ## [0.11.0]
 
 ### Added
+
 - Platform-specific window maximize/fullscreen behavior with fullscreen capability
 - Dashboard on startup option with quick actions in sidebar and settings
 - Sound bundling in resources (thanks @snue)
 
 ### Changed
+
 - Reordered engine options and changed handler definitions in BoardGame component
 - Updated dependencies across the project
 - Improved error handling for sound resource resolution
@@ -16,6 +18,7 @@
 - Ensured practice positions become available when due date arrives - @sahinakkaya
 
 ### Fixed
+
 - Fixed content security policy by removing unnecessary URLs
 - Fixed divider rendering when quick action links are present
 - Standardized line endings across codebase - @BurnhamG
@@ -25,6 +28,7 @@
 ## [0.10.0]
 
 ### Added
+
 - Polish translation support ([#363](https://github.com/Pawn-Appetit/pawn-appetit/pull/363)) - @polandonion
 - Option to display all square coordinates on the chessboard ([#366](https://github.com/Pawn-Appetit/pawn-appetit/pull/366)) - @gm-m
 - Configurable animation speed for repertoire practice mode ([#378](https://github.com/Pawn-Appetit/pawn-appetit/pull/378)) - @sahinakkaya
@@ -34,6 +38,7 @@
 - Game sorting by ELO in database view ([#369](https://github.com/Pawn-Appetit/pawn-appetit/pull/369)) - @luisrivasnoriega
 
 ### Changed
+
 - Refactored tab management and enhanced engine selection in Boards
 - Updated engine retrieval to use `loadableEnginesAtom` in EvalListener
 - Improved PGN handling with enhanced header preservation
@@ -42,6 +47,7 @@
 - Removed splash screen and related commands
 
 ### Fixed
+
 - Fixed puzzle board freeze after wrong move ([#365](https://github.com/Pawn-Appetit/pawn-appetit/pull/365)) - @gm-m
 - Fixed JSON formatting issues in Polish translations ([#364](https://github.com/Pawn-Appetit/pawn-appetit/pull/364)) - @gm-m
 - Fixed PGN headers and initial FEN preservation when opening saved games ([#371](https://github.com/Pawn-Appetit/pawn-appetit/pull/371)) - @luisrivasnoriega
@@ -89,17 +95,19 @@
 
 ### Developer Notes
 
-* Significant internal restructuring to improve maintainability and performance
-* Cleaner module boundaries and enhanced logging for debugging
+- Significant internal restructuring to improve maintainability and performance
+- Cleaner module boundaries and enhanced logging for debugging
 
 ## [0.8.0]
 
 ### Added
+
 - New keybindings for copy/paste, engine control, variations, search, panels, training, and navigation
 - Internationalization support for keybindings
 - English (UK) localization support ([#334](https://github.com/Chessifier/chessifier/pull/334)) - @AWH1122
 
 ### Changed
+
 - Updated README and documentation
 - Replaced static text with translation keys for better localization support
 - Improved loading state in Databases component
@@ -108,6 +116,7 @@
 - Made chart selectable and removed focus outline ([#348](https://github.com/Pawn-Appetit/pawn-appetit/pull/348)) - @AWH1122
 
 ### Fixed
+
 - Hardened download functionality with security improvements
 - Optimized memory usage by streaming downloads to disk with 10 GB limit
 - Fixed database file paths to use correct db directory (thanks @gm-m)
@@ -118,20 +127,24 @@
 - Updated keybindings translations for improved accessibility ([#347](https://github.com/Pawn-Appetit/pawn-appetit/pull/347)) - @AWH1122
 
 ### Security
+
 - Fixed path traversal and SSRF vulnerabilities in downloads
 
 ## [0.7.3]
 
 ### Changed
+
 - Optimized BoardGame performance and improved code organization
 
 ### Fixed
+
 - Fixed database file path to use db directory instead of puzzles (thanks @gm-m)
 - Fixed minor bugs in BoardGame and improved stability
 
 ## [0.7.2]
 
 ### Fixed
+
 - Fixed Lichess API integration
 - Fixed toggle pawn structure view (thanks @gm-m)
 - Fixed select and paste pieces in position editor (thanks @gm-m)
@@ -142,9 +155,11 @@
 ## [0.7.1]
 
 ### Added
+
 - Enhanced chess position search functionality
 
 ### Fixed
+
 - Fixed same time control out of sync (thanks @gm-m)
 - Fixed rendered more hooks than during the previous render in InfoPanel (thanks @gm-m)
 - Fixed border styling in light theme for cards
@@ -154,11 +169,13 @@
 ## [0.7.0]
 
 ### Added
+
 - Option to install puzzle database from a local file
 - Version checking and update notification system
 - Initial Android project setup (thanks @dotneB)
 
 ### Changed
+
 - Refactored app with custom hooks for better error handling, performance, and code organization
 - Moved start game button from BoardGame to MoveControls
 - Relocated board-related components from shared to feature
@@ -171,6 +188,7 @@
 - Updated repository references from ChessKitchen to Pawn-Appetit
 
 ### Fixed
+
 - Fixed game notation under board on desktop (thanks @dotneB)
 - Fixed mosaic pane resizing options
 - Fixed show arrows option (thanks @gm-m)
@@ -188,16 +206,19 @@
 ## [0.6.4]
 
 ### Added
+
 - Wood Theme with natural wood grain colors
 - Blindfold Mode for training and advanced practice (thanks @gm-m)
 - Issue templates for bugs, documentation, features, and translations
 
 ### Changed
+
 - Reorganized SQL schema and queries for better structure and maintainability
 - Refined README layout and updated badge styles
 - Refreshed README screenshots
 
 ### Fixed
+
 - Fixed UCI message parsing lost during refactor, fixing empty analysis results
 - Fixed ActionIcon variant to default for reload button
 - Fixed translation key for puzzle file type
@@ -206,29 +227,35 @@
 ## [0.6.3]
 
 ### Fixed
+
 - Fixed typo in matchesRoute variable name
 - Removed styles from html
 
 ## [0.6.2]
 
 ### Added
+
 - EventMonitor component for global event tracking
 
 ### Fixed
+
 - Fixed bestmove responses correctly reaching the client
 
 ## [0.6.1]
 
 ### Added
+
 - Splash screen for startup
 - Loading state during application initialization
 
 ### Fixed
+
 - Fixed translation key for reference database badge
 
 ## [0.6.0]
 
 ### Added
+
 - Multi-file PGN import with error handling
 - Open tabs for each imported file instead of showing analyze buttons
 - Set board orientation based on FEN active color during PGN import
@@ -240,6 +267,7 @@
 - Environment detection utility functions
 
 ### Changed
+
 - Improved clipboard handling for cut, copy, paste, and select all
 - Refactored menu creation logic and Chessground component
 - Moved translations to locales folder and restructured format
@@ -250,6 +278,7 @@
 - Updated pnpm CLI to v10.16.0 in release and test workflows
 
 ### Fixed
+
 - Fixed PGN preview display issues
 - Fixed i18n translation keys in menus and reload feature
 - Fixed board orientation on PGN import based on active color
@@ -258,19 +287,23 @@
 ## [0.5.1]
 
 ### Added
+
 - Cut, copy, paste, and select all operations for board positions
 - Select and paste pieces functionality in position editor (thanks @gm-m)
 
 ### Changed
+
 - Disabled hideDetached option in BoardSelect and PiecesSelect components
 
 ### Fixed
+
 - Fixed castling rights to update correctly after performing a castling move
 - Fixed translation key from Fen.Black to Common.Black (thanks @gm-m)
 
 ## [0.5.0]
 
 ### Added
+
 - Enhanced opponent selection UI with icons for human and engine options
 - Arabic translation and initial support for RTL layout
 - Setting to change date display between international or locale (thanks @dotneB)
@@ -281,6 +314,7 @@
 - Support for timezone option in CI tests (thanks @dotneB)
 
 ### Changed
+
 - Improved game analysis flow and enhanced engine process management
 - Enhanced engine state management and error handling
 - Optimized database loading with parallel processing
@@ -289,6 +323,7 @@
 - Enhanced Dashboard layout and responsiveness
 
 ### Fixed
+
 - Fixed Lichess games display to show all games
 - Fixed rating updates to include classical ratings for Lichess
 - Fixed puzzle atom key naming to be puzzle-specific (thanks @dotneB)
@@ -298,6 +333,7 @@
 ## [0.4.0]
 
 ### Added
+
 - Enhanced analysis tab creation with detailed game headers and PGN generation
 - Graph tab to openings repertoire (thanks @gm-m)
 - Recent online games import from Chess.com and Lichess.org (thanks @undorev)
@@ -314,6 +350,7 @@
 - Legacy app data migration functionality
 
 ### Changed
+
 - Enhanced package management for engines
 - Refactored EngineProcess management and UCI communication
 - Optimized engine option setting
@@ -325,6 +362,7 @@
 - Updated application icon on macOS
 
 ### Fixed
+
 - Fixed game analysis handling for online games (thanks @undorev)
 - Fixed engine options not applying in games against computer (thanks @undorev)
 - Fixed immediate result emission and throttling in get_best_moves
@@ -343,9 +381,11 @@
 ## [0.3.2]
 
 ### Added
+
 - Enhanced telemetry settings and improved database setup
 
 ### Fixed
+
 - Improved error handling across various modules
 - Fixed exercise reset so pieces correctly return to initial positions
 - Fixed board orientation to respect player roles (thanks @gm-m)
@@ -353,14 +393,17 @@
 ## [0.3.1]
 
 ### Added
+
 - Telemetry toggle in settings
 
 ### Fixed
+
 - Fixed next lesson title (thanks @gm-m)
 
 ## [0.3.0]
 
 ### Added
+
 - Lessons and Practice functionality
 - Time control metadata for multiple game types
 - Lightweight custom chess engine for move validation and FEN updates
@@ -370,6 +413,7 @@
 - Script to automatically update missing translation keys
 
 ### Changed
+
 - Refactored settings management with improved search and tab organization
 - Added alert for Chess.com API limitations
 - Improved total games count calculation in Accounts
@@ -380,6 +424,7 @@
 - Updated Italian translation with missing keys and typo fixes (thanks @gm-m)
 
 ### Fixed
+
 - Fixed lesson move errors causing invalid move sets
 - Fixed navigation bugs affecting board access and routing
 - Fixed decode_move failure handling to prevent crashes
@@ -393,6 +438,7 @@
 ## [0.2.0]
 
 ### Added
+
 - Support for saving and reloading games
 - Extended move format to support glyphs, comments, and variants
 - Auto color scheme support in theme settings
@@ -400,6 +446,7 @@
 - Dockerfile and setup instructions
 
 ### Changed
+
 - Improved database state management with a persistent store
 - Initialized DatabaseViewStateContext using activeDatabaseViewStore
 - Refactored session management and authentication logic
@@ -408,6 +455,7 @@
 - Renamed binary casing in Cargo.toml and tauri.conf.json for consistency
 
 ### Fixed
+
 - Fixed import modal functionality and hotkey behavior
 - Fixed ImportModal close behavior and added error handling
 - Added fallback to default document directory when XDG is not configured on Linux
@@ -415,6 +463,7 @@
 ## [0.1.0]
 
 ### Added
+
 - Spotlight Search for quick access
 - Personal Card Ratings Panel with rating components
 - Armenian translation
@@ -428,6 +477,7 @@
 - readme-updater script for translation progress
 
 ### Changed
+
 - Renamed keybinds to keybindings across the codebase
 - Replaced Ctrl with Mod for cross-platform support
 - Improved GameNotation component structure and variation handling
@@ -438,6 +488,7 @@
 - Improved README formatting
 
 ### Fixed
+
 - Fixed timezone ISO bug in ratings panel
 - Removed incorrect ELO averaging across rating systems
 - Fixed infinite loop in promoteToMainline

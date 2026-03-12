@@ -4,7 +4,11 @@ import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import GameTable from "@/features/databases/components/views/GameTable";
 import PlayerTable from "@/features/databases/components/views/PlayerTable";
-import { activeDatabaseViewStore, type DatabaseViewStore, useActiveDatabaseViewStore } from "@/state/store/database";
+import {
+  activeDatabaseViewStore,
+  type DatabaseViewStore,
+  useActiveDatabaseViewStore,
+} from "@/state/store/database";
 import { DatabaseViewStateContext } from "./components/DatabaseViewStateContext";
 import TournamentTable from "./components/views/TournamentTable";
 
@@ -31,7 +35,9 @@ function DatabaseView() {
             </Group>
             <Tabs
               value={mode}
-              onChange={(value) => setActiveTab((value ?? "games") as DatabaseViewStore["activeTab"])}
+              onChange={(value) =>
+                setActiveTab((value ?? "games") as DatabaseViewStore["activeTab"])
+              }
               flex={1}
               style={{
                 display: "flex",

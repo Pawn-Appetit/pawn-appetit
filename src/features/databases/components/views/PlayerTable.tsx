@@ -1,4 +1,13 @@
-import { ActionIcon, Center, Collapse, Flex, Group, NumberInput, Text, TextInput } from "@mantine/core";
+import {
+  ActionIcon,
+  Center,
+  Collapse,
+  Flex,
+  Group,
+  NumberInput,
+  Text,
+  TextInput,
+} from "@mantine/core";
 import { useForceUpdate, useHotkeys } from "@mantine/hooks";
 import { IconDotsVertical, IconSearch } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";

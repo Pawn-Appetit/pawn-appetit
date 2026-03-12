@@ -20,53 +20,53 @@ import tr from "./locales/tr";
 import uk from "./locales/uk";
 import zh from "./locales/zh";
 import {
-  createBytesFormatter,
-  createBytesLongFormatter,
-  createDateFormatter,
-  createDatetimeFormatter,
-  createDurationFormatter,
-  createDurationLongFormatter,
-  createMoveNotationFormatter,
-  createNodesFormatter,
-  createNodesLongFormatter,
-  createScoreFormatter,
+    createBytesFormatter,
+    createBytesLongFormatter,
+    createDateFormatter,
+    createDatetimeFormatter,
+    createDurationFormatter,
+    createDurationLongFormatter,
+    createMoveNotationFormatter,
+    createNodesFormatter,
+    createNodesLongFormatter,
+    createScoreFormatter,
 } from "./utils/format";
 
 let lang = localStorage.getItem("lang");
 if (lang) {
-  lang = lang.replace("_", "-");
-  localStorage.setItem("lang", lang);
+    lang = lang.replace("_", "-");
+    localStorage.setItem("lang", lang);
 }
 
 const resources = {
-  "en-US": en_US,
-  "en-GB": en_GB,
-  "de-DE": de,
-  "be-BY": be,
-  "es-ES": es,
-  "fr-FR": fr,
-  "hy-AM": hy,
-  "it-IT": it,
-  "ja-JP": ja,
-  "nb-NO": nb,
-  "pl-PL": pl,
-  "pt-PT": pt,
-  "ru-RU": ru,
-  "tr-TR": tr,
-  "uk-UA": uk,
-  "zh-CN": zh,
-  "ar-SA": ar,
+    "en-US": en_US,
+    "en-GB": en_GB,
+    "de-DE": de,
+    "be-BY": be,
+    "es-ES": es,
+    "fr-FR": fr,
+    "hy-AM": hy,
+    "it-IT": it,
+    "ja-JP": ja,
+    "nb-NO": nb,
+    "pl-PL": pl,
+    "pt-PT": pt,
+    "ru-RU": ru,
+    "tr-TR": tr,
+    "uk-UA": uk,
+    "zh-CN": zh,
+    "ar-SA": ar,
 };
 
 i18n.use(initReactI18next).init({
-  resources,
-  lng: lang || "en-US",
-  fallbackLng: "en-US",
-  ns: ["language", "translation"],
-  defaultNS: "translation",
-  fallbackNS: "translation",
-  debug: IS_DEV,
-  load: "currentOnly",
+    resources,
+    lng: lang || "en-US",
+    fallbackLng: "en-US",
+    ns: ["language", "translation"],
+    defaultNS: "translation",
+    fallbackNS: "translation",
+    debug: IS_DEV,
+    load: "currentOnly",
 });
 
 i18n.services.formatter?.add("bytes", createBytesFormatter(i18n));

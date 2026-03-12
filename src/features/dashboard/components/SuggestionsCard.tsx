@@ -55,7 +55,11 @@ export function SuggestionsCard({ suggestions, onSuggestionClick }: SuggestionsC
                 </Group>
               </Stack>
             </Group>
-            <Button variant="light" onClick={() => onSuggestionClick(s)} rightSection={<IconArrowRight size={16} />}>
+            <Button
+              variant="light"
+              onClick={() => onSuggestionClick(s)}
+              rightSection={<IconArrowRight size={16} />}
+            >
               Start
             </Button>
           </Group>

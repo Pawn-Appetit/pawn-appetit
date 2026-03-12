@@ -251,13 +251,23 @@ function NotationHeader({
       <Group justify="space-between">
         <OpeningName />
         <Group gap="sm">
-          <Tooltip label={invisible ? t("features.gameNotation.showMoves") : t("features.gameNotation.hideMoves")}>
+          <Tooltip
+            label={
+              invisible
+                ? t("features.gameNotation.showMoves")
+                : t("features.gameNotation.hideMoves")
+            }
+          >
             <ActionIcon onClick={() => setInvisible((prev: boolean) => !prev)}>
               {invisible ? <IconEyeOff size="1rem" /> : <IconEye size="1rem" />}
             </ActionIcon>
           </Tooltip>
           <Tooltip
-            label={showComments ? t("features.gameNotation.hideComments") : t("features.gameNotation.showComments")}
+            label={
+              showComments
+                ? t("features.gameNotation.hideComments")
+                : t("features.gameNotation.showComments")
+            }
           >
             <ActionIcon onClick={toggleComments}>
               {showComments ? <IconArticle size="1rem" /> : <IconArticleOff size="1rem" />}
@@ -737,7 +747,8 @@ function RepertoireCell({
   const isOnPath = path.every((value, i) => position[i] === value);
   const isPositionDeeper = position.length > path.length;
   const remainingPath = position.slice(path.length);
-  const isInCurrentPath = isPositionDeeper && isOnPath && hasMultipleChildrenUntilPosition(variation, remainingPath);
+  const isInCurrentPath =
+    isPositionDeeper && isOnPath && hasMultipleChildrenUntilPosition(variation, remainingPath);
 
   const [expanded, setExpanded] = useState(() => isInCurrentPath);
   const [chevronClicked, setChevronClicked] = useState(false);

@@ -1,4 +1,12 @@
-import { ActionIcon, Checkbox, Group, type MantineColor, Stack, Text, Tooltip } from "@mantine/core";
+import {
+  ActionIcon,
+  Checkbox,
+  Group,
+  type MantineColor,
+  Stack,
+  Text,
+  Tooltip,
+} from "@mantine/core";
 import { IconPlayerStopFilled, IconSettings } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
@@ -29,7 +37,15 @@ interface EngineSettingsProps {
   gameMode?: boolean;
 }
 
-function EngineSettingsForm({ engine, settings, setSettings, color, minimal, remote, gameMode }: EngineSettingsProps) {
+function EngineSettingsForm({
+  engine,
+  settings,
+  setSettings,
+  color,
+  minimal,
+  remote,
+  gameMode,
+}: EngineSettingsProps) {
   const { t } = useTranslation();
 
   const multipv = settings.settings.find((o) => o.name === "MultiPV");
@@ -62,7 +78,9 @@ function EngineSettingsForm({ engine, settings, setSettings, color, minimal, rem
               setSettings((prev) => {
                 return {
                   ...prev,
-                  settings: prev.settings.map((o) => (o.name === "MultiPV" ? { ...o, value: v || 1 } : o)),
+                  settings: prev.settings.map((o) =>
+                    o.name === "MultiPV" ? { ...o, value: v || 1 } : o,
+                  ),
                 };
               })
             }
@@ -82,7 +100,9 @@ function EngineSettingsForm({ engine, settings, setSettings, color, minimal, rem
               setValue={(v) =>
                 setSettings((prev) => ({
                   ...prev,
-                  settings: prev.settings.map((o) => (o.name === "Threads" ? { ...o, value: v || 1 } : o)),
+                  settings: prev.settings.map((o) =>
+                    o.name === "Threads" ? { ...o, value: v || 1 } : o,
+                  ),
                 }))
               }
               color={color}
@@ -99,7 +119,9 @@ function EngineSettingsForm({ engine, settings, setSettings, color, minimal, rem
                 setValue={(v) =>
                   setSettings((prev) => ({
                     ...prev,
-                    settings: prev.settings.map((o) => (o.name === "Hash" ? { ...o, value: v || 1 } : o)),
+                    settings: prev.settings.map((o) =>
+                      o.name === "Hash" ? { ...o, value: v || 1 } : o,
+                    ),
                   }))
                 }
                 color={color}

@@ -5,7 +5,11 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FilenameInput } from "@/features/files/components/FilenameInput";
 import { FileTypeSelector } from "@/features/files/components/FileTypeSelector";
-import { PgnSourceInput, type PgnTarget, resolvePgnTarget } from "@/features/files/components/PgnSourceInput";
+import {
+  PgnSourceInput,
+  type PgnTarget,
+  resolvePgnTarget,
+} from "@/features/files/components/PgnSourceInput";
 import { createFile } from "@/utils/files";
 import type { Directory, FileMetadata, FileType } from "../../utils/file";
 
@@ -50,7 +54,11 @@ export function CreateModal({
   }
 
   return (
-    <Modal opened={opened} onClose={() => setOpened(false)} title={t("features.files.create.title")}>
+    <Modal
+      opened={opened}
+      onClose={() => setOpened(false)}
+      title={t("features.files.create.title")}
+    >
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -61,7 +69,11 @@ export function CreateModal({
           <FilenameInput value={filename} onChange={setFilename} error={error} />
           <FileTypeSelector value={filetype} onChange={setFiletype} />
 
-          <PgnSourceInput setFilename={setFilename} setPgnTarget={setPgnTarget} pgnTarget={pgnTarget} />
+          <PgnSourceInput
+            setFilename={setFilename}
+            setPgnTarget={setPgnTarget}
+            pgnTarget={pgnTarget}
+          />
 
           <Button style={{ marginTop: "1rem" }} type="submit">
             {t("common.create")}

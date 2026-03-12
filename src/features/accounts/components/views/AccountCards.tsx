@@ -47,9 +47,12 @@ function AccountCards({
   function bestRatingForSession(s: Session): number {
     if (s.lichess?.account?.perfs) {
       const p = s.lichess.account.perfs;
-      const ratings = [p.bullet?.rating, p.blitz?.rating, p.rapid?.rating, p.classical?.rating].filter(
-        (x): x is number => typeof x === "number",
-      );
+      const ratings = [
+        p.bullet?.rating,
+        p.blitz?.rating,
+        p.rapid?.rating,
+        p.classical?.rating,
+      ].filter((x): x is number => typeof x === "number");
       if (ratings.length) return Math.max(...ratings);
     }
     if (s.chessCom?.stats) {
@@ -124,7 +127,8 @@ function AccountCards({
                 No accounts added
               </Text>
               <Text size="sm" c="dimmed" ta="center" maw={400}>
-                Connect your Lichess or Chess.com account to analyze your games and track your progress.
+                Connect your Lichess or Chess.com account to analyze your games and track your
+                progress.
               </Text>
             </Stack>
             <Button onClick={onAddAccount} size="md">
@@ -192,10 +196,13 @@ function LichessOrChessCom({
     let totalGames = account.count?.all ?? 0;
 
     // Try to find database with exact match first, then try case-insensitive match
-    let database = databases.find((db) => db.filename === `${account.username}_lichess.db3`) ?? null;
+    let database =
+      databases.find((db) => db.filename === `${account.username}_lichess.db3`) ?? null;
     if (!database) {
       database =
-        databases.find((db) => db.filename.toLowerCase() === `${account.username}_lichess.db3`.toLowerCase()) ?? null;
+        databases.find(
+          (db) => db.filename.toLowerCase() === `${account.username}_lichess.db3`.toLowerCase(),
+        ) ?? null;
     }
 
     // Ensure totalGames is at least equal to downloadedGames
@@ -311,11 +318,14 @@ function LichessOrChessCom({
     }
 
     // Try to find database with exact match first, then try case-insensitive match
-    let database = databases.find((db) => db.filename === `${session.chessCom?.username}_chesscom.db3`) ?? null;
+    let database =
+      databases.find((db) => db.filename === `${session.chessCom?.username}_chesscom.db3`) ?? null;
     if (!database) {
       database =
         databases.find(
-          (db) => db.filename.toLowerCase() === `${session.chessCom?.username}_chesscom.db3`.toLowerCase(),
+          (db) =>
+            db.filename.toLowerCase() ===
+            `${session.chessCom?.username}_chesscom.db3`.toLowerCase(),
         ) ?? null;
     }
 
@@ -371,7 +381,9 @@ function LichessOrChessCom({
           }
 
           // Remove session
-          setSessions((sessions) => sessions.filter((s) => s.chessCom?.username !== session.chessCom?.username));
+          setSessions((sessions) =>
+            sessions.filter((s) => s.chessCom?.username !== session.chessCom?.username),
+          );
         }}
         reload={async () => {
           if (!session.chessCom) return;

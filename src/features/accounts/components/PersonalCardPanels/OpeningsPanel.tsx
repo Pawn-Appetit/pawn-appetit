@@ -59,7 +59,12 @@ function OpeningsPanel({ playerName, info }: { playerName: string; info: PlayerG
       .filter((d) => website === "All websites" || d.site === website)
       .filter((d) => account === "All accounts" || d.player === account)
       .flatMap((d) => d.data)
-      .filter((g) => !timeControl || timeControl === "any" || getTimeControl(website!, g.time_control) === timeControl)
+      .filter(
+        (g) =>
+          !timeControl ||
+          timeControl === "any" ||
+          getTimeControl(website!, g.time_control) === timeControl,
+      )
       .map((g) => ({
         opening: g.opening,
         result: g.result,
@@ -97,7 +102,11 @@ function OpeningsPanel({ playerName, info }: { playerName: string; info: PlayerG
         allowAll={true}
       />
       {website !== "All websites" && (
-        <TimeControlSelector website={website} onTimeControlChange={setTimeControl} allowAll={true} />
+        <TimeControlSelector
+          website={website}
+          onTimeControlChange={setTimeControl}
+          allowAll={true}
+        />
       )}
       <Group grow pt="xl">
         <Text ta="center" fw="bold">
@@ -132,8 +141,16 @@ function OpeningsPanel({ playerName, info }: { playerName: string; info: PlayerG
                 }}
               >
                 <Group grow>
-                  {white ? <OpeningDetail opening={white} totalGames={whiteGames} color="white" /> : <div />}
-                  {black ? <OpeningDetail opening={black} totalGames={blackGames} color="black" /> : <div />}
+                  {white ? (
+                    <OpeningDetail opening={white} totalGames={whiteGames} color="white" />
+                  ) : (
+                    <div />
+                  )}
+                  {black ? (
+                    <OpeningDetail opening={black} totalGames={blackGames} color="black" />
+                  ) : (
+                    <div />
+                  )}
                 </Group>
                 <Divider />
               </Box>
@@ -145,7 +162,15 @@ function OpeningsPanel({ playerName, info }: { playerName: string; info: PlayerG
   );
 }
 
-function OpeningDetail({ opening, totalGames, color }: { opening: OpeningStats; totalGames: number; color: Color }) {
+function OpeningDetail({
+  opening,
+  totalGames,
+  color,
+}: {
+  opening: OpeningStats;
+  totalGames: number;
+  color: Color;
+}) {
   const [, setTabs] = useAtom(tabsAtom);
   const [, setActiveTab] = useAtom(activeTabAtom);
   const navigate = useNavigate();

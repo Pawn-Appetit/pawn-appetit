@@ -61,7 +61,12 @@ export function PracticeCard({
     >
       <Stack gap="md" style={{ height: "100%" }}>
         <Group justify="space-between" align="flex-start">
-          <ThemeIcon size={50} radius="md" variant="gradient" gradient={{ from: category.color, to: "cyan" }}>
+          <ThemeIcon
+            size={50}
+            radius="md"
+            variant="gradient"
+            gradient={{ from: category.color, to: "cyan" }}
+          >
             {category.icon}
           </ThemeIcon>
           <Box flex={1}>
@@ -110,7 +115,13 @@ export function PracticeCard({
             </Text>
           </Group>
 
-          <Progress value={completionPercentage} size="md" radius="xl" color={category.color} mb="md" />
+          <Progress
+            value={completionPercentage}
+            size="md"
+            radius="xl"
+            color={category.color}
+            mb="md"
+          />
 
           <Button
             variant="light"

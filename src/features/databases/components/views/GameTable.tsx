@@ -138,7 +138,9 @@ function GameTable() {
     }
   };
 
-  const responsiveColumns = allColumns.filter((column) => getVisibleColumns().includes(column.accessor));
+  const responsiveColumns = allColumns.filter((column) =>
+    getVisibleColumns().includes(column.accessor),
+  );
 
   // Get pagination configuration based on density
   const getPaginationConfig = () => {

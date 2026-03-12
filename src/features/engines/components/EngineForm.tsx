@@ -35,7 +35,11 @@ export default function EngineForm({
     .otherwise(() => []);
 
   return (
-    <form onSubmit={form.onSubmit(async (values) => onSubmit({ ...values, loaded: true, settings: settings || [] }))}>
+    <form
+      onSubmit={form.onSubmit(async (values) =>
+        onSubmit({ ...values, loaded: true, settings: settings || [] }),
+      )}
+    >
       <FileInput
         label={t("features.engines.add.binaryFile")}
         description={t("features.engines.add.binaryFileDesc")}
@@ -48,7 +52,8 @@ export default function EngineForm({
           });
           if (!selected) return;
           const configResult = await commands.getEngineConfig(selected as string);
-          config.current = configResult.status === "ok" ? configResult.data : { name: "", options: [] };
+          config.current =
+            configResult.status === "ok" ? configResult.data : { name: "", options: [] };
           form.setFieldValue("path", selected as string);
           form.setFieldValue("name", config.current.name || t("features.engines.unknownEngine"));
         }}
@@ -61,7 +66,11 @@ export default function EngineForm({
         {...form.getInputProps("name")}
       />
 
-      <NumberInput label="Elo" placeholder={t("features.engines.add.eloDesc")} {...form.getInputProps("elo")} />
+      <NumberInput
+        label="Elo"
+        placeholder={t("features.engines.add.eloDesc")}
+        {...form.getInputProps("elo")}
+      />
 
       <Input.Wrapper
         label={t("features.engines.add.imageFile")}

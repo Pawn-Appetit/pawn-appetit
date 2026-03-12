@@ -5,171 +5,172 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getVersionCheckConfig, VERSION_CHECK_SETTINGS } from "@/config";
 import {
-  checkForUpdates,
-  isVersionCheckEnabled,
-  isVersionSkipped,
-  recordVersionCheck,
-  shouldCheckForUpdates,
-  type VersionCheckResult,
+    checkForUpdates,
+    isVersionCheckEnabled,
+    isVersionSkipped,
+    recordVersionCheck,
+    shouldCheckForUpdates,
+    type VersionCheckResult,
 } from "@/services/version-checker";
 import {
-  hideUpdateProgressNotification,
-  showUpdateErrorNotification,
-  showUpdateProgressNotification,
-  showUpdateSuccessNotification,
+    hideUpdateProgressNotification,
+    showUpdateErrorNotification,
+    showUpdateProgressNotification,
+    showUpdateSuccessNotification,
 } from "../components/UpdateNotification";
 
 export interface UseVersionCheckOptions {
-  autoCheck?: boolean;
-  startupDelay?: number;
-  onUpdateAvailable?: (result: VersionCheckResult) => void;
-  onCheckError?: (error: string) => void;
-  onNoUpdates?: () => void;
+    autoCheck?: boolean;
+    startupDelay?: number;
+    onUpdateAvailable?: (result: VersionCheckResult) => void;
+    onCheckError?: (error: string) => void;
+    onNoUpdates?: () => void;
 }
 
 export interface UseVersionCheckReturn {
-  isChecking: boolean;
-  isUpdating: boolean;
-  lastResult: VersionCheckResult | null;
-  checkVersion: () => Promise<void>;
-  installUpdate: () => Promise<void>;
-  isAutoCheckEnabled: boolean;
+    isChecking: boolean;
+    isUpdating: boolean;
+    lastResult: VersionCheckResult | null;
+    checkVersion: () => Promise<void>;
+    installUpdate: () => Promise<void>;
+    isAutoCheckEnabled: boolean;
 }
 
 export function useVersionCheck(options: UseVersionCheckOptions = {}): UseVersionCheckReturn {
-  const {
-    autoCheck = true,
-    startupDelay = VERSION_CHECK_SETTINGS.startupDelayMs,
-    onUpdateAvailable,
-    onCheckError,
-    onNoUpdates,
-  } = options;
+    const {
+        autoCheck = true,
+        startupDelay = VERSION_CHECK_SETTINGS.startupDelayMs,
+        onUpdateAvailable,
+        onCheckError,
+        onNoUpdates,
+    } = options;
 
-  const { t } = useTranslation();
-  const [isChecking, setIsChecking] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [lastResult, setLastResult] = useState<VersionCheckResult | null>(null);
-  const [isAutoCheckEnabled] = useState(() => isVersionCheckEnabled());
+    const { t } = useTranslation();
+    const [isChecking, setIsChecking] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [lastResult, setLastResult] = useState<VersionCheckResult | null>(null);
+    const [isAutoCheckEnabled] = useState(() => isVersionCheckEnabled());
 
-  const autoCheckInitiated = useRef(false);
+    const autoCheckInitiated = useRef(false);
 
-  const checkVersion = useCallback(async () => {
-    if (isChecking || isUpdating) {
-      return;
-    }
-
-    setIsChecking(true);
-
-    try {
-      info("Starting version check");
-      const config = getVersionCheckConfig();
-      const result = await checkForUpdates(config);
-
-      setLastResult(result);
-      recordVersionCheck();
-
-      if (result.error) {
-        logError(`Version check failed: ${result.error}`);
-        onCheckError?.(result.error);
-        return;
-      }
-
-      if (result.hasUpdate && result.versionInfo) {
-        if (isVersionSkipped(result.versionInfo.version)) {
-          info(`Version ${result.versionInfo.version} was previously skipped by user`);
-          return;
+    const checkVersion = useCallback(async () => {
+        if (isChecking || isUpdating) {
+            return;
         }
 
-        info(`Update available: ${result.versionInfo.version}`);
-        onUpdateAvailable?.(result);
-      } else {
-        info("No updates available");
-        onNoUpdates?.();
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      logError(`Version check failed with exception: ${errorMessage}`);
-      onCheckError?.(errorMessage);
-    } finally {
-      setIsChecking(false);
-    }
-  }, [isChecking, isUpdating, onUpdateAvailable, onCheckError, onNoUpdates]);
+        setIsChecking(true);
 
-  const installUpdate = useCallback(async () => {
-    if (isUpdating || !lastResult?.hasUpdate) {
-      return;
-    }
+        try {
+            info("Starting version check");
+            const config = getVersionCheckConfig();
+            const result = await checkForUpdates(config);
 
-    setIsUpdating(true);
+            setLastResult(result);
+            recordVersionCheck();
 
-    try {
-      info("Starting update installation via Tauri updater");
+            if (result.error) {
+                logError(`Version check failed: ${result.error}`);
+                onCheckError?.(result.error);
+                return;
+            }
 
-      showUpdateProgressNotification(t);
+            if (result.hasUpdate && result.versionInfo) {
+                if (isVersionSkipped(result.versionInfo.version)) {
+                    info(`Version ${result.versionInfo.version} was previously skipped by user`);
+                    return;
+                }
 
-      const update = await check();
+                info(`Update available: ${result.versionInfo.version}`);
+                onUpdateAvailable?.(result);
+            } else {
+                info("No updates available");
+                onNoUpdates?.();
+            }
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Unknown error";
+            logError(`Version check failed with exception: ${errorMessage}`);
+            onCheckError?.(errorMessage);
+        } finally {
+            setIsChecking(false);
+        }
+    }, [isChecking, isUpdating, onUpdateAvailable, onCheckError, onNoUpdates]);
 
-      if (update) {
-        info(`Installing update: ${update.version}`);
-        await update.downloadAndInstall();
+    const installUpdate = useCallback(async () => {
+        if (isUpdating || !lastResult?.hasUpdate) {
+            return;
+        }
 
-        hideUpdateProgressNotification();
-        showUpdateSuccessNotification(t);
+        setIsUpdating(true);
 
-        info("Update installed successfully, restarting application");
-        setTimeout(() => relaunch(), 2000);
-      } else {
-        throw new Error("No update available through Tauri updater");
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Update installation failed";
-      logError(`Update installation failed: ${errorMessage}`);
+        try {
+            info("Starting update installation via Tauri updater");
 
-      hideUpdateProgressNotification();
-      showUpdateErrorNotification(errorMessage, t);
-    } finally {
-      setIsUpdating(false);
-    }
-  }, [isUpdating, lastResult, t]);
+            showUpdateProgressNotification(t);
 
-  const checkVersionRef = useRef(checkVersion);
-  checkVersionRef.current = checkVersion;
+            const update = await check();
 
-  useEffect(() => {
-    if (!autoCheck || !isAutoCheckEnabled || autoCheckInitiated?.current) {
-      return;
-    }
+            if (update) {
+                info(`Installing update: ${update.version}`);
+                await update.downloadAndInstall();
 
-    if (!shouldCheckForUpdates(VERSION_CHECK_SETTINGS.checkIntervalHours)) {
-      info("Skipping version check - not enough time has passed since last check");
-      return;
-    }
+                hideUpdateProgressNotification();
+                showUpdateSuccessNotification(t);
 
-    autoCheckInitiated.current = true;
+                info("Update installed successfully, restarting application");
+                setTimeout(() => relaunch(), 2000);
+            } else {
+                throw new Error("No update available through Tauri updater");
+            }
+        } catch (error) {
+            const errorMessage =
+                error instanceof Error ? error.message : "Update installation failed";
+            logError(`Update installation failed: ${errorMessage}`);
 
-    const timeoutId = setTimeout(() => {
-      checkVersionRef.current();
-    }, startupDelay);
+            hideUpdateProgressNotification();
+            showUpdateErrorNotification(errorMessage, t);
+        } finally {
+            setIsUpdating(false);
+        }
+    }, [isUpdating, lastResult, t]);
 
-    return () => clearTimeout(timeoutId);
-  }, [autoCheck, isAutoCheckEnabled, startupDelay]);
+    const checkVersionRef = useRef(checkVersion);
+    checkVersionRef.current = checkVersion;
 
-  return {
-    isChecking,
-    isUpdating,
-    lastResult,
-    checkVersion,
-    installUpdate,
-    isAutoCheckEnabled,
-  };
+    useEffect(() => {
+        if (!autoCheck || !isAutoCheckEnabled || autoCheckInitiated?.current) {
+            return;
+        }
+
+        if (!shouldCheckForUpdates(VERSION_CHECK_SETTINGS.checkIntervalHours)) {
+            info("Skipping version check - not enough time has passed since last check");
+            return;
+        }
+
+        autoCheckInitiated.current = true;
+
+        const timeoutId = setTimeout(() => {
+            checkVersionRef.current();
+        }, startupDelay);
+
+        return () => clearTimeout(timeoutId);
+    }, [autoCheck, isAutoCheckEnabled, startupDelay]);
+
+    return {
+        isChecking,
+        isUpdating,
+        lastResult,
+        checkVersion,
+        installUpdate,
+        isAutoCheckEnabled,
+    };
 }
 
 export function useManualVersionCheck() {
-  const { checkVersion, isChecking, lastResult } = useVersionCheck({ autoCheck: false });
+    const { checkVersion, isChecking, lastResult } = useVersionCheck({ autoCheck: false });
 
-  return {
-    checkVersion,
-    isChecking,
-    lastResult,
-  };
+    return {
+        checkVersion,
+        isChecking,
+        lastResult,
+    };
 }

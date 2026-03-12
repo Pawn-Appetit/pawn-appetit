@@ -108,14 +108,22 @@ function PgnInput() {
       <Textarea autosize value={tmp} onChange={(e) => setTmp(e.currentTarget.value)} />
       <CopyButton value={tmp} timeout={2000}>
         {({ copied, copy }) => (
-          <Tooltip label={copied ? t("common.copied") : t("common.copy")} withArrow position="right">
+          <Tooltip
+            label={copied ? t("common.copied") : t("common.copy")}
+            withArrow
+            position="right"
+          >
             <ActionIcon
               color={copied ? "teal" : "gray"}
               variant="subtle"
               onClick={copy}
               style={{ position: "absolute", top: 15, right: 15 }}
             >
-              {copied ? <IconCheck style={{ width: rem(16) }} /> : <IconCopy style={{ width: rem(16) }} />}
+              {copied ? (
+                <IconCheck style={{ width: rem(16) }} />
+              ) : (
+                <IconCopy style={{ width: rem(16) }} />
+              )}
             </ActionIcon>
           </Tooltip>
         )}

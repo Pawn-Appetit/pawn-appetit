@@ -2,7 +2,8 @@ import type React from "react";
 import { useEffect, useRef } from "react";
 import ContentEditableBase, { type ContentEditableEvent } from "react-contenteditable";
 
-const ReactContentEditable = ((ContentEditableBase as any).default ?? ContentEditableBase) as typeof ContentEditableBase;
+const ReactContentEditable = ((ContentEditableBase as any).default ??
+  ContentEditableBase) as typeof ContentEditableBase;
 
 interface ContentEditableProps {
   onChange?: (event: ContentEditableEvent) => void;

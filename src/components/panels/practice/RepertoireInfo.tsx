@@ -115,7 +115,13 @@ const sortStatusAtom = atomWithStorage<SortStatus>(
   { getOnInit: true },
 );
 
-function MissingMoves({ missingMoves, search }: { missingMoves: MissingMove[]; search: () => void }) {
+function MissingMoves({
+  missingMoves,
+  search,
+}: {
+  missingMoves: MissingMove[];
+  search: () => void;
+}) {
   const { t } = useTranslation();
   const store = useContext(TreeStateContext)!;
   const goToMove = useStore(store, (s) => s.goToMove);

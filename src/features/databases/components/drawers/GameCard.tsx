@@ -11,7 +11,15 @@ import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import { createTab } from "@/utils/tabs";
 import GamePreview from "./GamePreview";
 
-function GameCard({ game, file, mutate }: { game: NormalizedGame; file: string; mutate: () => void }) {
+function GameCard({
+  game,
+  file,
+  mutate,
+}: {
+  game: NormalizedGame;
+  file: string;
+  mutate: () => void;
+}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { layout } = useResponsiveLayout();
@@ -54,7 +62,10 @@ function GameCard({ game, file, mutate }: { game: NormalizedGame; file: string; 
       <ScrollArea h="100%">
         <Stack h="100%" gap={density.gap}>
           <TreeStateProvider>
-            <CollapsibleGameInfo headers={game} defaultCollapsed={layout.gameInfoCollapsedByDefault} />
+            <CollapsibleGameInfo
+              headers={game}
+              defaultCollapsed={layout.gameInfoCollapsedByDefault}
+            />
           </TreeStateProvider>
           <Divider />
           <Group justify="left" gap={spacing}>
@@ -81,7 +92,10 @@ function GameCard({ game, file, mutate }: { game: NormalizedGame; file: string; 
                   navigate({ to: "/boards" });
                 }}
               >
-                <IconZoomCheck size={layout.databases.density === "compact" ? "1.4rem" : "1.2rem"} stroke={1.5} />
+                <IconZoomCheck
+                  size={layout.databases.density === "compact" ? "1.4rem" : "1.2rem"}
+                  stroke={1.5}
+                />
               </ActionIcon>
             </Tooltip>
 
@@ -94,7 +108,10 @@ function GameCard({ game, file, mutate }: { game: NormalizedGame; file: string; 
                   commands.deleteDbGame(file, game.id).then(() => mutate());
                 }}
               >
-                <IconTrash size={layout.databases.density === "compact" ? "1.4rem" : "1.2rem"} stroke={1.5} />
+                <IconTrash
+                  size={layout.databases.density === "compact" ? "1.4rem" : "1.2rem"}
+                  stroke={1.5}
+                />
               </ActionIcon>
             </Tooltip>
           </Group>

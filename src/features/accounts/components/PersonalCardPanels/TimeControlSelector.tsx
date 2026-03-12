@@ -23,7 +23,11 @@ interface TimeControlSelectorProps {
   allowAll: boolean;
 }
 
-const TimeControlSelector = ({ onTimeControlChange, website, allowAll }: TimeControlSelectorProps) => {
+const TimeControlSelector = ({
+  onTimeControlChange,
+  website,
+  allowAll,
+}: TimeControlSelectorProps) => {
   const timeControls =
     website === "Chess.com"
       ? [...(allowAll ? [{ value: "any", label: "Any" }] : []), ...CHESSCOM_TIME_CONTROLS]

@@ -1,4 +1,15 @@
-import { ActionIcon, Box, Group, ScrollArea, Stack, Table, Text, TextInput, Title, Tooltip } from "@mantine/core";
+import {
+  ActionIcon,
+  Box,
+  Group,
+  ScrollArea,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+  Title,
+  Tooltip,
+} from "@mantine/core";
 import { IconReload } from "@tabler/icons-react";
 import { useAtom } from "jotai";
 import { RESET } from "jotai/utils";

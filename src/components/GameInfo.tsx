@@ -45,7 +45,13 @@ function GameInfo({
 
       <Group w="100%" wrap="nowrap">
         {simplified === "repertoire" && (
-          <Text c="dimmed" tt="uppercase" fw="bold" className={classes.colorHover} onClick={() => setWhiteOpened(true)}>
+          <Text
+            c="dimmed"
+            tt="uppercase"
+            fw="bold"
+            className={classes.colorHover}
+            onClick={() => setWhiteOpened(true)}
+          >
             {t("chess.white")}
           </Text>
         )}
@@ -173,7 +179,8 @@ function GameInfo({
             disabled={disabled}
           />
           <Group justify="center">
-            {headers.site.startsWith("https://lichess.org") || headers.site.startsWith("https://www.chess.com") ? (
+            {headers.site.startsWith("https://lichess.org") ||
+            headers.site.startsWith("https://www.chess.com") ? (
               <a href={headers.site} target="_blank" rel="noreferrer">
                 <Text p="sm" w={90}>
                   {headers.site.startsWith("https://lichess.org") ? "Lichess" : "Chess.com"}

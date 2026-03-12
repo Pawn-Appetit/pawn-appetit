@@ -66,7 +66,9 @@ export const PuzzleControls = ({
         ...defaultTree().headers,
         fen: currentPuzzle.fen,
         orientation:
-          Chess.fromSetup(parseFen(currentPuzzle.fen).unwrap()).unwrap().turn === "white" ? "black" : "white",
+          Chess.fromSetup(parseFen(currentPuzzle.fen).unwrap()).unwrap().turn === "white"
+            ? "black"
+            : "white",
       },
     });
   };
@@ -112,10 +114,15 @@ export const PuzzleControls = ({
               data={[
                 { value: "off", label: t("features.puzzle.jumpToNextOff") },
                 { value: "success", label: t("features.puzzle.jumpToNextOnSuccess") },
-                { value: "success-and-failure", label: t("features.puzzle.jumpToNextOnSuccessAndFailure") },
+                {
+                  value: "success-and-failure",
+                  label: t("features.puzzle.jumpToNextOnSuccessAndFailure"),
+                },
               ]}
               value={jumpToNext}
-              onChange={(value) => onJumpToNextChange(value as "off" | "success" | "success-and-failure")}
+              onChange={(value) =>
+                onJumpToNextChange(value as "off" | "success" | "success-and-failure")
+              }
               size="xs"
             />
           </Group>
@@ -145,10 +152,14 @@ export const PuzzleControls = ({
           onClick={handleViewSolution}
           disabled={puzzles.length === 0 || showingSolution || turnToMove === null}
         >
-          {showingSolution ? t("features.puzzle.showingSolution") : t("features.puzzle.viewSolution")}
+          {showingSolution
+            ? t("features.puzzle.showingSolution")
+            : t("features.puzzle.viewSolution")}
         </Button>
         {turnToMove && (
-          <Text fz="1.50rem">{turnToMove === "white" ? t("chess.fen.blackToMove") : t("chess.fen.whiteToMove")}</Text>
+          <Text fz="1.50rem">
+            {turnToMove === "white" ? t("chess.fen.blackToMove") : t("chess.fen.whiteToMove")}
+          </Text>
         )}
       </Group>
     </>

@@ -115,8 +115,12 @@ function OutcomeBadge({
 }) {
   const { t } = useTranslation();
   const normalizedCategory = match(category)
-    .with("win", () => (turn === "white" ? t("chess.outcome.whiteWins") : t("chess.outcome.blackWins")))
-    .with("loss", () => (turn === "white" ? t("chess.outcome.blackWins") : t("chess.outcome.whiteWins")))
+    .with("win", () =>
+      turn === "white" ? t("chess.outcome.whiteWins") : t("chess.outcome.blackWins"),
+    )
+    .with("loss", () =>
+      turn === "white" ? t("chess.outcome.blackWins") : t("chess.outcome.whiteWins"),
+    )
     .with(P.union("draw", "blessed-loss", "cursed-win"), () => t("chess.outcome.draw"))
     .with(P.union("unknown", "maybe-win", "maybe-loss"), () => t("features.tablebase.unknown"))
     .exhaustive();
@@ -132,7 +136,9 @@ function OutcomeBadge({
         .with("draw", () => t("chess.outcome.draw"))
         .with("unknown", () => t("features.tablebase.unknown"))
         .otherwise(() =>
-          dtm ? t("features.tablebase.dtm", { count: Math.abs(dtm) }) : t("features.tablebase.dtz", { count: dtz }),
+          dtm
+            ? t("features.tablebase.dtm", { count: Math.abs(dtm) })
+            : t("features.tablebase.dtz", { count: dtz }),
         );
 
   return (

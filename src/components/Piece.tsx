@@ -93,7 +93,10 @@ export default function PieceComponent({
           backgroundPosition: "center",
           zIndex: 100,
           backgroundColor:
-            !isDragging && selectedPiece && piece.role === selectedPiece.role && piece.color === selectedPiece.color
+            !isDragging &&
+            selectedPiece &&
+            piece.role === selectedPiece.role &&
+            piece.color === selectedPiece.color
               ? "var(--mantine-primary-color-filled)"
               : "transparent",
         }}

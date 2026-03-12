@@ -22,7 +22,12 @@ function PiecesGrid({
   setSelectedPiece?: (piece: PieceType | null) => void;
 }) {
   const handlePieceSelect = (piece: PieceType, isDragging: boolean) => {
-    if (!isDragging && selectedPiece && piece.role === selectedPiece.role && piece.color === selectedPiece.color) {
+    if (
+      !isDragging &&
+      selectedPiece &&
+      piece.role === selectedPiece.role &&
+      piece.color === selectedPiece.color
+    ) {
       setSelectedPiece?.(null);
     } else {
       setSelectedPiece?.(piece);

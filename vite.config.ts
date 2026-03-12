@@ -11,43 +11,39 @@ const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    tanstackRouter(),
-    react(),
-    vanillaExtractPlugin(),
-  ],
-  clearScreen: false,
-  server: {
-    port: 1420,
-    strictPort: true,
-    host: host || false,
-    hmr: host
-      ? {
-          protocol: "ws",
-          host,
-          port: 1421,
-        }
-      : undefined,
-    watch: {
-      ignored: ["**/src-tauri/**"],
+    plugins: [tanstackRouter(), react(), vanillaExtractPlugin()],
+    clearScreen: false,
+    server: {
+        port: 1420,
+        strictPort: true,
+        host: host || false,
+        hmr: host
+            ? {
+                  protocol: "ws",
+                  host,
+                  port: 1421,
+              }
+            : undefined,
+        watch: {
+            ignored: ["**/src-tauri/**"],
+        },
     },
-  },
-  build: {
-    minify: isDebug ? false : "esbuild",
-    sourcemap: isDebug ? "inline" : false,
-    rollupOptions: {
-      output: {
-        entryFileNames: "assets/[name].js",
-        chunkFileNames: "assets/[name].js",
-        assetFileNames: "assets/[name].[ext]",
-      },
+    build: {
+        minify: isDebug ? false : "esbuild",
+        sourcemap: isDebug ? "inline" : false,
+        rollupOptions: {
+            output: {
+                entryFileNames: "assets/[name].js",
+                chunkFileNames: "assets/[name].js",
+                assetFileNames: "assets/[name].[ext]",
+            },
+        },
     },
-  },
-  resolve: {
-    alias: [{ find: "@", replacement: resolve(__dirname, "./src") }],
-  },
-  test: {
-    environment: "jsdom",
-    env: { TZ: "UTC" },
-  },
+    resolve: {
+        alias: [{ find: "@", replacement: resolve(__dirname, "./src") }],
+    },
+    test: {
+        environment: "jsdom",
+        env: { TZ: "UTC" },
+    },
 });

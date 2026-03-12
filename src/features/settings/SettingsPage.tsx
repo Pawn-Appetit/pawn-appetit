@@ -1,6 +1,26 @@
-import { Box, Card, Group, ScrollArea, Select, Stack, Tabs, Text, TextInput, Title, useDirection } from "@mantine/core";
+import {
+  Box,
+  Card,
+  Group,
+  ScrollArea,
+  Select,
+  Stack,
+  Tabs,
+  Text,
+  TextInput,
+  Title,
+  useDirection,
+} from "@mantine/core";
 
-import { IconBook, IconBrush, IconChess, IconFlag, IconFolder, IconMouse, IconVolume } from "@tabler/icons-react";
+import {
+  IconBook,
+  IconBrush,
+  IconChess,
+  IconFlag,
+  IconFolder,
+  IconMouse,
+  IconVolume,
+} from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAtom } from "jotai";
@@ -78,7 +98,9 @@ export default function Page() {
   const [moveNotationType, setMoveNotationType] = useAtom(moveNotationTypeAtom);
   const [coordinatesMode, setCoordinatesMode] = useAtom(showCoordinatesAtom);
   const [practiceAnimationSpeed, setPracticeAnimationSpeed] = useAtom(practiceAnimationSpeedAtom);
-  const [dateFormatMode, setDateFormatMode] = useState(localStorage.getItem("dateFormatMode") || "intl");
+  const [dateFormatMode, setDateFormatMode] = useState(
+    localStorage.getItem("dateFormatMode") || "intl",
+  );
 
   const handleDateFormatModeChange = useCallback(
     (val: "intl" | "locale") => {
@@ -160,7 +182,10 @@ export default function Page() {
     [t],
   );
 
-  const titleBarData = useMemo(() => [t("settings.appearance.native"), t("settings.appearance.custom")], [t]);
+  const titleBarData = useMemo(
+    () => [t("settings.appearance.native"), t("settings.appearance.custom")],
+    [t],
+  );
 
   const allSettings = useMemo(
     (): SettingItem[] => [
@@ -215,7 +240,9 @@ export default function Page() {
               data={moveNotationData}
               allowDeselect={false}
               value={validatedMoveNotationType}
-              onChange={(val) => setMoveNotationType(val as "letters" | "symbols" | "letters-translated")}
+              onChange={(val) =>
+                setMoveNotationType(val as "letters" | "symbols" | "letters-translated")
+              }
             />
           </Group>
         ),
@@ -864,7 +891,8 @@ export default function Page() {
     const searchTerm = search.toLowerCase();
     return allSettings.filter(
       (setting) =>
-        setting.title.toLowerCase().includes(searchTerm) || setting.description.toLowerCase().includes(searchTerm),
+        setting.title.toLowerCase().includes(searchTerm) ||
+        setting.description.toLowerCase().includes(searchTerm),
     );
   }, [search, allSettings]);
 
@@ -940,7 +968,13 @@ export default function Page() {
       // Add header if it exists and we're rendering with headers
       if (withHeaders && tab.header && tab.header !== currentHeader) {
         elements.push(
-          <Text key={`header-${tab.value}`} c="dimmed" size="sm" pl="lg" mt={currentHeader ? "md" : 0}>
+          <Text
+            key={`header-${tab.value}`}
+            c="dimmed"
+            size="sm"
+            pl="lg"
+            mt={currentHeader ? "md" : 0}
+          >
             {tab.header}
           </Text>,
         );
@@ -974,7 +1008,10 @@ export default function Page() {
     <>
       {tabConfig.map((tab) => (
         <Tabs.Panel key={tab.value} value={tab.value}>
-          {renderTabContent(tab.value, settingsByTab[tab.value as keyof typeof settingsByTab] || [])}
+          {renderTabContent(
+            tab.value,
+            settingsByTab[tab.value as keyof typeof settingsByTab] || [],
+          )}
         </Tabs.Panel>
       ))}
     </>
@@ -982,7 +1019,11 @@ export default function Page() {
 
   const renderTabContent = (tabId: string, settings: SettingItem[]) => (
     <>
-      <Title order={layout.settings.layoutType === "mobile" ? 2 : 1} fw={500} className={classes.title}>
+      <Title
+        order={layout.settings.layoutType === "mobile" ? 2 : 1}
+        fw={500}
+        className={classes.title}
+      >
         {tabInfo[tabId as keyof typeof tabInfo]?.title}
       </Title>
       <Text size="sm" c="dimmed" mt={3} mb="lg">

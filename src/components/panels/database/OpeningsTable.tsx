@@ -88,13 +88,19 @@ function OpeningsTable({ openings, loading }: { openings: Opening[]; loading: bo
             return (
               <Progress.Root size="xl">
                 <Progress.Section value={whitePercent} color="white">
-                  <Progress.Label c="black">{whitePercent > 10 ? `${whitePercent.toFixed(1)}%` : ""}</Progress.Label>
+                  <Progress.Label c="black">
+                    {whitePercent > 10 ? `${whitePercent.toFixed(1)}%` : ""}
+                  </Progress.Label>
                 </Progress.Section>
                 <Progress.Section value={drawPercent} color="gray">
-                  <Progress.Label>{drawPercent > 10 ? `${drawPercent.toFixed(1)}%` : ""}</Progress.Label>
+                  <Progress.Label>
+                    {drawPercent > 10 ? `${drawPercent.toFixed(1)}%` : ""}
+                  </Progress.Label>
                 </Progress.Section>
                 <Progress.Section value={blackPercent} color="black">
-                  <Progress.Label>{blackPercent > 10 ? `${blackPercent.toFixed(1)}%` : ""}</Progress.Label>
+                  <Progress.Label>
+                    {blackPercent > 10 ? `${blackPercent.toFixed(1)}%` : ""}
+                  </Progress.Label>
                 </Progress.Section>
               </Progress.Root>
             );

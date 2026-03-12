@@ -11,7 +11,13 @@ interface EnginesTableProps {
   isLoading?: boolean;
 }
 
-export function EnginesTable({ engines, filteredIndices, selected, setSelected, isLoading }: EnginesTableProps) {
+export function EnginesTable({
+  engines,
+  filteredIndices,
+  selected,
+  setSelected,
+  isLoading,
+}: EnginesTableProps) {
   if (isLoading) {
     return (
       <Stack gap="md">

@@ -1,4 +1,13 @@
-import { ActionIcon, Box, Flex, Tooltip as MTTooltip, Paper, Select, Tabs, Text } from "@mantine/core";
+import {
+  ActionIcon,
+  Box,
+  Flex,
+  Tooltip as MTTooltip,
+  Paper,
+  Select,
+  Tabs,
+  Text,
+} from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useContext, useState } from "react";

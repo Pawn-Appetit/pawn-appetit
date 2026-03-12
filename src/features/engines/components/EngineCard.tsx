@@ -46,7 +46,12 @@ export const EngineCard = memo(function EngineCard({ engine, stats }: EngineCard
       <Stack flex="1" gap={0}>
         <Stack gap="xs">
           <Group align="center" gap="xs" wrap="wrap">
-            <Text fw="bold" lineClamp={1} c={hasError ? "red" : undefined} size={isMobile ? "sm" : "md"}>
+            <Text
+              fw="bold"
+              lineClamp={1}
+              c={hasError ? "red" : undefined}
+              size={isMobile ? "sm" : "md"}
+            >
               {engine.name} {hasError ? "(file missing)" : ""}
             </Text>
             {engine.type === "local" && engine.version && (
@@ -73,7 +78,13 @@ export const EngineCard = memo(function EngineCard({ engine, stats }: EngineCard
         <Group justify="space-between">
           {stats?.map((stat) => (
             <Stack key={stat.label} gap="0" align="center">
-              <Text size="xs" c="dimmed" fw="bold" className={classes.label} mt={isMobile ? "0.5rem" : "1rem"}>
+              <Text
+                size="xs"
+                c="dimmed"
+                fw="bold"
+                className={classes.label}
+                mt={isMobile ? "0.5rem" : "1rem"}
+              >
                 {stat.label}
               </Text>
               <Text fw={700} size={isMobile ? "md" : "lg"} style={{ lineHeight: 1 }}>

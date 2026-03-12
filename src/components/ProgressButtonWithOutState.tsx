@@ -52,7 +52,15 @@ function ProgressButtonWithOutState({
       autoContrast
     >
       <span className={classes.label}>{label}</span>
-      {progress !== 0 && <Progress pos="absolute" h="100%" value={progress} className={classes.progress} radius="sm" />}
+      {progress !== 0 && (
+        <Progress
+          pos="absolute"
+          h="100%"
+          value={progress}
+          className={classes.progress}
+          radius="sm"
+        />
+      )}
     </Button>
   );
 }

@@ -197,7 +197,8 @@ function CollapsibleGameInfo({
             disabled={disabled}
           />
           <Group justify="center">
-            {headers.site.startsWith("https://lichess.org") || headers.site.startsWith("https://www.chess.com") ? (
+            {headers.site.startsWith("https://lichess.org") ||
+            headers.site.startsWith("https://www.chess.com") ? (
               <a href={headers.site} target="_blank" rel="noreferrer">
                 <Text p="sm" w={90}>
                   {headers.site.startsWith("https://lichess.org") ? "Lichess" : "Chess.com"}

@@ -15,7 +15,8 @@ export default function EditEngine({ initialEngine }: { initialEngine: LocalEngi
     validate: {
       name: (value) => {
         if (!value) return t("common.requireName");
-        if (engines.find((e) => e.name === value && e !== initialEngine)) return t("common.nameAlreadyUsed");
+        if (engines.find((e) => e.name === value && e !== initialEngine))
+          return t("common.nameAlreadyUsed");
       },
       path: (value) => {
         if (!value) return t("common.requirePath");

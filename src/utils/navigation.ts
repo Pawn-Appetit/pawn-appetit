@@ -6,10 +6,10 @@ import type { Tab } from "@/utils/tabs";
  */
 
 export interface DatabaseNavigationOptions {
-  /** The tab to open in the AddDatabase modal */
-  tab?: "games" | "puzzles";
-  /** URL to redirect to after modal submission */
-  redirectTo?: string;
+    /** The tab to open in the AddDatabase modal */
+    tab?: "games" | "puzzles";
+    /** URL to redirect to after modal submission */
+    redirectTo?: string;
 }
 
 /**
@@ -20,27 +20,27 @@ export interface DatabaseNavigationOptions {
  * @returns NavigateOptions for TanStack Router
  */
 export function navigateToDatabasesWithModal(
-  navigate: (options: NavigateOptions) => void,
-  options: DatabaseNavigationOptions = {},
+    navigate: (options: NavigateOptions) => void,
+    options: DatabaseNavigationOptions = {},
 ): void {
-  const { tab = "games", redirectTo } = options;
+    const { tab = "games", redirectTo } = options;
 
-  const searchParams: Record<string, string> = {
-    value: "add",
-  };
+    const searchParams: Record<string, string> = {
+        value: "add",
+    };
 
-  if (tab) {
-    searchParams.tab = tab;
-  }
+    if (tab) {
+        searchParams.tab = tab;
+    }
 
-  if (redirectTo) {
-    searchParams.redirect = redirectTo;
-  }
+    if (redirectTo) {
+        searchParams.redirect = redirectTo;
+    }
 
-  navigate({
-    to: "/databases",
-    search: searchParams,
-  });
+    navigate({
+        to: "/databases",
+        search: searchParams,
+    });
 }
 
 /**
@@ -53,54 +53,54 @@ export function navigateToDatabasesWithModal(
  * @param tabName - Name for the puzzle tab
  */
 export function navigateToPuzzles(
-  navigate: (options: NavigateOptions) => void,
-  setTabs: (updater: (prev: Tab[]) => Tab[]) => void,
-  setActiveTab: (tabId: string) => void,
-  tabName: string = "Puzzles",
+    navigate: (options: NavigateOptions) => void,
+    setTabs: (updater: (prev: Tab[]) => Tab[]) => void,
+    setActiveTab: (tabId: string) => void,
+    tabName: string = "Puzzles",
 ): void {
-  const uuid = generateId();
+    const uuid = generateId();
 
-  setTabs((prev: Tab[]) => [
-    ...prev,
-    {
-      value: uuid,
-      name: tabName,
-      type: "puzzles",
-    },
-  ]);
+    setTabs((prev: Tab[]) => [
+        ...prev,
+        {
+            value: uuid,
+            name: tabName,
+            type: "puzzles",
+        },
+    ]);
 
-  setActiveTab(uuid);
+    setActiveTab(uuid);
 
-  navigate({ to: "/boards" });
+    navigate({ to: "/boards" });
 }
 
 /**
  * Simple ID generator for tabs
  */
 function generateId(): string {
-  return Math.random().toString(36).substring(2, 15);
+    return Math.random().toString(36).substring(2, 15);
 }
 
 /**
  * Get the current page path for redirect purposes
  */
 export function getCurrentPath(): string {
-  return window.location.pathname;
+    return window.location.pathname;
 }
 
 /**
  * Check if current location is puzzles page
  */
 export function isPuzzlesPage(): boolean {
-  return (
-    (window.location.pathname === "/boards" && window.location.search.includes("puzzles")) ||
-    document.title.toLowerCase().includes("puzzle")
-  );
+    return (
+        (window.location.pathname === "/boards" && window.location.search.includes("puzzles")) ||
+        document.title.toLowerCase().includes("puzzle")
+    );
 }
 
 /**
  * Extract redirect URL from search parameters
  */
 export function getRedirectFromSearch(searchParams: URLSearchParams): string | undefined {
-  return searchParams.get("redirect") || undefined;
+    return searchParams.get("redirect") || undefined;
 }

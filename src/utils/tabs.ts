@@ -12,9 +12,9 @@ import { formatDateToPGN } from "./format";
 import type { GameHeaders, TreeNode, TreeState } from "./treeReducer";
 
 const dbGameMetadataSchema = z.object({
-  type: z.literal("db"),
-  db: z.string(),
-  id: z.number(),
+    type: z.literal("db"),
+    db: z.string(),
+    id: z.number(),
 });
 export type DbGameMetadata = z.infer<typeof dbGameMetadataSchema>;
 
@@ -23,338 +23,345 @@ const entitySourceMetadataSchema = z.union([fileMetadataSchema, dbGameMetadataSc
 export type EntitySourceMetadata = z.infer<typeof entitySourceMetadataSchema>;
 
 export const tabSchema = z.object({
-  name: z.string(),
-  value: z.string(),
-  type: z.enum(["new", "play", "analysis", "puzzles"]),
-  gameNumber: z.number().nullish(),
-  source: entitySourceMetadataSchema.nullish(),
-  meta: z
-    .object({
-      timeControl: z.object({
-        seconds: z.number(),
-        increment: z.number(),
-      }),
-    })
-    .optional(),
+    name: z.string(),
+    value: z.string(),
+    type: z.enum(["new", "play", "analysis", "puzzles"]),
+    gameNumber: z.number().nullish(),
+    source: entitySourceMetadataSchema.nullish(),
+    meta: z
+        .object({
+            timeControl: z.object({
+                seconds: z.number(),
+                increment: z.number(),
+            }),
+        })
+        .optional(),
 });
 
 export type Tab = z.infer<typeof tabSchema>;
 
 export function genID() {
-  function S4() {
-    return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-  }
-  return S4() + S4();
+    function S4() {
+        return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+    }
+    return S4() + S4();
 }
 
 export async function createTab({
-  tab,
-  setTabs,
-  setActiveTab,
-  pgn,
-  headers,
-  srcInfo,
-  gameNumber,
-  position,
+    tab,
+    setTabs,
+    setActiveTab,
+    pgn,
+    headers,
+    srcInfo,
+    gameNumber,
+    position,
 }: {
-  tab: Omit<Tab, "value">;
-  setTabs: React.Dispatch<React.SetStateAction<Tab[]>>;
-  setActiveTab: React.Dispatch<React.SetStateAction<string | null>>;
-  pgn?: string;
-  headers?: GameHeaders;
-  srcInfo?: EntitySourceMetadata;
-  gameNumber?: number;
-  position?: number[];
+    tab: Omit<Tab, "value">;
+    setTabs: React.Dispatch<React.SetStateAction<Tab[]>>;
+    setActiveTab: React.Dispatch<React.SetStateAction<string | null>>;
+    pgn?: string;
+    headers?: GameHeaders;
+    srcInfo?: EntitySourceMetadata;
+    gameNumber?: number;
+    position?: number[];
 }) {
-  const id = genID();
+    const id = genID();
 
-  if (pgn !== undefined) {
-    // For variants files, parse as normal PGN (with variations) but display in variants view
-    // Don't use isVariantsMode for parsing - that's only for special PGNs where all sequences are variations
-    const tree = await parsePGN(pgn, headers?.fen, false);
-    // If headers are provided, only merge them if the parsed PGN headers are incomplete
-    // This preserves complete headers from saved PGNs (like game.pgn) while allowing
-    // updates for PGNs that were reconstructed from moves
-    if (headers) {
-      const parsedHeaders = tree.headers;
-      // Check if parsed headers are complete (not just default values)
-      const hasCompleteHeaders =
-        parsedHeaders.event &&
-        parsedHeaders.event !== "?" &&
-        parsedHeaders.site &&
-        parsedHeaders.site !== "?" &&
-        parsedHeaders.white &&
-        parsedHeaders.white !== "?" &&
-        parsedHeaders.black &&
-        parsedHeaders.black !== "?";
+    if (pgn !== undefined) {
+        // For variants files, parse as normal PGN (with variations) but display in variants view
+        // Don't use isVariantsMode for parsing - that's only for special PGNs where all sequences are variations
+        const tree = await parsePGN(pgn, headers?.fen, false);
+        // If headers are provided, only merge them if the parsed PGN headers are incomplete
+        // This preserves complete headers from saved PGNs (like game.pgn) while allowing
+        // updates for PGNs that were reconstructed from moves
+        if (headers) {
+            const parsedHeaders = tree.headers;
+            // Check if parsed headers are complete (not just default values)
+            const hasCompleteHeaders =
+                parsedHeaders.event &&
+                parsedHeaders.event !== "?" &&
+                parsedHeaders.site &&
+                parsedHeaders.site !== "?" &&
+                parsedHeaders.white &&
+                parsedHeaders.white !== "?" &&
+                parsedHeaders.black &&
+                parsedHeaders.black !== "?";
 
-      if (hasCompleteHeaders) {
-        // PGN has complete headers, preserve them (especially FEN which is the initial position)
-        // Only update fields that are explicitly provided and missing in parsed headers
-        tree.headers = {
-          ...parsedHeaders,
-          // Preserve FEN from parsed headers (it's the initial FEN from PGN)
-          fen: parsedHeaders.fen,
-          // Only override if provided and missing in parsed headers
-          time_control: parsedHeaders.time_control || headers.time_control,
-          variant: parsedHeaders.variant || headers.variant,
-        };
-      } else {
-        // PGN headers are incomplete, merge with provided headers
-        // But always preserve FEN from parsed headers if it exists
-        tree.headers = {
-          ...parsedHeaders,
-          ...headers,
-          fen: parsedHeaders.fen || headers.fen,
-        };
-      }
-      if (position) {
-        tree.position = position;
-      }
+            if (hasCompleteHeaders) {
+                // PGN has complete headers, preserve them (especially FEN which is the initial position)
+                // Only update fields that are explicitly provided and missing in parsed headers
+                tree.headers = {
+                    ...parsedHeaders,
+                    // Preserve FEN from parsed headers (it's the initial FEN from PGN)
+                    fen: parsedHeaders.fen,
+                    // Only override if provided and missing in parsed headers
+                    time_control: parsedHeaders.time_control || headers.time_control,
+                    variant: parsedHeaders.variant || headers.variant,
+                };
+            } else {
+                // PGN headers are incomplete, merge with provided headers
+                // But always preserve FEN from parsed headers if it exists
+                tree.headers = {
+                    ...parsedHeaders,
+                    ...headers,
+                    fen: parsedHeaders.fen || headers.fen,
+                };
+            }
+            if (position) {
+                tree.position = position;
+            }
+        }
+        sessionStorage.setItem(id, JSON.stringify({ version: 0, state: tree }));
     }
-    sessionStorage.setItem(id, JSON.stringify({ version: 0, state: tree }));
-  }
 
-  setTabs((prev) => {
-    if (prev.length === 0 || (prev.length === 1 && prev[0].type === "new" && tab.type !== "new")) {
-      return [
-        {
-          ...tab,
-          value: id,
-          source: srcInfo,
-          gameNumber,
-        },
-      ];
-    }
-    return [
-      ...prev,
-      {
-        ...tab,
-        value: id,
-        source: srcInfo,
-        gameNumber,
-      },
-    ];
-  });
-  setActiveTab(id);
-  return id;
+    setTabs((prev) => {
+        if (
+            prev.length === 0 ||
+            (prev.length === 1 && prev[0].type === "new" && tab.type !== "new")
+        ) {
+            return [
+                {
+                    ...tab,
+                    value: id,
+                    source: srcInfo,
+                    gameNumber,
+                },
+            ];
+        }
+        return [
+            ...prev,
+            {
+                ...tab,
+                value: id,
+                source: srcInfo,
+                gameNumber,
+            },
+        ];
+    });
+    setActiveTab(id);
+    return id;
 }
 
 export async function saveToFile({
-  dir,
-  tab,
-  setCurrentTab,
-  store,
+    dir,
+    tab,
+    setCurrentTab,
+    store,
 }: {
-  dir: string;
-  tab: Tab | undefined;
-  setCurrentTab: React.Dispatch<React.SetStateAction<Tab>>;
-  store: StoreApi<TreeStoreState>;
+    dir: string;
+    tab: Tab | undefined;
+    setCurrentTab: React.Dispatch<React.SetStateAction<Tab>>;
+    store: StoreApi<TreeStoreState>;
 }) {
-  let filePath: string;
-  if (tab?.source?.type === "file" && !isTempImportFile(tab?.source?.path)) {
-    filePath = tab.source.path;
-  } else {
-    const userChoice = await save({
-      defaultPath: `${dir}/analyze-game-${formatDateToPGN(new Date())}.pgn`,
-      filters: [
-        {
-          name: "PGN",
-          extensions: ["pgn"],
-        },
-      ],
-    });
-    if (userChoice === null) return;
-    filePath = userChoice;
-    const fileName = await getFileNameWithoutExtension(filePath);
-    if (tab?.source?.type === "file" && isTempImportFile(tab?.source?.path)) {
-      const count = unwrap(await commands.countPgnGames(tab?.source?.path ?? ""));
-      const games = unwrap(await commands.readGames(tab?.source?.path ?? "", 0, count - 1));
-      const pgn = games.join("");
-      await createFile({
-        filename: fileName,
-        filetype: "game",
-        pgn,
-        dir: dir,
-      });
+    let filePath: string;
+    if (tab?.source?.type === "file" && !isTempImportFile(tab?.source?.path)) {
+        filePath = tab.source.path;
+    } else {
+        const userChoice = await save({
+            defaultPath: `${dir}/analyze-game-${formatDateToPGN(new Date())}.pgn`,
+            filters: [
+                {
+                    name: "PGN",
+                    extensions: ["pgn"],
+                },
+            ],
+        });
+        if (userChoice === null) return;
+        filePath = userChoice;
+        const fileName = await getFileNameWithoutExtension(filePath);
+        if (tab?.source?.type === "file" && isTempImportFile(tab?.source?.path)) {
+            const count = unwrap(await commands.countPgnGames(tab?.source?.path ?? ""));
+            const games = unwrap(await commands.readGames(tab?.source?.path ?? "", 0, count - 1));
+            const pgn = games.join("");
+            await createFile({
+                filename: fileName,
+                filetype: "game",
+                pgn,
+                dir: dir,
+            });
+        }
+        setCurrentTab((prev) => {
+            return {
+                ...prev,
+                source: {
+                    ...(prev.source ?? {
+                        type: "file",
+                        numGames: 1,
+                        metadata: { type: "game", tags: [] },
+                    }),
+                    name: fileName,
+                    path: filePath,
+                    lastModified: Date.now(),
+                },
+            };
+        });
     }
-    setCurrentTab((prev) => {
-      return {
-        ...prev,
-        source: {
-          ...(prev.source ?? { type: "file", numGames: 1, metadata: { type: "game", tags: [] } }),
-          name: fileName,
-          path: filePath,
-          lastModified: Date.now(),
-        },
-      };
-    });
-  }
-  await commands.writeGame(
-    filePath,
-    tab?.gameNumber || 0,
-    `${getPGN(store.getState().root, {
-      headers: store.getState().headers,
-      comments: true,
-      extraMarkups: true,
-      glyphs: true,
-      variations: true,
-    })}\n\n`,
-  );
-  store.getState().save();
+    await commands.writeGame(
+        filePath,
+        tab?.gameNumber || 0,
+        `${getPGN(store.getState().root, {
+            headers: store.getState().headers,
+            comments: true,
+            extraMarkups: true,
+            glyphs: true,
+            variations: true,
+        })}\n\n`,
+    );
+    store.getState().save();
 }
 
 export async function saveTab(tab: Tab, store: StoreApi<TreeStoreState>) {
-  if (tab.source?.type === "file") {
-    // Generate PGN from the tree state
-    // This should correctly handle variations for both regular and variants files
-    const pgn = `${getPGN(store.getState().root, {
-      headers: store.getState().headers,
-      comments: true,
-      extraMarkups: true,
-      glyphs: true,
-      variations: true,
-    })}\n\n`;
+    if (tab.source?.type === "file") {
+        // Generate PGN from the tree state
+        // This should correctly handle variations for both regular and variants files
+        const pgn = `${getPGN(store.getState().root, {
+            headers: store.getState().headers,
+            comments: true,
+            extraMarkups: true,
+            glyphs: true,
+            variations: true,
+        })}\n\n`;
 
-    await commands.writeGame(tab.source.path, tab?.gameNumber || 0, pgn);
-  } else if (tab.source?.type === "db") {
-    const headers = store.getState().headers;
-    const moves = `${getPGN(store.getState().root, {
-      headers: headers,
-      comments: true,
-      extraMarkups: true,
-      glyphs: true,
-      variations: true,
-    })}\n\n`;
+        await commands.writeGame(tab.source.path, tab?.gameNumber || 0, pgn);
+    } else if (tab.source?.type === "db") {
+        const headers = store.getState().headers;
+        const moves = `${getPGN(store.getState().root, {
+            headers: headers,
+            comments: true,
+            extraMarkups: true,
+            glyphs: true,
+            variations: true,
+        })}\n\n`;
 
-    await commands.updateGame(tab.source.db, tab.source.id, {
-      ...headers,
-      moves,
-    });
-  }
+        await commands.updateGame(tab.source.db, tab.source.id, {
+            ...headers,
+            moves,
+        });
+    }
 }
 
 // Helper function to generate PGN for a single variation (without headers)
 function getVariationPGN(
-  node: TreeNode,
-  {
-    comments,
-    extraMarkups,
-    glyphs,
-    variations,
-    isFirst = false,
-  }: {
-    comments: boolean;
-    extraMarkups: boolean;
-    glyphs: boolean;
-    variations: boolean;
-    isFirst?: boolean;
-  },
-): string {
-  let pgn = "";
-
-  // Get the move text for this node (getMoveText handles move numbers and formatting)
-  if (node.san) {
-    pgn += getMoveText(node, {
-      glyphs,
-      comments,
-      extraMarkups,
-      isFirst,
-    });
-  }
-
-  // Continue with the main line (first child)
-  if (node.children.length > 0) {
-    pgn += getVariationPGN(node.children[0], {
-      comments,
-      extraMarkups,
-      glyphs,
-      variations,
-      isFirst: false,
-    });
-  }
-
-  // Add sub-variations
-  if (variations && node.children.length > 1) {
-    for (let i = 1; i < node.children.length; i++) {
-      const subVariation = node.children[i];
-      const subVariationPGN = getVariationPGN(subVariation, {
+    node: TreeNode,
+    {
         comments,
         extraMarkups,
         glyphs,
         variations,
-        isFirst: true,
-      });
-      pgn += ` (${subVariationPGN})`;
-    }
-  }
+        isFirst = false,
+    }: {
+        comments: boolean;
+        extraMarkups: boolean;
+        glyphs: boolean;
+        variations: boolean;
+        isFirst?: boolean;
+    },
+): string {
+    let pgn = "";
 
-  return pgn.trim();
+    // Get the move text for this node (getMoveText handles move numbers and formatting)
+    if (node.san) {
+        pgn += getMoveText(node, {
+            glyphs,
+            comments,
+            extraMarkups,
+            isFirst,
+        });
+    }
+
+    // Continue with the main line (first child)
+    if (node.children.length > 0) {
+        pgn += getVariationPGN(node.children[0], {
+            comments,
+            extraMarkups,
+            glyphs,
+            variations,
+            isFirst: false,
+        });
+    }
+
+    // Add sub-variations
+    if (variations && node.children.length > 1) {
+        for (let i = 1; i < node.children.length; i++) {
+            const subVariation = node.children[i];
+            const subVariationPGN = getVariationPGN(subVariation, {
+                comments,
+                extraMarkups,
+                glyphs,
+                variations,
+                isFirst: true,
+            });
+            pgn += ` (${subVariationPGN})`;
+        }
+    }
+
+    return pgn.trim();
 }
 
 // Helper function to generate PGN headers text
 function getPgnHeadersText(headers: GameHeaders): string {
-  let text = `[Event "${headers.event || "?"}"]\n`;
-  text += `[Site "${headers.site || "?"}"]\n`;
-  text += `[Date "${headers.date || "????.??.??"}"]\n`;
-  text += `[Round "${headers.round || "?"}"]\n`;
-  text += `[White "${headers.white || "?"}"]\n`;
-  text += `[Black "${headers.black || "?"}"]\n`;
-  text += `[Result "${headers.result || "*"}"]\n`;
+    let text = `[Event "${headers.event || "?"}"]\n`;
+    text += `[Site "${headers.site || "?"}"]\n`;
+    text += `[Date "${headers.date || "????.??.??"}"]\n`;
+    text += `[Round "${headers.round || "?"}"]\n`;
+    text += `[White "${headers.white || "?"}"]\n`;
+    text += `[Black "${headers.black || "?"}"]\n`;
+    text += `[Result "${headers.result || "*"}"]\n`;
 
-  if (headers.white_elo) {
-    text += `[WhiteElo "${headers.white_elo}"]\n`;
-  }
-  if (headers.black_elo) {
-    text += `[BlackElo "${headers.black_elo}"]\n`;
-  }
-  if (headers.start && headers.start.length > 0) {
-    text += `[Start "${JSON.stringify(headers.start)}"]\n`;
-  }
-  if (headers.orientation) {
-    text += `[Orientation "${headers.orientation}"]\n`;
-  }
-  if (headers.time_control) {
-    text += `[TimeControl "${headers.time_control}"]\n`;
-  }
-  if (headers.white_time_control) {
-    text += `[WhiteTimeControl "${headers.white_time_control}"]\n`;
-  }
-  if (headers.black_time_control) {
-    text += `[BlackTimeControl "${headers.black_time_control}"]\n`;
-  }
-  if (headers.eco) {
-    text += `[ECO "${headers.eco}"]\n`;
-  }
-  if (headers.variant) {
-    text += `[Variant "${headers.variant}"]\n`;
-  }
-  if (headers.fen && headers.fen !== INITIAL_FEN) {
-    text += `[SetUp "1"]\n`;
-    text += `[FEN "${headers.fen}"]\n`;
-  }
+    if (headers.white_elo) {
+        text += `[WhiteElo "${headers.white_elo}"]\n`;
+    }
+    if (headers.black_elo) {
+        text += `[BlackElo "${headers.black_elo}"]\n`;
+    }
+    if (headers.start && headers.start.length > 0) {
+        text += `[Start "${JSON.stringify(headers.start)}"]\n`;
+    }
+    if (headers.orientation) {
+        text += `[Orientation "${headers.orientation}"]\n`;
+    }
+    if (headers.time_control) {
+        text += `[TimeControl "${headers.time_control}"]\n`;
+    }
+    if (headers.white_time_control) {
+        text += `[WhiteTimeControl "${headers.white_time_control}"]\n`;
+    }
+    if (headers.black_time_control) {
+        text += `[BlackTimeControl "${headers.black_time_control}"]\n`;
+    }
+    if (headers.eco) {
+        text += `[ECO "${headers.eco}"]\n`;
+    }
+    if (headers.variant) {
+        text += `[Variant "${headers.variant}"]\n`;
+    }
+    if (headers.fen && headers.fen !== INITIAL_FEN) {
+        text += `[SetUp "1"]\n`;
+        text += `[FEN "${headers.fen}"]\n`;
+    }
 
-  return text;
+    return text;
 }
 
 export async function reloadTab(tab: Tab): Promise<TreeState | undefined> {
-  let tree: TreeState | undefined;
+    let tree: TreeState | undefined;
 
-  if (tab.source?.type === "file") {
-    const game = unwrap(await commands.readGames(tab.source.path, 0, 0))[0];
+    if (tab.source?.type === "file") {
+        const game = unwrap(await commands.readGames(tab.source.path, 0, 0))[0];
 
-    // For variants files, parse as normal PGN (with variations) but display in variants view
-    // Don't use isVariantsMode for parsing - that's only for special PGNs where all sequences are variations
-    tree = await parsePGN(game, undefined, false);
-  } else if (tab.source?.type === "db") {
-    const game = unwrap(await commands.getGame(tab.source.db, tab.source.id));
+        // For variants files, parse as normal PGN (with variations) but display in variants view
+        // Don't use isVariantsMode for parsing - that's only for special PGNs where all sequences are variations
+        tree = await parsePGN(game, undefined, false);
+    } else if (tab.source?.type === "db") {
+        const game = unwrap(await commands.getGame(tab.source.db, tab.source.id));
 
-    tree = await parsePGN(game.moves);
-    tree.headers = game;
-  }
+        tree = await parsePGN(game.moves);
+        tree.headers = game;
+    }
 
-  if (tree != null) {
-    sessionStorage.setItem(tab.value, JSON.stringify({ version: 0, state: tree }));
-    return tree;
-  }
+    if (tree != null) {
+        sessionStorage.setItem(tab.value, JSON.stringify({ version: 0, state: tree }));
+        return tree;
+    }
 }

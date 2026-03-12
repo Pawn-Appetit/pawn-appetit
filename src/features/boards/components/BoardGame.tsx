@@ -68,7 +68,13 @@ import {
   loadableEnginesAtom,
   tabsAtom,
 } from "@/state/atoms";
-import { getLastMainlinePosition, getMainLine, getMoveText, getPGN, getVariationLine } from "@/utils/chess";
+import {
+  getLastMainlinePosition,
+  getMainLine,
+  getMoveText,
+  getPGN,
+  getVariationLine,
+} from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import type { TimeControlField } from "@/utils/clock";
 import { getDocumentDir } from "@/utils/documentDir";
@@ -122,7 +128,12 @@ function EnginesSelect({ engine, setEngine, engines = [], enginesState }: Engine
   if (enginesState !== "loading" && engines.length === 0) {
     return (
       <Stack gap="md">
-        <Alert icon={<IconAlertCircle size={16} />} title={t("game.noEnginesAvailable")} color="orange" variant="light">
+        <Alert
+          icon={<IconAlertCircle size={16} />}
+          title={t("game.noEnginesAvailable")}
+          color="orange"
+          variant="light"
+        >
           <Text size="sm">{t("game.noEnginesAvailableDesc")}</Text>
         </Alert>
         <Button variant="outline" size="sm" onClick={() => navigate({ to: "/engines" })}>
@@ -325,10 +336,18 @@ function OpponentForm({
         {opponent.timeControl && (
           <>
             <InputWrapper label={t("game.time")}>
-              <TimeInput defaultType="m" value={opponent.timeControl.seconds} setValue={handleTimeChange} />
+              <TimeInput
+                defaultType="m"
+                value={opponent.timeControl.seconds}
+                setValue={handleTimeChange}
+              />
             </InputWrapper>
             <InputWrapper label={t("game.increment")}>
-              <TimeInput defaultType="s" value={opponent.timeControl.increment ?? 0} setValue={handleIncrementChange} />
+              <TimeInput
+                defaultType="s"
+                value={opponent.timeControl.increment ?? 0}
+                setValue={handleIncrementChange}
+              />
             </InputWrapper>
           </>
         )}
@@ -399,7 +418,11 @@ function useClockTimer(
       const turnKey = `${prevTurn}-${currentTurn}-${pos.fullmoves}`;
 
       // If turn changed, clear interval and apply increment
-      if (prevTurn !== null && prevTurn !== currentTurn && incrementAppliedRef.current !== turnKey) {
+      if (
+        prevTurn !== null &&
+        prevTurn !== currentTurn &&
+        incrementAppliedRef.current !== turnKey
+      ) {
         // Clear existing interval
         if (intervalId) {
           clearInterval(intervalId);
@@ -565,8 +588,12 @@ function BoardGame() {
     [t],
   );
 
-  const [player1Settings, setPlayer1Settings] = useState<OpponentSettings>(savedSettings.player1Settings);
-  const [player2Settings, setPlayer2Settings] = useState<OpponentSettings>(savedSettings.player2Settings);
+  const [player1Settings, setPlayer1Settings] = useState<OpponentSettings>(
+    savedSettings.player1Settings,
+  );
+  const [player2Settings, setPlayer2Settings] = useState<OpponentSettings>(
+    savedSettings.player2Settings,
+  );
 
   // Save settings with debounce (excluding when manually applying FEN)
   const saveTimeoutRef = useRef<any | null>(null);
@@ -599,7 +626,15 @@ function BoardGame() {
         saveTimeoutRef.current = null;
       }
     };
-  }, [inputColor, sameTimeControl, customFen, player1Settings, player2Settings, saveGameSettings, isApplyingFen]);
+  }, [
+    inputColor,
+    sameTimeControl,
+    customFen,
+    player1Settings,
+    player2Settings,
+    saveGameSettings,
+    isApplyingFen,
+  ]);
 
   const getPlayers = useCallback(() => {
     let white = inputColor === "white" ? player1Settings : player2Settings;
@@ -629,7 +664,9 @@ function BoardGame() {
   const enginesState = loadableEngines.state;
 
   const engines = useMemo(() => {
-    return enginesState === "hasData" ? loadableEngines.data.filter((e): e is LocalEngine => e.type === "local") : [];
+    return enginesState === "hasData"
+      ? loadableEngines.data.filter((e): e is LocalEngine => e.type === "local")
+      : [];
   }, [loadableEngines, enginesState]);
 
   const [whiteTime, setWhiteTime] = useState<number | null>(null);
@@ -637,12 +674,17 @@ function BoardGame() {
   const engineRequestRef = useRef<string | null>(null);
 
   const changeToAnalysisMode = useCallback(() => {
-    setTabs((prev) => prev.map((tab) => (tab.value === activeTab ? { ...tab, type: "analysis" } : tab)));
+    setTabs((prev) =>
+      prev.map((tab) => (tab.value === activeTab ? { ...tab, type: "analysis" } : tab)),
+    );
   }, [activeTab, setTabs]);
 
   const mainLine = useMemo(() => Array.from(treeIteratorMainLine(root)), [root]);
   const lastNode = useMemo(() => mainLine[mainLine.length - 1].node, [mainLine]);
-  const moves = useMemo(() => getMainLine(root, headers.variant === "Chess960"), [root, headers.variant]);
+  const moves = useMemo(
+    () => getMainLine(root, headers.variant === "Chess960"),
+    [root, headers.variant],
+  );
 
   // Use root and position to ensure pos updates when moves are made
   const position = useStore(store, (s) => s.position);
@@ -782,7 +824,17 @@ function BoardGame() {
     return "none";
   }, [players]);
 
-  useClockTimer(gameState, pos, whiteTime, blackTime, setWhiteTime, setBlackTime, players, setGameState, setResult);
+  useClockTimer(
+    gameState,
+    pos,
+    whiteTime,
+    blackTime,
+    setWhiteTime,
+    setBlackTime,
+    players,
+    setGameState,
+    setResult,
+  );
 
   useEffect(() => {
     if (gameState === "gameOver" && headers.result && headers.result !== "*") {
@@ -794,7 +846,16 @@ function BoardGame() {
         player2Settings,
       });
     }
-  }, [gameState, headers, inputColor, sameTimeControl, customFen, player1Settings, player2Settings, saveGameSettings]);
+  }, [
+    gameState,
+    headers,
+    inputColor,
+    sameTimeControl,
+    customFen,
+    player1Settings,
+    player2Settings,
+    saveGameSettings,
+  ]);
 
   /**
    * Applies a specific FEN (string) to the tree, updates headers and saves settings.
@@ -888,8 +949,14 @@ function BoardGame() {
     setPlayers(newPlayers);
 
     const newHeaders: Partial<GameHeaders> = {
-      white: (newPlayers.white.type === "human" ? newPlayers.white.name : newPlayers.white.engine?.name) ?? "?",
-      black: (newPlayers.black.type === "human" ? newPlayers.black.name : newPlayers.black.engine?.name) ?? "?",
+      white:
+        (newPlayers.white.type === "human"
+          ? newPlayers.white.name
+          : newPlayers.white.engine?.name) ?? "?",
+      black:
+        (newPlayers.black.type === "human"
+          ? newPlayers.black.name
+          : newPlayers.black.engine?.name) ?? "?",
       time_control: undefined,
       orientation:
         newPlayers.white.type === "human" && newPlayers.black.type === "engine"
@@ -935,9 +1002,13 @@ function BoardGame() {
     setTabs((prev) =>
       prev.map((tab) => {
         const whiteName =
-          newPlayers.white.type === "human" ? newPlayers.white.name : (newPlayers.white.engine?.name ?? "?");
+          newPlayers.white.type === "human"
+            ? newPlayers.white.name
+            : (newPlayers.white.engine?.name ?? "?");
         const blackName =
-          newPlayers.black.type === "human" ? newPlayers.black.name : (newPlayers.black.engine?.name ?? "?");
+          newPlayers.black.type === "human"
+            ? newPlayers.black.name
+            : (newPlayers.black.engine?.name ?? "?");
         return tab.value === activeTab ? { ...tab, name: `${whiteName} vs. ${blackName}` } : tab;
       }),
     );
@@ -1046,13 +1117,17 @@ function BoardGame() {
         const currentPlayers = getPlayers();
         if (currentPlayers.white.type === "engine" && currentPlayers.white.engine) {
           await Promise.all([
-            commands.killEngine(currentPlayers.white.engine.path, activeTab + "white").catch(() => {}),
+            commands
+              .killEngine(currentPlayers.white.engine.path, activeTab + "white")
+              .catch(() => {}),
             commands.killEngine(currentPlayers.white.engine.path, activeTab).catch(() => {}),
           ]);
         }
         if (currentPlayers.black.type === "engine" && currentPlayers.black.engine) {
           await Promise.all([
-            commands.killEngine(currentPlayers.black.engine.path, activeTab + "black").catch(() => {}),
+            commands
+              .killEngine(currentPlayers.black.engine.path, activeTab + "black")
+              .catch(() => {}),
             commands.killEngine(currentPlayers.black.engine.path, activeTab).catch(() => {}),
           ]);
         }
@@ -1228,19 +1303,23 @@ function BoardGame() {
 
             // Use current result or "*" if game was stopped early
             const gameResult =
-              treeState.headers?.result && treeState.headers.result !== "*" ? treeState.headers.result : "*";
+              treeState.headers?.result && treeState.headers.result !== "*"
+                ? treeState.headers.result
+                : "*";
 
             // Save the game record with PGN and initial FEN from the tab
             const record: GameRecord = {
               id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
               white: {
                 type: players.white.type,
-                name: players.white.type === "human" ? players.white.name : players.white.engine?.name,
+                name:
+                  players.white.type === "human" ? players.white.name : players.white.engine?.name,
                 engine: players.white.type === "engine" ? players.white.engine?.path : undefined,
               },
               black: {
                 type: players.black.type,
-                name: players.black.type === "human" ? players.black.name : players.black.engine?.name,
+                name:
+                  players.black.type === "human" ? players.black.name : players.black.engine?.name,
                 engine: players.black.type === "engine" ? players.black.engine?.path : undefined,
               },
               result: gameResult,
@@ -1266,7 +1345,18 @@ function BoardGame() {
 
     // Reset to new game
     handleNewGame();
-  }, [activeTab, root, headers, players, setTabs, setActiveTab, setGameState, handleNewGame, engines, getPlayers]);
+  }, [
+    activeTab,
+    root,
+    headers,
+    players,
+    setTabs,
+    setActiveTab,
+    setGameState,
+    handleNewGame,
+    engines,
+    getPlayers,
+  ]);
 
   const handleSameTimeControlChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -1284,7 +1374,8 @@ function BoardGame() {
   );
 
   // Check if we're coming from a variants file
-  const isFromVariants = activeTabData?.source?.type === "file" && activeTabData?.source?.metadata?.type === "variants";
+  const isFromVariants =
+    activeTabData?.source?.type === "file" && activeTabData?.source?.metadata?.type === "variants";
 
   // Get board orientation (default to white if not set)
   const boardOrientation = headers.orientation || "white";
@@ -1442,13 +1533,15 @@ function BoardGame() {
   }, [root, boardOrientation, t]);
 
   const onePlayerIsEngine =
-    (players.white.type === "engine" || players.black.type === "engine") && players.white.type !== players.black.type;
+    (players.white.type === "engine" || players.black.type === "engine") &&
+    players.white.type !== players.black.type;
 
   const { layout } = useResponsiveLayout();
   const isMobileLayout = layout.chessBoard.layoutType === "mobile";
 
   const startGameDisabled =
-    ((player1Settings.type === "engine" || player2Settings.type === "engine") && engines.length === 0) ||
+    ((player1Settings.type === "engine" || player2Settings.type === "engine") &&
+      engines.length === 0) ||
     error !== null ||
     gameState !== "settingUp";
 
@@ -1638,7 +1731,11 @@ function BoardGame() {
                     <Button onClick={handleNewGame} leftSection={<IconPlus />}>
                       {t("keybindings.newGame")}
                     </Button>
-                    <Button variant="default" onClick={changeToAnalysisMode} leftSection={<IconZoomCheck />}>
+                    <Button
+                      variant="default"
+                      onClick={changeToAnalysisMode}
+                      leftSection={<IconZoomCheck />}
+                    >
                       {t("keybindings.analyzePosition")}
                     </Button>
                   </Group>
@@ -1659,7 +1756,12 @@ function BoardGame() {
             startGameDisabled={startGameDisabled}
           />
           {isFromVariants && (
-            <Button leftSection={<IconPuzzle size={18} />} onClick={generatePuzzles} variant="light" fullWidth>
+            <Button
+              leftSection={<IconPuzzle size={18} />}
+              onClick={generatePuzzles}
+              variant="light"
+              fullWidth
+            >
               {t("common.generatePuzzles")}
             </Button>
           )}

@@ -16,7 +16,15 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
-import { IconCheck, IconCopy, IconDownload, IconEdit, IconPlus, IconTrash, IconUpload } from "@tabler/icons-react";
+import {
+  IconCheck,
+  IconCopy,
+  IconDownload,
+  IconEdit,
+  IconPlus,
+  IconTrash,
+  IconUpload,
+} from "@tabler/icons-react";
 import { useAtom, useAtomValue } from "jotai";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -275,7 +283,12 @@ export default function ThemeManager({ opened, onClose }: ThemeManagerProps) {
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title={t("settings.appearance.theme.manageTitle")} size="xl">
+    <Modal
+      opened={opened}
+      onClose={onClose}
+      title={t("settings.appearance.theme.manageTitle")}
+      size="xl"
+    >
       <Stack gap="md">
         {/* Import/Create Actions */}
         <Group justify="space-between">

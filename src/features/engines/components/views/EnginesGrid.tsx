@@ -13,7 +13,13 @@ interface EnginesGridProps {
   isLoading?: boolean;
 }
 
-export function EnginesGrid({ engines, filteredIndices, selected, setSelected, isLoading }: EnginesGridProps) {
+export function EnginesGrid({
+  engines,
+  filteredIndices,
+  selected,
+  setSelected,
+  isLoading,
+}: EnginesGridProps) {
   const { t } = useTranslation();
   const { layout } = useResponsiveLayout();
 

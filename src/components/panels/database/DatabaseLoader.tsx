@@ -30,7 +30,14 @@ function DatabaseLoader({ isLoading, tab }: { isLoading: boolean; tab: string | 
 
   const isLoadingFromMemory = isLoading && progress === 0;
 
-  return <Progress animated={isLoadingFromMemory} value={isLoadingFromMemory ? 100 : progress} size="xs" mt="xs" />;
+  return (
+    <Progress
+      animated={isLoadingFromMemory}
+      value={isLoadingFromMemory ? 100 : progress}
+      size="xs"
+      mt="xs"
+    />
+  );
 }
 
 export default DatabaseLoader;

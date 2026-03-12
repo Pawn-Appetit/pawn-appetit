@@ -25,7 +25,12 @@ import { useTranslation } from "react-i18next";
 import { commands, type DatabaseInfo, events, type PuzzleDatabaseInfo } from "@/bindings";
 import FileInput from "@/components/FileInput";
 import ProgressButton from "@/components/ProgressButton";
-import { getDatabases, getDefaultPuzzleDatabases, type SuccessDatabaseInfo, useDefaultDatabases } from "@/utils/db";
+import {
+  getDatabases,
+  getDefaultPuzzleDatabases,
+  type SuccessDatabaseInfo,
+  useDefaultDatabases,
+} from "@/utils/db";
 import { capitalize } from "@/utils/format";
 import { getPuzzleDatabases } from "@/utils/puzzles";
 import { unwrap } from "@/utils/unwrap";
@@ -174,8 +179,15 @@ function AddDatabase({
 }: AddDatabaseProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { validateDatabaseTitle, validatePuzzleTitle, validateFile } = useFormValidation(databases, puzzleDbs);
-  const { convertDatabase, importPuzzleFile } = useDatabaseOperations(setLoading, setDatabases, setPuzzleDbs);
+  const { validateDatabaseTitle, validatePuzzleTitle, validateFile } = useFormValidation(
+    databases,
+    puzzleDbs,
+  );
+  const { convertDatabase, importPuzzleFile } = useDatabaseOperations(
+    setLoading,
+    setDatabases,
+    setPuzzleDbs,
+  );
 
   const { defaultDatabases, error, isLoading } = useDefaultDatabases(opened);
   const {
@@ -316,7 +328,10 @@ function AddDatabase({
     [databases],
   );
 
-  const installedPuzzleTitles = useMemo(() => new Set(puzzleDbs?.map((db) => db.title) || []), [puzzleDbs]);
+  const installedPuzzleTitles = useMemo(
+    () => new Set(puzzleDbs?.map((db) => db.title) || []),
+    [puzzleDbs],
+  );
 
   const handleModalClose = useCallback(() => {
     setOpened(false);
@@ -327,7 +342,12 @@ function AddDatabase({
   }, [setOpened, databaseForm, puzzleForm, initialTab]);
 
   return (
-    <Modal opened={opened} onClose={handleModalClose} title={t("features.databases.add.title")} size="lg">
+    <Modal
+      opened={opened}
+      onClose={handleModalClose}
+      title={t("features.databases.add.title")}
+      size="lg"
+    >
       <Stack gap="md">
         <SegmentedControl
           value={firstLevelTab}
@@ -364,7 +384,11 @@ function AddDatabase({
                       />
                     ))}
                     {error && (
-                      <Alert icon={<IconAlertCircle size="1rem" />} title={t("common.error")} color="red">
+                      <Alert
+                        icon={<IconAlertCircle size="1rem" />}
+                        title={t("common.error")}
+                        color="red"
+                      >
                         {t("features.databases.add.errorFetch")}
                       </Alert>
                     )}
@@ -376,9 +400,16 @@ function AddDatabase({
             <Tabs.Panel value="local" pt="xs">
               <form onSubmit={databaseForm.onSubmit(handleDatabaseSubmit)}>
                 <Stack>
-                  <TextInput label={t("common.name")} withAsterisk {...databaseForm.getInputProps("title")} />
+                  <TextInput
+                    label={t("common.name")}
+                    withAsterisk
+                    {...databaseForm.getInputProps("title")}
+                  />
 
-                  <TextInput label={t("common.description")} {...databaseForm.getInputProps("description")} />
+                  <TextInput
+                    label={t("common.description")}
+                    {...databaseForm.getInputProps("description")}
+                  />
 
                   <FileInput
                     label={t("common.pgnFile")}
@@ -422,7 +453,11 @@ function AddDatabase({
                       />
                     ))}
                     {puzzleError && (
-                      <Alert icon={<IconAlertCircle size="1rem" />} title={t("common.error")} color="red">
+                      <Alert
+                        icon={<IconAlertCircle size="1rem" />}
+                        title={t("common.error")}
+                        color="red"
+                      >
                         {t("features.databases.add.errorFetch")}
                       </Alert>
                     )}
@@ -434,9 +469,16 @@ function AddDatabase({
             <Tabs.Panel value="puzzleLocal" pt="xs">
               <form onSubmit={puzzleForm.onSubmit(handlePuzzleSubmit)}>
                 <Stack>
-                  <TextInput label={t("common.name")} withAsterisk {...puzzleForm.getInputProps("title")} />
+                  <TextInput
+                    label={t("common.name")}
+                    withAsterisk
+                    {...puzzleForm.getInputProps("title")}
+                  />
 
-                  <TextInput label={t("common.description")} {...puzzleForm.getInputProps("description")} />
+                  <TextInput
+                    label={t("common.description")}
+                    {...puzzleForm.getInputProps("description")}
+                  />
 
                   <FileInput
                     label={t("features.files.fileType.puzzle")}
@@ -447,7 +489,11 @@ function AddDatabase({
                   />
 
                   {importError && (
-                    <Alert icon={<IconAlertCircle size="1rem" />} title={t("common.error")} color="red">
+                    <Alert
+                      icon={<IconAlertCircle size="1rem" />}
+                      title={t("common.error")}
+                      color="red"
+                    >
                       {importError}
                     </Alert>
                   )}

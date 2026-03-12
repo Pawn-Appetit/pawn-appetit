@@ -93,13 +93,20 @@ export function BoardTab({
         </Button>
       </Menu.Target>
       <Menu.Dropdown>
-        <Menu.Item leftSection={<IconCopy size="0.875rem" />} onClick={() => duplicateTab(tab.value)}>
+        <Menu.Item
+          leftSection={<IconCopy size="0.875rem" />}
+          onClick={() => duplicateTab(tab.value)}
+        >
           Duplicate Tab
         </Menu.Item>
         <Menu.Item leftSection={<IconEdit size="0.875rem" />} onClick={() => toggleRenaming(true)}>
           Rename Tab
         </Menu.Item>
-        <Menu.Item color="red" leftSection={<IconX size="0.875rem" />} onClick={() => closeTab(tab.value)}>
+        <Menu.Item
+          color="red"
+          leftSection={<IconX size="0.875rem" />}
+          onClick={() => closeTab(tab.value)}
+        >
           Close Tab
         </Menu.Item>
       </Menu.Dropdown>

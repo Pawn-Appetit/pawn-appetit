@@ -75,9 +75,12 @@ function AccountsTableView({
   function bestRatingForSession(s: Session): number {
     if (s.lichess?.account?.perfs) {
       const p = s.lichess.account.perfs;
-      const ratings = [p.bullet?.rating, p.blitz?.rating, p.rapid?.rating, p.classical?.rating].filter(
-        (x): x is number => typeof x === "number",
-      );
+      const ratings = [
+        p.bullet?.rating,
+        p.blitz?.rating,
+        p.rapid?.rating,
+        p.classical?.rating,
+      ].filter((x): x is number => typeof x === "number");
       if (ratings.length) return Math.max(...ratings);
     }
     if (s.chessCom?.stats) {
@@ -134,7 +137,9 @@ function AccountsTableView({
       if (!database) {
         // Try case-insensitive match
         database =
-          databases.find((db) => db.filename.toLowerCase() === `${username}_${type}.db3`.toLowerCase()) ?? null;
+          databases.find(
+            (db) => db.filename.toLowerCase() === `${username}_${type}.db3`.toLowerCase(),
+          ) ?? null;
       }
       const downloadedGames = database?.type === "success" ? database.game_count : 0;
 
@@ -185,7 +190,8 @@ function AccountsTableView({
 
       // Calculate percentage: if totalGames is 0, return 0; otherwise calculate normally
       // Cap percentage at 100% to handle edge cases
-      const percentage = totalGames === 0 ? 0 : Math.min(100, Math.max(0, (downloadedGames / totalGames) * 100));
+      const percentage =
+        totalGames === 0 ? 0 : Math.min(100, Math.max(0, (downloadedGames / totalGames) * 100));
 
       return {
         key: session.lichess?.account.id ?? `${type}:${username}`,
@@ -284,7 +290,9 @@ function AccountsTableView({
       }
 
       // Remove session
-      setSessions((sessions) => sessions.filter((s) => s.lichess?.account.id !== session.lichess?.account.id));
+      setSessions((sessions) =>
+        sessions.filter((s) => s.lichess?.account.id !== session.lichess?.account.id),
+      );
     } else if (session.chessCom) {
       const username = session.chessCom.username;
 
@@ -320,7 +328,9 @@ function AccountsTableView({
       }
 
       // Remove session
-      setSessions((sessions) => sessions.filter((s) => s.chessCom?.username !== session.chessCom?.username));
+      setSessions((sessions) =>
+        sessions.filter((s) => s.chessCom?.username !== session.chessCom?.username),
+      );
     }
   }
 
@@ -362,7 +372,8 @@ function AccountsTableView({
               No accounts added
             </Text>
             <Text size="sm" c="dimmed" ta="center" maw={400}>
-              Connect your Lichess or Chess.com account to analyze your games and track your progress.
+              Connect your Lichess or Chess.com account to analyze your games and track your
+              progress.
             </Text>
           </Stack>
           <Button onClick={onAddAccount} size="sm">
@@ -447,7 +458,12 @@ function AccountsTableView({
                       >
                         <IconCheck size="1rem" />
                       </ActionIcon>
-                      <ActionIcon size="xs" variant="subtle" color="red" onClick={() => setEditingAccount(null)}>
+                      <ActionIcon
+                        size="xs"
+                        variant="subtle"
+                        color="red"
+                        onClick={() => setEditingAccount(null)}
+                      >
                         <IconX size="1rem" />
                       </ActionIcon>
                     </Group>
@@ -512,7 +528,11 @@ function AccountsTableView({
                 <Table.Td>
                   <Group gap="xs" wrap="nowrap">
                     <Tooltip label={t("accounts.accountCard.updateStats")}>
-                      <ActionIcon size="sm" variant="subtle" onClick={() => handleReload(row.session)}>
+                      <ActionIcon
+                        size="sm"
+                        variant="subtle"
+                        onClick={() => handleReload(row.session)}
+                      >
                         <IconRefresh size="1rem" />
                       </ActionIcon>
                     </Tooltip>
@@ -522,7 +542,12 @@ function AccountsTableView({
                       </ActionIcon>
                     </Tooltip>
                     <Tooltip label={t("accounts.accountCard.removeAccount")}>
-                      <ActionIcon size="sm" variant="subtle" color="red" onClick={() => handleRemove(row.session)}>
+                      <ActionIcon
+                        size="sm"
+                        variant="subtle"
+                        color="red"
+                        onClick={() => handleRemove(row.session)}
+                      >
                         <IconX size="1rem" />
                       </ActionIcon>
                     </Tooltip>

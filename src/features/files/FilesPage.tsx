@@ -12,7 +12,13 @@ import FileCard from "./components/drawers/FileCard";
 import { CreateModal, EditModal } from "./components/modals/Modals";
 import DirectoryTable from "./components/views/DirectoryTable";
 import FileGridView from "./components/views/FileGridView";
-import { type Directory, FILE_TYPES, type FileMetadata, type FileType, processEntriesRecursively } from "./utils/file";
+import {
+  type Directory,
+  FILE_TYPES,
+  type FileMetadata,
+  type FileType,
+  processEntriesRecursively,
+} from "./utils/file";
 
 const useFileDirectory = (dir: string) => {
   const { data, error, isLoading, refetch } = useQuery({
@@ -90,7 +96,9 @@ function FilesPage() {
           <Chip
             variant="outline"
             key={item.value}
-            onChange={(v) => setFilter((filter) => (v ? item.value : filter === item.value ? "all" : filter))}
+            onChange={(v) =>
+              setFilter((filter) => (v ? item.value : filter === item.value ? "all" : filter))
+            }
             checked={filter === item.value}
           >
             {t(item.labelKey)}

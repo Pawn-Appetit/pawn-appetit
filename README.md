@@ -101,13 +101,13 @@ Whether you're preparing for tournaments, analyzing your games, or building open
 
 ## Features
 
-* Game Management - Store and analyze your games from lichess.org and chess.com
-* Multi-Engine Analysis - Supports all UCI chess engines for deep position evaluation
-* Repertoire Training - Prepare openings and train them with spaced repetition
-* Engine & Database Management - Simple installation and management of engines and databases
-* Position Search - Absolute or partial position search in your database
-* Cross-Platform - Available on Windows, macOS, and Linux
-* Customizable Interface - Tailor the app to your preferences
+- Game Management - Store and analyze your games from lichess.org and chess.com
+- Multi-Engine Analysis - Supports all UCI chess engines for deep position evaluation
+- Repertoire Training - Prepare openings and train them with spaced repetition
+- Engine & Database Management - Simple installation and management of engines and databases
+- Position Search - Absolute or partial position search in your database
+- Cross-Platform - Available on Windows, macOS, and Linux
+- Customizable Interface - Tailor the app to your preferences
 
 ## Screenshots
 
@@ -116,21 +116,21 @@ Whether you're preparing for tournaments, analyzing your games, or building open
 <em>Play chess games and analyze them with powerful engine tools</em>
 
 [<img src="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/screenshots/play-game.png" alt="Play Game" width="320" />](./screenshots/play-game.png)
-[<img src="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/screenshots/analyze-game.png" alt="Analyze Game" width="320" />](./screenshots/analyze-game.png)  
+[<img src="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/screenshots/analyze-game.png" alt="Analyze Game" width="320" />](./screenshots/analyze-game.png)
 
 ---
 
 <em>Solve puzzles and improve with guided learning</em>
 
 [<img src="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/screenshots/solve-puzzle.png" alt="Solve Puzzle" width="320" />](./screenshots/solve-puzzle.png)
-[<img src="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/screenshots/learn.png" alt="Learn" width="320" />](./screenshots/learn.png)  
+[<img src="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/screenshots/learn.png" alt="Learn" width="320" />](./screenshots/learn.png)
 
 ---
 
 <em>Flexible keybindings and appearance settings</em>
 
 [<img src="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/screenshots/keybindings.png" alt="Keybindings" width="320" />](./screenshots/keybindings.png)
-[<img src="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/screenshots/settings-appearance.png" alt="Settings Appearance" width="320" />](./screenshots/settings-appearance.png)  
+[<img src="https://github.com/Pawn-Appetit/pawn-appetit/raw/main/screenshots/settings-appearance.png" alt="Settings Appearance" width="320" />](./screenshots/settings-appearance.png)
 
 </div>
 
@@ -142,11 +142,11 @@ Prebuilt binaries are available for Windows, macOS, and Linux:
 
 **[Download the latest release](https://github.com/Pawn-Appetit/pawn-appetit/releases/latest)**
 
-| Platform | Download |
-|----------|----------|
-| **Windows** | `.exe` |
-| **macOS** | `.dmg` (Apple Silicon and Intel) |
-| **Linux** | `.AppImage`, `.deb`, or `.rpm` |
+| Platform    | Download                         |
+| ----------- | -------------------------------- |
+| **Windows** | `.exe`                           |
+| **macOS**   | `.dmg` (Apple Silicon and Intel) |
+| **Linux**   | `.AppImage`, `.deb`, or `.rpm`   |
 
 ### Quick Start
 
@@ -156,11 +156,12 @@ Prebuilt binaries are available for Windows, macOS, and Linux:
 4. Start analyzing with the built-in Stockfish engine
 5. Join the [Discord community](https://discord.gg/8hk49G8ZbX) for support
 
-
 ## Development
 
 ### Prerequisites
+
 Ensure you have the required tools installed for your platform:
+
 - [Tauri prerequisites](https://tauri.app/start/prerequisites/)
 - [pnpm package manager](https://pnpm.io/)
 
@@ -181,25 +182,25 @@ Ensure you have the required tools installed for your platform:
 
 3. **Run in Development Mode**:
 
-    Build and run the desktop application using Tauri:
+   Build and run the desktop application using Tauri:
 
-    ```bash
-    pnpm tauri dev
-    ```
+   ```bash
+   pnpm tauri dev
+   ```
 
 4. **Build for Production**:
 
-    Build the application for production:
+   Build the application for production:
 
-    ```bash
-    pnpm tauri build
-    ```
+   ```bash
+   pnpm tauri build
+   ```
 
-    The compiled application will be available at:
+   The compiled application will be available at:
 
-    ```bash
-    src-tauri/target/release
-    ```
+   ```bash
+   src-tauri/target/release
+   ```
 
 ### Docker Build
 
@@ -227,12 +228,12 @@ The binary will be available in your current directory.
 
 ## Comparison
 
-| Feature | Pawn Appétit | ChessBase | Arena | Scid |
-|---------|--------------|-----------|-------|------|
-| **Price** | Free ✅ | $199+ ❌ | Free ✅ | Free ✅ |
-| **Modern UI** | ✅ | ❌ | ❌ | ❌ |
-| **Cross-platform** | ✅ | Windows only ❌ | Windows only ❌ | ✅ |
-| **Open Source** | ✅ | ❌ | ❌ | ✅ |
+| Feature            | Pawn Appétit | ChessBase       | Arena           | Scid    |
+| ------------------ | ------------ | --------------- | --------------- | ------- |
+| **Price**          | Free ✅      | $199+ ❌        | Free ✅         | Free ✅ |
+| **Modern UI**      | ✅           | ❌              | ❌              | ❌      |
+| **Cross-platform** | ✅           | Windows only ❌ | Windows only ❌ | ✅      |
+| **Open Source**    | ✅           | ❌              | ❌              | ✅      |
 
 ## Roadmap
 
@@ -255,25 +256,27 @@ We welcome contributions of all kinds:
 Pawn Appétit is for chess players **all around the world**! We're committed to making professional-grade chess analysis accessible in your language. Join our growing international community and help us reach **every chess player**, no matter where they are.
 
 <!-- TRANSLATIONS_START -->
-| Language  | Progress   | Link                        |
-|-----------|----------|-----------------------------|
-| 🇺🇸 **English US** | ✅ 100% | [View](./src/locales/en-US) |
-| 🇬🇧 **English UK** | 🟡 90% | [View](./src/locales/en-GB) |
-| 🇪🇸 **Español (Spanish)** | 🟡 67% | [View](./src/locales/es) |
-| 🇩🇪 **Deutsch (German)** | 🟡 50% | [View](./src/locales/de) |
-| 🇫🇷 **Français (French)** | 🟡 50% | [View](./src/locales/fr) |
-| 🇦🇲 **Հայերեն (Armenian)** | 🟡 50% | [View](./src/locales/hy) |
-| 🇮🇹 **Italiano (Italian)** | 🟡 50% | [View](./src/locales/it) |
-| 🇷🇺 **Русский (Russian)** | 🟡 50% | [View](./src/locales/ru) |
-| 🇹🇷 **Türkçe (Turkish)** | 🟡 50% | [View](./src/locales/tr) |
-| 🇨🇳 **中文 (Chinese)** | 🟡 50% | [View](./src/locales/zh) |
-| 🇵🇱 **Polski (Polish)** | 🔴 32% | [View](./src/locales/pl) |
-| 🇧🇾 **Беларуская (Belarusian)** | 🔴 28% | [View](./src/locales/be) |
-| 🇳🇴 **Norsk (Norwegian Bokmål)** | 🔴 28% | [View](./src/locales/nb) |
-| 🇵🇹 **Português (Portuguese)** | 🔴 28% | [View](./src/locales/pt) |
-| 🇺🇦 **Українська (Ukrainian)** | 🔴 28% | [View](./src/locales/uk) |
-| 🇸🇦 **العربية (Arabic)** | 🔴 13% | [View](./src/locales/ar) |
-| 🇯🇵 **日本語 (Japanese)** | 🔴 5% | [View](./src/locales/ja) |
+
+| Language                        | Progress | Link                        |
+| ------------------------------- | -------- | --------------------------- |
+| 🇺🇸 **English US**               | ✅ 100%  | [View](./src/locales/en-US) |
+| 🇬🇧 **English UK**               | 🟡 90%   | [View](./src/locales/en-GB) |
+| 🇪🇸 **Español (Spanish)**        | 🟡 67%   | [View](./src/locales/es)    |
+| 🇩🇪 **Deutsch (German)**         | 🟡 50%   | [View](./src/locales/de)    |
+| 🇫🇷 **Français (French)**        | 🟡 50%   | [View](./src/locales/fr)    |
+| 🇦🇲 **Հայերեն (Armenian)**       | 🟡 50%   | [View](./src/locales/hy)    |
+| 🇮🇹 **Italiano (Italian)**       | 🟡 50%   | [View](./src/locales/it)    |
+| 🇷🇺 **Русский (Russian)**        | 🟡 50%   | [View](./src/locales/ru)    |
+| 🇹🇷 **Türkçe (Turkish)**         | 🟡 50%   | [View](./src/locales/tr)    |
+| 🇨🇳 **中文 (Chinese)**           | 🟡 50%   | [View](./src/locales/zh)    |
+| 🇵🇱 **Polski (Polish)**          | 🔴 32%   | [View](./src/locales/pl)    |
+| 🇧🇾 **Беларуская (Belarusian)**  | 🔴 28%   | [View](./src/locales/be)    |
+| 🇳🇴 **Norsk (Norwegian Bokmål)** | 🔴 28%   | [View](./src/locales/nb)    |
+| 🇵🇹 **Português (Portuguese)**   | 🔴 28%   | [View](./src/locales/pt)    |
+| 🇺🇦 **Українська (Ukrainian)**   | 🔴 28%   | [View](./src/locales/uk)    |
+| 🇸🇦 **العربية (Arabic)**         | 🔴 13%   | [View](./src/locales/ar)    |
+| 🇯🇵 **日本語 (Japanese)**        | 🔴 5%    | [View](./src/locales/ja)    |
+
 <!-- TRANSLATIONS_END -->
 
 Want to help translate? See [CONTRIBUTING.md](./CONTRIBUTING.md).
@@ -281,6 +284,7 @@ Want to help translate? See [CONTRIBUTING.md](./CONTRIBUTING.md).
 ## Community
 
 Join our [Discord server](https://discord.gg/8hk49G8ZbX) to:
+
 - Get help and support
 - Share feedback and ideas
 - Connect with other chess players and developers

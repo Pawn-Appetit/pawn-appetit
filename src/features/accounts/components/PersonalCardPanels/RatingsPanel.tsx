@@ -1,11 +1,24 @@
 import { Stack, Text } from "@mantine/core";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import type { PlayerGameInfo } from "@/bindings";
 import { getTimeControl } from "@/utils/timeControl";
 import DateRangeTabs, { DateRange } from "./DateRangeTabs";
-import { gradientStops, linearGradientProps, tooltipContentStyle, tooltipCursorStyle } from "./RatingsPanel.css";
+import {
+  gradientStops,
+  linearGradientProps,
+  tooltipContentStyle,
+  tooltipCursorStyle,
+} from "./RatingsPanel.css";
 import ResultsChart from "./ResultsChart";
 import TimeControlSelector from "./TimeControlSelector";
 import TimeRangeSlider from "./TimeRangeSlider";
@@ -126,15 +139,24 @@ function RatingsPanel({ playerName, info }: { playerName: string; info: PlayerGa
         onAccountChange={setAccount}
         allowAll={false}
       />
-      <TimeControlSelector onTimeControlChange={setTimeControl} website={website} allowAll={false} />
-      <DateRangeTabs timeRange={dateRange} onTimeRangeChange={(value) => setDateRange(value as DateRange | null)} />
+      <TimeControlSelector
+        onTimeControlChange={setTimeControl}
+        website={website}
+        allowAll={false}
+      />
+      <DateRangeTabs
+        timeRange={dateRange}
+        onTimeRangeChange={(value) => setDateRange(value as DateRange | null)}
+      />
       <Text pt="md" fw="bold" fz="lg" ta="center">
         {summary.games === 1 && t("common.games.one", { count: summary.games || 0 })}
         {summary.games > 1 && t("common.games.other", { count: summary.games || 0 })}
       </Text>
       {dates.length > 1 && (
         <>
-          {summary.games > 0 && <ResultsChart won={summary.won} draw={summary.draw} lost={summary.lost} size="2rem" />}
+          {summary.games > 0 && (
+            <ResultsChart won={summary.won} draw={summary.draw} lost={summary.lost} size="2rem" />
+          )}
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={ratingData}>
               <defs>

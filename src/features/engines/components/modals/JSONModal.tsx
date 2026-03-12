@@ -17,7 +17,12 @@ export function JSONModal({ opened, toggleOpened, engine, setEngine }: JSONModal
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <Modal opened={opened} onClose={toggleOpened} title={t("features.engines.settings.editJSON")} size="xl">
+    <Modal
+      opened={opened}
+      onClose={toggleOpened}
+      title={t("features.engines.settings.editJSON")}
+      size="xl"
+    >
       <JsonInput
         autosize
         value={value}

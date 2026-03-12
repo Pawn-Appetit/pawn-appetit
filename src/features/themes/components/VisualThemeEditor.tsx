@@ -72,7 +72,13 @@ function ColorPaletteEditor({ colorName, colors, onChange }: ColorPaletteEditorP
           {colorName}
         </Text>
         <Group gap="xs">
-          <ColorPicker value={baseColor} onChange={handleBaseColorChange} format="hex" size="xs" swatches={[]} />
+          <ColorPicker
+            value={baseColor}
+            onChange={handleBaseColorChange}
+            format="hex"
+            size="xs"
+            swatches={[]}
+          />
           <ActionIcon
             variant="light"
             size="sm"
@@ -118,7 +124,12 @@ function ColorPaletteEditor({ colorName, colors, onChange }: ColorPaletteEditorP
   );
 }
 
-export default function VisualThemeEditor({ opened, onClose, themeId, isCreate = false }: VisualThemeEditorProps) {
+export default function VisualThemeEditor({
+  opened,
+  onClose,
+  themeId,
+  isCreate = false,
+}: VisualThemeEditorProps) {
   const { t } = useTranslation();
   const currentTheme = useAtomValue(currentThemeAtom);
   const [, updateTheme] = useAtom(updateThemeAtom);
@@ -188,7 +199,11 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
     <Modal
       opened={opened}
       onClose={onClose}
-      title={isCreate ? t("settings.appearance.theme.createNew") : t("settings.appearance.theme.editTheme")}
+      title={
+        isCreate
+          ? t("settings.appearance.theme.createNew")
+          : t("settings.appearance.theme.editTheme")
+      }
       size="xl"
       centered
       scrollAreaComponent={ScrollArea.Autosize}
@@ -197,7 +212,9 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
         {/* Preview Toggle */}
         <Group justify="space-between">
           <Button variant="light" leftSection={<IconEye size={16} />} onClick={togglePreview}>
-            {previewOpened ? t("settings.appearance.theme.hidePreview") : t("settings.appearance.theme.showPreview")}
+            {previewOpened
+              ? t("settings.appearance.theme.hidePreview")
+              : t("settings.appearance.theme.showPreview")}
           </Button>
           <Group>
             <Button variant="outline" onClick={onClose}>
@@ -347,7 +364,10 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
                 />
               </Group>
 
-              <Divider label={t("settings.appearance.theme.colorPalettes")} labelPosition="center" />
+              <Divider
+                label={t("settings.appearance.theme.colorPalettes")}
+                labelPosition="center"
+              />
 
               <ScrollArea.Autosize mah={600}>
                 <Stack gap="md">
@@ -381,7 +401,9 @@ export default function VisualThemeEditor({ opened, onClose, themeId, isCreate =
           <Tabs.Panel value="components" pt="md">
             <ComponentThemeEditor
               components={form.values.components || {}}
-              onChange={(components: ThemeComponents) => form.setFieldValue("components", components)}
+              onChange={(components: ThemeComponents) =>
+                form.setFieldValue("components", components)
+              }
               availableColors={Object.keys(colors)}
             />
           </Tabs.Panel>

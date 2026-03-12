@@ -19,7 +19,12 @@ import {
 import { getVariationLine } from "@/utils/chess";
 import { getBestMoves as chessdbGetBestMoves } from "@/utils/chessdb/api";
 import { positionFromFen, swapMove } from "@/utils/chessops";
-import { type Engine, type LocalEngine, getBestMoves as localGetBestMoves, stopEngine } from "@/utils/engines";
+import {
+  type Engine,
+  type LocalEngine,
+  getBestMoves as localGetBestMoves,
+  stopEngine,
+} from "@/utils/engines";
 import { getBestMoves as lichessGetBestMoves } from "@/utils/lichess/api";
 import { useThrottledEffect } from "@/utils/misc";
 
@@ -112,7 +117,9 @@ function EngineListener({
 
   const [, setProgress] = useAtom(engineProgressFamily({ engine: engine.name, tab: activeTab! }));
 
-  const [, setEngineVariation] = useAtom(engineMovesFamily({ engine: engine.name, tab: activeTab! }));
+  const [, setEngineVariation] = useAtom(
+    engineMovesFamily({ engine: engine.name, tab: activeTab! }),
+  );
   const [settings] = useAtom(
     tabEngineSettingsFamily({
       engineName: engine.name,

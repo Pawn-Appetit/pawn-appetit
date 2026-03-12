@@ -27,7 +27,13 @@ export function ImportSummary({ result }: ImportSummaryProps) {
     <Stack gap="md">
       <Alert
         icon={
-          allSuccess ? <IconCheck size={16} /> : hasErrors ? <IconAlertTriangle size={16} /> : <IconCheck size={16} />
+          allSuccess ? (
+            <IconCheck size={16} />
+          ) : hasErrors ? (
+            <IconAlertTriangle size={16} />
+          ) : (
+            <IconCheck size={16} />
+          )
         }
         color={allSuccess ? "green" : hasErrors ? "yellow" : "green"}
         title={t("features.tabs.importGame.importComplete")}
@@ -77,7 +83,10 @@ export function ImportSummary({ result }: ImportSummaryProps) {
               key={`imported-file-${file.path}-${file.name}`}
               justify="space-between"
               p="sm"
-              style={{ border: "1px solid var(--mantine-color-gray-3)", borderRadius: "var(--mantine-radius-sm)" }}
+              style={{
+                border: "1px solid var(--mantine-color-gray-3)",
+                borderRadius: "var(--mantine-radius-sm)",
+              }}
             >
               <Box>
                 <Text size="sm" fw={500}>
@@ -95,14 +104,23 @@ export function ImportSummary({ result }: ImportSummaryProps) {
 
       {hasErrors && (
         <Box>
-          <Text size="sm" c="dimmed" style={{ cursor: "pointer" }} onClick={() => setShowErrors(!showErrors)}>
+          <Text
+            size="sm"
+            c="dimmed"
+            style={{ cursor: "pointer" }}
+            onClick={() => setShowErrors(!showErrors)}
+          >
             {showErrors ? "▼" : "▶"} {t("features.tabs.importGame.showErrors")}
           </Text>
 
           <Collapse in={showErrors}>
             <Stack gap="xs" mt="xs">
               {result.errors.map((error, index) => (
-                <Alert key={`file-error-${error.file || "unknown"}-${index}`} color="red" variant="light">
+                <Alert
+                  key={`file-error-${error.file || "unknown"}-${index}`}
+                  color="red"
+                  variant="light"
+                >
                   <Text size="sm" fw={500}>
                     {error.file
                       ? t("features.tabs.importGame.fileError", { file: error.file })
@@ -115,11 +133,17 @@ export function ImportSummary({ result }: ImportSummaryProps) {
               ))}
 
               {result.failedGames?.map((failedGame, index) => (
-                <Alert key={`game-error-${failedGame.gameIndex}-${index}`} color="red" variant="light">
+                <Alert
+                  key={`game-error-${failedGame.gameIndex}-${index}`}
+                  color="red"
+                  variant="light"
+                >
                   <Text size="sm" fw={500}>
                     {failedGame.fileName
                       ? `${failedGame.fileName} - ${t("features.tabs.importGame.gameError", { gameIndex: failedGame.gameIndex + 1 })}`
-                      : t("features.tabs.importGame.gameError", { gameIndex: failedGame.gameIndex + 1 })}
+                      : t("features.tabs.importGame.gameError", {
+                          gameIndex: failedGame.gameIndex + 1,
+                        })}
                   </Text>
                   <Text size="xs" c="dimmed">
                     {failedGame.error}

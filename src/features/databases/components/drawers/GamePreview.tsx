@@ -33,7 +33,14 @@ function GamePreviewWrapper({
 
   return (
     <>
-      {parsedGame && <GamePreview key={pgn} game={parsedGame} hideControls={hideControls} showOpening={showOpening} />}
+      {parsedGame && (
+        <GamePreview
+          key={pgn}
+          game={parsedGame}
+          hideControls={hideControls}
+          showOpening={showOpening}
+        />
+      )}
     </>
   );
 }

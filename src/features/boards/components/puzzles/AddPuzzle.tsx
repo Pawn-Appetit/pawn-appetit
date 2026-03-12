@@ -93,7 +93,11 @@ export function AddPuzzle({
   });
 
   return (
-    <Modal opened={opened} onClose={() => setOpened(false)} title={t("features.databases.add.title")}>
+    <Modal
+      opened={opened}
+      onClose={() => setOpened(false)}
+      title={t("features.databases.add.title")}
+    >
       <Tabs defaultValue="web">
         <Tabs.List>
           <Tabs.Tab value="web">{t("features.databases.add.web")}</Tabs.Tab>
@@ -158,7 +162,10 @@ export function AddPuzzle({
                   form.setFieldValue("filename", filename);
                   if (!form.values.title) {
                     const nameWithoutExt = filename.replace(/\.(pgn|db|db3)(.zst)?$/i, "");
-                    form.setFieldValue("title", capitalize(nameWithoutExt.replaceAll(/[_-]/g, " ")));
+                    form.setFieldValue(
+                      "title",
+                      capitalize(nameWithoutExt.replaceAll(/[_-]/g, " ")),
+                    );
                   }
                 }
               }}
@@ -167,7 +174,12 @@ export function AddPuzzle({
             />
 
             {importError && (
-              <Alert icon={<IconAlertCircle size="1rem" />} title={t("common.error")} color="red" mt="md">
+              <Alert
+                icon={<IconAlertCircle size="1rem" />}
+                title={t("common.error")}
+                color="red"
+                mt="md"
+              >
                 {importError}
               </Alert>
             )}
@@ -242,7 +254,9 @@ function PuzzleDbCard({
               inProgress: t("common.downloading"),
               finalizing: t("common.extracting"),
             }}
-            onClick={() => downloadDatabase(databaseId, puzzleDb.downloadLink || "", puzzleDb.title)}
+            onClick={() =>
+              downloadDatabase(databaseId, puzzleDb.downloadLink || "", puzzleDb.title)
+            }
             inProgress={inProgress}
             setInProgress={setInProgress}
           />

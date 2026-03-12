@@ -1,4 +1,13 @@
-import { ActionIcon, Group, ScrollArea, SegmentedControl, Select, Stack, Table, Text } from "@mantine/core";
+import {
+  ActionIcon,
+  Group,
+  ScrollArea,
+  SegmentedControl,
+  Select,
+  Stack,
+  Table,
+  Text,
+} from "@mantine/core";
 import { IconFileExport, IconRefresh } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -15,7 +24,9 @@ import { unwrap } from "@/utils/unwrap";
 export default function LogsPanel() {
   const { t } = useTranslation();
   const engines = useAtomValue(enginesAtom);
-  const localEngines = engines.filter((e): e is LocalEngine => e.type === "local").filter((e) => e.loaded);
+  const localEngines = engines
+    .filter((e): e is LocalEngine => e.type === "local")
+    .filter((e) => e.loaded);
   const [engine, setEngine] = useState<LocalEngine | undefined>(localEngines[0]);
 
   const viewport = useRef<HTMLDivElement>(null);

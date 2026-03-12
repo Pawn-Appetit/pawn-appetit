@@ -109,13 +109,22 @@ function BoardControlsMenu({
     {
       id: "changeTabType",
       condition: !!changeTabType,
-      icon: currentTabType === "analysis" ? <IconTarget size="1.3rem" /> : <IconZoomCheck size="1.3rem" />,
+      icon:
+        currentTabType === "analysis" ? (
+          <IconTarget size="1.3rem" />
+        ) : (
+          <IconZoomCheck size="1.3rem" />
+        ),
       onClick: () => changeTabType?.(),
       label: t(
-        currentTabType === "analysis" ? "features.board.actions.playFromHere" : "features.board.actions.analyzeGame",
+        currentTabType === "analysis"
+          ? "features.board.actions.playFromHere"
+          : "features.board.actions.analyzeGame",
       ),
       tooltipLabel: t(
-        currentTabType === "analysis" ? "features.board.actions.playFromHere" : "features.board.actions.analyzeGame",
+        currentTabType === "analysis"
+          ? "features.board.actions.playFromHere"
+          : "features.board.actions.analyzeGame",
       ),
     },
     {

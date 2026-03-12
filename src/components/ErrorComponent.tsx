@@ -32,7 +32,9 @@ export default function ErrorComponent({ error }: { error: unknown }) {
             )}
           </CopyButton>
         )}
-        <Button onClick={() => navigate({ to: "/" }).then(() => window.location.reload())}>{t("common.reload")}</Button>
+        <Button onClick={() => navigate({ to: "/" }).then(() => window.location.reload())}>
+          {t("common.reload")}
+        </Button>
       </Group>
 
       <Text>

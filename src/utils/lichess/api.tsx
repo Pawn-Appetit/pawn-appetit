@@ -8,7 +8,13 @@ import { parseUci } from "chessops";
 import { makeFen } from "chessops/fen";
 import { makeSan } from "chessops/san";
 import { match, P } from "ts-pattern";
-import { type BestMoves, commands, type EngineOptions, type GoMode, type NormalizedGame } from "@/bindings";
+import {
+  type BestMoves,
+  commands,
+  type EngineOptions,
+  type GoMode,
+  type NormalizedGame,
+} from "@/bindings";
 import { parsePGN, uciNormalize } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import {
@@ -372,9 +378,15 @@ async function getCloudEvaluation(fen: string, multipv: number): Promise<Lichess
   return data;
 }
 
-export async function getLichessGames(fen: string, options: LichessGamesOptions): Promise<PositionData> {
+export async function getLichessGames(
+  fen: string,
+  options: LichessGamesOptions,
+): Promise<PositionData> {
   const url = match(options.player)
-    .with(P.union(undefined, ""), () => `${explorerURL}/lichess?${getLichessGamesQueryParams(fen, options)}`)
+    .with(
+      P.union(undefined, ""),
+      () => `${explorerURL}/lichess?${getLichessGamesQueryParams(fen, options)}`,
+    )
     .otherwise(() => `${explorerURL}/player?${getLichessGamesQueryParams(fen, options)}`);
   const res = await fetch(url);
   const data = await res.json();
@@ -385,7 +397,10 @@ export async function getLichessGames(fen: string, options: LichessGamesOptions)
   return data;
 }
 
-export async function getMasterGames(fen: string, options: MasterGamesOptions): Promise<PositionData> {
+export async function getMasterGames(
+  fen: string,
+  options: MasterGamesOptions,
+): Promise<PositionData> {
   const url = `${explorerURL}/masters?${getMasterGamesQueryParams(fen, options)}`;
   const res = await fetch(url);
   const data = await res.json();

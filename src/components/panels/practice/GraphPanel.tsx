@@ -107,7 +107,10 @@ function GraphPanel() {
     return (
       root.descendants().find((d) => {
         const path = (d as NodeWithPath).movePath || [];
-        return path.length === currentPosition.length && path.every((val, idx) => val === currentPosition[idx]);
+        return (
+          path.length === currentPosition.length &&
+          path.every((val, idx) => val === currentPosition[idx])
+        );
       }) || root
     );
   };
@@ -151,14 +154,15 @@ function GraphPanel() {
     return links;
   };
 
-
   const updateSelection = (root: d3.HierarchyNode<TreeNode>) => {
     const ancestors = findCurrentNode(root).ancestors();
 
     // Reset all styles
     d3.selectAll("path.link, g[data-node] > rect")
       .attr("stroke", COLORS.link)
-      .attr("stroke-width", (d: any) => (d.tagName === "path" ? DIMS.strokeWidth.link : DIMS.strokeWidth.node));
+      .attr("stroke-width", (d: any) =>
+        d.tagName === "path" ? DIMS.strokeWidth.link : DIMS.strokeWidth.node,
+      );
 
     // Highlight active path
     d3.selectAll("path.link")
@@ -182,7 +186,10 @@ function GraphPanel() {
     svg
       .transition()
       .duration(DIMS.transitionDuration)
-      .call(zoomRef.current.transform, createCenterTransform(findCurrentNode(hierarchyRef.current), width, height));
+      .call(
+        zoomRef.current.transform,
+        createCenterTransform(findCurrentNode(hierarchyRef.current), width, height),
+      );
   };
 
   const toggleMainLineOnly = () => {
@@ -256,9 +263,13 @@ function GraphPanel() {
 
     // Filter links to only show between visible nodes
     const visibleNodeSet = new Set(visibleNodes);
-    const visibleLinks = root.links().filter(
-      (l) => visibleNodeSet.has(l.source as NodeWithPath) && visibleNodeSet.has(l.target as NodeWithPath)
-    );
+    const visibleLinks = root
+      .links()
+      .filter(
+        (l) =>
+          visibleNodeSet.has(l.source as NodeWithPath) &&
+          visibleNodeSet.has(l.target as NodeWithPath),
+      );
 
     // Setup zoom
     // Only attach zoom if it doesn't exist to avoid resetting transform state unknowingly
@@ -298,9 +309,10 @@ function GraphPanel() {
       }
     }
 
-    const transpositionLinks = (showTranspositions && !mainLineOnly) ? findTranspositionLinks(root) : [];
+    const transpositionLinks =
+      showTranspositions && !mainLineOnly ? findTranspositionLinks(root) : [];
     const visibleTranspositions = transpositionLinks.filter(
-      l => visibleNodeSet.has(l.source) && visibleNodeSet.has(l.target)
+      (l) => visibleNodeSet.has(l.source) && visibleNodeSet.has(l.target),
     );
 
     transLayer
@@ -345,18 +357,20 @@ function GraphPanel() {
       .selectAll<SVGGElement, NodeWithPath>("g.node")
       .data(visibleNodes, (d) => d.nodeId || "");
 
-    const nodeEnter = nodeGroups.enter()
+    const nodeEnter = nodeGroups
+      .enter()
       .append("g")
       .attr("class", "node")
       .attr("data-node", "true")
       .style("cursor", "pointer")
       // Start at parent position if available, else current pos
       .attr("transform", (d) => {
-        // For enter animation, could start at parent pos. 
+        // For enter animation, could start at parent pos.
         return `translate(${d.y},${d.x})`;
       });
 
-    nodeEnter.append("rect")
+    nodeEnter
+      .append("rect")
       .attr("width", DIMS.nodeWidth)
       .attr("height", DIMS.nodeHeight)
       .attr("x", -DIMS.nodeWidth / 2)
@@ -364,7 +378,8 @@ function GraphPanel() {
       .attr("rx", DIMS.borderRadius)
       .attr("stroke-width", DIMS.strokeWidth.node);
 
-    nodeEnter.append("text")
+    nodeEnter
+      .append("text")
       .attr("dy", "0.31em")
       .attr("text-anchor", "middle")
       .style("pointer-events", "none");
@@ -385,11 +400,10 @@ function GraphPanel() {
         }
       });
 
-    nodesMerged.select("rect")
-      .attr("fill", getNodeColor)
-      .attr("stroke", COLORS.link);
+    nodesMerged.select("rect").attr("fill", getNodeColor).attr("stroke", COLORS.link);
 
-    nodesMerged.select("text")
+    nodesMerged
+      .select("text")
       .text((d) => d.data.san || "")
       .attr("fill", getTextColor);
 
@@ -478,8 +492,6 @@ function GraphPanel() {
 
     updateSelection(root);
   }, [rootData, currentPosition, goToMove, mainLineOnly, showTranspositions, collapsedNodes]);
-
-
 
   return (
     <Paper flex={1} h="100%" style={{ overflow: "hidden", position: "relative" }}>

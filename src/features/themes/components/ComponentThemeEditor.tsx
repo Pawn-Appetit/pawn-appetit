@@ -131,7 +131,13 @@ const COMPONENT_PROPS = {
   },
 };
 
-function ComponentEditor({ componentName, componentTheme, onChange, onDelete, availableColors }: ComponentEditorProps) {
+function ComponentEditor({
+  componentName,
+  componentTheme,
+  onChange,
+  onDelete,
+  availableColors,
+}: ComponentEditorProps) {
   const { t } = useTranslation();
   const [opened, { toggle }] = useDisclosure(false);
   const [propsOpened, { toggle: toggleProps }] = useDisclosure(false);
@@ -248,7 +254,12 @@ function ComponentEditor({ componentName, componentTheme, onChange, onDelete, av
                       />
                     )}
                     {form.values.defaultProps[propName] !== undefined && (
-                      <ActionIcon size="xs" variant="subtle" color="red" onClick={() => removeDefaultProp(propName)}>
+                      <ActionIcon
+                        size="xs"
+                        variant="subtle"
+                        color="red"
+                        onClick={() => removeDefaultProp(propName)}
+                      >
                         <IconTrash size={12} />
                       </ActionIcon>
                     )}
@@ -319,7 +330,11 @@ function ComponentEditor({ componentName, componentTheme, onChange, onDelete, av
   );
 }
 
-export default function ComponentThemeEditor({ components, onChange, availableColors }: ComponentThemeEditorProps) {
+export default function ComponentThemeEditor({
+  components,
+  onChange,
+  availableColors,
+}: ComponentThemeEditorProps) {
   const [addModalOpened, { open: openAddModal, close: closeAddModal }] = useDisclosure(false);
   const [selectedComponent, setSelectedComponent] = useState<string>("");
 
@@ -363,7 +378,11 @@ export default function ComponentThemeEditor({ components, onChange, availableCo
             Customize default props and styles for Mantine components
           </Text>
         </div>
-        <Button leftSection={<IconPlus size={16} />} onClick={openAddModal} disabled={availableToAdd.length === 0}>
+        <Button
+          leftSection={<IconPlus size={16} />}
+          onClick={openAddModal}
+          disabled={availableToAdd.length === 0}
+        >
           Add Component
         </Button>
       </Group>

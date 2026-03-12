@@ -19,8 +19,8 @@ export default function TrainPage() {
   let completedExercises = 0;
   let totalTimeSeconds = 0;
 
-
-  const statsMap: Record<string, { completed: number; total: number; nextExerciseTitle?: string }> = {};
+  const statsMap: Record<string, { completed: number; total: number; nextExerciseTitle?: string }> =
+    {};
 
   practices.forEach((category) => {
     const total = category.exercises.length;
@@ -95,10 +95,7 @@ export default function TrainPage() {
         ) : viewMode === "grid" ? (
           <Grid gutter="md">
             {practices.map((category) => (
-              <Grid.Col
-                key={category.id}
-                span={{ base: 12, sm: 6, lg: 4 }}
-              >
+              <Grid.Col key={category.id} span={{ base: 12, sm: 6, lg: 4 }}>
                 <CategoryCard
                   category={category}
                   progress={statsMap[category.id]}

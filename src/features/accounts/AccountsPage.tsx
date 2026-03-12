@@ -40,12 +40,21 @@ function AccountsPage() {
         setViewMode={setViewMode}
         pageKey="accounts"
         filters={
-          <Button size="xs" variant="light" leftSection={<IconDatabase size="1rem" />} onClick={open}>
+          <Button
+            size="xs"
+            variant="light"
+            leftSection={<IconDatabase size="1rem" />}
+            onClick={open}
+          >
             {t("accounts.viewDatabases")}
           </Button>
         }
         actions={
-          <Button size="xs" leftSection={<IconPlus size="1rem" />} onClick={() => setOpenModal(true)}>
+          <Button
+            size="xs"
+            leftSection={<IconPlus size="1rem" />}
+            onClick={() => setOpenModal(true)}
+          >
             Add Account
           </Button>
         }

@@ -142,7 +142,10 @@ function DatabasePanel() {
     enabled: tabType !== "options" && !!tab?.value,
   });
 
-  const grandTotal = openingData?.openings?.reduce((acc, curr) => acc + curr.black + curr.white + curr.draw, 0);
+  const grandTotal = openingData?.openings?.reduce(
+    (acc, curr) => acc + curr.black + curr.white + curr.draw,
+    0,
+  );
 
   return (
     <Stack h="100%" gap={0}>
@@ -179,7 +182,10 @@ function DatabasePanel() {
         style={{ overflow: "hidden" }}
       >
         <Tabs.List>
-          <Tabs.Tab value="stats" disabled={dbType.type === "local" && dbType.options.type === "partial"}>
+          <Tabs.Tab
+            value="stats"
+            disabled={dbType.type === "local" && dbType.options.type === "partial"}
+          >
             {t("features.board.database.stats")}
           </Tabs.Tab>
           <Tabs.Tab value="games">{t("features.board.database.games")}</Tabs.Tab>
@@ -206,7 +212,12 @@ function DatabasePanel() {
   );
 }
 
-function PanelWithError(props: { value: string; error: Error | null; type: string; children: React.ReactNode }) {
+function PanelWithError(props: {
+  value: string;
+  error: Error | null;
+  type: string;
+  children: React.ReactNode;
+}) {
   const referenceDatabase = useAtomValue(referenceDbAtom);
   let children = props.children;
   if (props.type === "local" && !referenceDatabase) {

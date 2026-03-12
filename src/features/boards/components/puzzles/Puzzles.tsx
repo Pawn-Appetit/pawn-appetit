@@ -44,7 +44,8 @@ function Puzzles({ id }: { id: string }) {
     clearPuzzleCache,
   } = usePuzzleDatabase();
 
-  const { puzzles, currentPuzzle, changeCompletion, addPuzzle, clearSession, selectPuzzle } = usePuzzleSession(id);
+  const { puzzles, currentPuzzle, changeCompletion, addPuzzle, clearSession, selectPuzzle } =
+    usePuzzleSession(id);
 
   // Local state
   const [progressive, setProgressive] = useAtom(progressivePuzzlesAtom);
@@ -63,7 +64,9 @@ function Puzzles({ id }: { id: string }) {
 
   // Computed values
   const currentPuzzleData = puzzles?.[currentPuzzle];
-  const turnToMove = currentPuzzleData ? (positionFromFen(currentPuzzleData?.fen)[0]?.turn ?? null) : null;
+  const turnToMove = currentPuzzleData
+    ? (positionFromFen(currentPuzzleData?.fen)[0]?.turn ?? null)
+    : null;
 
   // Event handlers
   const handleGeneratePuzzle = async () => {

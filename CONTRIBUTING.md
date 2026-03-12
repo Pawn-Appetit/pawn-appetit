@@ -74,6 +74,7 @@ All translation files are located in the `src/locales/` directory.
 3. **Add the language to i18n.init({...})**: Open [index.tsx](src/index.tsx) and the new language to the list of imports and to `i18n.init({...})`.
 
 For example:
+
 ```diff
 import fr from "./locales/fr";
 +import hy from "./locales/hy";

@@ -85,7 +85,11 @@ export default function EnginesPage() {
                     {t("features.engines.noEnginesFoundMessage")}
                   </Text>
                 </Stack>
-                <Button onClick={() => setOpened(true)} size="sm" leftSection={<IconPlus size="1rem" />}>
+                <Button
+                  onClick={() => setOpened(true)}
+                  size="sm"
+                  leftSection={<IconPlus size="1rem" />}
+                >
                   {t("common.addNew")}
                 </Button>
               </Stack>
@@ -134,7 +138,11 @@ export default function EnginesPage() {
           (selectedEngine.type === "local" ? (
             <EngineSettings selected={selected} setSelected={setSelected} isMobile={isMobile} />
           ) : (
-            <CloudEngineSettings selectedEngine={selectedEngine} selected={selected} setSelected={setSelected} />
+            <CloudEngineSettings
+              selectedEngine={selectedEngine}
+              selected={selected}
+              setSelected={setSelected}
+            />
           ))}
       </Drawer>
       <AddEngine opened={opened} setOpened={setOpened} />

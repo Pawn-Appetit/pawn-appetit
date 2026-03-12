@@ -12,7 +12,12 @@ interface LocalGamesTabProps {
   onDeleteGame?: (gameId: string) => void;
 }
 
-export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame }: LocalGamesTabProps) {
+export function LocalGamesTab({
+  games,
+  onAnalyzeGame,
+  onAnalyzeAll,
+  onDeleteGame,
+}: LocalGamesTabProps) {
   const { t } = useTranslation();
   const [gameStats, setGameStats] = useState<Map<string, GameStats>>(new Map());
 
@@ -112,7 +117,9 @@ export function LocalGamesTab({ games, onAnalyzeGame, onAnalyzeAll, onDeleteGame
                     <Avatar size={24} radius="xl">
                       {(opponent.name ?? "?")[0]?.toUpperCase()}
                     </Avatar>
-                    <Text>{opponent.name ?? (opponent.engine ? `Engine (${opponent.engine})` : "?")}</Text>
+                    <Text>
+                      {opponent.name ?? (opponent.engine ? `Engine (${opponent.engine})` : "?")}
+                    </Text>
                   </Group>
                 </Table.Td>
                 <Table.Td>

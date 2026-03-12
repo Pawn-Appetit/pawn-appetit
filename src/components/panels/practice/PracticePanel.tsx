@@ -22,7 +22,12 @@ import { useTranslation } from "react-i18next";
 import { formatDate } from "ts-fsrs";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/TreeStateContext";
-import { buildFromTree, getCardForReview, getStats, updateCardPerformance } from "@/features/files/utils/opening";
+import {
+  buildFromTree,
+  getCardForReview,
+  getStats,
+  updateCardPerformance,
+} from "@/features/files/utils/opening";
 import {
   currentInvisibleAtom,
   currentPracticeTabAtom,
@@ -222,7 +227,9 @@ function PracticePanel() {
                   thickness={10}
                   label={
                     <Text ta="center" px="xs" style={{ pointerEvents: "none" }}>
-                      {stats.total === 0 ? "0%" : `${Math.round((stats.practiced / stats.total) * 100)}%`}
+                      {stats.total === 0
+                        ? "0%"
+                        : `${Math.round((stats.practiced / stats.total) * 100)}%`}
                     </Text>
                   }
                   sections={[
@@ -271,8 +278,12 @@ function PracticePanel() {
                         })}
                       </Text>
                     )}
-                    <Button onClick={() => setPositionsOpen(true)}>{t("features.board.practice.showAll")}</Button>
-                    <Button onClick={() => setLogsOpen(true)}>{t("features.board.practice.showLogs")}</Button>
+                    <Button onClick={() => setPositionsOpen(true)}>
+                      {t("features.board.practice.showAll")}
+                    </Button>
+                    <Button onClick={() => setLogsOpen(true)}>
+                      {t("features.board.practice.showLogs")}
+                    </Button>
                   </Group>
                 </Group>
               </Group>
@@ -311,7 +322,12 @@ function PracticePanel() {
                   }
                   const currentIndex = deck.positions.findIndex((c) => c.fen === fen);
                   if (currentIndex === -1) return;
-                  updateCardPerformance(setDeck, currentIndex, deck.positions[currentIndex].card, 2);
+                  updateCardPerformance(
+                    setDeck,
+                    currentIndex,
+                    deck.positions[currentIndex].card,
+                    2,
+                  );
                   newPractice();
                 }}
                 disabled={stats.due === 0 && stats.unseen === 0}
@@ -352,7 +368,11 @@ function PracticePanel() {
                     labels: { confirm: t("common.reset"), cancel: t("common.cancel") },
                     confirmProps: { color: "red" },
                     onConfirm: () => {
-                      const cards = buildFromTree(root, headers.orientation || "white", headers.start || []);
+                      const cards = buildFromTree(
+                        root,
+                        headers.orientation || "white",
+                        headers.start || [],
+                      );
                       setDeck({ positions: cards, logs: [] });
                     },
                   });
@@ -409,7 +429,15 @@ function PositionsModal({
                   <Text tt="uppercase" fw="bold" fz="sm">
                     Status
                   </Text>
-                  <Badge color={c.card.reps === 0 ? "gray" : new Date(c.card.due) <= new Date() ? "yellow" : "blue"}>
+                  <Badge
+                    color={
+                      c.card.reps === 0
+                        ? "gray"
+                        : new Date(c.card.due) <= new Date()
+                          ? "yellow"
+                          : "blue"
+                    }
+                  >
                     {c.card.reps === 0
                       ? t("features.board.practice.unseen")
                       : new Date(c.card.due) <= new Date()
@@ -476,7 +504,9 @@ function LogsModal({
                   <Text tt="uppercase" fw="bold" fz="sm">
                     Rating
                   </Text>
-                  <Badge color={log.rating === 4 ? "green" : "red"}>{log.rating === 4 ? "Success" : "Fail"}</Badge>
+                  <Badge color={log.rating === 4 ? "green" : "red"}>
+                    {log.rating === 4 ? "Success" : "Fail"}
+                  </Badge>
                 </Stack>
                 <Stack>
                   <Text tt="uppercase" fw="bold" fz="sm">

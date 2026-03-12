@@ -3,10 +3,10 @@ import { parseFen } from "chessops/fen";
 import { applyUciMoveToFen } from "./applyUciMoveToFen";
 
 export interface MoveEvaluation {
-  type: "optimal" | "suboptimal" | "incorrect";
-  moveCount: number;
-  isCheckmate: boolean;
-  message: string;
+    type: "optimal" | "suboptimal" | "incorrect";
+    moveCount: number;
+    isCheckmate: boolean;
+    message: string;
 }
 
 /**
@@ -16,57 +16,61 @@ export interface MoveEvaluation {
  * @param targetStepsCount The expected number of moves to complete the exercise
  * @returns MoveEvaluation object with details about the move sequence
  */
-export function evaluateCheckmateMoves(startingFen: string, moves: string[], targetStepsCount: number): MoveEvaluation {
-  let currentFen = startingFen;
+export function evaluateCheckmateMoves(
+    startingFen: string,
+    moves: string[],
+    targetStepsCount: number,
+): MoveEvaluation {
+    let currentFen = startingFen;
 
-  for (let i = 0; i < moves.length; i++) {
-    const move = moves[i];
-    const newFen = applyUciMoveToFen(currentFen, move);
-    if (!newFen) {
-      return {
-        type: "incorrect",
-        moveCount: moves.length,
-        isCheckmate: false,
-        message: `Invalid move: ${move}. Please make a legal move.`,
-      };
+    for (let i = 0; i < moves.length; i++) {
+        const move = moves[i];
+        const newFen = applyUciMoveToFen(currentFen, move);
+        if (!newFen) {
+            return {
+                type: "incorrect",
+                moveCount: moves.length,
+                isCheckmate: false,
+                message: `Invalid move: ${move}. Please make a legal move.`,
+            };
+        }
+        currentFen = newFen;
     }
-    currentFen = newFen;
-  }
 
-  const isCheckmate = isPositionCheckmate(currentFen);
-  const moveCount = moves.length;
+    const isCheckmate = isPositionCheckmate(currentFen);
+    const moveCount = moves.length;
 
-  if (!isCheckmate) {
-    return {
-      type: "incorrect",
-      moveCount,
-      isCheckmate: false,
-      message: "Position is not checkmate. Keep trying!",
-    };
-  }
+    if (!isCheckmate) {
+        return {
+            type: "incorrect",
+            moveCount,
+            isCheckmate: false,
+            message: "Position is not checkmate. Keep trying!",
+        };
+    }
 
-  if (moveCount === targetStepsCount) {
-    return {
-      type: "optimal",
-      moveCount,
-      isCheckmate: true,
-      message: `Perfect! Checkmate in ${moveCount} moves - optimal solution!`,
-    };
-  } else if (moveCount < targetStepsCount) {
-    return {
-      type: "optimal",
-      moveCount,
-      isCheckmate: true,
-      message: `Excellent! Checkmate in ${moveCount} moves - even better than expected!`,
-    };
-  } else {
-    return {
-      type: "suboptimal",
-      moveCount,
-      isCheckmate: true,
-      message: `Checkmate achieved in ${moveCount} moves, but there's a faster solution in ${targetStepsCount} moves. Try again for the optimal solution!`,
-    };
-  }
+    if (moveCount === targetStepsCount) {
+        return {
+            type: "optimal",
+            moveCount,
+            isCheckmate: true,
+            message: `Perfect! Checkmate in ${moveCount} moves - optimal solution!`,
+        };
+    } else if (moveCount < targetStepsCount) {
+        return {
+            type: "optimal",
+            moveCount,
+            isCheckmate: true,
+            message: `Excellent! Checkmate in ${moveCount} moves - even better than expected!`,
+        };
+    } else {
+        return {
+            type: "suboptimal",
+            moveCount,
+            isCheckmate: true,
+            message: `Checkmate achieved in ${moveCount} moves, but there's a faster solution in ${targetStepsCount} moves. Try again for the optimal solution!`,
+        };
+    }
 }
 
 /**
@@ -75,29 +79,29 @@ export function evaluateCheckmateMoves(startingFen: string, moves: string[], tar
  * @returns true if the position is checkmate, false otherwise
  */
 export function isPositionCheckmate(fen: string): boolean {
-  try {
-    const [setup, error] = parseFen(fen).unwrap(
-      (v) => [v, null],
-      (e) => [null, e],
-    );
+    try {
+        const [setup, error] = parseFen(fen).unwrap(
+            (v) => [v, null],
+            (e) => [null, e],
+        );
 
-    if (error || !setup) {
-      return false;
+        if (error || !setup) {
+            return false;
+        }
+
+        const [pos, posError] = Chess.fromSetup(setup).unwrap(
+            (v) => [v, null],
+            (e) => [null, e],
+        );
+
+        if (posError || !pos) {
+            return false;
+        }
+
+        return pos.isCheckmate();
+    } catch {
+        return false;
     }
-
-    const [pos, posError] = Chess.fromSetup(setup).unwrap(
-      (v) => [v, null],
-      (e) => [null, e],
-    );
-
-    if (posError || !pos) {
-      return false;
-    }
-
-    return pos.isCheckmate();
-  } catch {
-    return false;
-  }
 }
 
 /**
@@ -106,27 +110,27 @@ export function isPositionCheckmate(fen: string): boolean {
  * @returns true if the position is in check, false otherwise
  */
 export function isPositionInCheck(fen: string): boolean {
-  try {
-    const [setup, error] = parseFen(fen).unwrap(
-      (v) => [v, null],
-      (e) => [null, e],
-    );
+    try {
+        const [setup, error] = parseFen(fen).unwrap(
+            (v) => [v, null],
+            (e) => [null, e],
+        );
 
-    if (error || !setup) {
-      return false;
+        if (error || !setup) {
+            return false;
+        }
+
+        const [pos, posError] = Chess.fromSetup(setup).unwrap(
+            (v) => [v, null],
+            (e) => [null, e],
+        );
+
+        if (posError || !pos) {
+            return false;
+        }
+
+        return pos.isCheck();
+    } catch {
+        return false;
     }
-
-    const [pos, posError] = Chess.fromSetup(setup).unwrap(
-      (v) => [v, null],
-      (e) => [null, e],
-    );
-
-    if (posError || !pos) {
-      return false;
-    }
-
-    return pos.isCheck();
-  } catch {
-    return false;
-  }
 }

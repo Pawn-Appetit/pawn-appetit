@@ -38,12 +38,10 @@ export default function PracticePage() {
   const [, setTabs] = useAtom(tabsAtom);
   const [, setActiveTab] = useAtom(activeTabAtom);
 
-  
   const [feedback, setFeedback] = useState<FeedbackState>(null);
   const [feedbackMsg, setFeedbackMsg] = useState("");
   const [attempts, setAttempts] = useState(0);
 
-  
   const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimer = useCallback(() => {
@@ -62,7 +60,6 @@ export default function PracticePage() {
     startTimer();
   }, [stopTimer, startTimer]);
 
-  
   const [hintOpen, setHintOpen] = useState(false);
 
   const {
@@ -83,10 +80,8 @@ export default function PracticePage() {
     completeOnCorrectMove: false,
   });
 
-  
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
 
-  
   useEffect(() => {
     if (!selectedCategory) {
       const active =
@@ -104,7 +99,6 @@ export default function PracticePage() {
     }
   }, [selectedCategory, handleCategorySelect, handleExerciseSelect, userStats]);
 
-  
   useEffect(() => {
     if (selectedExercise) startTimer();
     return () => stopTimer();
@@ -128,7 +122,7 @@ export default function PracticePage() {
             totalPoints: userStats.totalPoints + (selectedExercise.points || 0),
           });
         }
-        
+
         setTimeout(() => handleNextExercise(), 1500);
       }
     },
@@ -142,7 +136,7 @@ export default function PracticePage() {
     setAttempts((a) => a + 1);
     setMoveHistory((h) => [...h, move]);
 
-    handleMoveBase(orig, dest, selectedExercise?.gameData.correctMoves || [], () => { });
+    handleMoveBase(orig, dest, selectedExercise?.gameData.correctMoves || [], () => {});
 
     setTimeout(() => {
       const isOptimal = selectedExercise.gameData.correctMoves?.includes(move);
@@ -222,7 +216,6 @@ export default function PracticePage() {
     setTimeout(() => setHintOpen(false), 4000);
   }, []);
 
-  
   useHotkeys([
     ["h", handleHint],
     ["a", handleAnalyze],
@@ -230,7 +223,6 @@ export default function PracticePage() {
     ["r", handleRetry],
   ]);
 
-  
   if (!selectedCategory || !selectedExercise) {
     return (
       <Center h="100vh">
@@ -259,23 +251,14 @@ export default function PracticePage() {
 
       <Grid gutter="lg" style={{ flex: 1 }}>
         <Grid.Col span={{ base: 12, md: 7 }}>
-          <Paper
-            withBorder
-            p="sm"
-            radius="md"
-            h="100%"
-          >
+          <Paper withBorder p="sm" radius="md" h="100%">
             <Transition mounted={feedback !== null} transition="slide-down" duration={250}>
               {(styles) => (
                 <Box style={styles} mb="sm">
                   <Notification
                     icon={feedback === "success" ? <IconCheck size={18} /> : <IconX size={18} />}
                     color={feedback === "success" ? "green" : "red"}
-                    title={
-                      feedback === "success"
-                        ? "Correct! Well played."
-                        : "Incorrect move"
-                    }
+                    title={feedback === "success" ? "Correct! Well played." : "Incorrect move"}
                     withCloseButton
                     onClose={() => setFeedback(null)}
                   >

@@ -1,6 +1,15 @@
 import { Stack, Text } from "@mantine/core";
 import { useState } from "react";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, type TooltipProps, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  type TooltipProps,
+  XAxis,
+  YAxis,
+} from "recharts";
 import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 import type { PlayerGameInfo, StatsData } from "@/bindings";
 import { getTimeControl } from "@/utils/timeControl";
@@ -8,7 +17,9 @@ import ResultsChart from "./ResultsChart";
 import TimeControlSelector from "./TimeControlSelector";
 import WebsiteAccountSelector from "./WebsiteAccountSelector";
 
-function fillMissingMonths(data: { name: string; count: number }[]): { name: string; count: number }[] {
+function fillMissingMonths(
+  data: { name: string; count: number }[],
+): { name: string; count: number }[] {
   if (data.length === 0) return data;
 
   data.sort((a, b) => a.name.localeCompare(b.name));
@@ -80,7 +91,10 @@ function OverviewPanel({ playerName, info }: { playerName: string; info: PlayerG
       .filter((d) => account === "All accounts" || d.player === account)
       .flatMap((d) => d.data)
       .filter(
-        (game) => !timeControl || timeControl === "any" || getTimeControl(website!, game.time_control) === timeControl,
+        (game) =>
+          !timeControl ||
+          timeControl === "any" ||
+          getTimeControl(website!, game.time_control) === timeControl,
       ) ?? [];
   const { total, won, draw, lost, dataPerMonth } = extractGameStats(games);
 
@@ -100,7 +114,11 @@ function OverviewPanel({ playerName, info }: { playerName: string; info: PlayerG
         allowAll={true}
       />
       {website !== "All websites" && (
-        <TimeControlSelector website={website} onTimeControlChange={setTimeControl} allowAll={true} />
+        <TimeControlSelector
+          website={website}
+          onTimeControlChange={setTimeControl}
+          allowAll={true}
+        />
       )}
 
       <Text pt="md" fw="bold" fz="lg" ta="center">
@@ -122,7 +140,11 @@ const DateChartTooltip = ({
   payload,
   label,
   isYearSelected,
-}: TooltipProps<ValueType, NameType> & { payload?: any[]; label?: string; isYearSelected?: boolean }) => {
+}: TooltipProps<ValueType, NameType> & {
+  payload?: any[];
+  label?: string;
+  isYearSelected?: boolean;
+}) => {
   if (active && payload && payload.length) {
     return (
       <div

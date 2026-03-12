@@ -1,4 +1,13 @@
-import { Box, Combobox, Group, Input, InputBase, ScrollArea, Text, useCombobox } from "@mantine/core";
+import {
+  Box,
+  Combobox,
+  Group,
+  Input,
+  InputBase,
+  ScrollArea,
+  Text,
+  useCombobox,
+} from "@mantine/core";
 import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 import { boardImageAtom } from "@/state/atoms";

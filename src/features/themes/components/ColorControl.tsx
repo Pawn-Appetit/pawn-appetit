@@ -1,4 +1,11 @@
-import { CheckIcon, ColorSwatch, Input, SimpleGrid, useMantineColorScheme, useMantineTheme } from "@mantine/core";
+import {
+  CheckIcon,
+  ColorSwatch,
+  Input,
+  SimpleGrid,
+  useMantineColorScheme,
+  useMantineTheme,
+} from "@mantine/core";
 import { useColorScheme } from "@mantine/hooks";
 import { useAtom, useAtomValue } from "jotai";
 import { currentThemeAtom } from "@/features/themes/state/themeAtoms";

@@ -107,7 +107,11 @@ export default function GenericHeader({
   };
 
   const directionIcon =
-    currentSort?.direction === "asc" ? <IconSortAscending size="1rem" /> : <IconSortDescending size="1rem" />;
+    currentSort?.direction === "asc" ? (
+      <IconSortAscending size="1rem" />
+    ) : (
+      <IconSortDescending size="1rem" />
+    );
 
   const viewModeOptions = [
     {
@@ -180,7 +184,9 @@ export default function GenericHeader({
                   setViewMode(value as ViewMode);
                 }
               }}
-              leftSection={viewMode === "grid" ? <IconLayoutGrid size="1rem" /> : <IconList size="1rem" />}
+              leftSection={
+                viewMode === "grid" ? <IconLayoutGrid size="1rem" /> : <IconList size="1rem" />
+              }
               aria-label={t("common.view", "View")}
               w="110px"
               size="xs"

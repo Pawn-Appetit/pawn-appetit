@@ -47,8 +47,12 @@ function Databases() {
   const playerDbNames = players.map((name) => ({
     name,
     databases: sessions
-      .filter((s) => s.player === name || s.lichess?.username === name || s.chessCom?.username === name)
-      .map((s) => (s.chessCom ? `${s.chessCom.username} Chess.com` : `${s.lichess?.username} Lichess`)),
+      .filter(
+        (s) => s.player === name || s.lichess?.username === name || s.chessCom?.username === name,
+      )
+      .map((s) =>
+        s.chessCom ? `${s.chessCom.username} Chess.com` : `${s.lichess?.username} Lichess`,
+      ),
   }));
 
   const [name, setName] = useState("");

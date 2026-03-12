@@ -24,8 +24,15 @@ function EditingCard({
   const setFen = useStore(store, (s) => s.setFen);
 
   return (
-    <Card shadow="md" style={{ position: "relative", overflow: "visible" }} className={classes.card}>
-      <CloseButton style={{ position: "absolute", top: 10, right: 15 }} onClick={() => setEditingMode(false)} />
+    <Card
+      shadow="md"
+      style={{ position: "relative", overflow: "visible" }}
+      className={classes.card}
+    >
+      <CloseButton
+        style={{ position: "absolute", top: 10, right: 15 }}
+        onClick={() => setEditingMode(false)}
+      />
       <FenInput currentFen={fen} />
       <Divider my="md" />
       <PiecesGrid

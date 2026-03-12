@@ -1,4 +1,14 @@
-import { Alert, Autocomplete, Button, Checkbox, Group, InputWrapper, Modal, Stack, TextInput } from "@mantine/core";
+import {
+  Alert,
+  Autocomplete,
+  Button,
+  Checkbox,
+  Group,
+  InputWrapper,
+  Modal,
+  Stack,
+  TextInput,
+} from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useState } from "react";
@@ -20,7 +30,9 @@ function AccountModal({ open, setOpen, addLichess, addChessCom }: AccountModalPr
   const [website, setWebsite] = useState<"lichess" | "chesscom">("lichess");
   const [withLogin, setWithLogin] = useState(false);
 
-  const players = new Set(sessions.map((s) => s.player || s.lichess?.username || s.chessCom?.username || ""));
+  const players = new Set(
+    sessions.map((s) => s.player || s.lichess?.username || s.chessCom?.username || ""),
+  );
 
   function addAccount() {
     if (website === "lichess") {
@@ -74,9 +86,9 @@ function AccountModal({ open, setOpen, addLichess, addChessCom }: AccountModalPr
             </Group>
             {website === "chesscom" && (
               <Alert mt="xs" color="yellow" icon={<IconInfoCircle size={16} />}>
-                Due to limitations of the Chess.com Public API, the total games count may not include all game types. In
-                particular, bot games are excluded from the downloadable archives and won't be reflected in the total
-                count.
+                Due to limitations of the Chess.com Public API, the total games count may not
+                include all game types. In particular, bot games are excluded from the downloadable
+                archives and won't be reflected in the total count.
               </Alert>
             )}
           </InputWrapper>

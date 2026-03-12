@@ -20,7 +20,14 @@ import {
 } from "@mantine/core";
 import { useDebouncedValue, useToggle } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
-import { IconArrowRight, IconDatabase, IconPlus, IconPuzzle, IconSearch, IconStar } from "@tabler/icons-react";
+import {
+  IconArrowRight,
+  IconDatabase,
+  IconPlus,
+  IconPuzzle,
+  IconSearch,
+  IconStar,
+} from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { listen } from "@tauri-apps/api/event";
@@ -257,7 +264,9 @@ export default function DatabasesPage() {
 
   // Determine title and search placeholder based on current tab
   const headerTitle =
-    search.tab === "puzzles" ? t("features.sidebar.puzzles", "Puzzles") : t("features.databases.title");
+    search.tab === "puzzles"
+      ? t("features.sidebar.puzzles", "Puzzles")
+      : t("features.databases.title");
   const searchPlaceholder = search.tab === "puzzles" ? "Search puzzles" : "Search databases";
 
   return (
@@ -551,7 +560,13 @@ function DatabaseTableView({
           title: t("common.name"),
           render: (database) => (
             <Group wrap="nowrap" gap="sm">
-              <Box>{isPuzzleDatabase(database) ? <IconPuzzle size="1.2rem" /> : <IconDatabase size="1.2rem" />}</Box>
+              <Box>
+                {isPuzzleDatabase(database) ? (
+                  <IconPuzzle size="1.2rem" />
+                ) : (
+                  <IconDatabase size="1.2rem" />
+                )}
+              </Box>
               <Box miw={0}>
                 <Text fw={600} size="sm" truncate>
                   {isSuccessDatabase(database) ? database.title : database.error}
@@ -577,7 +592,8 @@ function DatabaseTableView({
           title: isPuzzleDatabase(databases[0])
             ? t("features.puzzle.title", "Puzzles")
             : t("features.databases.card.games"),
-          render: (database) => (isSuccessDatabase(database) ? t("units.count", { count: database.game_count }) : "—"),
+          render: (database) =>
+            isSuccessDatabase(database) ? t("units.count", { count: database.game_count }) : "—",
         },
         {
           accessor: "player_count",
@@ -591,7 +607,9 @@ function DatabaseTableView({
           accessor: "storage_size",
           title: t("features.databases.card.storage"),
           render: (database) =>
-            isSuccessDatabase(database) ? t("units.bytes", { bytes: database.storage_size ?? 0 }) : "—",
+            isSuccessDatabase(database)
+              ? t("units.bytes", { bytes: database.storage_size ?? 0 })
+              : "—",
         },
       ]}
       rowClassName={(database) =>
@@ -616,7 +634,13 @@ interface DatabaseCardProps {
   isReference: boolean;
 }
 
-function DatabaseCard({ database, isSelected, onSelect, onDoubleClick, isReference }: DatabaseCardProps) {
+function DatabaseCard({
+  database,
+  isSelected,
+  onSelect,
+  onDoubleClick,
+  isReference,
+}: DatabaseCardProps) {
   const { t } = useTranslation();
 
   const stats = getDatabaseStats(database, t);
@@ -633,7 +657,11 @@ function DatabaseCard({ database, isSelected, onSelect, onDoubleClick, isReferen
           <Group wrap="nowrap" justify="space-between" align="flex-start">
             <Group wrap="nowrap" miw={0} gap="sm" align="start">
               <Box mt="sm">
-                {isPuzzleDatabase(database) ? <IconPuzzle size="1.5rem" /> : <IconDatabase size="1.5rem" />}
+                {isPuzzleDatabase(database) ? (
+                  <IconPuzzle size="1.5rem" />
+                ) : (
+                  <IconDatabase size="1.5rem" />
+                )}
               </Box>
               <Box miw={0}>
                 <Stack gap="xs">
@@ -767,11 +795,19 @@ function DatabaseDetails({
           <Divider variant="dashed" label={t("common.generalSettings")} />
 
           {isGameDatabase(selectedDatabase) ? (
-            <GeneralSettings key={selectedDatabase.filename} selectedDatabase={selectedDatabase} mutate={mutate} />
+            <GeneralSettings
+              key={selectedDatabase.filename}
+              selectedDatabase={selectedDatabase}
+              mutate={mutate}
+            />
           ) : (
             <Stack>
               <TextInput label={t("common.name")} value={selectedDatabase.title} readOnly />
-              <Textarea label={t("common.description")} value={selectedDatabase.description} readOnly />
+              <Textarea
+                label={t("common.description")}
+                value={selectedDatabase.description}
+                readOnly
+              />
             </Stack>
           )}
 
@@ -782,7 +818,11 @@ function DatabaseDetails({
                 checked={isReference}
                 onChange={() => onChangeReference(selectedDatabase.file)}
               />
-              <IndexInput indexed={selectedDatabase.indexed} file={selectedDatabase.file} setDatabases={mutate} />
+              <IndexInput
+                indexed={selectedDatabase.indexed}
+                file={selectedDatabase.file}
+                setDatabases={mutate}
+              />
             </>
           )}
 
@@ -807,7 +847,10 @@ function DatabaseDetails({
             )}
             {isPuzzleDatabase(selectedDatabase) && (
               <Text size="sm" c="dimmed" ta="center">
-                {t("features.puzzle.useInPuzzleBoard", "Use this database in the puzzle board to solve puzzles")}
+                {t(
+                  "features.puzzle.useInPuzzleBoard",
+                  "Use this database in the puzzle board to solve puzzles",
+                )}
               </Text>
             )}
           </div>
@@ -968,7 +1011,13 @@ function DatabaseActions({
   );
 }
 
-function GeneralSettings({ selectedDatabase, mutate }: { selectedDatabase: SuccessDatabaseInfo; mutate: () => void }) {
+function GeneralSettings({
+  selectedDatabase,
+  mutate,
+}: {
+  selectedDatabase: SuccessDatabaseInfo;
+  mutate: () => void;
+}) {
   const { t } = useTranslation();
   const [title, setTitle] = useState(selectedDatabase.title);
   const [description, setDescription] = useState(selectedDatabase.description);
@@ -998,7 +1047,13 @@ function GeneralSettings({ selectedDatabase, mutate }: { selectedDatabase: Succe
   );
 }
 
-function AdvancedSettings({ selectedDatabase, reload }: { selectedDatabase: DatabaseInfo; reload: () => void }) {
+function AdvancedSettings({
+  selectedDatabase,
+  reload,
+}: {
+  selectedDatabase: DatabaseInfo;
+  reload: () => void;
+}) {
   return (
     <Stack>
       <PlayerMerger selectedDatabase={selectedDatabase} />
@@ -1033,7 +1088,11 @@ function PlayerMerger({ selectedDatabase }: { selectedDatabase: DatabaseInfo }) 
       <Text fz="sm">{t("features.databases.settings.mergePlayersDesc")}</Text>
       <Group grow>
         <PlayerSearchInput label="Player 1" file={selectedDatabase.file} setValue={setPlayer1} />
-        <Button loading={loading} onClick={mergePlayers} rightSection={<IconArrowRight size="1rem" />}>
+        <Button
+          loading={loading}
+          onClick={mergePlayers}
+          rightSection={<IconArrowRight size="1rem" />}
+        >
           {t("features.databases.settings.merge")}
         </Button>
         <PlayerSearchInput label="Player 2" file={selectedDatabase.file} setValue={setPlayer2} />
@@ -1042,7 +1101,13 @@ function PlayerMerger({ selectedDatabase }: { selectedDatabase: DatabaseInfo }) 
   );
 }
 
-function DuplicateRemover({ selectedDatabase, reload }: { selectedDatabase: DatabaseInfo; reload: () => void }) {
+function DuplicateRemover({
+  selectedDatabase,
+  reload,
+}: {
+  selectedDatabase: DatabaseInfo;
+  reload: () => void;
+}) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
@@ -1193,11 +1258,15 @@ function getDatabaseStats(database: UnifiedDatabase, t: any) {
     return [
       {
         label: t("features.puzzle.title", "Puzzles"),
-        value: isSuccessDatabase(database) ? t("units.count", { count: database.game_count }) : "???",
+        value: isSuccessDatabase(database)
+          ? t("units.count", { count: database.game_count })
+          : "???",
       },
       {
         label: t("features.databases.card.storage"),
-        value: isSuccessDatabase(database) ? t("units.bytes", { bytes: database.storage_size ?? 0 }) : "???",
+        value: isSuccessDatabase(database)
+          ? t("units.bytes", { bytes: database.storage_size ?? 0 })
+          : "???",
       },
     ];
   }
@@ -1209,7 +1278,9 @@ function getDatabaseStats(database: UnifiedDatabase, t: any) {
     },
     {
       label: t("features.databases.card.storage"),
-      value: isSuccessDatabase(database) ? t("units.bytes", { bytes: database.storage_size ?? 0 }) : "???",
+      value: isSuccessDatabase(database)
+        ? t("units.bytes", { bytes: database.storage_size ?? 0 })
+        : "???",
     },
   ];
 }

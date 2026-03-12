@@ -65,7 +65,9 @@ function EngineSelection() {
               engine={engine}
               toggleEnabled={() => {
                 setEngines(async (prev) =>
-                  (await prev).map((e) => (e.name === engine.name ? { ...e, loaded: !e.loaded } : e)),
+                  (await prev).map((e) =>
+                    e.name === engine.name ? { ...e, loaded: !e.loaded } : e,
+                  ),
                 );
               }}
             />
