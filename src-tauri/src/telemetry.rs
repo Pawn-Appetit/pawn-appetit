@@ -1,11 +1,11 @@
-use std::fs;
-use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use specta::Type;
-use tauri::{AppHandle, Manager};
-use tauri::path::BaseDirectory;
-use uuid::Uuid;
+use std::fs;
+use std::path::PathBuf;
 use sysinfo::{System, SystemExt};
+use tauri::path::BaseDirectory;
+use tauri::{AppHandle, Manager};
+use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Type)]
 pub struct TelemetryConfig {
@@ -54,7 +54,7 @@ impl TelemetryConfig {
 
     pub fn load(app: &AppHandle) -> Result<Self, TelemetryError> {
         let config_path = Self::get_config_path(app)?;
-        
+
         if !config_path.exists() {
             log::info!("Telemetry config not found, creating default");
             let default_config = Self::default();
@@ -64,23 +64,26 @@ impl TelemetryConfig {
 
         let config_content = fs::read_to_string(&config_path)?;
         let config: Self = serde_json::from_str(&config_content)?;
-        
-        log::info!("Loaded telemetry config: enabled={}, initial_run_completed={}", 
-                  config.enabled, config.initial_run_completed);
-        
+
+        log::info!(
+            "Loaded telemetry config: enabled={}, initial_run_completed={}",
+            config.enabled,
+            config.initial_run_completed
+        );
+
         Ok(config)
     }
 
     pub fn save(&self, app: &AppHandle) -> Result<(), TelemetryError> {
         let config_path = Self::get_config_path(app)?;
-        
+
         if let Some(parent) = config_path.parent() {
             fs::create_dir_all(parent)?;
         }
 
         let config_json = serde_json::to_string_pretty(self)?;
         fs::write(&config_path, config_json)?;
-        
+
         log::info!("Saved telemetry config to: {}", config_path.display());
         Ok(())
     }
@@ -101,10 +104,11 @@ impl TelemetryConfig {
 }
 
 fn get_user_id(app: &AppHandle) -> String {
-    let user_id_path = app.path()
+    let user_id_path = app
+        .path()
         .resolve("user_id.txt", BaseDirectory::AppConfig)
         .unwrap_or_default();
-    
+
     if let Ok(existing_id) = fs::read_to_string(&user_id_path) {
         existing_id.trim().to_string()
     } else {
@@ -120,11 +124,11 @@ fn get_user_id(app: &AppHandle) -> String {
 fn get_platform_info() -> String {
     let mut sys = System::new();
     sys.refresh_system();
-    
+
     let os_name = std::env::consts::OS;
     let os_version = sys.os_version().unwrap_or_else(|| "unknown".to_string());
     let arch = std::env::consts::ARCH;
-    
+
     format!("{} {} ({})", os_name, os_version, arch)
 }
 
@@ -147,7 +151,9 @@ async fn get_user_country_from_api() -> Option<String> {
         if let Ok(text) = response.text().await {
             if let Ok(geo) = serde_json::from_str::<GeolocationResponse>(&text) {
                 if let Some(country_code) = geo.country_code.or(geo.country) {
-                    if country_code.len() == 2 && country_code.chars().all(|c| c.is_ascii_uppercase()) {
+                    if country_code.len() == 2
+                        && country_code.chars().all(|c| c.is_ascii_uppercase())
+                    {
                         log::info!("Retrieved country from IP-API: {}", country_code);
                         return Some(country_code);
                     }
@@ -183,13 +189,15 @@ fn get_user_country_from_locale() -> Option<String> {
                     .args(&["-Command", "(Get-Culture).TwoLetterISOLanguageName"])
                     .output()
                 {
-                    let country = String::from_utf8_lossy(&output.stdout).trim().to_uppercase();
+                    let country = String::from_utf8_lossy(&output.stdout)
+                        .trim()
+                        .to_uppercase();
                     if country.len() == 2 && country.chars().all(|c| c.is_ascii_uppercase()) {
                         return Some(country);
                     }
                 }
             }
-            
+
             #[cfg(target_os = "macos")]
             {
                 use std::process::Command;
@@ -207,7 +215,7 @@ fn get_user_country_from_locale() -> Option<String> {
                     }
                 }
             }
-            
+
             None
         })
 }
@@ -216,12 +224,12 @@ async fn get_user_country() -> Option<String> {
     if let Some(country) = get_user_country_from_api().await {
         return Some(country);
     }
-    
+
     if let Some(country) = get_user_country_from_locale() {
         log::info!("Retrieved country from locale: {}", country);
         return Some(country);
     }
-    
+
     log::warn!("Could not determine user country from API or locale");
     None
 }
@@ -256,7 +264,11 @@ async fn track_event_to_supabase(event_name: &str, app: &AppHandle) -> Result<()
     if response.status().is_success() {
         log::info!("Successfully tracked '{}' event to Supabase", event_name);
     } else {
-        log::warn!("Failed to track '{}' event to Supabase: {}", event_name, response.status());
+        log::warn!(
+            "Failed to track '{}' event to Supabase: {}",
+            event_name,
+            response.status()
+        );
     }
 
     Ok(())
@@ -265,7 +277,7 @@ async fn track_event_to_supabase(event_name: &str, app: &AppHandle) -> Result<()
 fn track_event_safe(app: &AppHandle, event_name: &str) {
     let app_handle = app.clone();
     let event_name = event_name.to_string();
-    
+
     tokio::spawn(async move {
         if let Err(e) = track_event_to_supabase(&event_name, &app_handle).await {
             log::warn!("Failed to track '{}' event: {}. This is normal if analytics are disabled or not configured.", event_name, e);
@@ -282,12 +294,14 @@ pub fn handle_initial_run_telemetry(app: &AppHandle) -> Result<(), String> {
 
         track_event_safe(app, "initial_run");
 
-        config.mark_initial_run_completed(app)
+        config
+            .mark_initial_run_completed(app)
             .map_err(|e| format!("Failed to mark initial run as completed: {}", e))?;
     } else if !config.enabled {
         log::info!("Telemetry disabled, skipping initial_run tracking");
         if !config.initial_run_completed {
-            config.mark_initial_run_completed(app)
+            config
+                .mark_initial_run_completed(app)
                 .map_err(|e| format!("Failed to mark initial run as completed: {}", e))?;
         }
     } else {
@@ -302,7 +316,7 @@ pub fn handle_initial_run_telemetry(app: &AppHandle) -> Result<(), String> {
 pub fn get_telemetry_enabled(app: AppHandle) -> Result<bool, String> {
     let config = TelemetryConfig::load(&app)
         .map_err(|e| format!("Failed to load telemetry config: {}", e))?;
-    
+
     Ok(config.enabled)
 }
 
@@ -311,10 +325,11 @@ pub fn get_telemetry_enabled(app: AppHandle) -> Result<bool, String> {
 pub fn set_telemetry_enabled(app: AppHandle, enabled: bool) -> Result<(), String> {
     let mut config = TelemetryConfig::load(&app)
         .map_err(|e| format!("Failed to load telemetry config: {}", e))?;
-    
-    config.set_enabled(&app, enabled)
+
+    config
+        .set_enabled(&app, enabled)
         .map_err(|e| format!("Failed to update telemetry setting: {}", e))?;
-    
+
     log::info!("Telemetry preference updated: enabled={}", enabled);
     Ok(())
 }
@@ -322,8 +337,7 @@ pub fn set_telemetry_enabled(app: AppHandle, enabled: bool) -> Result<(), String
 #[tauri::command]
 #[specta::specta]
 pub fn get_telemetry_config(app: AppHandle) -> Result<TelemetryConfig, String> {
-    TelemetryConfig::load(&app)
-        .map_err(|e| format!("Failed to load telemetry config: {}", e))
+    TelemetryConfig::load(&app).map_err(|e| format!("Failed to load telemetry config: {}", e))
 }
 
 #[tauri::command]

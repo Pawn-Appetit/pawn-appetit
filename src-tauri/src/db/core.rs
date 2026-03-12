@@ -1,33 +1,37 @@
 use super::{
-    create_event, create_player, create_site, models::{Event, Game, NewGame, NormalizedGame, Outcome, Player, Site, UpdateGame}, pgn::{GameTree, Importer}, schema::{events, games, players, sites}
+    create_event, create_player, create_site,
+    models::{Event, Game, NewGame, NormalizedGame, Outcome, Player, Site, UpdateGame},
+    pgn::{GameTree, Importer},
+    schema::{events, games, players, sites},
 };
-use crate::error::{Result};
+use crate::error::Result;
 use diesel::{connection::SimpleConnection, prelude::*};
-use shakmaty::{Chess, fen::Fen, CastlingMode, FromSetup};
+use pgn_reader::BufferedReader;
+use shakmaty::{fen::Fen, CastlingMode, Chess, FromSetup};
 use std::str::FromStr;
 use std::string::ToString;
-use pgn_reader::BufferedReader;
 
 const DATABASE_VERSION: &str = "1.0.0";
 const CREATE_TABLES_SQL: &str = include_str!("../../../database/schema/core_tables.sql");
 const INITIAL_DATA_SQL: &str = include_str!("../../../database/seeds/initial_data.sql");
-const INFO_INSERT_METADATA: &str = include_str!("../../../database/queries/info/insert_metadata.sql");
+const INFO_INSERT_METADATA: &str =
+    include_str!("../../../database/queries/info/insert_metadata.sql");
 #[cfg(test)]
 const GAMES_CHECK_INDEXES: &str = include_str!("../../../database/queries/games/check_indexes.sql");
 
 pub fn init_db(conn: &mut SqliteConnection, title: &str, description: &str) -> Result<()> {
     // Create tables
     conn.batch_execute(CREATE_TABLES_SQL)?;
-    
+
     // Insert initial seed data
     conn.batch_execute(INITIAL_DATA_SQL)?;
-    
+
     // Insert database metadata
     conn.batch_execute(
         &INFO_INSERT_METADATA
             .replace("{0}", DATABASE_VERSION)
             .replace("{1}", title)
-            .replace("{2}", description)
+            .replace("{2}", description),
     )?;
 
     Ok(())
@@ -65,22 +69,22 @@ pub fn normalize_game(
         eco: game.eco,
         ply_count: game.ply_count,
         fen: fen.to_string(),
-        moves: GameTree::from_bytes(&game.moves, Some(Chess::from_setup(fen.into(), CastlingMode::Chess960)?))?.to_string()
+        moves: GameTree::from_bytes(
+            &game.moves,
+            Some(Chess::from_setup(fen.into(), CastlingMode::Chess960)?),
+        )?
+        .to_string(),
     })
 }
 
 /// Creates a new game in the database, and returns the game's ID.
-pub fn add_game(
-    conn: &mut SqliteConnection,
-    game: NewGame,
-) -> Result<Game> {
+pub fn add_game(conn: &mut SqliteConnection, game: NewGame) -> Result<Game> {
     use crate::db::schema::games;
 
     Ok(diesel::insert_or_ignore_into(games::table)
         .values(&game)
         .get_result(conn)?)
 }
-
 
 pub fn get_game(conn: &mut SqliteConnection, id: i32) -> Result<NormalizedGame> {
     let (white_players, black_players) = diesel::alias!(players as white, players as black);
@@ -104,7 +108,7 @@ pub fn update_game(conn: &mut SqliteConnection, id: i32, data: &UpdateGame) -> R
         .flatten()
         .ok_or(crate::error::Error::NoMovesFound)?
         .tree;
-    
+
     let mut moves: Vec<u8> = Vec::new();
     tree.encode(&mut moves, None);
     let ply_count = tree.count_main_line_moves() as i32;
@@ -126,20 +130,18 @@ pub fn update_game(conn: &mut SqliteConnection, id: i32, data: &UpdateGame) -> R
             games::time_control.eq(&data.time_control),
             games::eco.eq(&data.eco),
             games::ply_count.eq(ply_count),
-            games::moves.eq(&moves)
+            games::moves.eq(&moves),
         ))
         .execute(conn)?;
-    
+
     Ok(())
 }
-
 
 pub fn remove_game(conn: &mut SqliteConnection, id: i32) -> Result<()> {
     diesel::delete(games::table.filter(games::id.eq(id))).execute(conn)?;
 
     Ok(())
 }
-
 
 #[cfg(test)]
 mod tests {

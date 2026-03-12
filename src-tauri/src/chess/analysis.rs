@@ -83,17 +83,34 @@ impl GameAnalysisService {
 
         // Analyze each position using the engine, reporting progress.
         for (i, (_, moves, _)) in fens.iter().enumerate() {
-            ReportProgress { progress: (i as f64 / fens.len() as f64) * 100.0, id: id.clone(), finished: false }.emit(&app)?;
+            ReportProgress {
+                progress: (i as f64 / fens.len() as f64) * 100.0,
+                id: id.clone(),
+                finished: false,
+            }
+            .emit(&app)?;
 
             // Ensure MultiPV=2 for principal variation analysis.
             let mut extra_options = uci_options.clone();
             if !extra_options.iter().any(|x| x.name == "MultiPV") {
-                extra_options.push(EngineOption { name: "MultiPV".to_string(), value: "2".to_string() });
+                extra_options.push(EngineOption {
+                    name: "MultiPV".to_string(),
+                    value: "2".to_string(),
+                });
             } else {
-                extra_options.iter_mut().for_each(|x| { if x.name == "MultiPV" { x.value = "2".to_string(); } });
+                extra_options.iter_mut().for_each(|x| {
+                    if x.name == "MultiPV" {
+                        x.value = "2".to_string();
+                    }
+                });
             }
 
-            proc.set_options(super::types::EngineOptions { fen: options.fen.clone(), moves: moves.clone(), extra_options }).await?;
+            proc.set_options(super::types::EngineOptions {
+                fen: options.fen.clone(),
+                moves: moves.clone(),
+                extra_options,
+            })
+            .await?;
             proc.go(&go_mode).await?;
 
             let mut current_analysis = MoveAnalysis::default();
@@ -101,13 +118,17 @@ impl GameAnalysisService {
             while let Ok(Some(line)) = reader.next_line().await {
                 match parse_one(&line) {
                     vampirc_uci::UciMessage::Info(attrs) => {
-                        if let Ok(best_moves) = parse_uci_attrs(attrs, &proc.options.fen.parse()?, moves) {
+                        if let Ok(best_moves) =
+                            parse_uci_attrs(attrs, &proc.options.fen.parse()?, moves)
+                        {
                             let multipv = best_moves.multipv;
                             let cur_depth = best_moves.depth;
                             if multipv as usize == proc.best_moves.len() + 1 {
                                 proc.best_moves.push(best_moves);
                                 if multipv == proc.real_multipv {
-                                    if proc.best_moves.iter().all(|x| x.depth == cur_depth) && cur_depth >= proc.last_depth {
+                                    if proc.best_moves.iter().all(|x| x.depth == cur_depth)
+                                        && cur_depth >= proc.last_depth
+                                    {
                                         current_analysis.best = proc.best_moves.clone();
                                         proc.last_depth = cur_depth;
                                     }
@@ -117,7 +138,9 @@ impl GameAnalysisService {
                             }
                         }
                     }
-                    vampirc_uci::UciMessage::BestMove { .. } => { break; }
+                    vampirc_uci::UciMessage::BestMove { .. } => {
+                        break;
+                    }
                     _ => {}
                 }
             }
@@ -132,22 +155,35 @@ impl GameAnalysisService {
         // Annotate sacrifices and novelties for each analyzed position.
         for (i, analysis) in analysis.iter_mut().enumerate() {
             let fen = &fens[i].0;
-            let query = PositionQueryJs { fen: fen.to_string(), type_: "exact".to_string() };
+            let query = PositionQueryJs {
+                fen: fen.to_string(),
+                type_: "exact".to_string(),
+            };
 
             analysis.is_sacrifice = fens[i].2;
             if options.annotate_novelties && !novelty_found {
                 if let Some(reference) = options.reference_db.clone() {
-                    analysis.novelty = !is_position_in_db(reference, GameQueryJs::new().position(query.clone()).clone(), state.clone()).await?;
-                    if analysis.novelty { novelty_found = true; }
+                    analysis.novelty = !is_position_in_db(
+                        reference,
+                        GameQueryJs::new().position(query.clone()).clone(),
+                        state.clone(),
+                    )
+                    .await?;
+                    if analysis.novelty {
+                        novelty_found = true;
+                    }
                 } else {
                     return Err(Error::MissingReferenceDatabase);
                 }
             }
         }
 
-        ReportProgress { progress: 100.0, id: id.clone(), finished: true }.emit(&app)?;
+        ReportProgress {
+            progress: 100.0,
+            id: id.clone(),
+            finished: true,
+        }
+        .emit(&app)?;
         Ok(analysis)
     }
 }
-
-

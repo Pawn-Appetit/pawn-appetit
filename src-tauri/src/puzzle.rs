@@ -1,10 +1,13 @@
-use std::{collections::VecDeque, path::PathBuf, sync::Mutex, fs::File, io::Read};
+use std::{collections::VecDeque, fs::File, io::Read, path::PathBuf, sync::Mutex};
 
-use diesel::{dsl::sql, sql_types::Bool, Connection, ExpressionMethods, QueryDsl, RunQueryDsl, insert_into, connection::SimpleConnection};
+use diesel::{
+    connection::SimpleConnection, dsl::sql, insert_into, sql_types::Bool, Connection,
+    ExpressionMethods, QueryDsl, RunQueryDsl,
+};
 use once_cell::sync::Lazy;
 use serde::Serialize;
 use specta::Type;
-use tauri::{path::BaseDirectory, Manager, Emitter};
+use tauri::{path::BaseDirectory, Emitter, Manager};
 
 use crate::{
     db::{puzzles, Puzzle},
@@ -67,7 +70,13 @@ impl PuzzleCache {
     /// # Returns
     /// * `Ok(())` if puzzles were loaded successfully
     /// * `Err(Error)` if there was a problem loading puzzles
-    fn get_puzzles(&mut self, file: &str, min_rating: u16, max_rating: u16, random: bool) -> Result<(), Error> {
+    fn get_puzzles(
+        &mut self,
+        file: &str,
+        min_rating: u16,
+        max_rating: u16,
+        random: bool,
+    ) -> Result<(), Error> {
         if self.cache.is_empty()
             || self.min_rating != min_rating
             || self.max_rating != max_rating
@@ -137,7 +146,12 @@ impl PuzzleCache {
 /// * Other errors if there was a problem accessing the database
 #[tauri::command]
 #[specta::specta]
-pub fn get_puzzle(file: String, min_rating: u16, max_rating: u16, random: bool) -> Result<Puzzle, Error> {
+pub fn get_puzzle(
+    file: String,
+    min_rating: u16,
+    max_rating: u16,
+    random: bool,
+) -> Result<Puzzle, Error> {
     static PUZZLE_CACHE: Lazy<Mutex<PuzzleCache>> = Lazy::new(|| Mutex::new(PuzzleCache::new()));
 
     let mut cache = PUZZLE_CACHE
@@ -165,17 +179,17 @@ pub fn get_puzzle(file: String, min_rating: u16, max_rating: u16, random: bool) 
 #[specta::specta]
 pub fn get_puzzle_rating_range(file: String) -> Result<(u16, u16), Error> {
     let mut db = diesel::SqliteConnection::establish(&file)?;
-    
+
     let min_rating = puzzles::table
         .select(diesel::dsl::min(puzzles::rating))
         .first::<Option<i32>>(&mut db)?
         .unwrap_or(0) as u16;
-    
+
     let max_rating = puzzles::table
         .select(diesel::dsl::max(puzzles::rating))
         .first::<Option<i32>>(&mut db)?
         .unwrap_or(0) as u16;
-    
+
     Ok((min_rating, max_rating))
 }
 
@@ -240,7 +254,9 @@ pub async fn get_puzzle_db_info(
                 0
             } else {
                 // For other database errors, propagate them
-                return Err(Error::from(diesel::result::Error::DatabaseError(kind, info)));
+                return Err(Error::from(diesel::result::Error::DatabaseError(
+                    kind, info,
+                )));
             }
         }
         Err(e) => {
@@ -296,7 +312,7 @@ pub async fn import_puzzle_file(
     app: tauri::AppHandle,
 ) -> Result<(), Error> {
     let description = description.unwrap_or_default();
-    
+
     // Check if source file exists
     if !source_file.exists() {
         return Err(Error::IoError(std::io::Error::new(
@@ -311,7 +327,7 @@ pub async fn import_puzzle_file(
     }
 
     let extension = source_file.extension().and_then(|ext| ext.to_str());
-    
+
     match extension {
         Some("db") | Some("db3") => {
             // Copy existing puzzle database
@@ -340,8 +356,12 @@ async fn copy_puzzle_database(
     _description: &str,
 ) -> Result<(), Error> {
     // Copy the source database file to the destination path
-    std::fs::copy(source_file, db_path)
-        .map_err(|e| Error::IoError(std::io::Error::new(e.kind(), format!("Failed to copy database: {}", e))))?;
+    std::fs::copy(source_file, db_path).map_err(|e| {
+        Error::IoError(std::io::Error::new(
+            e.kind(),
+            format!("Failed to copy database: {}", e),
+        ))
+    })?;
     Ok(())
 }
 
@@ -355,9 +375,9 @@ async fn import_puzzles_from_pgn(
 ) -> Result<(), Error> {
     // Create the puzzle database
     create_puzzle_database(db_path, title, description)?;
-    
+
     let mut db = diesel::SqliteConnection::establish(&db_path.to_string_lossy())?;
-    
+
     // Read and parse PGN file with better error handling
     let file = File::open(source_file).map_err(|e| {
         Error::IoError(std::io::Error::new(
@@ -365,40 +385,42 @@ async fn import_puzzles_from_pgn(
             format!("Failed to open file '{}': {}", source_file.display(), e),
         ))
     })?;
-    
+
     let puzzles = parse_puzzles_from_pgn(file).map_err(|e| {
         Error::IoError(std::io::Error::new(
             std::io::ErrorKind::InvalidData,
-            format!("Failed to parse puzzles from '{}': {}", source_file.display(), e),
+            format!(
+                "Failed to parse puzzles from '{}': {}",
+                source_file.display(),
+                e
+            ),
         ))
     })?;
-    
+
     if puzzles.is_empty() {
         return Err(Error::IoError(std::io::Error::new(
             std::io::ErrorKind::InvalidData,
             format!("No valid puzzles found in file '{}'", source_file.display()),
         )));
     }
-    
+
     // Insert puzzles into database in batches
     let batch_size = 1000;
     let total_puzzles = puzzles.len();
-    
+
     for (i, chunk) in puzzles.chunks(batch_size).enumerate() {
         db.transaction::<_, Error, _>(|db| {
             for puzzle in chunk {
-                insert_into(puzzles::table)
-                    .values(puzzle)
-                    .execute(db)?;
+                insert_into(puzzles::table).values(puzzle).execute(db)?;
             }
             Ok(())
         })?;
-        
+
         // Emit progress event
         let processed = ((i + 1) * batch_size).min(total_puzzles);
         let _ = app.emit("import_puzzle_progress", (processed, total_puzzles));
     }
-    
+
     Ok(())
 }
 
@@ -412,92 +434,109 @@ async fn import_puzzles_from_compressed(
 ) -> Result<(), Error> {
     // Create the puzzle database
     create_puzzle_database(db_path, title, description)?;
-    
+
     let file = File::open(source_file).map_err(|e| {
         Error::IoError(std::io::Error::new(
             e.kind(),
-            format!("Failed to open compressed file '{}': {}", source_file.display(), e),
+            format!(
+                "Failed to open compressed file '{}': {}",
+                source_file.display(),
+                e
+            ),
         ))
     })?;
-    
+
     let decoder = zstd::Decoder::new(file).map_err(|e| {
         Error::IoError(std::io::Error::new(
             std::io::ErrorKind::InvalidData,
-            format!("Failed to decompress file '{}': {}", source_file.display(), e),
+            format!(
+                "Failed to decompress file '{}': {}",
+                source_file.display(),
+                e
+            ),
         ))
     })?;
-    
+
     let puzzles = parse_puzzles_from_pgn(decoder).map_err(|e| {
         Error::IoError(std::io::Error::new(
             std::io::ErrorKind::InvalidData,
-            format!("Failed to parse puzzles from compressed file '{}': {}", source_file.display(), e),
+            format!(
+                "Failed to parse puzzles from compressed file '{}': {}",
+                source_file.display(),
+                e
+            ),
         ))
     })?;
-    
+
     if puzzles.is_empty() {
         return Err(Error::IoError(std::io::Error::new(
             std::io::ErrorKind::InvalidData,
-            format!("No valid puzzles found in compressed file '{}'", source_file.display()),
+            format!(
+                "No valid puzzles found in compressed file '{}'",
+                source_file.display()
+            ),
         )));
     }
-    
+
     let mut db = diesel::SqliteConnection::establish(&db_path.to_string_lossy())?;
-    
+
     // Insert puzzles into database in batches
     let batch_size = 1000;
     let total_puzzles = puzzles.len();
-    
+
     for (i, chunk) in puzzles.chunks(batch_size).enumerate() {
         db.transaction::<_, Error, _>(|db| {
             for puzzle in chunk {
-                insert_into(puzzles::table)
-                    .values(puzzle)
-                    .execute(db)?;
+                insert_into(puzzles::table).values(puzzle).execute(db)?;
             }
             Ok(())
         })?;
-        
+
         // Emit progress event
         let processed = ((i + 1) * batch_size).min(total_puzzles);
         let _ = app.emit("import_puzzle_progress", (processed, total_puzzles));
     }
-    
+
     Ok(())
 }
 
 /// Creates a new puzzle database with the proper schema
-fn create_puzzle_database(db_path: &PathBuf, _title: &str, _description: &str) -> Result<(), Error> {
+fn create_puzzle_database(
+    db_path: &PathBuf,
+    _title: &str,
+    _description: &str,
+) -> Result<(), Error> {
     let mut db = diesel::SqliteConnection::establish(&db_path.to_string_lossy())?;
-    
+
     // Load the schema from external SQL files
     const PUZZLES_TABLES: &str = include_str!("../../database/schema/puzzles_tables.sql");
     const PUZZLES_INDEXES: &str = include_str!("../../database/indexes/puzzles_indexes.sql");
-    
+
     // Create the puzzles table using the external schema
     db.batch_execute(PUZZLES_TABLES)?;
-    
+
     // Create the indexes
     db.batch_execute(PUZZLES_INDEXES)?;
-    
+
     Ok(())
 }
 
 /// Ensures that a database file has the proper puzzle schema initialized
-/// 
+///
 /// This function checks if the puzzles table exists and creates it if missing.
-/// This is useful for validating and repairing database files that may be 
+/// This is useful for validating and repairing database files that may be
 /// empty or corrupted.
-/// 
+///
 /// # Arguments
 /// * `db_path` - Path to the database file
-/// 
+///
 /// # Returns
 /// * `Ok(())` if the schema exists or was successfully created
 /// * `Err(Error)` if there was a problem initializing the schema
 #[allow(dead_code)]
 fn ensure_puzzle_schema(db_path: &PathBuf) -> Result<(), Error> {
     let mut db = diesel::SqliteConnection::establish(&db_path.to_string_lossy())?;
-    
+
     // Check if puzzles table exists by trying to query it
     match puzzles::table.count().get_result::<i64>(&mut db) {
         Ok(_) => {
@@ -508,15 +547,19 @@ fn ensure_puzzle_schema(db_path: &PathBuf) -> Result<(), Error> {
             // Check if the error is related to missing table
             if info.message().contains("no such table") {
                 // Table doesn't exist, create it
-                const PUZZLES_TABLES: &str = include_str!("../../database/schema/puzzles_tables.sql");
-                const PUZZLES_INDEXES: &str = include_str!("../../database/indexes/puzzles_indexes.sql");
-                
+                const PUZZLES_TABLES: &str =
+                    include_str!("../../database/schema/puzzles_tables.sql");
+                const PUZZLES_INDEXES: &str =
+                    include_str!("../../database/indexes/puzzles_indexes.sql");
+
                 db.batch_execute(PUZZLES_TABLES)?;
                 db.batch_execute(PUZZLES_INDEXES)?;
                 Ok(())
             } else {
                 // Other database error
-                Err(Error::from(diesel::result::Error::DatabaseError(kind, info)))
+                Err(Error::from(diesel::result::Error::DatabaseError(
+                    kind, info,
+                )))
             }
         }
         Err(e) => {
@@ -531,17 +574,17 @@ fn parse_puzzles_from_pgn<R: Read>(mut reader: R) -> Result<Vec<NewPuzzle>, Erro
     let mut puzzles = Vec::new();
     let mut current_puzzle = NewPuzzle::default();
     let mut in_puzzle = false;
-    
+
     // Read all bytes and convert to string with lossy UTF-8 conversion
     let mut buffer = Vec::new();
     reader.read_to_end(&mut buffer)?;
-    
+
     // Convert bytes to string, replacing invalid UTF-8 sequences with replacement characters
     let content = String::from_utf8_lossy(&buffer);
-    
+
     for line in content.lines() {
         let line = line.trim();
-        
+
         if line.is_empty() {
             if in_puzzle && current_puzzle.is_complete() {
                 puzzles.push(current_puzzle);
@@ -550,7 +593,7 @@ fn parse_puzzles_from_pgn<R: Read>(mut reader: R) -> Result<Vec<NewPuzzle>, Erro
             }
             continue;
         }
-        
+
         if line.starts_with('[') && line.ends_with(']') {
             // Parse PGN headers
             if let Some((key, value)) = parse_pgn_header(line) {
@@ -585,12 +628,12 @@ fn parse_puzzles_from_pgn<R: Read>(mut reader: R) -> Result<Vec<NewPuzzle>, Erro
             current_puzzle.moves = line.to_string();
         }
     }
-    
+
     // Add the last puzzle if complete
     if in_puzzle && current_puzzle.is_complete() {
         puzzles.push(current_puzzle);
     }
-    
+
     Ok(puzzles)
 }
 
@@ -599,20 +642,20 @@ fn parse_pgn_header(line: &str) -> Option<(String, String)> {
     if !line.starts_with('[') || !line.ends_with(']') {
         return None;
     }
-    
+
     let content = &line[1..line.len() - 1];
     let mut parts = content.splitn(2, ' ');
-    
+
     let key = parts.next()?.to_string();
     let value = parts.next()?;
-    
+
     // Remove quotes if present
     let value = if value.starts_with('"') && value.ends_with('"') {
         &value[1..value.len() - 1]
     } else {
         value
     };
-    
+
     Some((key, value.to_string()))
 }
 

@@ -32,7 +32,8 @@ use sysinfo::SystemExt;
 use tauri::AppHandle;
 
 use crate::chess::{
-    get_best_moves, analyze_game, get_engine_config, get_engine_logs, kill_engine, kill_engines, stop_engine
+    analyze_game, get_best_moves, get_engine_config, get_engine_logs, kill_engine, kill_engines,
+    stop_engine,
 };
 use crate::db::{
     clear_games, convert_pgn, create_indexes, delete_database, delete_db_game, delete_empty_games,
@@ -49,10 +50,14 @@ use crate::package_manager::{
 use crate::pgn::{count_pgn_games, delete_game, read_games, write_game};
 use crate::puzzle::{get_puzzle, get_puzzle_db_info, get_puzzle_rating_range, import_puzzle_file};
 use crate::sound::get_sound_server_port;
-use crate::telemetry::{get_telemetry_config, get_telemetry_enabled, set_telemetry_enabled, get_user_country_api, get_user_country_locale, get_user_id_command, get_platform_info_command};
+use crate::telemetry::{
+    get_platform_info_command, get_telemetry_config, get_telemetry_enabled, get_user_country_api,
+    get_user_country_locale, get_user_id_command, set_telemetry_enabled,
+};
 use crate::{
     db::{
-        delete_duplicated_games, edit_db_info, get_db_info, get_games, get_game, get_players, merge_players, update_game
+        delete_duplicated_games, edit_db_info, get_db_info, get_game, get_games, get_players,
+        merge_players, update_game,
     },
     fs::{download_file, file_exists, get_file_metadata},
     opening::{get_opening_from_fen, get_opening_from_name, search_opening_name},
@@ -79,8 +84,12 @@ pub struct AppState {
         String,
         diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::SqliteConnection>>,
     >,
-    #[derivative(Default(value = "Mutex::new(lru::LruCache::new(std::num::NonZeroUsize::new(100).unwrap()))"))]
-    line_cache: Mutex<lru::LruCache<(GameQueryJs, std::path::PathBuf), (Vec<PositionStats>, Vec<NormalizedGame>)>>,
+    #[derivative(Default(
+        value = "Mutex::new(lru::LruCache::new(std::num::NonZeroUsize::new(100).unwrap()))"
+    ))]
+    line_cache: Mutex<
+        lru::LruCache<(GameQueryJs, std::path::PathBuf), (Vec<PositionStats>, Vec<NormalizedGame>)>,
+    >,
     db_cache: Mutex<Vec<GameData>>,
     #[derivative(Default(value = "Arc::new(Semaphore::new(2))"))]
     new_request: Arc<Semaphore>,
@@ -177,13 +186,11 @@ pub async fn run() {
         )
         .expect("Failed to export types");
 
-    let builder = tauri::Builder::default();    
+    let builder = tauri::Builder::default();
     let builder = app::platform::setup_tauri_plugins(builder, &specta_builder);
-    
+
     builder
-        .setup(move |app| {
-            app::setup::setup_tauri_app(app, &specta_builder)
-        })
+        .setup(move |app| app::setup::setup_tauri_app(app, &specta_builder))
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

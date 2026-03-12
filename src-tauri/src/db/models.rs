@@ -155,7 +155,7 @@ impl std::fmt::Display for Outcome {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = match self {
             Outcome::WhiteWin => "1-0",
-            Outcome::BlackWin => "0-1", 
+            Outcome::BlackWin => "0-1",
             Outcome::Draw => "1/2-1/2",
             Outcome::Unknown => "*",
         };

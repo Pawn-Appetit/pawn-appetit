@@ -124,5 +124,3 @@ pub struct EngineConfig {
     pub name: String,
     pub options: Vec<UciOptionConfig>,
 }
-
-

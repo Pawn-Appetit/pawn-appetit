@@ -11,24 +11,20 @@ pub mod shared;
 #[specta::specta]
 pub async fn screen_capture(window: Window) -> Result<(), String> {
     #[cfg(desktop)]
-    {    
-        let main_window = window
-            .get_webview_window("main")
-            .ok_or_else(|| {
-                let error_msg = "No window labeled 'main' found";
-                log::error!("{}", error_msg);
-                String::from(error_msg)
-            })?;
+    {
+        let main_window = window.get_webview_window("main").ok_or_else(|| {
+            let error_msg = "No window labeled 'main' found";
+            log::error!("{}", error_msg);
+            String::from(error_msg)
+        })?;
 
         log::info!("Showing main window");
 
-        main_window
-            .show()
-            .map_err(|e| {
-                let error_msg = format!("Failed to show main window: {}", e);
-                log::error!("{}", error_msg);
-                error_msg
-            })?;
+        main_window.show().map_err(|e| {
+            let error_msg = format!("Failed to show main window: {}", e);
+            log::error!("{}", error_msg);
+            error_msg
+        })?;
 
         if let Err(e) = main_window.set_focus() {
             log::warn!("Failed to focus main window: {}", e);

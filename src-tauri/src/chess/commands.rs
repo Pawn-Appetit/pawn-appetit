@@ -18,7 +18,11 @@ use super::types::*;
 #[tauri::command]
 #[specta::specta]
 pub async fn kill_engines(tab: String, state: tauri::State<'_, AppState>) -> Result<(), Error> {
-    let keys: Vec<_> = state.engine_processes.iter().map(|x| x.key().clone()).collect();
+    let keys: Vec<_> = state
+        .engine_processes
+        .iter()
+        .map(|x| x.key().clone())
+        .collect();
     for key in keys.clone() {
         if key.0.starts_with(&tab) {
             {
@@ -93,7 +97,9 @@ pub async fn get_best_moves(
     app: tauri::AppHandle,
     state: tauri::State<'_, AppState>,
 ) -> Result<Option<(f32, Vec<BestMoves>)>, Error> {
-    EngineManager::new(state).get_best_moves(id, engine, tab, go_mode, options, app).await
+    EngineManager::new(state)
+        .get_best_moves(id, engine, tab, go_mode, options, app)
+        .await
 }
 
 /// Analyze a game using the engine, returning move-by-move analysis.
@@ -119,7 +125,10 @@ pub async fn get_engine_config(path: PathBuf) -> Result<EngineConfig, Error> {
 
     let mut command = tokio::process::Command::new(&path);
     command.current_dir(path.parent().unwrap());
-    command.stdin(std::process::Stdio::piped()).stdout(std::process::Stdio::piped()).stderr(std::process::Stdio::piped());
+    command
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped());
     #[cfg(target_os = "windows")]
     command.creation_flags(super::process::CREATE_NO_WINDOW);
     let mut child = command.spawn()?;
@@ -133,12 +142,20 @@ pub async fn get_engine_config(path: PathBuf) -> Result<EngineConfig, Error> {
     let mut config = EngineConfig::default();
     loop {
         if let Some(line) = stdout.next_line().await? {
-            if let vampirc_uci::UciMessage::Id { name: Some(name), author: _ } = parse_one(&line) { config.name = name; }
-            if let vampirc_uci::UciMessage::Option(opt) = parse_one(&line) { config.options.push(opt); }
-            if let vampirc_uci::UciMessage::UciOk = parse_one(&line) { break; }
+            if let vampirc_uci::UciMessage::Id {
+                name: Some(name),
+                author: _,
+            } = parse_one(&line)
+            {
+                config.name = name;
+            }
+            if let vampirc_uci::UciMessage::Option(opt) = parse_one(&line) {
+                config.options.push(opt);
+            }
+            if let vampirc_uci::UciMessage::UciOk = parse_one(&line) {
+                break;
+            }
         }
     }
     Ok(config)
 }
-
-

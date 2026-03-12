@@ -97,7 +97,7 @@ pub fn naive_eval(pos: &Chess) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use shakmaty::{FromSetup, fen::Fen, CastlingMode};
+    use shakmaty::{fen::Fen, CastlingMode, FromSetup};
 
     fn pos(fen: &str) -> Chess {
         let fen: Fen = fen.parse().unwrap();
@@ -157,5 +157,3 @@ mod tests {
         assert_eq!(naive_eval(&position), 0);
     }
 }
-
-

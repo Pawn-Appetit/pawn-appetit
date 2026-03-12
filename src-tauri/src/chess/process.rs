@@ -38,10 +38,18 @@ impl EngineProcess {
     /// Spawn a new UCI engine process and initialize it.
     ///
     /// Returns the process and a line reader for its stdout.
-    /// 
+    ///
     /// # Errors
     /// Returns `Error::EngineTimeout` if engine doesn't respond within 10 seconds.
-    pub async fn new(path: PathBuf) -> Result<(Self, tokio::io::Lines<tokio::io::BufReader<tokio::process::ChildStdout>>), Error> {
+    pub async fn new(
+        path: PathBuf,
+    ) -> Result<
+        (
+            Self,
+            tokio::io::Lines<tokio::io::BufReader<tokio::process::ChildStdout>>,
+        ),
+        Error,
+    > {
         let mut comm = UciCommunicator::spawn(path).await?;
 
         let mut logs = Vec::new();
@@ -49,7 +57,7 @@ impl EngineProcess {
         // Send UCI command with timeout
         comm.write_line("uci\n").await?;
         logs.push(EngineLog::Gui("uci\n".to_string()));
-        
+
         // Wait for uciok with timeout (10 seconds)
         let uci_timeout = tokio::time::Duration::from_secs(10);
         let uciok_received = tokio::time::timeout(uci_timeout, async {
@@ -60,14 +68,15 @@ impl EngineProcess {
                 }
             }
             Ok(false)
-        }).await;
+        })
+        .await;
 
         match uciok_received {
             Ok(Ok(true)) => {
                 // uciok received, proceed with isready
                 comm.write_line("isready\n").await?;
                 logs.push(EngineLog::Gui("isready\n".to_string()));
-                
+
                 // Wait for readyok with timeout (5 seconds)
                 let ready_timeout = tokio::time::Duration::from_secs(5);
                 let readyok_received = tokio::time::timeout(ready_timeout, async {
@@ -78,31 +87,40 @@ impl EngineProcess {
                         }
                     }
                     Ok(false)
-                }).await;
+                })
+                .await;
 
                 match readyok_received {
                     Ok(Ok(true)) => {
                         // Engine initialized successfully
                     }
                     Ok(Ok(false)) => {
-                        return Err(Error::EngineInitFailed("Engine closed before sending readyok".to_string()));
+                        return Err(Error::EngineInitFailed(
+                            "Engine closed before sending readyok".to_string(),
+                        ));
                     }
                     Ok(Err(e)) => {
                         return Err(e);
                     }
                     Err(_) => {
-                        return Err(Error::EngineTimeout("Engine did not respond to isready command".to_string()));
+                        return Err(Error::EngineTimeout(
+                            "Engine did not respond to isready command".to_string(),
+                        ));
                     }
                 }
             }
             Ok(Ok(false)) => {
-                return Err(Error::EngineInitFailed("Engine closed before sending uciok".to_string()));
+                return Err(Error::EngineInitFailed(
+                    "Engine closed before sending uciok".to_string(),
+                ));
             }
             Ok(Err(e)) => {
                 return Err(e);
             }
             Err(_) => {
-                return Err(Error::EngineTimeout("Engine did not respond to uci command".to_string()));
+                return Err(Error::EngineTimeout(
+                    "Engine did not respond to uci command".to_string(),
+                ));
             }
         }
 
@@ -195,7 +213,12 @@ impl EngineProcess {
             GoMode::Depth(depth) => format!("go depth {}\n", depth),
             GoMode::Time(time) => format!("go movetime {}\n", time),
             GoMode::Nodes(nodes) => format!("go nodes {}\n", nodes),
-            GoMode::PlayersTime(super::types::PlayersTime { white, black, winc, binc }) => {
+            GoMode::PlayersTime(super::types::PlayersTime {
+                white,
+                black,
+                winc,
+                binc,
+            }) => {
                 format!(
                     "go wtime {} btime {} winc {} binc {} movetime 1000\n",
                     white, black, winc, binc
@@ -219,27 +242,25 @@ impl EngineProcess {
     }
 
     /// Kill the engine process gracefully, with force-kill fallback.
-    /// 
+    ///
     /// First sends "quit" command and waits up to 2 seconds for graceful shutdown.
     /// If engine doesn't terminate, forcefully kills the process.
     pub async fn kill(&mut self) -> Result<(), Error> {
         use log::warn;
-        
+
         // Try graceful shutdown first
         if let Err(e) = self.stdin.write_all(b"quit\n").await {
             warn!("Failed to send quit command to engine: {}", e);
         } else {
             self.logs.push(EngineLog::Gui("quit\n".to_string()));
         }
-        
+
         self.running = false;
-        
+
         // Wait for process to exit gracefully (2 second timeout)
-        let wait_result = tokio::time::timeout(
-            tokio::time::Duration::from_secs(2),
-            self.child.wait()
-        ).await;
-        
+        let wait_result =
+            tokio::time::timeout(tokio::time::Duration::from_secs(2), self.child.wait()).await;
+
         match wait_result {
             Ok(Ok(status)) => {
                 log::info!("Engine process exited gracefully with status: {:?}", status);
@@ -272,7 +293,11 @@ fn invert_score(score: vampirc_uci::uci::Score) -> vampirc_uci::uci::Score {
         ScoreValue::Mate(x) => ScoreValue::Mate(-x),
     };
     let new_wdl = score.wdl.map(|(w, d, l)| (l, d, w));
-    vampirc_uci::uci::Score { value: new_value, wdl: new_wdl, ..score }
+    vampirc_uci::uci::Score {
+        value: new_value,
+        wdl: new_wdl,
+        ..score
+    }
 }
 
 /// Parse UCI info attributes into a `BestMoves` struct for the current position.
@@ -345,5 +370,3 @@ pub fn parse_uci_attrs(
 
     Ok(best_moves)
 }
-
-

@@ -34,7 +34,7 @@ impl PgnParser {
     fn offset_by_index(&mut self, n: usize, state: &AppState, file: &str) -> io::Result<()> {
         let offset_index = n / GAME_OFFSET_FREQ;
         let n_left = n % GAME_OFFSET_FREQ;
-        
+
         if let Some(pgn_offsets) = state.pgn_offsets.get(file) {
             let offset = if offset_index == 0 {
                 self.start
@@ -51,8 +51,8 @@ impl PgnParser {
             self.skip_games(n_left)?;
         } else {
             return Err(io::Error::new(
-                io::ErrorKind::NotFound, 
-                "PGN offsets not found for file"
+                io::ErrorKind::NotFound,
+                "PGN offsets not found for file",
             ));
         }
 
@@ -74,11 +74,11 @@ impl PgnParser {
             line.clear();
             let bytes = self.reader.read_line(&mut line)?;
             skipped += bytes;
-            
+
             if bytes == 0 {
                 break;
             }
-            
+
             if line.starts_with('[') {
                 if new_game {
                     count += 1;
@@ -99,13 +99,13 @@ impl PgnParser {
         let mut new_game = false;
         self.game.clear();
         self.line.clear();
-        
+
         loop {
             let bytes = self.reader.read_line(&mut self.line)?;
             if bytes == 0 {
                 break;
             }
-            
+
             if self.line.starts_with('[') {
                 if new_game {
                     break;
@@ -113,7 +113,7 @@ impl PgnParser {
             } else {
                 new_game = true;
             }
-            
+
             self.game.push_str(&self.line);
             self.line.clear();
         }

@@ -3,11 +3,11 @@
 //! This module provides the `UciCommunicator` struct for spawning and communicating with UCI engines
 //! using async I/O. Handles stdin/stdout/stderr and line-based protocol.
 
+use log::{error, info};
 use std::path::PathBuf;
 use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader, Lines};
 use tokio::process::{Child, ChildStdin, ChildStdout, Command};
-use log::{error, info};
 
 use crate::error::Error;
 
@@ -77,5 +77,3 @@ impl UciCommunicator {
         Ok(())
     }
 }
-
-

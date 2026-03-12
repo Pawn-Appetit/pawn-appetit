@@ -16,13 +16,13 @@ pub fn setup_mobile_plugins(builder: tauri::Builder<tauri::Wry>) -> tauri::Build
 #[cfg(mobile)]
 pub fn init_mobile_platform() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Initializing mobile platform");
-    
+
     // Platform-specific initialization
     #[cfg(target_os = "android")]
     android::init_android_platform()?;
-    
+
     #[cfg(target_os = "ios")]
     ios::init_ios_platform()?;
-    
+
     Ok(())
 }

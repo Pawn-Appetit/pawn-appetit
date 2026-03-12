@@ -1,18 +1,13 @@
+mod core;
 mod encoding;
 mod models;
 mod ops;
+mod pgn;
 mod schema;
 mod search;
-mod core;
-mod pgn;
 
 use crate::{
-    db::{
-        encoding::{extract_main_line_moves},
-        models::*,
-        ops::*,
-        schema::*,
-    },
+    db::{encoding::extract_main_line_moves, models::*, ops::*, schema::*},
     error::{Error, Result},
     opening::get_opening_from_setup,
     AppState,
@@ -26,21 +21,19 @@ use diesel::{
     sql_query,
     sql_types::Text,
 };
-use pgn_reader::{BufferedReader};
 use pgn::{GameTree, Importer, TempGame};
+use pgn_reader::BufferedReader;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-use shakmaty::{
-    fen::Fen, Board, Chess, EnPassantMode, Piece, Position, FromSetup, CastlingMode
-};
+use shakmaty::{fen::Fen, Board, CastlingMode, Chess, EnPassantMode, FromSetup, Piece, Position};
 use specta::Type;
+use std::io::{BufWriter, Write};
 use std::{
     fs::{remove_file, File, OpenOptions},
     path::PathBuf,
     sync::atomic::{AtomicUsize, Ordering},
     time::{Duration, Instant},
 };
-use std::io::{BufWriter, Write};
 use tauri::{path::BaseDirectory, Manager};
 use tauri::{Emitter, State};
 
@@ -55,17 +48,21 @@ pub use self::search::{
 };
 
 const INDEXES_SQL: &str = include_str!("../../../database/queries/indexes/create_indexes.sql");
-const DELETE_INDEXES_SQL: &str = include_str!("../../../database/queries/indexes/delete_indexes.sql");
+const DELETE_INDEXES_SQL: &str =
+    include_str!("../../../database/queries/indexes/delete_indexes.sql");
 
 // PRAGMA queries
-const PRAGMA_JOURNAL_MODE_DELETE: &str = include_str!("../../../database/pragmas/journal_mode_delete.sql");
-const PRAGMA_JOURNAL_MODE_OFF: &str = include_str!("../../../database/pragmas/journal_mode_off.sql");
+const PRAGMA_JOURNAL_MODE_DELETE: &str =
+    include_str!("../../../database/pragmas/journal_mode_delete.sql");
+const PRAGMA_JOURNAL_MODE_OFF: &str =
+    include_str!("../../../database/pragmas/journal_mode_off.sql");
 const PRAGMA_FOREIGN_KEYS_ON: &str = include_str!("../../../database/pragmas/foreign_keys_on.sql");
 const PRAGMA_BUSY_TIMEOUT: &str = include_str!("../../../database/pragmas/busy_timeout.sql");
 
 // Games queries
 const GAMES_CHECK_INDEXES: &str = include_str!("../../../database/queries/games/check_indexes.sql");
-const GAMES_DELETE_DUPLICATES: &str = include_str!("../../../database/queries/games/delete_duplicates.sql");
+const GAMES_DELETE_DUPLICATES: &str =
+    include_str!("../../../database/queries/games/delete_duplicates.sql");
 
 const WHITE_PAWN: Piece = Piece {
     color: shakmaty::Color::White,
@@ -113,7 +110,10 @@ impl Default for ConnectionOptions {
 impl diesel::r2d2::CustomizeConnection<SqliteConnection, diesel::r2d2::Error>
     for ConnectionOptions
 {
-    fn on_acquire(&self, conn: &mut SqliteConnection) -> std::result::Result<(), diesel::r2d2::Error> {
+    fn on_acquire(
+        &self,
+        conn: &mut SqliteConnection,
+    ) -> std::result::Result<(), diesel::r2d2::Error> {
         (|| {
             match self.journal_mode {
                 JournalMode::Delete => conn.batch_execute(PRAGMA_JOURNAL_MODE_DELETE)?,
@@ -123,7 +123,9 @@ impl diesel::r2d2::CustomizeConnection<SqliteConnection, diesel::r2d2::Error>
                 conn.batch_execute(PRAGMA_FOREIGN_KEYS_ON)?;
             }
             if let Some(d) = self.busy_timeout {
-                conn.batch_execute(&PRAGMA_BUSY_TIMEOUT.replace("{0}", &d.as_millis().to_string()))?;
+                conn.batch_execute(
+                    &PRAGMA_BUSY_TIMEOUT.replace("{0}", &d.as_millis().to_string()),
+                )?;
             }
             Ok(())
         })()
@@ -135,7 +137,8 @@ fn get_db_or_create(
     state: &State<AppState>,
     db_path: &str,
     options: ConnectionOptions,
-) -> Result<diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::SqliteConnection>>> {
+) -> Result<diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::SqliteConnection>>>
+{
     let pool = match state.connection_pool.get(db_path) {
         Some(pool) => pool.clone(),
         None => {
@@ -722,7 +725,7 @@ pub async fn get_games(
         GameSort::AverageElo => {
             // AverageElo will be sorted in Rust after calculating
             sql_query
-        },
+        }
         GameSort::PlyCount => match query_options.direction {
             SortDirection::Asc => sql_query.order(games::ply_count.asc()),
             SortDirection::Desc => sql_query.order(games::ply_count.desc()),
@@ -739,7 +742,7 @@ pub async fn get_games(
 
     let games: Vec<(Game, Player, Player, Event, Site)> = sql_query.load(db)?;
     let mut normalized_games = normalize_games(games)?;
-    
+
     // Sort by average ELO if needed (calculated in Rust)
     if matches!(query_options.sort, GameSort::AverageElo) {
         normalized_games.sort_by(|a, b| {
@@ -751,7 +754,7 @@ pub async fn get_games(
                     // Round the average (same as Math.round in TypeScript)
                     let sum = white + black;
                     Some((sum + 1) / 2) // This is equivalent to rounding for integers
-                },
+                }
                 (Some(elo), None) | (None, Some(elo)) => Some(elo),
                 (None, None) => None,
             };
@@ -759,15 +762,15 @@ pub async fn get_games(
                 (Some(white), Some(black)) => {
                     let sum = white + black;
                     Some((sum + 1) / 2)
-                },
+                }
                 (Some(elo), None) | (None, Some(elo)) => Some(elo),
                 (None, None) => None,
             };
-            
+
             // For sorting, treat None as 0 (lowest priority)
             let a_val = a_avg.unwrap_or(0);
             let b_val = b_avg.unwrap_or(0);
-            
+
             match query_options.direction {
                 SortDirection::Asc => a_val.cmp(&b_val),
                 SortDirection::Desc => b_val.cmp(&a_val), // Descending: higher ELO first
@@ -784,7 +787,9 @@ pub async fn get_games(
 fn normalize_games(games: Vec<(Game, Player, Player, Event, Site)>) -> Result<Vec<NormalizedGame>> {
     games
         .into_iter()
-        .map(|(game, white, black, event, site)| core::normalize_game(game, white, black, event, site))
+        .map(|(game, white, black, event, site)| {
+            core::normalize_game(game, white, black, event, site)
+        })
         .collect::<Result<_>>()
 }
 
@@ -1088,7 +1093,7 @@ pub async fn get_players_game_info(
 
                 let mut setups = vec![];
                 let mut chess = Chess::default();
-                
+
                 // Extract main line moves from the extended format
                 let main_moves = match extract_main_line_moves(moves, Some(chess.clone())) {
                     Ok(moves) => moves,
@@ -1097,7 +1102,7 @@ pub async fn get_players_game_info(
                         return None;
                     }
                 };
-                
+
                 for (i, m) in main_moves.iter().enumerate() {
                     if i > 54 {
                         // max length of opening in data
@@ -1171,10 +1176,7 @@ pub async fn get_players_game_info(
 
 #[tauri::command]
 #[specta::specta]
-pub async fn delete_database(
-    file: PathBuf,
-    state: tauri::State<'_, AppState>,
-) -> Result<()> {
+pub async fn delete_database(file: PathBuf, state: tauri::State<'_, AppState>) -> Result<()> {
     let pool = &state.connection_pool;
     let path_str = file.to_str().unwrap();
     pool.remove(path_str);
@@ -1199,10 +1201,7 @@ pub async fn delete_duplicated_games(
 
 #[tauri::command]
 #[specta::specta]
-pub async fn delete_empty_games(
-    file: PathBuf,
-    state: tauri::State<'_, AppState>,
-) -> Result<()> {
+pub async fn delete_empty_games(file: PathBuf, state: tauri::State<'_, AppState>) -> Result<()> {
     let db = &mut get_db_or_create(&state, file.to_str().unwrap(), ConnectionOptions::default())?;
 
     diesel::delete(games::table.filter(games::ply_count.eq(0))).execute(db)?;
@@ -1328,14 +1327,15 @@ pub async fn export_to_pgn(
                 black_elo: game.black_elo.map(|e| e.to_string()),
                 ply_count: game.ply_count.map(|e| e.to_string()),
                 fen: game.fen.clone(),
-                 moves: GameTree::from_bytes(
+                moves: GameTree::from_bytes(
                     &game.moves,
                     game.fen
                         .map(|fen| Fen::from_ascii(fen.as_bytes()).ok())
                         .flatten()
                         .map(|fen| Chess::from_setup(fen.into(), CastlingMode::Chess960).ok())
-                        .flatten()
-                )?.to_string(),
+                        .flatten(),
+                )?
+                .to_string(),
             };
 
             pgn.write(&mut writer)?;

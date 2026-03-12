@@ -1,9 +1,7 @@
-use shakmaty::{
-    fen::Fen, ByColor, Chess, FromSetup, Position, PositionError, Board
-};
-use pgn_reader::{Nag, RawComment, RawHeader, SanPlus, Skip, Visitor};
-use chrono::{NaiveDate, NaiveTime};
 use crate::error::{Error, Result};
+use chrono::{NaiveDate, NaiveTime};
+use pgn_reader::{Nag, RawComment, RawHeader, SanPlus, Skip, Visitor};
+use shakmaty::{fen::Fen, Board, ByColor, Chess, FromSetup, Position, PositionError};
 
 pub type MaterialCount = ByColor<u8>;
 
@@ -22,7 +20,7 @@ pub enum GameTreeNode {
     Move(SanPlus),
     Comment(String),
     Nag(Nag),
-    Variation(GameTree)
+    Variation(GameTree),
 }
 
 #[derive(Debug, PartialEq, Eq, Default)]
@@ -32,8 +30,7 @@ impl GameTree {
     const START_VARIATION: u8 = 254;
     const END_VARIATION: u8 = 253;
     const COMMENT: u8 = 252;
-    const NAG: u8 = 251; 
-
+    const NAG: u8 = 251;
 
     pub fn new() -> Self {
         GameTree::default()
@@ -44,7 +41,8 @@ impl GameTree {
     }
 
     pub fn count_main_line_moves(&self) -> usize {
-        self.0.iter()
+        self.0
+            .iter()
             .filter_map(|node| match node {
                 GameTreeNode::Move(_) => Some(1),
                 _ => None,
@@ -56,31 +54,32 @@ impl GameTree {
     pub fn nodes(&self) -> &Vec<GameTreeNode> {
         &self.0
     }
- 
+
     pub fn encode(&self, bytes: &mut Vec<u8>, position: Option<Chess>) {
         let mut cur_position = position.unwrap_or_default();
         let mut prev_position = cur_position.clone();
-        
+
         for item in &self.0 {
             match item {
                 GameTreeNode::Move(m) => {
                     if let Ok(m) = m.san.to_move(&cur_position) {
-                        if let Some(pos) = cur_position.legal_moves().iter().position(|x| x.eq(&m)) {
+                        if let Some(pos) = cur_position.legal_moves().iter().position(|x| x.eq(&m))
+                        {
                             bytes.push(pos as u8);
                         }
                         prev_position = cur_position.clone();
                         cur_position.play_unchecked(&m);
                     }
-                },
+                }
                 GameTreeNode::Nag(nag) => {
                     bytes.push(Self::NAG);
                     bytes.push(nag.0);
-                },
+                }
                 GameTreeNode::Comment(comment) => {
                     bytes.push(Self::COMMENT);
                     bytes.extend((comment.len() as u64).to_be_bytes());
                     bytes.extend(comment.as_bytes());
-                },
+                }
                 GameTreeNode::Variation(branch) => {
                     bytes.push(Self::START_VARIATION);
                     branch.encode(bytes, Some(prev_position.clone()));
@@ -100,21 +99,28 @@ impl GameTree {
                 Some(Self::NAG) => {
                     tree.push(GameTreeNode::Nag(Nag(bytes[1])));
                     bytes = &bytes[2..];
-                },
+                }
                 Some(Self::COMMENT) => {
-                    let length = u64::from_be_bytes(bytes[1..].first_chunk::<8>().ok_or(Error::InvalidBinaryData)?.to_owned()) as usize;
-                    tree.push(GameTreeNode::Comment(String::from_utf8(bytes[9..9+length].to_owned())?));
-                    bytes = &bytes[9+length..];
-                },
+                    let length = u64::from_be_bytes(
+                        bytes[1..]
+                            .first_chunk::<8>()
+                            .ok_or(Error::InvalidBinaryData)?
+                            .to_owned(),
+                    ) as usize;
+                    tree.push(GameTreeNode::Comment(String::from_utf8(
+                        bytes[9..9 + length].to_owned(),
+                    )?));
+                    bytes = &bytes[9 + length..];
+                }
                 Some(Self::END_VARIATION) => {
                     bytes = &bytes[1..];
                     break;
-                },
+                }
                 Some(Self::START_VARIATION) => {
                     let (branch, rest) = Self::from_bytes_impl(&bytes[1..], prev_position.clone())?;
                     tree.push(GameTreeNode::Variation(GameTree(branch)));
                     bytes = rest;
-                },
+                }
                 Some(byte) => {
                     if let Some(m) = cur_position.legal_moves().get(byte as usize) {
                         prev_position = cur_position.clone();
@@ -124,35 +130,40 @@ impl GameTree {
                     } else {
                         return Err(Error::InvalidBinaryData);
                     }
-                },
+                }
                 None => {
                     break;
                 }
-            } 
-
+            }
         }
 
         Ok((tree, bytes))
     }
 
     pub fn from_bytes(bytes: &[u8], position: Option<Chess>) -> Result<Self> {
-        Ok(Self(Self::from_bytes_impl(bytes, position.unwrap_or_default())?.0))
+        Ok(Self(
+            Self::from_bytes_impl(bytes, position.unwrap_or_default())?.0,
+        ))
     }
 
-    pub fn pretty_print(&self, writer: &mut std::fmt::Formatter<'_>, position: Option<Chess>) -> Result<()> {
+    pub fn pretty_print(
+        &self,
+        writer: &mut std::fmt::Formatter<'_>,
+        position: Option<Chess>,
+    ) -> Result<()> {
         let mut cur_position = position.unwrap_or_default();
         let mut prev_position = cur_position.clone();
 
         let mut is_beginning = true;
-        
+
         for item in &self.0 {
             match item {
                 GameTreeNode::Move(m) => {
                     let i = cur_position.fullmoves().get();
-                    
+
                     if is_beginning {
                         is_beginning = false;
-                        
+
                         if cur_position.turn().is_white() {
                             write!(writer, "{}.{}", i, m)?;
                         } else {
@@ -166,23 +177,22 @@ impl GameTree {
 
                     prev_position = cur_position.clone();
                     cur_position.play_unchecked(&m.san.to_move(&cur_position)?);
-                },
+                }
                 GameTreeNode::Nag(nag) => {
                     write!(writer, " {}", nag)?;
-
-                },
+                }
                 GameTreeNode::Comment(comment) => {
                     write!(writer, " {{{}}} ", comment)?;
-                },
+                }
                 GameTreeNode::Variation(branch) => {
                     writer.write_str(" ( ")?;
-                    branch.pretty_print(writer,  Some(prev_position.clone()))?;
+                    branch.pretty_print(writer, Some(prev_position.clone()))?;
                     writer.write_str(" ) ")?;
                     is_beginning = true;
                 }
             };
         }
-        
+
         Ok(())
     }
 }
@@ -199,7 +209,6 @@ impl std::fmt::Display for GameTree {
         }
     }
 }
-
 
 #[derive(Default, Debug)]
 pub struct TempGame {
@@ -228,7 +237,6 @@ pub struct Importer {
     timestamp: Option<i64>,
     skip: bool,
 }
-
 
 impl Importer {
     pub fn new(timestamp: Option<i64>) -> Self {
@@ -345,7 +353,10 @@ impl Visitor for Importer {
 
     fn end_variation(&mut self) {
         if let Some(variation) = self.variants.pop() {
-            self.variants.last_mut().unwrap_or(&mut self.game.tree).push(GameTreeNode::Variation(variation));
+            self.variants
+                .last_mut()
+                .unwrap_or(&mut self.game.tree)
+                .push(GameTreeNode::Variation(variation));
         }
     }
 
@@ -354,8 +365,10 @@ impl Visitor for Importer {
             self.game = TempGame::default();
             None
         } else {
-            // encode game tree 
-            self.game.tree.encode(&mut self.game.moves, Some(self.game.position.clone()));
+            // encode game tree
+            self.game
+                .tree
+                .encode(&mut self.game.moves, Some(self.game.position.clone()));
 
             // calc material
             let mut cur_position = self.game.position.clone();
@@ -371,19 +384,17 @@ impl Visitor for Importer {
                 }
             }
             self.game.material_count = get_material_count(cur_position.board());
-            
+
             Some(std::mem::take(&mut self.game))
         }
     }
 }
 
-
 #[cfg(test)]
 mod test {
     use super::*;
-    use regex::Regex;
     use pgn_reader::BufferedReader;
-
+    use regex::Regex;
 
     fn trim(s: &str) -> String {
         let re = Regex::new(r"\s+").unwrap();
@@ -393,8 +404,8 @@ mod test {
     #[test]
     fn test_simple_pgn() {
         let pgns = [
-            "1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O b5 6.Bb3 Bc5",            
-            "1.e4 e5 2.Nf3 ( 2.Bc4 c6 ) 2...Nc6 $1 {I like this move} "
+            "1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O b5 6.Bb3 Bc5",
+            "1.e4 e5 2.Nf3 ( 2.Bc4 c6 ) 2...Nc6 $1 {I like this move} ",
         ];
 
         for pgn in pgns {
@@ -407,10 +418,7 @@ mod test {
 
             game.tree.encode(&mut bytes, None);
 
-            assert_eq!(
-                game.tree,
-                GameTree::from_bytes(&bytes, None).unwrap()
-            );
+            assert_eq!(game.tree, GameTree::from_bytes(&bytes, None).unwrap());
             assert_eq!(game.tree.to_string(), pgn);
         }
     }
@@ -426,7 +434,7 @@ mod test {
         let mut reader = BufferedReader::new_cursor(&pgn[..]);
         let mut importer = Importer::new(None);
         let game = reader.read_game(&mut importer).unwrap().flatten().unwrap();
-        
+
         // Should have 11 half-moves (plies)
         assert_eq!(game.tree.count_main_line_moves(), 11);
 
@@ -434,8 +442,12 @@ mod test {
         let pgn_with_variation = "1.e4 e5 2.Nf3 ( 2.Bc4 c6 ) 2...Nc6";
         let mut reader2 = BufferedReader::new_cursor(&pgn_with_variation[..]);
         let mut importer2 = Importer::new(None);
-        let game2 = reader2.read_game(&mut importer2).unwrap().flatten().unwrap();
-        
+        let game2 = reader2
+            .read_game(&mut importer2)
+            .unwrap()
+            .flatten()
+            .unwrap();
+
         // Should have 4 half-moves in main line (1.e4 e5 2.Nf3 Nc6), ignoring the variation (2.Bc4 c6)
         assert_eq!(game2.tree.count_main_line_moves(), 4);
 
@@ -443,8 +455,12 @@ mod test {
         let pgn_with_annotations = "1.e4 e5 2.Nf3 Nc6 $1 {Good move}";
         let mut reader3 = BufferedReader::new_cursor(&pgn_with_annotations[..]);
         let mut importer3 = Importer::new(None);
-        let game3 = reader3.read_game(&mut importer3).unwrap().flatten().unwrap();
-        
+        let game3 = reader3
+            .read_game(&mut importer3)
+            .unwrap()
+            .flatten()
+            .unwrap();
+
         // Should have 4 half-moves, ignoring the annotation and comment
         assert_eq!(game3.tree.count_main_line_moves(), 4);
     }
@@ -553,10 +569,7 @@ mod test {
         let mut bytes: Vec<u8> = Vec::new();
         game.tree.encode(&mut bytes, None);
 
-        assert_eq!(
-            game.tree,
-            GameTree::from_bytes(&bytes, None).unwrap()
-        );
+        assert_eq!(game.tree, GameTree::from_bytes(&bytes, None).unwrap());
         assert_eq!(trim(&game.tree.to_string()), trim(pgn));
     }
 }
