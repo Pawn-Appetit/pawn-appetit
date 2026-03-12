@@ -24,8 +24,8 @@ jobs:
       - name: Setup Node.js and pnpm cache
         uses: actions/setup-node@v3
         with:
-          node-version: "lts/24"
-          cache: "pnpm"
+          node-version: lts/*
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
