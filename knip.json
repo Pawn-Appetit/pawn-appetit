@@ -2,5 +2,16 @@
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "tags": [
     "-lintignore"
+  ],
+  "entry": [
+    "src/index.tsx",
+    "src/routes/**/*.tsx"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}"
+  ],
+  "ignore": [
+    "src/bindings/generated.ts",
+    "src/routeTree.gen.ts"
   ]
 }
