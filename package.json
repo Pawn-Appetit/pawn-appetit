@@ -97,6 +97,7 @@
     "@vanilla-extract/vite-plugin": "^5.1.4",
     "jsdom": "^28.1.0",
     "knip": "^5.86.0",
+    "lefthook": "^2.1.4",
     "oxfmt": "^0.39.0",
     "oxlint": "^1.54.0",
     "tsx": "^4.21.0",

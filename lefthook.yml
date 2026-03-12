@@ -1,0 +1,10 @@
+pre-commit:
+  commands:
+    fmt:
+      run: pnpm fmt:check
+    lint:
+      run: pnpm lint
+commit-msg:
+  commands:
+    commitlint:
+      run: npx commitlint --edit {1}
