@@ -2,7 +2,7 @@
 import { resolve } from "node:path";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 
 const isDebug = !!process.env.TAURI_ENV_DEBUG;
