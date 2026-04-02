@@ -113,7 +113,7 @@ export function ImportSummary({ result }: ImportSummaryProps) {
             {showErrors ? "▼" : "▶"} {t("features.tabs.importGame.showErrors")}
           </Text>
 
-          <Collapse in={showErrors}>
+          <Collapse expanded={showErrors}>
             <Stack gap="xs" mt="xs">
               {result.errors.map((error, index) => (
                 <Alert

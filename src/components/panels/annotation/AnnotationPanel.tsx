@@ -92,7 +92,7 @@ function AnnotationPanel() {
         />
       </Stack>
 
-      <Collapse in={showMoreSymbols}>
+      <Collapse expanded={showMoreSymbols}>
         <Stack mb="md">
           <Group grow>
             {ADVANTAGE.map((annotation) => (

@@ -249,7 +249,7 @@ export default function PracticePage() {
         onBack={() => navigate({ to: "/train" })}
       />
 
-      <Grid gutter="lg" style={{ flex: 1 }}>
+      <Grid gap="lg" style={{ flex: 1 }}>
         <Grid.Col span={{ base: 12, md: 7 }}>
           <Paper withBorder p="sm" radius="md" h="100%">
             <Transition mounted={feedback !== null} transition="slide-down" duration={250}>

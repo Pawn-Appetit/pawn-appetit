@@ -93,7 +93,7 @@ export default function TrainPage() {
             </Text>
           </Alert>
         ) : viewMode === "grid" ? (
-          <Grid gutter="md">
+          <Grid gap="md">
             {practices.map((category) => (
               <Grid.Col key={category.id} span={{ base: 12, sm: 6, lg: 4 }}>
                 <CategoryCard

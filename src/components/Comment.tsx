@@ -1,4 +1,4 @@
-import { TypographyStylesProvider } from "@mantine/core";
+import { Typography } from "@mantine/core";
 
 import Markdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -8,7 +8,7 @@ export function Comment({ comment }: { comment: string }) {
   const multipleLine = comment.split("\n").filter((v) => v.trim() !== "").length > 1;
 
   return (
-    <TypographyStylesProvider
+    <Typography
       style={{
         display: multipleLine ? "block" : "inline",
         lineHeight: multipleLine ? undefined : "inherit",
@@ -32,6 +32,6 @@ export function Comment({ comment }: { comment: string }) {
       >
         {comment}
       </Markdown>
-    </TypographyStylesProvider>
+    </Typography>
   );
 }

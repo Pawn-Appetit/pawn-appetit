@@ -160,7 +160,7 @@ function MobileBoardLayout({
             {isCollapsed ? <IconChevronDown size="1rem" /> : <IconChevronUp size="1rem" />}
           </ActionIcon>
         </Group>
-        <Collapse in={!isCollapsed} transitionDuration={200} transitionTimingFunction="linear">
+        <Collapse expanded={!isCollapsed} transitionDuration={200} transitionTimingFunction="linear">
           <Box mt="xs">
             <Suspense fallback={<ResponsiveSkeleton type="default" />}>
               <AnalysisPanel />

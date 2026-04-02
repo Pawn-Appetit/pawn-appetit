@@ -229,7 +229,7 @@ export default function VisualThemeEditor({
         <Divider />
 
         {/* Preview */}
-        <Collapse in={previewOpened}>
+        <Collapse expanded={previewOpened}>
           <ThemePreview theme={{ ...form.values, colors }} />
         </Collapse>
 
