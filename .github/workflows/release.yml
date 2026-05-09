@@ -14,9 +14,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: macos-latest    # Arm based Macs (M1 and above)
+          - platform: macos-latest # Arm based Macs (M1 and above)
             args: --target aarch64-apple-darwin --bundles dmg
-          - platform: macos-latest    # Intel based Macs
+          - platform: macos-latest # Intel based Macs
             args: --target x86_64-apple-darwin --bundles dmg
           - platform: ubuntu-22.04
             args: ""
@@ -64,6 +64,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          VITE_SERVER_URL: ${{ vars.SERVER_URL }}
           CI: false
         with:
           tagName: ${{ github.ref_name }}

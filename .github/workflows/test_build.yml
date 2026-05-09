@@ -11,9 +11,9 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - platform: macos-latest    # Arm based Macs (M1 and above)
+          - platform: macos-latest # Arm based Macs (M1 and above)
             args: --target aarch64-apple-darwin --bundles dmg
-          - platform: macos-latest    # Intel based Macs
+          - platform: macos-latest # Intel based Macs
             args: --target x86_64-apple-darwin --bundles dmg
           - platform: ubuntu-22.04
             args: ""
@@ -59,5 +59,6 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VITE_SERVER_URL: ${{ vars.SERVER_URL }}
         with:
           args: ${{ matrix.args }} --config '{"bundle":{"createUpdaterArtifacts":false}}'
