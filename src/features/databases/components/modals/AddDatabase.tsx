@@ -514,22 +514,24 @@ function AddDatabase({
 function DatabaseCard({ setDatabases, database, databaseId, initInstalled }: DatabaseCardProps) {
   const { t } = useTranslation();
   const [inProgress, setInProgress] = useState<boolean>(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const downloadDatabase = useCallback(
     async (id: number, url: string, name: string) => {
       try {
         setInProgress(true);
+        setDownloadError(null);
         const path = await resolve(await appDataDir(), "db", `${name}.db3`);
         await commands.downloadFile(`db_${id}`, url, path, null, null, null);
         setDatabases();
       } catch (error) {
         console.error("Failed to download database:", error);
-        throw error;
+        setDownloadError(error instanceof Error ? error.message : t("features.databases.add.errorDownload", "Failed to download database. Please check your connection and try again."));
       } finally {
         setInProgress(false);
       }
     },
-    [setDatabases],
+    [setDatabases, t],
   );
 
   const handleDownload = useCallback(() => {
@@ -572,6 +574,19 @@ function DatabaseCard({ setDatabases, database, databaseId, initInstalled }: Dat
         </Stack>
       </Group>
 
+      {downloadError && (
+        <Alert
+          icon={<IconAlertCircle size="1rem" />}
+          title={t("common.error")}
+          color="red"
+          mb="sm"
+          withCloseButton
+          onClose={() => setDownloadError(null)}
+        >
+          {downloadError}
+        </Alert>
+      )}
+
       <ProgressButton
         id={`db_${databaseId}`}
         progressEvent={events.downloadProgress}
@@ -593,22 +608,24 @@ function DatabaseCard({ setDatabases, database, databaseId, initInstalled }: Dat
 function PuzzleDbCard({ setPuzzleDbs, puzzleDb, databaseId, initInstalled }: PuzzleDbCardProps) {
   const { t } = useTranslation();
   const [inProgress, setInProgress] = useState<boolean>(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const downloadDatabase = useCallback(
     async (id: number, url: string, name: string) => {
       try {
         setInProgress(true);
+        setDownloadError(null);
         const path = await resolve(await appDataDir(), "puzzles", `${name}.db3`);
         await commands.downloadFile(`puzzle_db_${id}`, url, path, null, null, null);
         await setPuzzleDbs(await getPuzzleDatabases());
       } catch (error) {
         console.error("Failed to download puzzle database:", error);
-        throw error;
+        setDownloadError(error instanceof Error ? error.message : t("features.databases.add.errorDownload", "Failed to download database. Please check your connection and try again."));
       } finally {
         setInProgress(false);
       }
     },
-    [setPuzzleDbs],
+    [setPuzzleDbs, t],
   );
 
   const handleDownload = useCallback(() => {
@@ -644,6 +661,19 @@ function PuzzleDbCard({ setPuzzleDbs, puzzleDb, databaseId, initInstalled }: Puz
           <Text size="xs">{t("units.count", { count: puzzleDb.puzzleCount })}</Text>
         </Stack>
       </Group>
+
+      {downloadError && (
+        <Alert
+          icon={<IconAlertCircle size="1rem" />}
+          title={t("common.error")}
+          color="red"
+          mb="sm"
+          withCloseButton
+          onClose={() => setDownloadError(null)}
+        >
+          {downloadError}
+        </Alert>
+      )}
 
       <ProgressButton
         id={`puzzle_db_${databaseId}`}

@@ -6,6 +6,7 @@ When it comes to open source, there are different ways you can contribute, all o
 
 - [Initial Steps](#initial-steps)
 - [Development](#development)
+  - [Environment Variables](#environment-variables)
   - [Commands](#commands)
 - [Contributing Translations](#contributing-translations)
   - [How to Contribute Translations](#how-to-contribute-translations)
@@ -32,6 +33,22 @@ The following steps will get you setup to contribute changes to this repo:
 - Open the code in your preferred IDE and contribute your changes
 
 > It is recommended take a look at the [Commands](#commands) and [Extra Notes](#extra-notes) sections before starting.
+
+### Environment Variables
+
+Create a `.env` file in the project root to configure the following variables before running the app:
+
+| Variable | Required | Description |
+|---|---|---|
+| `VITE_SERVER_URL` | Yes (for database downloads) | Base URL of the file server used to download game and puzzle databases. Without this, the "Web" tab in the Add Database dialog will show an error and downloads will be unavailable. |
+
+Example `.env`:
+
+```sh
+VITE_SERVER_URL=https://example.com/databases
+```
+
+> **Note:** `VITE_SERVER_URL` is set automatically in CI via a GitHub Actions repository variable (`SERVER_URL`). When contributing locally, you must set it manually if you need to test database downloads.
 
 ### Commands
 

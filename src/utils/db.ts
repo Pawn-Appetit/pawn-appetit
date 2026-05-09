@@ -183,6 +183,11 @@ export function useDefaultDatabases(opened: boolean) {
     const { data, error, isLoading } = useQuery({
         queryKey: ["default-dbs"],
         queryFn: async () => {
+            if (!import.meta.env.VITE_SERVER_URL) {
+                throw new Error(
+                    "VITE_SERVER_URL environment variable is not set. Database downloads are unavailable.",
+                );
+            }
             return DATABASES as SuccessDatabaseInfo[];
         },
         enabled: opened,
@@ -198,6 +203,11 @@ export function useDefaultDatabases(opened: boolean) {
 export async function getDefaultPuzzleDatabases(): Promise<
     (PuzzleDatabaseInfo & { downloadLink: string })[]
 > {
+    if (!import.meta.env.VITE_SERVER_URL) {
+        throw new Error(
+            "VITE_SERVER_URL environment variable is not set. Database downloads are unavailable.",
+        );
+    }
     return PUZZLE_DATABASES as (PuzzleDatabaseInfo & {
         downloadLink: string;
     })[];
