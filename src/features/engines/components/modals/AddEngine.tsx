@@ -66,6 +66,7 @@ function AddEngine({
       },
       path: (value) => {
         if (!value) return t("common.requirePath");
+        if (engines.find((e) => e.path === value)) return t("common.pathAlreadyUsed");
       },
     },
   });

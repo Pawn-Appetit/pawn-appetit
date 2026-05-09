@@ -113,10 +113,14 @@ function EnginesSelect({ engine, setEngine, engines = [], enginesState }: Engine
     }
   }, [engine, engines, setEngine]);
 
-  const engineOptions = useMemo(
-    () => engines?.map((engine) => ({ label: engine.name, value: engine.path })),
-    [engines],
-  );
+  const engineOptions = useMemo(() => {
+    const seen = new Set<string>();
+    return engines?.filter(({ path }) => {
+      if (seen.has(path)) return false;
+      seen.add(path);
+      return true;
+    }).map((engine) => ({ label: engine.name, value: engine.path }));
+  }, [engines]);
 
   const handleEngineChange = useCallback(
     (path: string | null) => {

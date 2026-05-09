@@ -103,7 +103,9 @@ export default function LogsPanel() {
           allowDeselect={false}
           value={engine?.name ?? t("logs.noEnginesLoaded")}
           onChange={(name) => setEngine(localEngines.find((e) => e.name === name))}
-          data={localEngines.map((e) => ({ value: e.name, label: e.name }))}
+          data={localEngines
+            .filter((e, i, arr) => arr.findIndex((x) => x.name === e.name) === i)
+            .map((e) => ({ value: e.name, label: e.name }))}
         />
       </Group>
 

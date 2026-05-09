@@ -25,6 +25,7 @@
     "cancel": "Cancel",
     "cannotUndo": "This action cannot be undone.",
     "nameAlreadyUsed": "Name already used",
+    "pathAlreadyUsed": "Path already used",
     "requireName": "Name is required",
     "requirePath": "Path is required",
     "pgnFile": "PGN file",
