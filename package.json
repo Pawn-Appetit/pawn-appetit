@@ -106,7 +106,6 @@
     "@vitejs/plugin-react": "^6.0.1",
     "jsdom": "^29.1.1",
     "knip": "^6.12.2",
-    "lefthook": "^2.1.6",
     "oxfmt": "^0.48.0",
     "oxlint": "^1.63.0",
     "tsx": "^4.21.0",
