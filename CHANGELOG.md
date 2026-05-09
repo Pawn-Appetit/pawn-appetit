@@ -1,5 +1,36 @@
 # Pawn Appétit Changelog
 
+## [0.12.0]
+
+### Added
+
+- New Train Hub with unified access to all training modes
+- Graph visualization enhancements: collapsible nodes, main line mode and transposition visualization ([#411](https://github.com/Pawn-Appetit/pawn-appetit/pull/411)) - @gm-m
+- LRU caching for line search results with optimized move parsing
+- Error handling with notifications in download functions
+- Optimized GPU usage by pausing animations when the app is hidden
+
+### Changed
+
+- Renamed and restructured "learn" feature to "train"
+- Migrated Mantine UI library from v8 to v9
+- Updated Stockfish label to v18 and adjusted Windows AVX2 download size ([#412](https://github.com/Pawn-Appetit/pawn-appetit/pull/412)) - @gm-m
+- Replaced Biome with oxfmt and oxlint for formatting and linting
+- Split state atoms into domain-specific modules
+- Improved no files UI in Files page
+- Updated TypeScript target and library version to ES2023
+- Updated dependencies across frontend and backend
+
+### Fixed
+
+- Fixed audio playback on Linux ([#415](https://github.com/Pawn-Appetit/pawn-appetit/pull/415)) - @BlueManCZ
+- Fixed databases download link
+- Fixed Content Security Policy to include asset.localhost
+- Fixed duplicated options
+- Fixed engine process management with UCI communication timeouts
+- Fixed empty state in databases and engines pages
+- Fixed translation keys
+
 ## [0.11.0]
 
 ### Added
