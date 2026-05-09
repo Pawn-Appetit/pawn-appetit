@@ -8,11 +8,7 @@ import { parseUci } from "chessops";
 import { makeFen } from "chessops/fen";
 import { makeSan } from "chessops/san";
 import { match, P } from "ts-pattern";
-import {
-  type BestMoves,
-  commands,
-  type EngineOptions,
-  type GoMode,
+import { type BestMoves, commands, type EngineOptions, type GoMode,
   type NormalizedGame,
 } from "@/bindings";
 import { parsePGN, uciNormalize } from "@/utils/chess";
@@ -24,6 +20,7 @@ import {
   type MasterGamesOptions,
 } from "@/utils/lichess/explorer";
 import { countMainPly } from "@/utils/treeReducer";
+import { unwrap } from "@/utils/unwrap";
 
 const baseURL = "https://lichess.org/api";
 const explorerURL = "https://explorer.lichess.ovh";
@@ -427,13 +424,15 @@ export async function downloadLichess(
   }
   const path = await resolve(await appDataDir(), "db", `${player}_lichess.pgn`);
 
-  await commands.downloadFile(
-    `lichess_${player}`,
-    url,
-    path,
-    token ?? null,
-    null,
-    games > 0 ? games * 900 : null, // approx. size of a game
+  unwrap(
+    await commands.downloadFile(
+      `lichess_${player}`,
+      url,
+      path,
+      token ?? null,
+      null,
+      games > 0 ? games * 900 : null, // approx. size of a game
+    ),
   );
 }
 

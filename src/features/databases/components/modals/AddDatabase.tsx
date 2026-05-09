@@ -522,7 +522,7 @@ function DatabaseCard({ setDatabases, database, databaseId, initInstalled }: Dat
         setInProgress(true);
         setDownloadError(null);
         const path = await resolve(await appDataDir(), "db", `${name}.db3`);
-        await commands.downloadFile(`db_${id}`, url, path, null, null, null);
+        unwrap(await commands.downloadFile(`db_${id}`, url, path, null, null, null));
         setDatabases();
       } catch (error) {
         console.error("Failed to download database:", error);
@@ -616,7 +616,7 @@ function PuzzleDbCard({ setPuzzleDbs, puzzleDb, databaseId, initInstalled }: Puz
         setInProgress(true);
         setDownloadError(null);
         const path = await resolve(await appDataDir(), "puzzles", `${name}.db3`);
-        await commands.downloadFile(`puzzle_db_${id}`, url, path, null, null, null);
+        unwrap(await commands.downloadFile(`puzzle_db_${id}`, url, path, null, null, null));
         await setPuzzleDbs(await getPuzzleDatabases());
       } catch (error) {
         console.error("Failed to download puzzle database:", error);

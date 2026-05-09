@@ -208,7 +208,7 @@ function EngineCard({ engine, engineId }: { engine: LocalEngine; engineId: numbe
           if (url.endsWith(".zip") || url.endsWith(".tar")) {
             path = await resolve(await appDataDir(), "engines");
           }
-          await commands.downloadFile(`engine_${id}`, url, path, null, null, null);
+          unwrap(await commands.downloadFile(`engine_${id}`, url, path, null, null, null));
           let appDataDirPath = await appDataDir();
           if (appDataDirPath.endsWith("/") || appDataDirPath.endsWith("\\")) {
             appDataDirPath = appDataDirPath.slice(0, -1);

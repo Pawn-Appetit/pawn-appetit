@@ -14,6 +14,7 @@ import {
   TextInput,
   Tooltip,
 } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import {
   IconArrowDownRight,
   IconArrowRight,
@@ -500,27 +501,37 @@ export function AccountCard({
                     disabled={loading}
                     onClick={async () => {
                       setLoading(true);
-                      const lastGameDate = currentDatabase
-                        ? await getLastGameDate({ database: currentDatabase })
-                        : null;
-                      if (type === "lichess") {
-                        await downloadLichess(
-                          title,
-                          lastGameDate,
-                          total - downloadedGames,
-                          setProgress,
-                          token,
-                        );
-                      } else {
-                        await downloadChessCom(title, lastGameDate);
-                      }
-                      const p = await resolve(await appDataDir(), "db", `${title}_${type}.pgn`);
                       try {
-                        await convert(p, lastGameDate);
+                        const lastGameDate = currentDatabase
+                          ? await getLastGameDate({ database: currentDatabase })
+                          : null;
+                        if (type === "lichess") {
+                          await downloadLichess(
+                            title,
+                            lastGameDate,
+                            total - downloadedGames,
+                            setProgress,
+                            token,
+                          );
+                        } else {
+                          await downloadChessCom(title, lastGameDate);
+                        }
+                        const p = await resolve(await appDataDir(), "db", `${title}_${type}.pgn`);
+                        try {
+                          await convert(p, lastGameDate);
+                        } catch (e) {
+                          console.error(e);
+                        }
                       } catch (e) {
-                        console.error(e);
+                        notifications.show({
+                          title: t("common.error"),
+                          message: e instanceof Error ? e.message : String(e),
+                          color: "red",
+                          icon: <IconX />,
+                        });
+                      } finally {
+                        setLoading(false);
                       }
-                      setLoading(false);
                     }}
                     radius="md"
                   >

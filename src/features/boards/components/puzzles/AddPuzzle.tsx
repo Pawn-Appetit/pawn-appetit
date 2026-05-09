@@ -15,7 +15,8 @@ import {
   TextInput,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { IconAlertCircle } from "@tabler/icons-react";
+import { notifications } from "@mantine/notifications";
+import { IconAlertCircle, IconX } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -27,6 +28,7 @@ import ProgressButton from "@/components/ProgressButton";
 import { getDefaultPuzzleDatabases } from "@/utils/db";
 import { capitalize } from "@/utils/format";
 import { getPuzzleDatabases } from "@/utils/puzzles";
+import { unwrap } from "@/utils/unwrap";
 
 export function AddPuzzle({
   puzzleDbs,
@@ -210,9 +212,20 @@ function PuzzleDbCard({
 
   async function downloadDatabase(id: number, url: string, name: string) {
     setInProgress(true);
-    const path = await resolve(await appDataDir(), "puzzles", `${name}.db3`);
-    await commands.downloadFile(`puzzle_db_${id}`, url, path, null, null, null);
-    setPuzzleDbs(await getPuzzleDatabases());
+    try {
+      const path = await resolve(await appDataDir(), "puzzles", `${name}.db3`);
+      unwrap(await commands.downloadFile(`puzzle_db_${id}`, url, path, null, null, null));
+      setPuzzleDbs(await getPuzzleDatabases());
+    } catch (error) {
+      notifications.show({
+        title: t("common.error"),
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+        icon: <IconX />,
+      });
+    } finally {
+      setInProgress(false);
+    }
   }
 
   return (
