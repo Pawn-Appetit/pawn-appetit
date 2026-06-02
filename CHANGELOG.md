@@ -1,5 +1,11 @@
 # Pawn Appétit Changelog
 
+## [0.12.1]
+
+### Changed
+
+- feat: update Lichess API endpoints and enhance Opening Explorer functionality
+
 ## [0.12.0]
 
 ### Added
