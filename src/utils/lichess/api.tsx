@@ -8,7 +8,11 @@ import { parseUci } from "chessops";
 import { makeFen } from "chessops/fen";
 import { makeSan } from "chessops/san";
 import { match, P } from "ts-pattern";
-import { type BestMoves, commands, type EngineOptions, type GoMode,
+import {
+  type BestMoves,
+  commands,
+  type EngineOptions,
+  type GoMode,
   type NormalizedGame,
 } from "@/bindings";
 import { parsePGN, uciNormalize } from "@/utils/chess";
@@ -23,8 +27,8 @@ import { countMainPly } from "@/utils/treeReducer";
 import { unwrap } from "@/utils/unwrap";
 
 const baseURL = "https://lichess.org/api";
-const explorerURL = "https://explorer.lichess.ovh";
-const tablebaseURL = "https://tablebase.lichess.ovh";
+const explorerURL = "https://explorer.lichess.org";
+const tablebaseURL = "https://tablebase.lichess.org";
 
 export const MIN_DATE = new Date(1952, 0, 1);
 
@@ -378,6 +382,7 @@ async function getCloudEvaluation(fen: string, multipv: number): Promise<Lichess
 export async function getLichessGames(
   fen: string,
   options: LichessGamesOptions,
+  token: string,
 ): Promise<PositionData> {
   const url = match(options.player)
     .with(
@@ -385,30 +390,41 @@ export async function getLichessGames(
       () => `${explorerURL}/lichess?${getLichessGamesQueryParams(fen, options)}`,
     )
     .otherwise(() => `${explorerURL}/player?${getLichessGamesQueryParams(fen, options)}`);
-  const res = await fetch(url);
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(`${data}`);
-  }
-  return data;
+  return fetchExplorer(url, token);
 }
 
 export async function getMasterGames(
   fen: string,
   options: MasterGamesOptions,
+  token: string,
 ): Promise<PositionData> {
   const url = `${explorerURL}/masters?${getMasterGamesQueryParams(fen, options)}`;
-  const res = await fetch(url);
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(`${data}`);
-  }
-  return data;
+  return fetchExplorer(url, token);
 }
 
-export async function getPlayerGames(fen: string, player: string, color: Color) {
-  return (await fetch(`${explorerURL}/player?fen=${fen}&player=${player}&color=${color}`)).json();
+export async function getPlayerGames(fen: string, player: string, color: Color, token: string) {
+  const params = new URLSearchParams({ fen, player, color });
+  return fetchExplorer(`${explorerURL}/player?${params}`, token);
+}
+
+async function fetchExplorer(url: string, token: string): Promise<PositionData> {
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const body = await res.text();
+
+  if (!res.ok) {
+    if (res.status === 401 || res.status === 403) {
+      throw new Error("Lichess Opening Explorer requires a logged-in Lichess account.");
+    }
+    throw new Error(`Lichess Opening Explorer request failed (${res.status}).`);
+  }
+
+  try {
+    return JSON.parse(body) as PositionData;
+  } catch {
+    throw new Error("Lichess Opening Explorer returned an invalid response.");
+  }
 }
 
 export async function downloadLichess(

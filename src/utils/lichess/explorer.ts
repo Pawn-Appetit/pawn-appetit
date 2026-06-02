@@ -72,9 +72,9 @@ export function getLichessGamesQueryParams(
     const getDateQueryString = (date: Date) => `${date.getFullYear()}-${date.getMonth() + 1}`;
 
     const params = new URLSearchParams();
+    params.append("fen", fen);
 
     if (options) {
-        params.append("fen", fen);
         if (options.player && options.color) {
             params.append("player", options.player);
             params.append("color", options.color);
@@ -106,15 +106,16 @@ export function getMasterGamesQueryParams(
 ): string {
     const getDateQueryString = (date: Date) => date.getFullYear().toString();
 
-    const queryParams: string[] = [];
+    const params = new URLSearchParams();
+    params.append("fen", fen);
+
     if (options) {
-        queryParams.push(`fen=${fen}`);
-        if (options.since) queryParams.push(`since=${getDateQueryString(options.since)}`);
-        if (options.until) queryParams.push(`until=${getDateQueryString(options.until)}`);
+        if (options.since) params.append("since", getDateQueryString(options.since));
+        if (options.until) params.append("until", getDateQueryString(options.until));
         if (options.moves !== undefined && 0 <= options.moves)
-            queryParams.push(`moves=${options.moves}`);
+            params.append("moves", options.moves.toString());
         if (options.topGames !== undefined && 0 <= options.topGames && options.topGames <= 15)
-            queryParams.push(`topGames=${options.topGames}`);
+            params.append("topGames", options.topGames.toString());
     }
-    return queryParams.join("&");
+    return params.toString();
 }

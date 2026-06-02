@@ -103,7 +103,7 @@ function AccountModal({ open, setOpen, addLichess, addChessCom }: AccountModalPr
           {website === "lichess" && (
             <Checkbox
               label="Login with browser"
-              description="Allows faster game downloads"
+              description="Required for Lichess Opening Explorer and allows faster game downloads"
               checked={withLogin}
               onChange={(e) => setWithLogin(e.currentTarget.checked)}
             />

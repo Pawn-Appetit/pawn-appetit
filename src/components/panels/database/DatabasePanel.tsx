@@ -15,6 +15,7 @@ import {
   lichessOptionsAtom,
   masterOptionsAtom,
   referenceDbAtom,
+  sessionsAtom,
 } from "@/state/atoms";
 import { type Opening, searchPosition } from "@/utils/db";
 import { convertToNormalized, getLichessGames, getMasterGames } from "@/utils/lichess/api";
@@ -49,10 +50,15 @@ function sortOpenings(openings: Opening[]) {
   return openings.sort((a, b) => b.black + b.draw + b.white - (a.black + a.draw + a.white));
 }
 
-async function fetchOpening(db: DBType, tab: string) {
+async function fetchOpening(db: DBType, tab: string, lichessToken?: string) {
   return match(db)
     .with({ type: "lch_all" }, async ({ fen, options }) => {
-      const data = await getLichessGames(fen, options);
+      if (!lichessToken) {
+        throw new Error(
+          "Log in to a Lichess account from the Accounts page to use Opening Explorer.",
+        );
+      }
+      const data = await getLichessGames(fen, options, lichessToken);
       return {
         openings: data.moves.map((move) => ({
           move: move.san,
@@ -64,7 +70,12 @@ async function fetchOpening(db: DBType, tab: string) {
       };
     })
     .with({ type: "lch_master" }, async ({ fen, options }) => {
-      const data = await getMasterGames(fen, options);
+      if (!lichessToken) {
+        throw new Error(
+          "Log in to a Lichess account from the Accounts page to use Opening Explorer.",
+        );
+      }
+      const data = await getMasterGames(fen, options, lichessToken);
       return {
         openings: data.moves.map((move) => ({
           move: move.san,
@@ -97,6 +108,9 @@ function DatabasePanel() {
   const [masterOptions] = useAtom(masterOptionsAtom);
   const [localOptions, setLocalOptions] = useAtom(currentLocalOptionsAtom);
   const [db, setDb] = useAtom(currentDbTypeAtom);
+  const sessions = useAtomValue(sessionsAtom);
+  const authenticatedLichessSession = sessions.find((session) => session.lichess?.accessToken);
+  const lichessToken = authenticatedLichessSession?.lichess?.accessToken;
 
   useEffect(() => {
     if (db === "local") {
@@ -135,9 +149,14 @@ function DatabasePanel() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["database-opening", dbType, tab?.value],
+    queryKey: [
+      "database-opening",
+      dbType,
+      tab?.value,
+      authenticatedLichessSession?.lichess?.username,
+    ],
     queryFn: async () => {
-      return fetchOpening(dbType, tab?.value || "");
+      return fetchOpening(dbType, tab?.value || "", lichessToken);
     },
     enabled: tabType !== "options" && !!tab?.value,
   });
