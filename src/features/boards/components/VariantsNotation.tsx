@@ -41,7 +41,7 @@ import { keyMapAtom } from "@/state/keybindings";
 import type { TreeNode } from "@/utils/treeReducer";
 
 const variationRefs = {
-  variants: React.createRef<HTMLSpanElement>(),
+  variants: React.createRef<HTMLSpanElement | null>(),
 };
 
 function hasMultipleChildrenInChain(node: TreeNode): boolean {
@@ -128,7 +128,7 @@ function VariantsNotation({ topBar, editingMode }: { topBar?: boolean; editingMo
     path: number[];
     depth?: number;
     first?: boolean;
-    targetRef: React.RefObject<HTMLSpanElement>;
+    targetRef: React.RefObject<HTMLSpanElement | null>;
     showVariationsAfter?: boolean;
     indentSize?: number;
   }) {
@@ -141,7 +141,6 @@ function VariantsNotation({ topBar, editingMode }: { topBar?: boolean; editingMo
       return (
         <>
           <CompleteMoveCell
-            // @ts-expect-error - ref type compatibility
             targetRef={depth === 0 && path.length === 0 ? targetRef : variationRefs.variants}
             annotations={tree.annotations}
             comment={tree.comment}
@@ -195,7 +194,6 @@ function VariantsNotation({ topBar, editingMode }: { topBar?: boolean; editingMo
     return (
       <>
         <CompleteMoveCell
-          // @ts-expect-error - ref type compatibility
           targetRef={depth === 0 && path.length === 0 ? targetRef : variationRefs.variants}
           annotations={variations[0].annotations}
           comment={variations[0].comment}
@@ -255,7 +253,7 @@ function VariantsNotation({ topBar, editingMode }: { topBar?: boolean; editingMo
     path: number[];
     depth: number;
     start?: number[];
-    targetRef: React.RefObject<HTMLSpanElement>;
+    targetRef: React.RefObject<HTMLSpanElement | null>;
     parentHalfMoves?: number;
     isRootLevel?: boolean;
   }) {
@@ -287,7 +285,6 @@ function VariantsNotation({ topBar, editingMode }: { topBar?: boolean; editingMo
           </Text>
         )}
         <CompleteMoveCell
-          // @ts-expect-error - ref type compatibility
           targetRef={depth === 0 && path.length === 0 ? targetRef : variationRefs.variants}
           annotations={variation.annotations}
           comment={variation.comment}
@@ -400,7 +397,6 @@ function VariantsNotation({ topBar, editingMode }: { topBar?: boolean; editingMo
                           path={[index]}
                           depth={0}
                           start={headers.start}
-                          // @ts-expect-error - ref type compatibility
                           targetRef={variationRefs.variants}
                           parentHalfMoves={root.halfMoves}
                           isRootLevel={false}

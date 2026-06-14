@@ -13,6 +13,7 @@ import { useAtomValue } from "jotai";
 import { memo, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
+import { useStoreWithEqualityFn } from "zustand/traditional";
 import { Comment } from "@/components/Comment";
 import { currentTabAtom } from "@/state/atoms";
 import type { Annotation } from "@/utils/annotation";
@@ -21,20 +22,37 @@ import { type TreeNode, treeIterator } from "@/utils/treeReducer";
 import MoveCell from "./MoveCell";
 import { TreeStateContext } from "./TreeStateContext";
 
+const transpositionCache = new WeakMap<TreeNode, Map<string, number[][]>>();
+
+function getTranspositionMap(root: TreeNode) {
+  if (transpositionCache.has(root)) {
+    return transpositionCache.get(root)!;
+  }
+
+  const map = new Map<string, number[][]>();
+  const iterator = treeIterator(root);
+
+  for (const item of iterator) {
+    const strippedFen = stripClock(item.node.fen);
+    if (!map.has(strippedFen)) {
+      map.set(strippedFen, []);
+    }
+    map.get(strippedFen)!.push(item.position);
+  }
+
+  transpositionCache.set(root, map);
+  return map;
+}
+
 function getTranspositions(fen: string, position: number[], root: TreeNode) {
   if (position.length === 0 || position.every((v) => v === 0)) return [];
-  const transpositions: number[][] = [];
+
+  const map = getTranspositionMap(root);
   const strippedFen = stripClock(fen);
-  const iterator = treeIterator(root);
-  for (const item of iterator) {
-    if (hasMorePriority(position, item.position)) {
-      continue;
-    }
-    if (stripClock(item.node.fen) === strippedFen) {
-      transpositions.push(item.position);
-    }
-  }
-  return transpositions;
+
+  const matchingPositions = map.get(strippedFen) || [];
+
+  return matchingPositions.filter((targetPosition) => !hasMorePriority(position, targetPosition));
 }
 
 function CompleteMoveCell({
@@ -56,13 +74,19 @@ function CompleteMoveCell({
   move?: string | null;
   fen?: string;
   first?: boolean;
-  isStart: boolean;
+  isStart?: boolean;
   movePath: number[];
-  targetRef: React.RefObject<HTMLSpanElement>;
+  targetRef?: React.RefObject<HTMLSpanElement | null>;
 }) {
   const store = useContext(TreeStateContext)!;
   const isCurrentVariation = useStore(store, (s) => equal(s.position, movePath));
-  const root = useStore(store, (s) => s.root);
+  const computedIsStart = useStore(store, (s) => equal(movePath, s.headers.start));
+  const effectiveIsStart = isStart !== undefined ? isStart : computedIsStart;
+  const transpositions = useStoreWithEqualityFn(
+    store,
+    (s) => (fen ? getTranspositions(fen, movePath, s.root) : []),
+    (a, b) => equal(a, b),
+  );
   const goToMove = useStore(store, (s) => s.goToMove);
   const deleteMove = useStore(store, (s) => s.deleteMove);
   const promoteVariation = useStore(store, (s) => s.promoteVariation);
@@ -79,13 +103,13 @@ function CompleteMoveCell({
   const [open, setOpen] = useState(false);
   const currentTab = useAtomValue(currentTabAtom);
 
-  const transpositions = fen ? getTranspositions(fen, movePath, root) : [];
   const { t } = useTranslation();
 
   return (
     <>
       <Box
         ref={isCurrentVariation ? targetRef : undefined}
+        data-current-move={isCurrentVariation ? true : undefined}
         component="span"
         style={{
           display: "inline-block",
@@ -101,7 +125,7 @@ function CompleteMoveCell({
                 ref={ref}
                 move={move}
                 annotations={annotations}
-                isStart={isStart}
+                isStart={effectiveIsStart}
                 isCurrentVariation={isCurrentVariation}
                 onClick={() => goToMove(movePath)}
                 onContextMenu={(e: React.MouseEvent) => {
@@ -177,6 +201,7 @@ export default memo(CompleteMoveCell, (prev, next) => {
     prev.first === next.first &&
     prev.isStart === next.isStart &&
     equal(prev.movePath, next.movePath) &&
-    prev.halfMoves === next.halfMoves
+    prev.halfMoves === next.halfMoves &&
+    prev.targetRef === next.targetRef
   );
 });
