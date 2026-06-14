@@ -12,6 +12,7 @@ import { parseSanOrUci, positionFromFen } from "@/utils/chessops";
 import { isPrefix } from "@/utils/misc";
 import { getAnnotation } from "@/utils/score";
 import { playSound } from "@/utils/sound";
+import { compressedSessionStorage } from "@/utils/tabStateStorage";
 import {
     createNode,
     defaultTree,
@@ -510,7 +511,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
         return createStore<TreeStoreState>()(
             persist(stateCreator, {
                 name: id,
-                storage: createJSONStorage(() => sessionStorage),
+                storage: createJSONStorage(() => compressedSessionStorage),
             }),
         );
     }

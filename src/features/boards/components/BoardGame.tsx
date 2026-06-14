@@ -80,10 +80,16 @@ import type { TimeControlField } from "@/utils/clock";
 import { getDocumentDir } from "@/utils/documentDir";
 import type { LocalEngine } from "@/utils/engines";
 import { createFile } from "@/utils/files";
+import { deserializeStorageValue } from "@/utils/tabStateStorage";
 import { formatDateToPGN } from "@/utils/format";
 import { type GameRecord, saveGameRecord } from "@/utils/gameRecords";
 import { createTab } from "@/utils/tabs";
-import { type GameHeaders, type TreeNode, treeIteratorMainLine } from "@/utils/treeReducer";
+import {
+  type GameHeaders,
+  type TreeNode,
+  type TreeState,
+  treeIteratorMainLine,
+} from "@/utils/treeReducer";
 import GameNotationWrapper from "./GameNotationWrapper";
 import ResponsiveBoard from "./ResponsiveBoard";
 
@@ -1282,7 +1288,9 @@ function BoardGame() {
       try {
         const tabStateJson = sessionStorage.getItem(newTabId);
         if (tabStateJson) {
-          const tabState = JSON.parse(tabStateJson);
+          const tabState = deserializeStorageValue<{ version: number; state: TreeState }>(
+            tabStateJson,
+          );
           if (tabState?.state) {
             const treeState = tabState.state;
 

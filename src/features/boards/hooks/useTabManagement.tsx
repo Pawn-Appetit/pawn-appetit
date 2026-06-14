@@ -11,6 +11,7 @@ import { TreeStateContext } from "@/components/TreeStateContext";
 import { MAX_TABS } from "@/features/boards/constants";
 import { activeTabAtom, currentTabAtom, tabsAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
+import { deserializeStorageValue } from "@/utils/tabStateStorage";
 import { createTab, genID, saveToFile } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
 
@@ -33,7 +34,9 @@ function getTabState(tabId: string): { version: number; state: { dirty?: boolean
       return null;
     }
 
-    const parsedState = JSON.parse(rawState);
+    const parsedState = deserializeStorageValue<{ version: number; state: { dirty?: boolean } }>(
+      rawState,
+    );
 
     if (isValidTabState(parsedState)) {
       return parsedState;
