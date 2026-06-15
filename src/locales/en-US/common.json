@@ -995,6 +995,12 @@
       "fiftyMoveRule": "*due to the 50-move rule"
     }
   },
+  "forkChooser": {
+    "replies": "{{n}} replies",
+    "main": "main",
+    "title": "Fork chooser",
+    "description": "Show the available continuations in a popup when you reach a branch"
+  },
   "settings": {
     "board": {
       "title": "Board",
