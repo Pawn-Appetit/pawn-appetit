@@ -18,6 +18,7 @@ import {
 } from "@/utils/notationFlatten";
 import { getNodeAtPath } from "@/utils/treeReducer";
 import CompleteMoveCell from "./CompleteMoveCell";
+import ForkChooser from "./ForkChooser";
 import * as styles from "./GameNotation.css";
 
 const MAX_LINE_PLIES = 40;
@@ -321,6 +322,7 @@ function VirtualizedNotation({
           );
         })}
       </div>
+      <ForkChooser parentRef={parentRef} />
     </ScrollArea>
   );
 }
