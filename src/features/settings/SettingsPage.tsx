@@ -39,6 +39,7 @@ import {
   enableBoardScrollAtom,
   eraseDrawablesOnClickAtom,
   forcedEnPassantAtom,
+  forkChooserAutoAtom,
   minimumGamesAtom,
   moveInputAtom,
   moveMethodAtom,
@@ -203,6 +204,23 @@ export default function Page() {
               </Text>
             </div>
             <SettingsSwitch atom={showDestsAtom} />
+          </Group>
+        ),
+      },
+      {
+        id: "fork-chooser",
+        title: t("forkChooser.title"),
+        description: t("forkChooser.description"),
+        tab: "board",
+        component: (
+          <Group justify="space-between" wrap="nowrap" gap="xl" className={classes.item}>
+            <div>
+              <Text>{t("forkChooser.title")}</Text>
+              <Text size="xs" c="dimmed">
+                {t("forkChooser.description")}
+              </Text>
+            </div>
+            <SettingsSwitch atom={forkChooserAutoAtom} />
           </Group>
         ),
       },
