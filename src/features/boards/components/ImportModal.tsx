@@ -24,6 +24,7 @@ import { chessopsError } from "@/utils/chessops";
 import { createFile, createTempImportFile, openFile } from "@/utils/files";
 import { getLichessGame } from "@/utils/lichess/api";
 import { parseMultiplePgnGames } from "@/utils/pgnUtils";
+import { serializeStorageValue } from "@/utils/tabStateStorage";
 import { defaultTree, getGameName, type TreeState } from "@/utils/treeReducer";
 import { ImportSummary } from "./ImportSummary";
 
@@ -305,7 +306,11 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
       }
       const tree = await parsePGN(pgn);
       setCurrentTab((prev) => {
-        sessionStorage.setItem(prev.value, JSON.stringify({ version: 0, state: tree }));
+        try {
+          sessionStorage.setItem(prev.value, serializeStorageValue({ version: 0, state: tree }));
+        } catch (e) {
+          setError(e instanceof Error ? e.message : String(e));
+        }
         return {
           ...prev,
           name: getGameName(tree.headers),
@@ -324,7 +329,11 @@ export default function ImportModal({ context, id }: ContextModalProps<{ modalBo
       setCurrentTab((prev) => {
         const tree = defaultTree(parsedFen);
         tree.headers.fen = parsedFen;
-        sessionStorage.setItem(prev.value, JSON.stringify({ version: 0, state: tree }));
+        try {
+          sessionStorage.setItem(prev.value, serializeStorageValue({ version: 0, state: tree }));
+        } catch (e) {
+          setError(e instanceof Error ? e.message : String(e));
+        }
         return {
           ...prev,
           name: t("features.tabs.analysisBoard.title"),

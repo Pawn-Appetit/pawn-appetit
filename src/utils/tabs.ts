@@ -3,6 +3,7 @@ import { INITIAL_FEN } from "chessops/fen";
 import { z } from "zod";
 import type { StoreApi } from "zustand";
 import { commands } from "@/bindings";
+import { serializeStorageValue } from "./tabStateStorage";
 import { fileMetadataSchema } from "@/features/files/utils/file";
 import type { TreeStoreState } from "@/state/store/tree";
 import { createFile, getFileNameWithoutExtension, isTempImportFile } from "@/utils/files";
@@ -112,7 +113,7 @@ export async function createTab({
                 tree.position = position;
             }
         }
-        sessionStorage.setItem(id, JSON.stringify({ version: 0, state: tree }));
+        sessionStorage.setItem(id, serializeStorageValue({ version: 0, state: tree }));
     }
 
     setTabs((prev) => {
@@ -361,7 +362,7 @@ export async function reloadTab(tab: Tab): Promise<TreeState | undefined> {
     }
 
     if (tree != null) {
-        sessionStorage.setItem(tab.value, JSON.stringify({ version: 0, state: tree }));
+        sessionStorage.setItem(tab.value, serializeStorageValue({ version: 0, state: tree }));
         return tree;
     }
 }

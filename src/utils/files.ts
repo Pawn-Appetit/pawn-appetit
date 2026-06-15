@@ -8,6 +8,7 @@ import { commands } from "@/bindings";
 import type { FileMetadata } from "@/features/files/utils/file";
 import { unwrap } from "@/utils/unwrap";
 import { parsePGN } from "./chess";
+import { serializeStorageValue } from "./tabStateStorage";
 import { createTab, type Tab } from "./tabs";
 import { getGameName } from "./treeReducer";
 
@@ -83,13 +84,7 @@ export async function openFile(
 
     // Store the first game's state in session storage (for backward compatibility)
     // The analysis board will handle multiple games through the pgn content
-    sessionStorage.setItem(
-        tabId,
-        JSON.stringify({
-            version: 0,
-            state: firstGameTree,
-        }),
-    );
+    sessionStorage.setItem(tabId, serializeStorageValue({ version: 0, state: firstGameTree }));
 }
 
 export async function createFile({
