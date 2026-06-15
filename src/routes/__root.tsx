@@ -157,8 +157,8 @@ function RootLayout() {
       });
 
       if (typeof selected === "string") {
-        navigate({ to: "/" });
-        openFile(selected, setTabs, setActiveTab);
+        await openFile(selected, setTabs, setActiveTab);
+        navigate({ to: "/boards" });
       }
     } catch (error) {
       console.error("Failed to open file:", error);
