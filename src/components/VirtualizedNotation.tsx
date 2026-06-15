@@ -3,7 +3,7 @@ import { useColorScheme } from "@mantine/hooks";
 import { IconMinus, IconPlus } from "@tabler/icons-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import equal from "fast-deep-equal";
-import { type ReactNode, useContext, useEffect, useRef, useState } from "react";
+import { type ReactNode, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { Comment } from "@/components/Comment";
@@ -200,17 +200,34 @@ function VirtualizedNotation({
   const moveRows = flattenForView(root, { mode, showComments, maxLineLength: MAX_LINE_PLIES });
   const visibleMoveRows = filterCollapsedRows(moveRows, collapsed);
 
-  const rows: DisplayRow[] = [];
-  if (showComments && root.comment) {
-    rows.push({ type: "root-comment", key: "root-comment", comment: root.comment });
-  }
-  const moveRowOffset = rows.length;
-  rows.push(...visibleMoveRows);
+  // The root comment renders as a static block above the virtualized list (see the return), not as
+  // row 0: it can be tall (e.g. an [%evp ...] array when "Extra Markups" is on), and a tall
+  // dynamically-measured row at the top desynced the virtualizer's offsets and overlapped the moves.
+  const rows: DisplayRow[] = [...visibleMoveRows];
   if (result && result !== "*") {
     rows.push({ type: "result", key: "result", result });
   }
 
   const parentRef = useRef<HTMLDivElement>(null);
+
+  // Measure the static root-comment block so the virtualizer's scrollMargin accounts for the space
+  // it occupies above the list — keeping scrollToIndex offsets correct.
+  const rootCommentRef = useRef<HTMLDivElement>(null);
+  const showRootComment = showComments && !!root.comment;
+  const [rootCommentHeight, setRootCommentHeight] = useState(0);
+  useLayoutEffect(() => {
+    const el = rootCommentRef.current;
+    if (!showRootComment || !el) {
+      setRootCommentHeight(0);
+      return;
+    }
+    const measure = () => setRootCommentHeight(el.offsetHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [showRootComment, root.comment]);
+
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
@@ -219,6 +236,8 @@ function VirtualizedNotation({
     // Track measured heights by row identity, not index, so toggling comments / variations /
     // collapse (which adds, removes, or resizes rows) never reuses a stale neighbour height.
     getItemKey: (index) => rows[index].key,
+    // The static root-comment block shares the scroll viewport above the list.
+    scrollMargin: rootCommentHeight,
   });
 
   // A toggle can also change a row's height in place (inline comments appear/disappear, a head
@@ -230,7 +249,7 @@ function VirtualizedNotation({
 
   // Bring the current move's row into the window when the row changes.
   const moveRowIndex = findRowIndex(visibleMoveRows, position);
-  const currentRowIndex = moveRowIndex >= 0 ? moveRowIndex + moveRowOffset : -1;
+  const currentRowIndex = moveRowIndex;
   useEffect(() => {
     if (currentRowIndex >= 0) {
       virtualizer.scrollToIndex(currentRowIndex, { align: "center" });
@@ -266,6 +285,16 @@ function VirtualizedNotation({
           zIndex={2}
         />
       )}
+      {showRootComment && (
+        <Box
+          ref={rootCommentRef}
+          p="sm"
+          fz="sm"
+          style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}
+        >
+          <Comment comment={root.comment} />
+        </Box>
+      )}
       <div style={{ height: virtualizer.getTotalSize(), width: "100%", position: "relative" }}>
         {virtualizer.getVirtualItems().map((item) => {
           const row = rows[item.index];
@@ -279,7 +308,7 @@ function VirtualizedNotation({
                 top: 0,
                 left: 0,
                 width: "100%",
-                transform: `translateY(${item.start}px)`,
+                transform: `translateY(${item.start - virtualizer.options.scrollMargin}px)`,
               }}
             >
               <NotationRowView
