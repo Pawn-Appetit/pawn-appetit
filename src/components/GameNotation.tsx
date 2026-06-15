@@ -34,10 +34,12 @@ function GameNotation({
   }
 
   const [invisibleValue, setInvisible] = useAtom(currentInvisibleAtom);
-  const [variationState, toggleVariationState] = useToggle([
+  const [variationState, setVariationState] = useToggle([
     initialVariationState,
     ...["mainline", "variations", "repertoire"].filter((v) => v !== initialVariationState),
-  ]) as [VariationState, () => void];
+  ]) as [VariationState, (value?: VariationState) => void];
+  // The header button cycles modes; the fork chooser sets a specific mode (see setMode below).
+  const cycleVariationState = () => setVariationState();
   const [showComments, toggleComments] = useToggle([true, false]);
 
   const invisible = topBar && invisibleValue;
@@ -53,14 +55,14 @@ function GameNotation({
             showComments={showComments}
             toggleComments={toggleComments}
             variationState={variationState}
-            toggleVariationState={toggleVariationState}
+            toggleVariationState={cycleVariationState}
           />
         )}
         <VirtualizedNotation
           mode={variationState}
           showComments={showComments}
           invisible={invisible}
-          toggleVariationState={toggleVariationState}
+          setMode={setVariationState}
         />
       </Stack>
     </Paper>

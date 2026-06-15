@@ -1,12 +1,13 @@
 import { Portal, useMantineTheme } from "@mantine/core";
 import { useAtomValue } from "jotai";
-import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/TreeStateContext";
 import { forkChooserAutoAtom } from "@/state/atoms";
 import { ANNOTATION_INFO } from "@/utils/annotation";
 import { cycleIndex, followPath, forkCandidates, shouldAutoOpen } from "@/utils/forkChooser";
+import type { NotationViewMode } from "@/utils/notationFlatten";
 import * as classes from "./ForkChooser.css";
 
 // Anchored, portaled popover that lists the continuations at a fork. It mounts/unmounts only —
@@ -14,8 +15,12 @@ import * as classes from "./ForkChooser.css";
 // are never re-laid-out when it appears.
 export default function ForkChooser({
   parentRef,
+  mode,
+  setMode,
 }: {
   parentRef: { current: HTMLDivElement | null };
+  mode: NotationViewMode;
+  setMode?: (mode: NotationViewMode) => void;
 }) {
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (s) => s.root);
@@ -42,6 +47,16 @@ export default function ForkChooser({
     practiceActive: false,
     dismissed: dismissed === posKey,
   });
+
+  // Follow child `i`. In mainline view, picking a side line (index >= 1) would land on a move the
+  // mainline-only list can't render, so switch to variations view first to keep it visible.
+  const follow = useCallback(
+    (i: number) => {
+      if (mode === "mainline" && i >= 1) setMode?.("variations");
+      goToMove(followPath(position, i));
+    },
+    [mode, setMode, goToMove, position],
+  );
 
   // Reset selection + un-dismiss whenever we move to a different position.
   useEffect(() => {
@@ -115,7 +130,7 @@ export default function ForkChooser({
         e.preventDefault();
         e.stopPropagation();
       } else if (e.key === "ArrowRight" || e.key === "Enter") {
-        goToMove(followPath(position, selectedRef.current));
+        follow(selectedRef.current);
         e.preventDefault();
         e.stopPropagation();
       } else if (e.key === "Escape") {
@@ -125,7 +140,7 @@ export default function ForkChooser({
       } else if (/^[1-9]$/.test(e.key)) {
         const i = Number(e.key) - 1;
         if (i < candidates.length) {
-          goToMove(followPath(position, i));
+          follow(i);
           e.preventDefault();
           e.stopPropagation();
         }
@@ -133,7 +148,7 @@ export default function ForkChooser({
     };
     window.addEventListener("keydown", onKey, { capture: true });
     return () => window.removeEventListener("keydown", onKey, { capture: true });
-  }, [open, candidates.length, posKey, position, goToMove]);
+  }, [open, candidates.length, posKey, follow]);
 
   // Clicking anywhere outside the card dismisses it (until the next move).
   useEffect(() => {
@@ -186,7 +201,7 @@ export default function ForkChooser({
                   selectedRef.current = i;
                   setSelected(i);
                 }}
-                onClick={() => goToMove(followPath(position, i))}
+                onClick={() => follow(i)}
               >
                 <span className={classes.idx}>{i + 1}</span>
                 <span className={classes.san}>{moveText}</span>
