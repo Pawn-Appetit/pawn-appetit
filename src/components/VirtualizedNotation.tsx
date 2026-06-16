@@ -18,6 +18,7 @@ import {
 } from "@/utils/notationFlatten";
 import { getNodeAtPath } from "@/utils/treeReducer";
 import CompleteMoveCell from "./CompleteMoveCell";
+import ForkChooser from "./ForkChooser";
 import * as styles from "./GameNotation.css";
 
 const MAX_LINE_PLIES = 40;
@@ -172,12 +173,12 @@ function VirtualizedNotation({
   mode,
   showComments,
   invisible,
-  toggleVariationState: _toggleVariationState,
+  setMode,
 }: {
   mode: NotationViewMode;
   showComments: boolean;
   invisible?: boolean;
-  toggleVariationState?: () => void;
+  setMode?: (mode: NotationViewMode) => void;
 }) {
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (s) => s.root);
@@ -321,6 +322,7 @@ function VirtualizedNotation({
           );
         })}
       </div>
+      <ForkChooser parentRef={parentRef} mode={mode} setMode={setMode} />
     </ScrollArea>
   );
 }

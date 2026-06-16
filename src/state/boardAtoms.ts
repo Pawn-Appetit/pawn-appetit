@@ -10,6 +10,7 @@ export const showDestsAtom = atomWithStorage<boolean>("show-dests", true);
 export const snapArrowsAtom = atomWithStorage<boolean>("snap-dests", true);
 export const showArrowsAtom = atomWithStorage<boolean>("show-arrows", true);
 export const showConsecutiveArrowsAtom = atomWithStorage<boolean>("show-consecutive-arrows", false);
+export const forkChooserAutoAtom = atomWithStorage<boolean>("fork-chooser-auto", true);
 export const eraseDrawablesOnClickAtom = atomWithStorage<boolean>(
     "erase-drawables-on-click",
     false,
