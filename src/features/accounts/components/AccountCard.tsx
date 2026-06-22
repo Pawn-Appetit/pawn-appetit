@@ -29,6 +29,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { appDataDir, resolve } from "@tauri-apps/api/path";
+import { exists } from "@tauri-apps/plugin-fs";
 import { error, info } from "@tauri-apps/plugin-log";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -38,6 +39,7 @@ import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { downloadChessCom } from "@/utils/chess.com/api";
 import { getDatabases, query_games } from "@/utils/db";
 import { capitalize, parseDate } from "@/utils/format";
+import { gameDateToTimestamp } from "@/utils/lastGameDate";
 import { downloadLichess } from "@/utils/lichess/api";
 import type { Session } from "@/utils/session";
 import { unwrap } from "@/utils/unwrap";
@@ -256,8 +258,12 @@ export function AccountCard({
       ? "0"
       : Math.min(100, Math.max(0, (downloadedGames / effectiveTotal) * 100)).toFixed(2);
 
-  async function getLastGameDate({ database: db }: { database: DatabaseInfo }) {
-    const games = await query_games(db.file, {
+  // Cursor for incremental download/import: the timestamp of the newest game
+  // already stored. Derived from the database FILE (not from React state), so a
+  // not-yet-loaded `currentDatabase` can't make it null and trigger a full
+  // re-import of the whole history (which duplicates every game).
+  async function getLastGameDate(dbFile: string): Promise<number | null> {
+    const games = await query_games(dbFile, {
       options: {
         page: 1,
         pageSize: 1,
@@ -266,14 +272,10 @@ export function AccountCard({
         skipCount: false,
       },
     });
-    const count = games.count ?? 0;
-    if (count > 0 && games.data[0].date && games.data[0].time) {
-      const [year, month, day] = games.data[0].date.split(".").map(Number);
-      const [hour, minute, second] = games.data[0].time.split(":").map(Number);
-      const d = Date.UTC(year, month - 1, day, hour, minute, second);
-      return d;
+    if ((games.count ?? 0) === 0) {
+      return null;
     }
-    return null;
+    return gameDateToTimestamp(games.data[0]?.date, games.data[0]?.time);
   }
 
   return (
@@ -502,8 +504,13 @@ export function AccountCard({
                     onClick={async () => {
                       setLoading(true);
                       try {
-                        const lastGameDate = currentDatabase
-                          ? await getLastGameDate({ database: currentDatabase })
+                        const dbPath = await resolve(
+                          await appDataDir(),
+                          "db",
+                          `${title}_${type}.db3`,
+                        );
+                        const lastGameDate = (await exists(dbPath))
+                          ? await getLastGameDate(dbPath)
                           : null;
                         if (type === "lichess") {
                           await downloadLichess(
