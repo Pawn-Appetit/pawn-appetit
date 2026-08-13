@@ -142,6 +142,15 @@ pub enum Error {
     #[allow(dead_code)]
     #[error("Illegal move error: {0}")]
     IllegalMoveError(String),
+
+    #[error("Invalid square index: {0} (expected 0-63)")]
+    InvalidSquareIndex(u8),
+
+    #[error("Unknown piece in material filter: {0}")]
+    InvalidPieceLimit(String),
+
+    #[error("Exact material count is below the pieces required by the query board")]
+    InvalidMaterialCount,
 }
 
 impl serde::Serialize for Error {

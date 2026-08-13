@@ -393,6 +393,32 @@ async searchPosition(file: string, query: GameQueryJs, tabId: string) : Promise<
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Build (or resume building) the piece-square index for a database.
+ * 
+ * The build is incremental: it starts from the highest game already covered,
+ * so it is safe to interrupt and re-run, and re-running after an import only
+ * processes the newly added games. Games are never modified.
+ */
+async buildPositionIndex(file: string) : Promise<Result<IndexBuildReport, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("build_position_index", { file }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Drop the piece-square index and its bookkeeping.
+ */
+async deletePositionIndex(file: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("delete_position_index", { file }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async getPlayers(file: string, query: PlayerQuery) : Promise<Result<QueryResponse<Player[]>, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_players", { file, query }) };
@@ -637,13 +663,60 @@ export type GameSort = "id" | "date" | "whiteElo" | "blackElo" | "averageElo" | 
  */
 export type GoMode = { t: "PlayersTime"; c: PlayersTime } | { t: "Depth"; c: number } | { t: "Time"; c: number } | { t: "Nodes"; c: number } | { t: "Infinite" }
 /**
+ * Outcome of a [`build_position_index`] run.
+ */
+export type IndexBuildReport = { 
+/**
+ * Games indexed by this run.
+ */
+indexed: bigint; 
+/**
+ * Games whose moves could not be decoded, and so were left unindexed.
+ */
+skipped: bigint; 
+/**
+ * Highest `Games.ID` now covered.
+ */
+indexed_up_to: number; 
+/**
+ * Wall-clock duration of the run.
+ */
+elapsed_ms: bigint }
+/**
  * Analysis result for a single move/position.
  */
 export type MoveAnalysis = { best: BestMoves[]; novelty: boolean; is_sacrifice: boolean }
-export type NormalizedGame = { id: number; fen: string; event: string; event_id: number; site: string; site_id: number; date?: string | null; time?: string | null; round?: string | null; white: string; white_id: number; white_elo?: number | null; black: string; black_id: number; black_elo?: number | null; result: Outcome; time_control?: string | null; eco?: string | null; ply_count?: number | null; moves: string }
+export type NormalizedGame = { id: number; fen: string; event: string; event_id: number; site: string; site_id: number; date?: string | null; time?: string | null; round?: string | null; white: string; white_id: number; white_elo?: number | null; black: string; black_id: number; black_elo?: number | null; result: Outcome; time_control?: string | null; eco?: string | null; ply_count?: number | null; moves: string; 
+/**
+ * Ply at which a position search matched this game, if it came from one.
+ * 
+ * 0 means the starting position matched. `None` everywhere else.
+ */
+match_ply?: number | null; 
+/**
+ * FEN of the matched position, for previewing a result without replaying.
+ */
+match_fen?: string | null; 
+/**
+ * The move played from the matched position, as origin/destination
+ * squares (`"e2e4"`). `None` when the match is the last position.
+ */
+match_next_move?: string | null }
 export type OutOpening = { name: string; fen: string }
 export type Outcome = "1-0" | "0-1" | "1/2-1/2" | "*"
 export type PackageManagerResult = { success: boolean; stdout: string; stderr: string }
+/**
+ * An exact count for one piece in the matched position.
+ */
+export type PieceCountJs = { 
+/**
+ * `"white"` or `"black"`.
+ */
+color: string; 
+/**
+ * `"pawn"`, `"knight"`, `"bishop"`, `"rook"`, `"queen"` or `"king"`.
+ */
+role: string; count: number }
 export type Player = { id: number; name: string | null; elo: number | null }
 export type PlayerGameInfo = { site_stats_data: SiteStatsData[] }
 export type PlayerQuery = { options: QueryOptions<PlayerSort>; name?: string | null; range?: [number, number] | null }
@@ -652,7 +725,18 @@ export type PlayerSort = "id" | "name" | "elo"
  * Player time controls for GoMode::PlayersTime.
  */
 export type PlayersTime = { white: number; black: number; winc: number; binc: number }
-export type PositionQueryJs = { fen: string; type_: string }
+export type PositionQueryJs = { fen: string; type_: string; 
+/**
+ * Partial only: square indices (0 = a1 … 63 = h8) that must be empty.
+ * 
+ * Omitted or empty reproduces plain partial matching exactly.
+ */
+forbidden_squares?: number[] | null; 
+/**
+ * Partial only: the exact number of a piece the matched position must
+ * hold. Pieces not listed are unconstrained.
+ */
+exact_pieces?: PieceCountJs[] | null }
 export type PositionStats = { move: string; white: number; draw: number; black: number }
 export type Puzzle = { id: number; fen: string; moves: string; rating: number; rating_deviation: number; popularity: number; nb_plays: number }
 /**

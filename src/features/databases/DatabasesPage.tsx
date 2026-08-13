@@ -8,6 +8,7 @@ import {
   Group,
   Loader,
   Paper,
+  Progress as ProgressBar,
   ScrollArea,
   SimpleGrid,
   Skeleton,
@@ -37,7 +38,7 @@ import { useAtom } from "jotai";
 import { DataTable } from "mantine-datatable";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { DatabaseInfo, PuzzleDatabaseInfo } from "@/bindings";
+import type { DatabaseInfo, IndexBuildReport, PuzzleDatabaseInfo } from "@/bindings";
 import { commands } from "@/bindings";
 import GenericCard from "@/components/GenericCard";
 import * as classes from "@/components/GenericCard/styles.css";
@@ -56,6 +57,15 @@ type Progress = {
   total: number;
   elapsed: number;
 };
+
+/** Payload of the `position_index_progress` event emitted while the booster builds. */
+type PositionIndexProgress = {
+  processed: number;
+  total: number;
+  finished: boolean;
+};
+
+type PositionIndexStatus = { kind: "built"; report: IndexBuildReport } | { kind: "deleted" } | null;
 
 type UnifiedDatabase =
   | (DatabaseInfo & { dbType: "game" })
@@ -1057,6 +1067,7 @@ function AdvancedSettings({
   return (
     <Stack>
       <PlayerMerger selectedDatabase={selectedDatabase} />
+      <SearchBooster key={selectedDatabase.file} selectedDatabase={selectedDatabase} />
       <DuplicateRemover selectedDatabase={selectedDatabase} reload={reload} />
     </Stack>
   );
@@ -1097,6 +1108,111 @@ function PlayerMerger({ selectedDatabase }: { selectedDatabase: DatabaseInfo }) 
         </Button>
         <PlayerSearchInput label="Player 2" file={selectedDatabase.file} setValue={setPlayer2} />
       </Group>
+    </Stack>
+  );
+}
+
+function SearchBooster({ selectedDatabase }: { selectedDatabase: DatabaseInfo }) {
+  const { t } = useTranslation();
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState<PositionIndexProgress | null>(null);
+  const [status, setStatus] = useState<PositionIndexStatus>(null);
+
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+
+    const setupProgressListener = async () => {
+      unlisten = await listen<PositionIndexProgress>("position_index_progress", ({ payload }) => {
+        setProgress(payload.finished ? null : payload);
+      });
+    };
+
+    setupProgressListener();
+    return () => unlisten?.();
+  }, []);
+
+  const handleBuild = useCallback(async () => {
+    setLoading(true);
+    setStatus(null);
+    try {
+      const report = unwrap(await commands.buildPositionIndex(selectedDatabase.file));
+      setStatus({ kind: "built", report });
+    } catch {
+      // unwrap has already surfaced the error to the user
+    } finally {
+      setLoading(false);
+      setProgress(null);
+    }
+  }, [selectedDatabase.file]);
+
+  const handleDelete = useCallback(async () => {
+    setLoading(true);
+    try {
+      unwrap(await commands.deletePositionIndex(selectedDatabase.file));
+      setStatus({ kind: "deleted" });
+    } catch {
+      // unwrap has already surfaced the error to the user
+    } finally {
+      setLoading(false);
+      setProgress(null);
+    }
+  }, [selectedDatabase.file]);
+
+  return (
+    <Stack>
+      <Text fz="lg" fw="bold">
+        {t("features.databases.settings.searchBooster")}
+      </Text>
+      <Text fz="sm">{t("features.databases.settings.searchBoosterDesc")}</Text>
+      <Group>
+        <Button loading={loading} onClick={handleBuild}>
+          {t("features.databases.settings.buildSearchBooster")}
+        </Button>
+        <Button variant="outline" color="red" disabled={loading} onClick={handleDelete}>
+          {t("features.databases.settings.deleteSearchBooster")}
+        </Button>
+      </Group>
+      {loading && (
+        <Stack gap="xs">
+          <ProgressBar
+            animated={progress === null}
+            value={
+              progress && progress.total > 0 ? (progress.processed / progress.total) * 100 : 100
+            }
+            size="xs"
+          />
+          {progress && (
+            <Text fz="xs" c="dimmed">
+              {t("features.databases.settings.searchBoosterProgress", {
+                processed: progress.processed,
+                total: progress.total,
+              })}
+            </Text>
+          )}
+        </Stack>
+      )}
+      {!loading && status?.kind === "built" && (
+        <Stack gap={0}>
+          <Text fz="xs" c="dimmed">
+            {t("features.databases.settings.searchBoosterBuilt", {
+              indexed: status.report.indexed,
+              duration: t("units.duration", { duration: status.report.elapsed_ms }),
+            })}
+          </Text>
+          {status.report.skipped > 0 && (
+            <Text fz="xs" c="dimmed">
+              {t("features.databases.settings.searchBoosterSkipped", {
+                skipped: status.report.skipped,
+              })}
+            </Text>
+          )}
+        </Stack>
+      )}
+      {!loading && status?.kind === "deleted" && (
+        <Text fz="xs" c="dimmed">
+          {t("features.databases.settings.searchBoosterDeleted")}
+        </Text>
+      )}
     </Stack>
   );
 }

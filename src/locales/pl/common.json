@@ -286,7 +286,12 @@
         "selectReference": "dodaj bazę danych",
         "noReference3": "i oznacz ją jako bazę odniesienia.",
         "timeControl": "Kontrola czasu",
-        "averageRating": "Średnia ocena"
+        "averageRating": "Średnia ocena",
+        "fitToPage": "Fit",
+        "noGames": "No games match this search",
+        "showingSubset": "Showing the first {{shown}} of {{total}} matching games",
+        "viewBoards": "Show positions",
+        "viewList": "Show list"
       },
       "annotate": {
         "writeHere": "Napisz tutaj..."
@@ -351,7 +356,17 @@
         "removeEmpty": "Usuń puste gry",
         "actions": "Akcje",
         "addGames": "Dodaj gry",
-        "exportPGN": "Eksportuj do PGN"
+        "exportPGN": "Eksportuj do PGN",
+        "buildSearchBooster": "Build Booster",
+        "deleteSearchBooster": "Delete Booster",
+        "searchBooster": "Search Booster",
+        "searchBoosterBuilt": "Indexed {{indexed}} games in {{duration}}.",
+        "searchBoosterDeleteFailed": "Could not delete the search booster",
+        "searchBoosterDeleted": "Booster deleted. Position searches will scan every game until you build it again.",
+        "searchBoosterDesc": "The search booster indexes every position in the database so position searches can skip most games. It takes extra disk space, and you can delete and rebuild it at any time. Build it again after importing games to cover the new ones.",
+        "searchBoosterFailed": "Could not build the search booster",
+        "searchBoosterProgress": "Indexed {{processed}} of {{total}} games",
+        "searchBoosterSkipped": "{{skipped}} games could not be read and were left out of the booster."
       },
       "delete": {
         "title": "Usuń bazę danych",
@@ -485,5 +500,15 @@
     "duration": "{{duration, duration}}",
     "durationLong": "{{duration, durationLong}}",
     "score": "{{score, score}}"
+  },
+  "databaseOptions": {
+    "anyCount": "Any",
+    "clearMaterial": "Clear",
+    "eitherColor": "Any",
+    "markEmpty": "Mark square as empty — games where anything stands here are excluded",
+    "material": "Material",
+    "materialCountTooLow": "An exact count cannot be lower than the pieces placed on the board.",
+    "materialExact": "Exact material",
+    "materialExactHint": "Choose the exact total for each piece, or Any to leave it unrestricted."
   }
 }

@@ -12,6 +12,7 @@ import {
     type QueryResponse,
 } from "@/bindings";
 import type { LocalOptions } from "@/components/panels/database/DatabasePanel";
+import { invalidExactMaterialCounts } from "./material";
 import { unwrap } from "./unwrap";
 
 export type SuccessDatabaseInfo = Extract<DatabaseInfo, { type: "success" }>;
@@ -96,9 +97,7 @@ export type Speed =
     | "Correspondence"
     | "Unknown";
 
-function normalizeRange(
-    range?: [number, number] | null,
-): [number, number] | undefined {
+function normalizeRange(range?: [number, number] | null): [number, number] | undefined {
     if (!range || range[1] - range[0] === 3000) {
         return undefined;
     }
@@ -232,14 +231,32 @@ export async function getTournamentGames(file: string, id: number) {
 }
 
 export async function searchPosition(options: LocalOptions, tab: string) {
+    if (invalidExactMaterialCounts(options.fen, options.exact_pieces).length > 0) {
+        throw new Error("Exact material count cannot be lower than the pieces placed on the board");
+    }
+
     const res = await commands.searchPosition(
         options.path!,
         {
-            player1: options.color === "white" ? options.player : undefined,
-            player2: options.color === "black" ? options.player : undefined,
+            // "any" puts the player in player1 and lets `sides` widen it to
+            // either seat, matching how the game list already reads them.
+            player1: options.color === "black" ? undefined : (options.player ?? undefined),
+            player2: options.color === "black" ? (options.player ?? undefined) : undefined,
+            sides: options.color === "any" ? "Any" : undefined,
             position: {
                 fen: options.fen,
                 type_: options.type,
+                // Exact search pins every square already, so restrictions
+                // only travel with a partial query.
+                forbidden_squares:
+                    options.type === "partial" ? (options.forbidden_squares ?? null) : null,
+                exact_pieces:
+                    options.type === "partial" && options.exact_pieces
+                        ? Object.entries(options.exact_pieces).map(([key, count]) => {
+                              const [color, role] = key.split("-");
+                              return { color, role, count };
+                          })
+                        : null,
             },
             start_date: options.start_date,
             end_date: options.end_date,

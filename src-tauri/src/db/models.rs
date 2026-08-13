@@ -94,6 +94,46 @@ pub struct NewGame<'a> {
     pub pawn_home: i32,
 }
 
+/// One row of piece-square occupancy masks for a game.
+#[derive(Insertable, Debug)]
+#[diesel(table_name = game_index)]
+pub struct NewGameIndex {
+    pub game_id: i32,
+    pub wp: i64,
+    pub wn: i64,
+    pub wb: i64,
+    pub wr: i64,
+    pub wq: i64,
+    pub wk: i64,
+    pub bp: i64,
+    pub bn: i64,
+    pub bb: i64,
+    pub br: i64,
+    pub bq: i64,
+    pub bk: i64,
+}
+
+impl NewGameIndex {
+    /// Build a row from masks ordered white pawn..king, then black pawn..king.
+    pub fn new(game_id: i32, masks: [i64; 12]) -> Self {
+        Self {
+            game_id,
+            wp: masks[0],
+            wn: masks[1],
+            wb: masks[2],
+            wr: masks[3],
+            wq: masks[4],
+            wk: masks[5],
+            bp: masks[6],
+            bn: masks[7],
+            bb: masks[8],
+            br: masks[9],
+            bq: masks[10],
+            bk: masks[11],
+        }
+    }
+}
+
 #[derive(Default, Debug, Queryable, Serialize, Deserialize, Identifiable, Clone)]
 pub struct Site {
     pub id: i32,
@@ -193,6 +233,18 @@ pub struct NormalizedGame {
     #[specta(optional)]
     pub ply_count: Option<i32>,
     pub moves: String,
+    /// Ply at which a position search matched this game, if it came from one.
+    ///
+    /// 0 means the starting position matched. `None` everywhere else.
+    #[specta(optional)]
+    pub match_ply: Option<i32>,
+    /// FEN of the matched position, for previewing a result without replaying.
+    #[specta(optional)]
+    pub match_fen: Option<String>,
+    /// The move played from the matched position, as origin/destination
+    /// squares (`"e2e4"`). `None` when the match is the last position.
+    #[specta(optional)]
+    pub match_next_move: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Type)]

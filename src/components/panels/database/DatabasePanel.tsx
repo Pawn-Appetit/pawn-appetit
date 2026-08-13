@@ -37,8 +37,20 @@ export type LocalOptions = {
   path: string | null;
   fen: string;
   type: "exact" | "partial";
+  /**
+   * Partial only: square indices (0 = a1 … 63 = h8) that must hold no piece.
+   *
+   * Every other empty square of the query board stays "don't care".
+   */
+  forbidden_squares?: number[];
+  /**
+   * Partial only: exact count of each piece in the matched position, keyed
+   * `"white-knight"`. A piece with no entry is unconstrained.
+   */
+  exact_pieces?: Record<string, number>;
   player: number | null;
-  color: "white" | "black";
+  /** Which seat the named player took; "any" means either. */
+  color: "white" | "black" | "any";
   start_date?: string;
   end_date?: string;
   result: "any" | "whitewon" | "draw" | "blackwon";
@@ -114,7 +126,10 @@ function DatabasePanel() {
 
   useEffect(() => {
     if (db === "local") {
-      setLocalOptions((q) => ({ ...q, fen: debouncedFen }));
+      // Exact search follows the board as you play through a game. A partial
+      // query is built by hand, so tracking the board would throw it away the
+      // moment a game is opened.
+      setLocalOptions((q) => (q.type === "exact" ? { ...q, fen: debouncedFen } : q));
     }
   }, [debouncedFen, setLocalOptions, db]);
 
@@ -143,6 +158,17 @@ function DatabasePanel() {
 
   const tab = useAtomValue(currentTabAtom);
   const [tabType, setTabType] = useAtom(currentDbTabAtom);
+
+  const isPartialLocal = db === "local" && localOptions.type === "partial";
+
+  // Stats aggregate the move played after each match, which only means
+  // something when every match is the same position. The tab is disabled for
+  // partial queries, but disabling does not deselect it.
+  useEffect(() => {
+    if (isPartialLocal && tabType === "stats") {
+      setTabType("games");
+    }
+  }, [isPartialLocal, tabType, setTabType]);
 
   const {
     data: openingData,
@@ -215,7 +241,14 @@ function DatabasePanel() {
           <OpeningsTable openings={openingData?.openings || []} loading={isLoading} />
         </PanelWithError>
         <PanelWithError value="games" error={error} type={db}>
-          <GamesTable games={openingData?.games || []} loading={isLoading} />
+          <GamesTable
+            games={openingData?.games || []}
+            loading={isLoading}
+            totalMatches={grandTotal}
+            // Partial searches match a different position in every game, so
+            // the boards are worth showing; an exact search repeats one.
+            asBoards={dbType.type === "local" && dbType.options.type === "partial"}
+          />
         </PanelWithError>
         <PanelWithError value="options" error={error} type={db}>
           <ScrollArea h="100%" offsetScrollbars>
@@ -247,7 +280,11 @@ function PanelWithError(props: {
   }
 
   return (
-    <Tabs.Panel pt="xs" value={props.value} flex={1}>
+    // miw={0}: a flex item defaults to min-width:auto and so refuses to shrink
+    // below its content. Wide content — a grid of fixed columns, a table —
+    // would otherwise push the panel past the width the tabs allot it, and the
+    // overflow is clipped rather than scrolled.
+    <Tabs.Panel pt="xs" value={props.value} flex={1} miw={0}>
       {children}
     </Tabs.Panel>
   );

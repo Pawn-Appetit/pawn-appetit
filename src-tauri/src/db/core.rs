@@ -23,6 +23,9 @@ pub fn init_db(conn: &mut SqliteConnection, title: &str, description: &str) -> R
     // Create tables
     conn.batch_execute(CREATE_TABLES_SQL)?;
 
+    // Derived position-search index; also created on demand for older databases
+    super::game_index::ensure_table(conn)?;
+
     // Insert initial seed data
     conn.batch_execute(INITIAL_DATA_SQL)?;
 
@@ -68,6 +71,9 @@ pub fn normalize_game(
         time_control: game.time_control,
         eco: game.eco,
         ply_count: game.ply_count,
+        match_ply: None,
+        match_fen: None,
+        match_next_move: None,
         fen: fen.to_string(),
         moves: GameTree::from_bytes(
             &game.moves,

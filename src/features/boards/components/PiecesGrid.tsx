@@ -1,5 +1,5 @@
 import type { Piece as PieceType } from "@lichess-org/chessground/types";
-import { SimpleGrid } from "@mantine/core";
+import { Box, SimpleGrid, Tooltip, UnstyledButton } from "@mantine/core";
 import { COLORS, ROLES } from "chessops";
 import { makeFen, parseFen } from "chessops/fen";
 import Piece from "@/components/Piece";
@@ -12,6 +12,7 @@ function PiecesGrid({
   orientation = "white",
   selectedPiece,
   setSelectedPiece,
+  emptyMarker,
 }: {
   fen: string;
   boardRef: React.MutableRefObject<HTMLDivElement | null>;
@@ -20,6 +21,17 @@ function PiecesGrid({
   orientation?: "white" | "black";
   selectedPiece?: PieceType | null;
   setSelectedPiece?: (piece: PieceType | null) => void;
+  /**
+   * Adds a "must be empty" marker alongside the pieces, selected like one.
+   *
+   * Only meaningful for partial position search, where a square can be
+   * required to hold nothing; omit it everywhere else.
+   */
+  emptyMarker?: {
+    selected: boolean;
+    label: string;
+    onSelect: () => void;
+  };
 }) {
   const handlePieceSelect = (piece: PieceType, isDragging: boolean) => {
     if (
@@ -56,6 +68,34 @@ function PiecesGrid({
             selectedPiece={selectedPiece}
           />
         )),
+      )}
+      {emptyMarker && (
+        <Tooltip label={emptyMarker.label} withArrow>
+          <UnstyledButton
+            onClick={emptyMarker.onSelect}
+            aria-label={emptyMarker.label}
+            aria-pressed={emptyMarker.selected}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+              height: "100%",
+              borderRadius: "var(--mantine-radius-sm)",
+              background: emptyMarker.selected ? "var(--mantine-color-red-light)" : "transparent",
+            }}
+          >
+            {/* Matches the red ring drawn on forbidden squares. */}
+            <Box
+              style={{
+                width: "min(60%, 2.5rem)",
+                aspectRatio: "1",
+                borderRadius: "50%",
+                border: "2px solid var(--mantine-color-red-6)",
+              }}
+            />
+          </UnstyledButton>
+        </Tooltip>
       )}
     </SimpleGrid>
   );

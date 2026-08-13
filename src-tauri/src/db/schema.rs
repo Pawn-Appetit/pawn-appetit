@@ -67,6 +67,38 @@ diesel::table! {
 }
 
 diesel::table! {
+    #[sql_name = "GameIndex"]
+    game_index (game_id) {
+        #[sql_name = "GameID"]
+        game_id -> Integer,
+        #[sql_name = "WP"]
+        wp -> BigInt,
+        #[sql_name = "WN"]
+        wn -> BigInt,
+        #[sql_name = "WB"]
+        wb -> BigInt,
+        #[sql_name = "WR"]
+        wr -> BigInt,
+        #[sql_name = "WQ"]
+        wq -> BigInt,
+        #[sql_name = "WK"]
+        wk -> BigInt,
+        #[sql_name = "BP"]
+        bp -> BigInt,
+        #[sql_name = "BN"]
+        bn -> BigInt,
+        #[sql_name = "BB"]
+        bb -> BigInt,
+        #[sql_name = "BR"]
+        br -> BigInt,
+        #[sql_name = "BQ"]
+        bq -> BigInt,
+        #[sql_name = "BK"]
+        bk -> BigInt,
+    }
+}
+
+diesel::table! {
     #[sql_name = "Comments"]
     comments (id) {
         #[sql_name = "ID"]
@@ -112,5 +144,8 @@ diesel::table! {
 
 diesel::joinable!(games -> events (event_id));
 diesel::joinable!(games -> sites (site_id));
+diesel::joinable!(game_index -> games (game_id));
 
-diesel::allow_tables_to_appear_in_same_query!(comments, events, games, info, players, sites,);
+diesel::allow_tables_to_appear_in_same_query!(
+    comments, events, game_index, games, info, players, sites,
+);

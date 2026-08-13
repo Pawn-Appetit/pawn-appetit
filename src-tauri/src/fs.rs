@@ -588,7 +588,7 @@ pub async fn set_file_as_executable(path: String) -> Result<(), Error> {
 
     #[cfg(not(unix))]
     {
-        warn!(
+        log::warn!(
             "set_file_as_executable called on Windows for: {}",
             path.display()
         );

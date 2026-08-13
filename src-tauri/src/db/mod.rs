@@ -2,6 +2,7 @@ mod connection;
 mod core;
 mod encoding;
 mod export;
+mod game_index;
 mod import;
 mod maintenance;
 mod models;
@@ -39,6 +40,7 @@ use tauri_specta::Event as _;
 
 pub(crate) use self::connection::{get_db_or_create, ConnectionOptions, JournalMode};
 pub use self::export::export_to_pgn;
+pub use self::game_index::{build_position_index, delete_position_index};
 pub(crate) use self::import::get_pawn_home;
 pub use self::maintenance::{
     clear_games, delete_database, delete_duplicated_games, delete_empty_games,

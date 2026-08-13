@@ -116,12 +116,26 @@ const localOptionsFamily = atomFamily((tab: string) =>
         path: null,
         type: "exact",
         fen: "",
+        forbidden_squares: [],
         player: null,
         color: "white",
         result: "any",
     }),
 );
 export const currentLocalOptionsAtom = tabValue(localOptionsFamily);
+
+/**
+ * Give a specific tab a starting search query.
+ *
+ * Options are per-tab, so a tab opened from search results would otherwise
+ * begin with an empty exact search and lose the query that produced it.
+ */
+export const seedLocalOptionsAtom = atom(
+    null,
+    (_get, set, { tab, options }: { tab: string; options: LocalOptions }) => {
+        set(localOptionsFamily(tab), options);
+    },
+);
 
 const dbTypeFamily = atomFamily((tab: string) => atom<"local" | "lch_all" | "lch_master">("local"));
 export const currentDbTypeAtom = tabValue(dbTypeFamily);
@@ -149,7 +163,4 @@ const pgnOptionsFamily = atomFamily((tab: string) =>
 export const currentPgnOptionsAtom = tabValue(pgnOptionsFamily);
 
 export const sidebarCollapsedAtom = atomWithStorage("ui.sidebar.collapsed", true);
-export const densityAtom = atomWithStorage<"comfortable" | "compact">(
-    "ui.density",
-    "comfortable",
-);
+export const densityAtom = atomWithStorage<"comfortable" | "compact">("ui.density", "comfortable");

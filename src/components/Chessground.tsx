@@ -27,10 +27,15 @@ export function Chessground({
 
   const setBoardFenRef = useRef(setBoardFen);
   const setSelectedPieceRef = useRef(setSelectedPiece);
+  // The wrapper owns `events.select`, so a caller's own handler has to be
+  // forwarded by hand. Held in a ref so a new closure each render does not
+  // force the board to be reconfigured.
+  const onSelectRef = useRef(chessgroundConfig.events?.select);
 
   useEffect(() => {
     setBoardFenRef.current = setBoardFen;
     setSelectedPieceRef.current = setSelectedPiece;
+    onSelectRef.current = chessgroundConfig.events?.select;
   });
 
   const handleChange = useCallback(() => {
@@ -41,8 +46,14 @@ export function Chessground({
 
   const handleSelect = useCallback(
     (key: Key) => {
+      onSelectRef.current?.(key);
       if (chessgroundConfig.movable?.free && selectedPiece && api) {
-        api.setPieces(new Map([[key, selectedPiece]]));
+        // Clicking a square that already holds the selected piece takes it
+        // away again, so the same click both places and removes.
+        const existing = api.state.pieces.get(key);
+        const alreadyThere =
+          existing?.role === selectedPiece.role && existing?.color === selectedPiece.color;
+        api.setPieces(new Map([[key, alreadyThere ? undefined : selectedPiece]]));
         if (setBoardFenRef.current) {
           setBoardFenRef.current(api.getFen());
         }
@@ -117,6 +128,7 @@ export function Chessground({
     chessgroundConfig.selectable?.enabled,
     chessgroundConfig.highlight,
     chessgroundConfig.animation,
+    chessgroundConfig.drawable,
   ]);
 
   useEffect(() => {

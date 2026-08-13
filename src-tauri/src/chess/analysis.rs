@@ -158,6 +158,8 @@ impl GameAnalysisService {
             let query = PositionQueryJs {
                 fen: fen.to_string(),
                 type_: "exact".to_string(),
+                forbidden_squares: None,
+                exact_pieces: None,
             };
 
             analysis.is_sacrifice = fens[i].2;
