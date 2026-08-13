@@ -42,6 +42,7 @@ const labelFallbacks: Record<AppNavigationItem["id"], string> = {
   dashboard: "Dashboard",
   analysis: "Analysis",
   games: "Games",
+  accounts: "Accounts",
   databases: "Databases",
   openings: "Openings",
   repertoire: "Repertoire",

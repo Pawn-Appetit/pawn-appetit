@@ -7,6 +7,7 @@ import {
     IconLayoutDashboard,
     IconSettings,
     IconTarget,
+    IconUsers,
 } from "@tabler/icons-react";
 
 export type AppNavigationItem = {
@@ -14,6 +15,7 @@ export type AppNavigationItem = {
         | "dashboard"
         | "analysis"
         | "games"
+        | "accounts"
         | "databases"
         | "openings"
         | "repertoire"
@@ -49,6 +51,13 @@ export const appNavigationItems: AppNavigationItem[] = [
         labelKey: "features.sidebar.games",
         icon: IconChess,
         url: "/files",
+        section: "library",
+    },
+    {
+        id: "accounts",
+        labelKey: "features.sidebar.accounts",
+        icon: IconUsers,
+        url: "/accounts",
         section: "library",
     },
     {
