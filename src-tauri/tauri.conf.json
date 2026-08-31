@@ -105,7 +105,7 @@
         ],
         "enable": true
       },
-      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost data: blob: https:; media-src 'self' asset: https://asset.localhost http://127.0.0.1:*; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https://github.com http://127.0.0.1:*"
+      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost data: blob: https:; media-src 'self' asset: https://asset.localhost http://127.0.0.1:*; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https://github.com https://api.github.com http://127.0.0.1:*"
     }
   }
 }

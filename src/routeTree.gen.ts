@@ -9,33 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as FilesRouteImport } from './routes/files'
-import { Route as EnginesRouteImport } from './routes/engines'
-import { Route as BoardsRouteImport } from './routes/boards'
-import { Route as AccountsRouteImport } from './routes/accounts'
-import { Route as TrainRouteRouteImport } from './routes/train/route'
-import { Route as SettingsRouteRouteImport } from './routes/settings/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as TrainIndexRouteImport } from './routes/train/index'
-import { Route as SettingsIndexRouteImport } from './routes/settings/index'
+import { Route as AccountsRouteImport } from './routes/accounts'
+import { Route as BoardsRouteImport } from './routes/boards'
+import { Route as EnginesRouteImport } from './routes/engines'
+import { Route as FilesRouteImport } from './routes/files'
+import { Route as SettingsRouteRouteImport } from './routes/settings/route'
+import { Route as TrainRouteRouteImport } from './routes/train/route'
 import { Route as DatabasesIndexRouteImport } from './routes/databases/index'
-import { Route as TrainPracticeRouteImport } from './routes/train/practice'
-import { Route as SettingsKeyboardShortcutsRouteImport } from './routes/settings/keyboard-shortcuts'
 import { Route as DatabasesDatabaseIdRouteImport } from './routes/databases/$databaseId'
+import { Route as SettingsIndexRouteImport } from './routes/settings/index'
+import { Route as SettingsKeyboardShortcutsRouteImport } from './routes/settings/keyboard-shortcuts'
+import { Route as TrainIndexRouteImport } from './routes/train/index'
+import { Route as TrainPracticeRouteImport } from './routes/train/practice'
 
-const FilesRoute = FilesRouteImport.update({
-  id: '/files',
-  path: '/files',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EnginesRoute = EnginesRouteImport.update({
-  id: '/engines',
-  path: '/engines',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BoardsRoute = BoardsRouteImport.update({
-  id: '/boards',
-  path: '/boards',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountsRoute = AccountsRouteImport.update({
@@ -43,9 +33,19 @@ const AccountsRoute = AccountsRouteImport.update({
   path: '/accounts',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TrainRouteRoute = TrainRouteRouteImport.update({
-  id: '/train',
-  path: '/train',
+const BoardsRoute = BoardsRouteImport.update({
+  id: '/boards',
+  path: '/boards',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnginesRoute = EnginesRouteImport.update({
+  id: '/engines',
+  path: '/engines',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FilesRoute = FilesRouteImport.update({
+  id: '/files',
+  path: '/files',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRouteRoute = SettingsRouteRouteImport.update({
@@ -53,30 +53,25 @@ const SettingsRouteRoute = SettingsRouteRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const TrainRouteRoute = TrainRouteRouteImport.update({
+  id: '/train',
+  path: '/train',
   getParentRoute: () => rootRouteImport,
-} as any)
-const TrainIndexRoute = TrainIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => TrainRouteRoute,
-} as any)
-const SettingsIndexRoute = SettingsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => SettingsRouteRoute,
 } as any)
 const DatabasesIndexRoute = DatabasesIndexRouteImport.update({
   id: '/databases/',
   path: '/databases/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TrainPracticeRoute = TrainPracticeRouteImport.update({
-  id: '/practice',
-  path: '/practice',
-  getParentRoute: () => TrainRouteRoute,
+const DatabasesDatabaseIdRoute = DatabasesDatabaseIdRouteImport.update({
+  id: '/databases/$databaseId',
+  path: '/databases/$databaseId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsIndexRoute = SettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SettingsRouteRoute,
 } as any)
 const SettingsKeyboardShortcutsRoute =
   SettingsKeyboardShortcutsRouteImport.update({
@@ -84,10 +79,15 @@ const SettingsKeyboardShortcutsRoute =
     path: '/keyboard-shortcuts',
     getParentRoute: () => SettingsRouteRoute,
   } as any)
-const DatabasesDatabaseIdRoute = DatabasesDatabaseIdRouteImport.update({
-  id: '/databases/$databaseId',
-  path: '/databases/$databaseId',
-  getParentRoute: () => rootRouteImport,
+const TrainIndexRoute = TrainIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => TrainRouteRoute,
+} as any)
+const TrainPracticeRoute = TrainPracticeRouteImport.update({
+  id: '/practice',
+  path: '/practice',
+  getParentRoute: () => TrainRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -194,25 +194,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/files': {
-      id: '/files'
-      path: '/files'
-      fullPath: '/files'
-      preLoaderRoute: typeof FilesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/engines': {
-      id: '/engines'
-      path: '/engines'
-      fullPath: '/engines'
-      preLoaderRoute: typeof EnginesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/boards': {
-      id: '/boards'
-      path: '/boards'
-      fullPath: '/boards'
-      preLoaderRoute: typeof BoardsRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/accounts': {
@@ -222,11 +208,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/train': {
-      id: '/train'
-      path: '/train'
-      fullPath: '/train'
-      preLoaderRoute: typeof TrainRouteRouteImport
+    '/boards': {
+      id: '/boards'
+      path: '/boards'
+      fullPath: '/boards'
+      preLoaderRoute: typeof BoardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/engines': {
+      id: '/engines'
+      path: '/engines'
+      fullPath: '/engines'
+      preLoaderRoute: typeof EnginesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/files': {
+      id: '/files'
+      path: '/files'
+      fullPath: '/files'
+      preLoaderRoute: typeof FilesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -236,26 +236,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/train': {
+      id: '/train'
+      path: '/train'
+      fullPath: '/train'
+      preLoaderRoute: typeof TrainRouteRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/train/': {
-      id: '/train/'
-      path: '/'
-      fullPath: '/train/'
-      preLoaderRoute: typeof TrainIndexRouteImport
-      parentRoute: typeof TrainRouteRoute
-    }
-    '/settings/': {
-      id: '/settings/'
-      path: '/'
-      fullPath: '/settings/'
-      preLoaderRoute: typeof SettingsIndexRouteImport
-      parentRoute: typeof SettingsRouteRoute
     }
     '/databases/': {
       id: '/databases/'
@@ -264,12 +250,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DatabasesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/train/practice': {
-      id: '/train/practice'
-      path: '/practice'
-      fullPath: '/train/practice'
-      preLoaderRoute: typeof TrainPracticeRouteImport
-      parentRoute: typeof TrainRouteRoute
+    '/databases/$databaseId': {
+      id: '/databases/$databaseId'
+      path: '/databases/$databaseId'
+      fullPath: '/databases/$databaseId'
+      preLoaderRoute: typeof DatabasesDatabaseIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/': {
+      id: '/settings/'
+      path: '/'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof SettingsIndexRouteImport
+      parentRoute: typeof SettingsRouteRoute
     }
     '/settings/keyboard-shortcuts': {
       id: '/settings/keyboard-shortcuts'
@@ -278,12 +271,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsKeyboardShortcutsRouteImport
       parentRoute: typeof SettingsRouteRoute
     }
-    '/databases/$databaseId': {
-      id: '/databases/$databaseId'
-      path: '/databases/$databaseId'
-      fullPath: '/databases/$databaseId'
-      preLoaderRoute: typeof DatabasesDatabaseIdRouteImport
-      parentRoute: typeof rootRouteImport
+    '/train/': {
+      id: '/train/'
+      path: '/'
+      fullPath: '/train/'
+      preLoaderRoute: typeof TrainIndexRouteImport
+      parentRoute: typeof TrainRouteRoute
+    }
+    '/train/practice': {
+      id: '/train/practice'
+      path: '/practice'
+      fullPath: '/train/practice'
+      preLoaderRoute: typeof TrainPracticeRouteImport
+      parentRoute: typeof TrainRouteRoute
     }
   }
 }
