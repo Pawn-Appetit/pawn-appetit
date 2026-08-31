@@ -92,6 +92,7 @@ export type CommandMenuGroup = {
 const commandIcon = (IconComponent: Icon): ReactNode => <IconComponent size={20} stroke={1.6} />;
 
 const navLabelFallbacks: Record<AppNavigationItem["id"], string> = {
+  accounts: "Accounts",
   dashboard: "Dashboard",
   analysis: "Analysis",
   games: "Games",

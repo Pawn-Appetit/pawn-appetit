@@ -13,11 +13,34 @@ function isLinux(): boolean {
     }
 }
 
+const soundFormats = [
+    { extension: "ogg", mimeType: 'audio/ogg; codecs="vorbis"' },
+    { extension: "mp3", mimeType: "audio/mpeg" },
+] as const;
+
+let preferredSoundExtension: (typeof soundFormats)[number]["extension"] | undefined;
 let lastTime = 0;
 
 const soundServerPort: Promise<number> = isLinux()
     ? commands.getSoundServerPort()
     : Promise.resolve(0);
+
+function getPreferredSoundExtension(): (typeof soundFormats)[number]["extension"] {
+    if (preferredSoundExtension) {
+        return preferredSoundExtension;
+    }
+
+    if (typeof Audio === "undefined") {
+        preferredSoundExtension = "mp3";
+        return preferredSoundExtension;
+    }
+
+    const audio = new Audio();
+    preferredSoundExtension =
+        soundFormats.find((format) => audio.canPlayType(format.mimeType) !== "")?.extension ??
+        "mp3";
+    return preferredSoundExtension;
+}
 
 export async function playSound(capture: boolean, check: boolean) {
     const now = Date.now();
@@ -38,7 +61,7 @@ export async function playSound(capture: boolean, check: boolean) {
         type = "Check";
     }
 
-    const path = `sound/${collection}/${type}.mp3`;
+    const path = `sound/${collection}/${type}.${getPreferredSoundExtension()}`;
 
     try {
         let audioSrc: string;
