@@ -3,6 +3,7 @@
  * Covers piece set, board image, coordinate display, move interaction settings,
  * arrow/highlight display, and blindfold mode.
  */
+import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
 // Move interaction
@@ -33,3 +34,11 @@ export const showCoordinatesAtom = atomWithStorage<"none" | "inside" | "all">(
 export const pieceSetAtom = atomWithStorage<string>("piece-set", "staunty");
 export const boardImageAtom = atomWithStorage<string>("board-image", "gray.svg");
 export const blindfoldAtom = atomWithStorage<boolean>("blindfold-mode", false);
+
+/**
+ * FEN a freshly opened play tab should start from.
+ *
+ * `Play from here` sets this before creating the tab; the play setup consumes
+ * it on mount, so starting position need not be clicked through manually.
+ */
+export const pendingPlayFenAtom = atom<string | null>(null);

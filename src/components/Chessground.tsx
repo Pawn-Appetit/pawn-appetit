@@ -44,6 +44,14 @@ export function Chessground({
     }
   }, [api]);
 
+  // Chessground caches the board rect and only clears it on resize or scroll.
+  // When the layout moves the board without resizing it (portal/tile reflow),
+  // clicks are hit-tested against the old rect and land on the wrong square.
+  // Dropping the cache on pointer-down makes the next hit test re-measure.
+  const refreshBounds = useCallback(() => {
+    api?.state.dom.bounds.clear();
+  }, [api]);
+
   const handleSelect = useCallback(
     (key: Key) => {
       onSelectRef.current?.(key);
@@ -140,6 +148,8 @@ export function Chessground({
   return (
     <Box
       ref={ref}
+      onMouseDownCapture={refreshBounds}
+      onTouchStartCapture={refreshBounds}
       style={{
         aspectRatio: 1,
         width: "100%",

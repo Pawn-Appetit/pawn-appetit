@@ -5,10 +5,11 @@ import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { useLoaderData, useNavigate } from "@tanstack/react-router";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
+import MoveControls from "@/components/MoveControls";
 import { TreeStateContext } from "@/components/TreeStateContext";
 import WorkbenchToolbar, { toolbarIcons } from "@/components/WorkbenchToolbar";
 import {
@@ -17,17 +18,20 @@ import {
 } from "@/features/boards/commands/boardCommandRegistry";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import {
+  activeTabAtom,
   allEnabledAtom,
   autoSaveAtom,
   currentPracticeTabAtom,
   currentTabAtom,
   currentTabSelectedAtom,
   enableAllAtom,
+  pendingPlayFenAtom,
+  tabsAtom,
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
 import { defaultPGN, getPGN } from "@/utils/chess";
 import { isTempImportFile } from "@/utils/files";
-import { reloadTab, saveTab, saveToFile } from "@/utils/tabs";
+import { createTab, reloadTab, saveTab, saveToFile } from "@/utils/tabs";
 import { getNodeAtPath } from "@/utils/treeReducer";
 import EditingCard from "./EditingCard";
 import EvalListener from "./EvalListener";
@@ -44,6 +48,9 @@ function BoardAnalysis() {
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
   const [viewPawnStructure, setViewPawnStructure] = useState(false);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
+  const setTabs = useSetAtom(tabsAtom);
+  const setActiveTab = useSetAtom(activeTabAtom);
+  const setPendingPlayFen = useSetAtom(pendingPlayFenAtom);
   const autoSave = useAtomValue(autoSaveAtom);
   const { documentDir } = useLoaderData({ from: "/boards" });
   const boardRef = useRef<HTMLDivElement | null>(null);
@@ -187,6 +194,18 @@ function BoardAnalysis() {
       orientation: newOrientation,
     });
   }, [headers, setHeaders]);
+
+  // Open a play tab for the position currently on the board, leaving this game untouched.
+  const playFromHere = useCallback(() => {
+    const node = getNodeAtPath(root, position);
+    setPendingPlayFen(node?.fen ?? root.fen);
+    void createTab({
+      tab: { name: "Play", type: "play" },
+      setTabs,
+      setActiveTab,
+      fen: node?.fen ?? root.fen,
+    });
+  }, [root, position, setTabs, setActiveTab, setPendingPlayFen]);
 
   const resetPosition = useCallback(() => {
     reset();
@@ -371,7 +390,7 @@ function BoardAnalysis() {
             selectedPiece={selectedPiece}
             setSelectedPiece={setSelectedPiece}
             canTakeBack={false} // Analysis mode doesn't support take back
-            changeTabType={() => setCurrentTab((prev) => ({ ...prev, type: "play" }))}
+            changeTabType={playFromHere}
             currentTabType="analysis"
             clearShapes={clearShapes}
             takeSnapshot={takeSnapshot}
@@ -493,7 +512,7 @@ function BoardAnalysis() {
                   selectedPiece={selectedPiece}
                   setSelectedPiece={setSelectedPiece}
                   canTakeBack={false} // Analysis mode doesn't support take back
-                  changeTabType={() => setCurrentTab((prev) => ({ ...prev, type: "play" }))}
+                  changeTabType={playFromHere}
                   currentTabType="analysis"
                   clearShapes={clearShapes}
                   takeSnapshot={takeSnapshot}
@@ -524,7 +543,9 @@ function BoardAnalysis() {
             setSelectedPiece={setSelectedPiece}
           />
         }
-      />
+      >
+        <MoveControls readOnly />
+      </GameNotationWrapper>
     </>
   );
 }
