@@ -29,8 +29,8 @@
     "requirePath": "Percorso obbligatorio",
     "pgnFile": "File PGN",
     "pgnGame": "Partita PGN",
-    "or": "Or",
-    "clickToSelectPGN": "Click to select PGN file",
+    "or": "O",
+    "clickToSelectPGN": "Clicca per selezionare il file PGN",
     "size": "Dimensione",
     "generalSettings": "Impostazioni generali",
     "data": "Data",
@@ -53,10 +53,10 @@
       "saveAndClose": "Salva e chiudi",
       "closeWithoutSaving": "Chiudi senza salvare"
     },
-    "loading": "Loading...",
+    "loading": "Caricamento...",
     "continue": "Continua",
     "review": "Rivedi",
-    "noGameSelected": "No game selected"
+    "noGameSelected": "Nessun gioco selezionato"
   },
   "chess": {
     "checkmate": "Scacco matto",
@@ -64,9 +64,9 @@
     "white": "Bianco",
     "black": "Nero",
     "random": "Casuale",
-    "any": "Any",
-    "player": "Player",
-    "opponent": "Opponent",
+    "qualsiasi": "Qualsiasi",
+    "giocatore": "Giocatore",
+    "avversario": "Avversario",
     "goMode": {
       "time": "Tempo",
       "depth": "Profondità",
@@ -376,7 +376,7 @@
       "analysis": {
         "engines": "Motori",
         "report": "Report",
-        "logs": "Logs",
+        "logs": "Log",
         "summary": "Sommario",
         "inactiveEngine": "Il motore non è attivo",
         "syncGlobally": "Sincronizza tutto",
@@ -411,11 +411,11 @@
         "noReference3": "prima contrassegnalo come riferimento",
         "timeControl": "Cadenza",
         "averageRating": "Punteggio medio",
-        "fitToPage": "Fit",
-        "noGames": "No games match this search",
-        "showingSubset": "Showing the first {{shown}} of {{total}} matching games",
-        "viewBoards": "Show positions",
-        "viewList": "Show list"
+        "fitToPage": "Adatta",
+        "noGames": "Nessuna partita corrisponde a questa ricerca",
+        "showingSubset": "Visualizzazione delle prime {{shown}} su {{total}} partite corrispondenti",
+        "viewBoards": "Mostra posizioni",
+        "viewList": "Mostra elenco"
       },
       "annotate": {
         "writeHere": "Scrivi qui..."
@@ -521,16 +521,16 @@
         "actions": "Azioni",
         "addGames": "Aggiungi Partite",
         "exportPGN": "Esporta in PGN",
-        "buildSearchBooster": "Build Booster",
-        "deleteSearchBooster": "Delete Booster",
-        "searchBooster": "Search Booster",
-        "searchBoosterBuilt": "Indexed {{indexed}} games in {{duration}}.",
-        "searchBoosterDeleteFailed": "Could not delete the search booster",
-        "searchBoosterDeleted": "Booster deleted. Position searches will scan every game until you build it again.",
-        "searchBoosterDesc": "The search booster indexes every position in the database so position searches can skip most games. It takes extra disk space, and you can delete and rebuild it at any time. Build it again after importing games to cover the new ones.",
-        "searchBoosterFailed": "Could not build the search booster",
-        "searchBoosterProgress": "Indexed {{processed}} of {{total}} games",
-        "searchBoosterSkipped": "{{skipped}} games could not be read and were left out of the booster."
+        "buildSearchBooster": "Crea Booster di ricerca",
+        "deleteSearchBooster": "Elimina Booster di ricerca",
+        "searchBooster": "Booster di ricerca",
+        "searchBoosterBuilt": "Indicizzati {{indexed}} giochi in {{duration}}.",
+        "searchBoosterDeleteFailed": "Impossibile eliminare il booster di ricerca",
+        "searchBoosterDeleted": "Booster eliminato. Le ricerche per posizione analizzeranno ogni gioco finché non lo creerai di nuovo.",
+        "searchBoosterDesc": "Il booster di ricerca indicizza ogni posizione nel database, consentendo alle ricerche per posizione di saltare la maggior parte dei giochi. Richiede spazio su disco aggiuntivo e può essere eliminato e ricreato in qualsiasi momento. Ricrealo dopo aver importato nuovi giochi per includerli nell'indice.",
+        "searchBoosterFailed": "Impossibile creare il booster di ricerca",
+        "searchBoosterProgress": "Indicizzati {{processed}} giochi su {{total}}",
+        "searchBoosterSkipped": "Impossibile leggere {{skipped}} giochi; sono stati esclusi dal booster."
       },
       "delete": {
         "title": "Elimina database",
@@ -731,7 +731,7 @@
       "files": "Directory dei File",
       "filesDesc": "Qui vengono archiviati i tuoi giochi nella pagina File"
     },
-    "telemetry": "Telemetry",
+    "telemetry": "Telemetria",
     "telemetryDesc": "Aiuta a migliorare Pawn Appétit condividendo dati di utilizzo anonimi",
     "moveNotation": "Notazione delle mosse",
     "moveNotationDesc": "Scegli come visualizzare i pezzi nella notazione",
@@ -763,13 +763,13 @@
     "score": "{{score, score}}"
   },
   "databaseOptions": {
-    "anyCount": "Any",
-    "clearMaterial": "Clear",
-    "eitherColor": "Any",
-    "markEmpty": "Mark square as empty — games where anything stands here are excluded",
-    "material": "Material",
-    "materialCountTooLow": "An exact count cannot be lower than the pieces placed on the board.",
-    "materialExact": "Exact material",
-    "materialExactHint": "Choose the exact total for each piece, or Any to leave it unrestricted."
+    "anyCount": "Qualsiasi",
+    "clearMaterial": "Cancella",
+    "eitherColor": "Qualsiasi",
+    "markEmpty": "Segna la casa come vuota — esclude le partite in cui è presente un pezzo in questa posizione",
+    "material": "Materiale",
+    "materialCountTooLow": "Il conteggio esatto non può essere inferiore al numero di pezzi già presenti sulla scacchiera.",
+    "materialExact": "Materiale esatto",
+    "materialExactHint": "Scegli il totale esatto per ogni tipo di pezzo, oppure seleziona 'Qualsiasi' per non porre vincoli."
   }
 }
