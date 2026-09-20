@@ -5,6 +5,7 @@
 import { atom, type PrimitiveAtom } from "jotai";
 import { atomFamily, atomWithStorage, createJSONStorage } from "jotai/utils";
 import type { AtomFamily } from "jotai/vanilla/utils/atomFamily";
+import type { SetStateAction } from "react";
 import type { LocalOptions } from "@/components/panels/database/DatabasePanel";
 import { genID, type Tab, tabSchema } from "@/utils/tabs";
 import { createZodStorage } from "./utils";
@@ -111,17 +112,53 @@ export const currentInvisibleAtom = tabValue(invisibleFamily);
 const tabFamily = atomFamily((tab: string) => atom("info"));
 export const currentTabSelectedAtom = tabValue(tabFamily);
 
-const localOptionsFamily = atomFamily((tab: string) =>
-    atom<LocalOptions>({
-        path: null,
-        type: "exact",
-        fen: "",
-        forbidden_squares: [],
-        player: null,
-        color: "white",
-        result: "any",
-    }),
-);
+const LOCAL_OPTIONS_STORAGE_KEY = "database.local-options";
+
+const LOCAL_OPTIONS_DEFAULTS: LocalOptions = {
+    path: null,
+    type: "exact",
+    fen: "",
+    forbidden_squares: [],
+    player: null,
+    color: "white",
+    result: "any",
+};
+
+/**
+ * The database filters are per-tab, but tabs do not survive an app restart, so
+ * the last set of filters is also written to localStorage and used to seed any
+ * tab created afterwards. Position-specific fields (fen/type) are refreshed
+ * from the board by the panel for exact queries.
+ */
+function loadLastLocalOptions(): LocalOptions {
+    try {
+        const raw = localStorage.getItem(LOCAL_OPTIONS_STORAGE_KEY);
+        if (!raw) return LOCAL_OPTIONS_DEFAULTS;
+        return { ...LOCAL_OPTIONS_DEFAULTS, ...(JSON.parse(raw) as Partial<LocalOptions>) };
+    } catch {
+        return LOCAL_OPTIONS_DEFAULTS;
+    }
+}
+
+function saveLastLocalOptions(options: LocalOptions): void {
+    try {
+        localStorage.setItem(LOCAL_OPTIONS_STORAGE_KEY, JSON.stringify(options));
+    } catch {
+        // Storage full or unavailable: filters stay session-only.
+    }
+}
+
+const localOptionsFamily = atomFamily((tab: string) => {
+    const base = atom<LocalOptions>(loadLastLocalOptions());
+    return atom(
+        (get) => get(base),
+        (get, set, update: SetStateAction<LocalOptions>) => {
+            const next = typeof update === "function" ? update(get(base)) : update;
+            set(base, next);
+            saveLastLocalOptions(next);
+        },
+    );
+});
 export const currentLocalOptionsAtom = tabValue(localOptionsFamily);
 
 /**

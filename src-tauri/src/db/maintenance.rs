@@ -1,4 +1,4 @@
-use std::{fs::remove_file, path::PathBuf};
+use std::{fs::remove_file, path::PathBuf, sync::Arc};
 
 use diesel::{connection::SimpleConnection, prelude::*};
 
@@ -52,5 +52,5 @@ pub async fn delete_empty_games(file: PathBuf, state: tauri::State<'_, AppState>
 #[specta::specta]
 pub fn clear_games(state: tauri::State<'_, AppState>) {
     let mut state = state.db_cache.lock().unwrap();
-    state.clear();
+    *state = Arc::new(Vec::new());
 }
