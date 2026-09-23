@@ -56,6 +56,8 @@ pub use self::search::{
 const INDEXES_SQL: &str = include_str!("../../../database/queries/indexes/create_indexes.sql");
 const DELETE_INDEXES_SQL: &str =
     include_str!("../../../database/queries/indexes/delete_indexes.sql");
+const GAMES_IDENTITY_INDEX_SQL: &str =
+    "CREATE INDEX IF NOT EXISTS games_identity_idx ON Games(WhiteID, BlackID, Date, UTCTime)";
 
 // Games queries
 const GAMES_CHECK_INDEXES: &str = include_str!("../../../database/queries/games/check_indexes.sql");
@@ -90,6 +92,9 @@ pub async fn convert_pgn(
     if !db_exists {
         core::init_db(db, &title, &description)?;
     }
+
+    // Created before the import loop: insert_to_db checks it per game.
+    db.batch_execute(GAMES_IDENTITY_INDEX_SQL)?;
 
     let file = File::open(&file)?;
 

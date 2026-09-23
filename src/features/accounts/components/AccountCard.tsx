@@ -137,8 +137,8 @@ export function AccountCard({
     setText(name);
   }, [name]);
 
-  async function convert(filepath: string, timestamp: number | null) {
-    info(`converting ${filepath} ${timestamp}`);
+  async function convert(filepath: string) {
+    info(`converting ${filepath}`);
     const filename = title + (type === "lichess" ? " Lichess" : " Chess.com");
     // Ensure the database filename matches the expected format: ${title}_${type}.db3
     // This is critical - the filename must match what we search for later
@@ -146,15 +146,7 @@ export function AccountCard({
     const dbPath = await resolve(await appDataDir(), "db", expectedDbFilename);
     info(`Converting PGN to database: ${filepath} -> ${dbPath}`);
     try {
-      unwrap(
-        await commands.convertPgn(
-          filepath,
-          dbPath,
-          timestamp ? timestamp / 1000 : null,
-          filename,
-          null,
-        ),
-      );
+      unwrap(await commands.convertPgn(filepath, dbPath, null, filename, null));
       info(`Conversion complete, database saved to: ${dbPath}`);
       // Wait a bit to ensure the file is fully written and indexed
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -525,7 +517,7 @@ export function AccountCard({
                         }
                         const p = await resolve(await appDataDir(), "db", `${title}_${type}.pgn`);
                         try {
-                          await convert(p, lastGameDate);
+                          await convert(p);
                         } catch (e) {
                           console.error(e);
                         }
