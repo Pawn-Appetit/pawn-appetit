@@ -28,6 +28,7 @@ import {
   IconRefresh,
   IconX,
 } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/plugin-fs";
 import { error, info } from "@tauri-apps/plugin-log";
@@ -137,6 +138,8 @@ export function AccountCard({
     setText(name);
   }, [name]);
 
+  const queryClient = useQueryClient();
+
   async function convert(filepath: string) {
     info(`converting ${filepath}`);
     const filename = title + (type === "lichess" ? " Lichess" : " Chess.com");
@@ -147,6 +150,7 @@ export function AccountCard({
     info(`Converting PGN to database: ${filepath} -> ${dbPath}`);
     try {
       unwrap(await commands.convertPgn(filepath, dbPath, null, filename, null));
+      await queryClient.invalidateQueries();
       info(`Conversion complete, database saved to: ${dbPath}`);
       // Wait a bit to ensure the file is fully written and indexed
       await new Promise((resolve) => setTimeout(resolve, 1000));
