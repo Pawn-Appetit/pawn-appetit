@@ -2,8 +2,8 @@
  * Compute the UTC timestamp (in milliseconds) of a game from its stored
  * `Date` ("YYYY.MM.DD") and `UTCTime` ("HH:MM:SS") fields.
  *
- * This value is used as the incremental-download cursor: only games newer than
- * it are fetched and imported when refreshing an account. A `null` cursor
+ * This value is used as the incremental-download cursor: only archives newer
+ * than its month are fetched when refreshing an account. A `null` cursor
  * disables that filter and re-imports the entire history, so this helper only
  * returns `null` when the date itself is absent/unparseable. A missing time
  * falls back to the start of the day rather than collapsing the whole result
