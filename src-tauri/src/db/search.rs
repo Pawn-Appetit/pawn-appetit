@@ -34,7 +34,7 @@ use crate::{
         ConnectionOptions, GameSort, Sides, SortDirection,
     },
     error::Error,
-    AppState,
+    AppState, GameData,
 };
 
 use super::GameQueryJs;
@@ -954,6 +954,7 @@ pub async fn search_position(
         // Atomic counters for lock-free progress tracking
         let processed_count_atomic = Arc::new(AtomicUsize::new(0));
         let filter_match_count_atomic = Arc::new(AtomicUsize::new(0));
+        let position_reject_count_atomic = Arc::new(AtomicUsize::new(0));
 
         // Structure for collecting results in parallel threads
         #[derive(Default)]
@@ -976,9 +977,9 @@ pub async fn search_position(
                     result,
                     moves,
                     fen,
-                    _pawn_home,
-                    _white_material,
-                    _black_material,
+                    pawn_home,
+                    white_material,
+                    black_material,
                 )| {
                     // Check for cancellation (lock-free)
                     if state.new_request.available_permits() == 0 {
@@ -998,6 +999,18 @@ pub async fn search_position(
 
                     // Count games that pass basic filters
                     filter_match_count_atomic.fetch_add(1, Ordering::Relaxed);
+
+                    // Reject games whose end material and pawn structure cannot contain the
+                    // query before decoding their move blobs. Mirrors the index pre-filter
+                    // used by the batched path and the check in `check_position_exists`.
+                    let end_material: MaterialCount = ByColor {
+                        white: *white_material as u8,
+                        black: *black_material as u8,
+                    };
+                    if !position_query.can_reach(&end_material, *pawn_home as u16) {
+                        position_reject_count_atomic.fetch_add(1, Ordering::Relaxed);
+                        return acc;
+                    }
 
                     // Check if game contains the target position
                     if let Ok(Some(found)) = get_move_after_match(moves, fen, &position_query) {
@@ -1074,9 +1087,16 @@ pub async fn search_position(
         matched_game_ids = final_results.matched_ids;
         processed_count = processed_count_atomic.load(Ordering::Relaxed);
         games_with_basic_filter_match = filter_match_count_atomic.load(Ordering::Relaxed);
+        let games_rejected_by_position_filter =
+            position_reject_count_atomic.load(Ordering::Relaxed);
 
-        info!("Cached data processing complete: {} games processed, {} passed basic filters, {} matches found", 
-              processed_count, games_with_basic_filter_match, matched_game_ids.len());
+        info!(
+            "Cached data processing complete: {} games processed, {} passed basic filters, {} rejected by position pre-filter, {} matches found",
+            processed_count,
+            games_with_basic_filter_match,
+            games_rejected_by_position_filter,
+            matched_game_ids.len()
+        );
 
         // Emit progress update after batch completion (main thread, no mutex overhead)
         let _ = app.emit(
@@ -1309,7 +1329,7 @@ pub async fn search_position(
                 if cache.is_empty() {
                     // Load all games into cache since dataset is manageable
                     let all_games = load_games_batch(&state, &file, 0, i64::MAX)?;
-                    *cache = all_games;
+                    *cache = Arc::new(all_games);
                 }
             }
         }
@@ -1554,7 +1574,7 @@ pub async fn is_position_in_db(
     let mut games = state.db_cache.lock().unwrap();
 
     if games.is_empty() {
-        *games = games::table
+        let all_games: Vec<GameData> = games::table
             .select((
                 games::id,
                 games::white_id,
@@ -1568,6 +1588,7 @@ pub async fn is_position_in_db(
                 games::black_material,
             ))
             .load(db)?;
+        *games = Arc::new(all_games);
 
         info!("got {} games: {:?}", games.len(), start.elapsed());
     }

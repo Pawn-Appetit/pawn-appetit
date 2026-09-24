@@ -90,7 +90,7 @@ pub struct AppState {
     line_cache: Mutex<
         lru::LruCache<(GameQueryJs, std::path::PathBuf), (Vec<PositionStats>, Vec<NormalizedGame>)>,
     >,
-    db_cache: Mutex<Vec<GameData>>,
+    db_cache: Mutex<Arc<Vec<GameData>>>,
     #[derivative(Default(value = "Arc::new(Semaphore::new(2))"))]
     new_request: Arc<Semaphore>,
     pgn_offsets: DashMap<String, Vec<u64>>,
