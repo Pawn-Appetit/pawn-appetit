@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
         >(),
     createTab: vi.fn<() => Promise<string>>(),
     parsePGN: vi.fn<() => Promise<{ headers: { event: string } }>>(),
+    exists: vi.fn<() => Promise<boolean>>(),
 }));
 
 vi.mock("@/bindings", () => ({
@@ -42,7 +43,7 @@ vi.mock("@tauri-apps/api/path", () => ({
 }));
 
 vi.mock("@tauri-apps/plugin-fs", () => ({
-    exists: vi.fn<() => Promise<boolean>>(async () => false),
+    exists: mocks.exists,
     mkdir: vi.fn<() => Promise<void>>(async () => undefined),
     readTextFile: vi.fn<() => Promise<string>>(async () => "{}"),
     writeTextFile: vi.fn<() => Promise<void>>(async () => undefined),
@@ -64,6 +65,7 @@ describe("openFile", () => {
         });
         mocks.createTab.mockResolvedValue("tab-1");
         mocks.parsePGN.mockResolvedValue({ headers: { event: "First" } });
+        mocks.exists.mockResolvedValue(false);
     });
 
     test("loads only the first PGN game into a new file-backed tab", async () => {
@@ -108,5 +110,21 @@ describe("openFile", () => {
                 name: "recent",
             }),
         ]);
+    });
+
+    test("opens a PGN when sidecar metadata is outside the fs scope", async () => {
+        mocks.exists.mockRejectedValue(new Error("path not allowed on the configured scope"));
+        const { openFile } = await import("../files");
+
+        await openFile(
+            "/home/daniel/Downloads/Naroditsky-Bortnyk_Jobava-London.pgn",
+            vi.fn<() => void>(),
+            vi.fn<() => void>(),
+        );
+
+        expect(mocks.createTab).toHaveBeenCalled();
+        expect(mocks.exists).toHaveBeenCalledWith(
+            "/home/daniel/Downloads/Naroditsky-Bortnyk_Jobava-London.info",
+        );
     });
 });

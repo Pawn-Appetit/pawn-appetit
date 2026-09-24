@@ -43,19 +43,16 @@ export async function openFile(
 
     const fileName = await getFileNameWithoutExtension(file);
 
-    // Read the file metadata from .info file to get the correct file type
-    const metadataPath = file.replace(".pgn", ".info");
+    const metadataPath = file.replace(/\.pgn$/i, ".info");
     let fileType: "game" | "repertoire" | "tournament" | "puzzle" | "variants" | "other" = "game";
-    if (await exists(metadataPath)) {
-        try {
+    try {
+        if (await exists(metadataPath)) {
             const metadata = JSON.parse(await readTextFile(metadataPath));
             if (metadata.type) {
                 fileType = metadata.type;
             }
-        } catch {
-            // If parsing fails, use default type
         }
-    }
+    } catch {}
 
     const fileInfo: FileMetadata = {
         type: "file",
