@@ -10,7 +10,7 @@ import { createFile, getFileNameWithoutExtension, isTempImportFile } from "@/uti
 import { unwrap } from "@/utils/unwrap";
 import { getMoveText, getPGN, parsePGN } from "./chess";
 import { formatDateToPGN } from "./format";
-import type { GameHeaders, TreeNode, TreeState } from "./treeReducer";
+import { defaultTree, type GameHeaders, type TreeNode, type TreeState } from "./treeReducer";
 
 const dbGameMetadataSchema = z.object({
     type: z.literal("db"),
@@ -57,6 +57,7 @@ export async function createTab({
     srcInfo,
     gameNumber,
     position,
+    fen,
 }: {
     tab: Omit<Tab, "value">;
     setTabs: React.Dispatch<React.SetStateAction<Tab[]>>;
@@ -66,6 +67,8 @@ export async function createTab({
     srcInfo?: EntitySourceMetadata;
     gameNumber?: number;
     position?: number[];
+    /** Start the new tab from this position, with no move history. */
+    fen?: string;
 }) {
     const id = genID();
 
@@ -113,6 +116,9 @@ export async function createTab({
                 tree.position = position;
             }
         }
+        sessionStorage.setItem(id, serializeStorageValue({ version: 0, state: tree }));
+    } else if (fen) {
+        const tree = defaultTree(fen);
         sessionStorage.setItem(id, serializeStorageValue({ version: 0, state: tree }));
     }
 

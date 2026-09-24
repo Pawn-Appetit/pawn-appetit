@@ -65,6 +65,7 @@ import {
   currentPlayersAtom,
   type GameState,
   loadableEnginesAtom,
+  pendingPlayFenAtom,
   tabsAtom,
 } from "@/state/atoms";
 import { getMainLine, getMoveText, getPGN } from "@/utils/chess";
@@ -557,12 +558,27 @@ function BoardGame() {
     [],
   );
 
+  const store = useContext(TreeStateContext)!;
+  const root = useStore(store, (s) => s.root);
+
   const savedSettings = loadGameSettings();
   const [inputColor, setInputColor] = useState<ColorChoice>(savedSettings.inputColor);
   const [viewPawnStructure, setViewPawnStructure] = useState(false);
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
   const [sameTimeControl, setSameTimeControl] = useState(savedSettings.sameTimeControl);
-  const [customFen, setCustomFen] = useState<string>(savedSettings.customFen);
+  const pendingPlayFen = useAtomValue(pendingPlayFenAtom);
+  const setPendingPlayFen = useSetAtom(pendingPlayFenAtom);
+  const [customFen, setCustomFen] = useState<string>(
+    () =>
+      pendingPlayFen ?? (root.fen && root.fen !== INITIAL_FEN ? root.fen : savedSettings.customFen),
+  );
+
+  // The pending position is for this first mount only.
+  useEffect(() => {
+    if (pendingPlayFen) {
+      setPendingPlayFen(null);
+    }
+  }, [pendingPlayFen, setPendingPlayFen]);
   const [fenError, setFenError] = useState<string | null>(null);
   const [isApplyingFen, setIsApplyingFen] = useState(false);
   const fenInputRef = useRef<HTMLInputElement>(null);
@@ -652,8 +668,6 @@ function BoardGame() {
     return { white, black };
   }, [inputColor, player1Settings, player2Settings]);
 
-  const store = useContext(TreeStateContext)!;
-  const root = useStore(store, (s) => s.root);
   const headers = useStore(store, (s) => s.headers);
   const setFen = useStore(store, (s) => s.setFen);
   const setHeaders = useStore(store, (s) => s.setHeaders);
@@ -994,7 +1008,7 @@ function BoardGame() {
       }
     }
 
-    const fenToUse = customFen.trim() || INITIAL_FEN;
+    const fenToUse = customFen.trim() || root.fen || INITIAL_FEN;
     if (!applyFenString(fenToUse)) {
       return; // no empezar partida si FEN inválido
     }
@@ -1029,6 +1043,7 @@ function BoardGame() {
     setHeaders,
     setPlayers,
     setTabs,
+    root.fen,
   ]);
 
   const handleNewGame = useCallback(() => {
@@ -1612,6 +1627,15 @@ function BoardGame() {
                         </Group>
                       </InputWrapper>
                     </Stack>
+                    <Divider />
+                    <Button
+                      variant="default"
+                      fullWidth
+                      onClick={changeToAnalysisMode}
+                      leftSection={<IconZoomCheck />}
+                    >
+                      {t("features.board.actions.analyzeGame")}
+                    </Button>
                   </Stack>
                 </ScrollArea>
               )}

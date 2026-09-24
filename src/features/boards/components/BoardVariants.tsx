@@ -6,7 +6,7 @@ import { IconPuzzle } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
@@ -14,19 +14,22 @@ import MoveControls from "@/components/MoveControls";
 import { TreeStateContext } from "@/components/TreeStateContext";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import {
+  activeTabAtom,
   allEnabledAtom,
   autoSaveAtom,
   currentPracticeTabAtom,
   currentTabAtom,
   currentTabSelectedAtom,
   enableAllAtom,
+  pendingPlayFenAtom,
+  tabsAtom,
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybindings";
 import { defaultPGN, getMoveText, getPGN } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import { createFile, isTempImportFile } from "@/utils/files";
 import { formatDateToPGN } from "@/utils/format";
-import { reloadTab, saveTab, saveToFile, type Tab } from "@/utils/tabs";
+import { createTab, reloadTab, saveTab, saveToFile, type Tab } from "@/utils/tabs";
 import { getNodeAtPath, type TreeNode } from "@/utils/treeReducer";
 import EditingCard from "./EditingCard";
 import EvalListener from "./EvalListener";
@@ -41,6 +44,9 @@ function BoardVariants() {
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
   const [viewPawnStructure, setViewPawnStructure] = useState(false);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
+  const setTabs = useSetAtom(tabsAtom);
+  const setActiveTab = useSetAtom(activeTabAtom);
+  const setPendingPlayFen = useSetAtom(pendingPlayFenAtom);
   const autoSave = useAtomValue(autoSaveAtom);
   const { documentDir } = useLoaderData({ from: "/boards" });
   const boardRef = useRef<HTMLDivElement | null>(null);
@@ -61,6 +67,18 @@ function BoardVariants() {
   const position = useStore(store, (s) => s.position);
   const promoteVariation = useStore(store, (s) => s.promoteVariation);
   const deleteMove = useStore(store, (s) => s.deleteMove);
+
+  // Open a play tab for the position currently on the board, leaving this game untouched.
+  const playFromHere = useCallback(() => {
+    const node = getNodeAtPath(root, position);
+    setPendingPlayFen(node?.fen ?? root.fen);
+    void createTab({
+      tab: { name: "Play", type: "play" },
+      setTabs,
+      setActiveTab,
+      fen: node?.fen ?? root.fen,
+    });
+  }, [root, position, setTabs, setActiveTab, setPendingPlayFen]);
 
   const saveFile = useCallback(
     async (showNotification = true) => {
@@ -356,7 +374,7 @@ function BoardVariants() {
             selectedPiece={selectedPiece}
             setSelectedPiece={setSelectedPiece}
             canTakeBack={false}
-            changeTabType={() => setCurrentTab((prev: Tab) => ({ ...prev, type: "play" }))}
+            changeTabType={playFromHere}
             currentTabType="analysis"
             clearShapes={clearShapes}
             disableVariations={false}
@@ -393,7 +411,7 @@ function BoardVariants() {
               selectedPiece={selectedPiece}
               setSelectedPiece={setSelectedPiece}
               canTakeBack={false}
-              changeTabType={() => setCurrentTab((prev: Tab) => ({ ...prev, type: "play" }))}
+              changeTabType={playFromHere}
               currentTabType="analysis"
               clearShapes={clearShapes}
               disableVariations={false}
