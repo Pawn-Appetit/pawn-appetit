@@ -28,6 +28,8 @@ CREATE TABLE Games (
     SiteID INTEGER,
     Date TEXT,
     UTCTime TEXT,
+    EndDate TEXT,
+    EndTime TEXT,
     Round INTEGER,
     WhiteID INTEGER,
     WhiteElo INTEGER,

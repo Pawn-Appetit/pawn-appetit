@@ -19,7 +19,9 @@ use crate::{
     AppState,
 };
 use dashmap::DashMap;
-use diesel::{connection::SimpleConnection, insert_into, prelude::*, sql_query, sql_types::Text};
+use diesel::{
+    connection::SimpleConnection, dsl::sql, insert_into, prelude::*, sql_query, sql_types::Text,
+};
 use pgn::Importer;
 use pgn_reader::BufferedReader;
 use rayon::prelude::*;
@@ -423,13 +425,17 @@ pub async fn get_games(
     }
 
     if let Some(start_date) = query.start_date {
-        sql_query = sql_query.filter(games::date.ge(start_date.clone()));
-        count_query = count_query.filter(games::date.ge(start_date));
+        sql_query = sql_query
+            .filter(sql::<Text>("COALESCE(Games.EndDate, Games.Date)").ge(start_date.clone()));
+        count_query =
+            count_query.filter(sql::<Text>("COALESCE(Games.EndDate, Games.Date)").ge(start_date));
     }
 
     if let Some(end_date) = query.end_date {
-        sql_query = sql_query.filter(games::date.le(end_date.clone()));
-        count_query = count_query.filter(games::date.le(end_date));
+        sql_query = sql_query
+            .filter(sql::<Text>("COALESCE(Games.EndDate, Games.Date)").le(end_date.clone()));
+        count_query =
+            count_query.filter(sql::<Text>("COALESCE(Games.EndDate, Games.Date)").le(end_date));
     }
 
     if let Some(tournament_id) = query.tournament_id {
@@ -554,8 +560,14 @@ pub async fn get_games(
             SortDirection::Desc => sql_query.order(games::id.desc()),
         },
         GameSort::Date => match query_options.direction {
-            SortDirection::Asc => sql_query.order((games::date.asc(), games::time.asc())),
-            SortDirection::Desc => sql_query.order((games::date.desc(), games::time.desc())),
+            SortDirection::Asc => sql_query.order((
+                sql::<Text>("COALESCE(Games.EndDate, Games.Date)").asc(),
+                sql::<Text>("COALESCE(Games.EndTime, Games.UTCTime)").asc(),
+            )),
+            SortDirection::Desc => sql_query.order((
+                sql::<Text>("COALESCE(Games.EndDate, Games.Date)").desc(),
+                sql::<Text>("COALESCE(Games.EndTime, Games.UTCTime)").desc(),
+            )),
         },
         GameSort::WhiteElo => match query_options.direction {
             SortDirection::Asc => sql_query.order(games::white_elo.asc()),

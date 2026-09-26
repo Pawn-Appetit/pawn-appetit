@@ -216,6 +216,8 @@ pub struct TempGame {
     pub site_name: Option<String>,
     pub date: Option<String>,
     pub time: Option<String>,
+    pub end_date: Option<String>,
+    pub end_time: Option<String>,
     pub round: Option<String>,
     pub white_name: Option<String>,
     pub white_elo: Option<i32>,
@@ -281,6 +283,10 @@ impl Visitor for Importer {
             self.game.date = Some(String::from_utf8_lossy(value.as_bytes()).to_string());
         } else if key == b"UTCTime" {
             self.game.time = Some(String::from_utf8_lossy(value.as_bytes()).to_string());
+        } else if key == b"EndDate" {
+            self.game.end_date = Some(String::from_utf8_lossy(value.as_bytes()).to_string());
+        } else if key == b"EndTime" {
+            self.game.end_time = Some(String::from_utf8_lossy(value.as_bytes()).to_string());
         } else if key == b"Site" {
             self.game.site_name = Some(String::from_utf8_lossy(value.as_bytes()).to_string());
         } else if key == b"Event" {

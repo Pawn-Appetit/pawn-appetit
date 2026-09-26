@@ -101,6 +101,8 @@ pub fn insert_to_db(db: &mut SqliteConnection, game: &TempGame) -> Result<()> {
         black_material: minimal_black_material,
         date: game.date.as_deref(),
         time: game.time.as_deref(),
+        end_date: game.end_date.as_deref(),
+        end_time: game.end_time.as_deref(),
         time_control: game.time_control.as_deref(),
         site_id,
         event_id,
@@ -204,6 +206,28 @@ mod tests {
         insert_pgn(&mut conn, pgn_a);
         insert_pgn(&mut conn, pgn_b);
         assert_eq!(game_count(&mut conn), 2);
+    }
+
+    #[test]
+    fn stores_end_time_from_headers() {
+        let mut conn = SqliteConnection::establish(":memory:").unwrap();
+        core::init_db(&mut conn, "Test", "Test").unwrap();
+        let pgn = r#"[Date "2026.09.09"]
+[UTCTime "11:05:14"]
+[EndDate "2026.09.23"]
+[EndTime "09:34:52"]
+[White "bonfire123"]
+[Black "capaloco"]
+
+1. e4 e5 *
+"#;
+        insert_pgn(&mut conn, pgn);
+        let (end_date, end_time): (Option<String>, Option<String>) = games::table
+            .select((games::end_date, games::end_time))
+            .first(&mut conn)
+            .unwrap();
+        assert_eq!(end_date.as_deref(), Some("2026.09.23"));
+        assert_eq!(end_time.as_deref(), Some("09:34:52"));
     }
 
     #[test]
