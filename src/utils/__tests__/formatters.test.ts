@@ -459,3 +459,16 @@ test("formatDateToPGN handles future dates", () => {
     expect(formatDateToPGN("3000-06-15")).toBe("3000.06.15");
     expect(formatDateToPGN("9999-12-31")).toBe("9999.12.31");
 });
+
+test("date-only strings keep their calendar day in any timezone", () => {
+    const previousTz = process.env.TZ;
+    process.env.TZ = "America/Sao_Paulo";
+    try {
+        const date = parseDate("2026.09.09");
+        expect([date?.getFullYear(), date?.getMonth(), date?.getDate()]).toEqual([2026, 8, 9]);
+        expect(formatDateToPGN("2026.09.09")).toBe("2026.09.09");
+        expect(formatDateToPGN(date ?? new Date())).toBe("2026.09.09");
+    } finally {
+        process.env.TZ = previousTz;
+    }
+});

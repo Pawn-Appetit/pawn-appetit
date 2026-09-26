@@ -299,6 +299,19 @@ export function parseDate(dateInput: string | Date | number | null | undefined):
             normalized = normalized.replace(/\./g, "-");
         }
 
+        // Date-only strings must keep their calendar day in every timezone;
+        // new Date("YYYY-MM-DD") is UTC midnight and renders as the previous
+        // day west of UTC.
+        if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+            const [year, month, day] = normalized.split("-").map(Number);
+            const date = new Date(year, month - 1, day);
+            const rollsOver =
+                date.getFullYear() !== year ||
+                date.getMonth() !== month - 1 ||
+                date.getDate() !== day;
+            return rollsOver ? undefined : date;
+        }
+
         const date = new Date(normalized);
         return Number.isNaN(date.getTime()) ? undefined : date;
     } catch {
@@ -320,7 +333,8 @@ export function formatDateToPGN(
 
     let dateObj: Date;
     if (typeof date === "string") {
-        dateObj = new Date(date);
+        const parsed = parseDate(date);
+        return parsed ? formatDateToPGN(parsed) : undefined;
     } else if (typeof date === "number") {
         dateObj = new Date(date);
     } else if (date instanceof Date) {
