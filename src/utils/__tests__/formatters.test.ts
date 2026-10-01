@@ -1,4 +1,4 @@
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import {
     createBytesFormatter,
     createBytesLongFormatter,
@@ -461,14 +461,13 @@ test("formatDateToPGN handles future dates", () => {
 });
 
 test("date-only strings keep their calendar day in any timezone", () => {
-    const previousTz = process.env.TZ;
-    process.env.TZ = "America/Sao_Paulo";
+    vi.stubEnv("TZ", "America/Sao_Paulo");
     try {
         const date = parseDate("2026.09.09");
         expect([date?.getFullYear(), date?.getMonth(), date?.getDate()]).toEqual([2026, 8, 9]);
         expect(formatDateToPGN("2026.09.09")).toBe("2026.09.09");
         expect(formatDateToPGN(date ?? new Date())).toBe("2026.09.09");
     } finally {
-        process.env.TZ = previousTz;
+        vi.unstubAllEnvs();
     }
 });
