@@ -35,6 +35,10 @@ diesel::table! {
         date -> Nullable<Text>,
         #[sql_name = "UTCTime"]
         time -> Nullable<Text>,
+        #[sql_name = "EndDate"]
+        end_date -> Nullable<Text>,
+        #[sql_name = "EndTime"]
+        end_time -> Nullable<Text>,
         #[sql_name = "Round"]
         round -> Nullable<Text>,
         #[sql_name = "WhiteID"]

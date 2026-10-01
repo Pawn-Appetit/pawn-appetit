@@ -27,13 +27,13 @@ pub(crate) fn get_pawn_home(board: &Board) -> u16 {
     (second_rank_pawns as u16) | ((seventh_rank_pawns as u16) << 8)
 }
 
-fn game_stored(
+fn find_stored_game(
     db: &mut SqliteConnection,
     white_id: i32,
     black_id: i32,
     date: &str,
     time: &str,
-) -> Result<bool> {
+) -> Result<Option<i32>> {
     let found: Option<i32> = games::table
         .filter(games::white_id.eq(white_id))
         .filter(games::black_id.eq(black_id))
@@ -42,7 +42,7 @@ fn game_stored(
         .select(games::id)
         .first(db)
         .optional()?;
-    Ok(found.is_some())
+    Ok(found)
 }
 
 pub fn insert_to_db(db: &mut SqliteConnection, game: &TempGame) -> Result<()> {
@@ -66,9 +66,24 @@ pub fn insert_to_db(db: &mut SqliteConnection, game: &TempGame) -> Result<()> {
     if let (Some(date), Some(time)) = (game.date.as_deref(), game.time.as_deref()) {
         if NaiveDate::parse_from_str(date, "%Y.%m.%d").is_ok()
             && NaiveTime::parse_from_str(time, "%H:%M:%S").is_ok()
-            && game_stored(db, white_id, black_id, date, time)?
         {
-            return Ok(());
+            if let Some(id) = find_stored_game(db, white_id, black_id, date, time)? {
+                // Rows imported before end times were kept stay empty until a
+                // re-import brings the game by again.
+                if game.end_date.is_some() {
+                    diesel::update(
+                        games::table
+                            .filter(games::id.eq(id))
+                            .filter(games::end_date.is_null()),
+                    )
+                    .set((
+                        games::end_date.eq(game.end_date.as_deref()),
+                        games::end_time.eq(game.end_time.as_deref()),
+                    ))
+                    .execute(db)?;
+                }
+                return Ok(());
+            }
         }
     }
 
@@ -101,6 +116,8 @@ pub fn insert_to_db(db: &mut SqliteConnection, game: &TempGame) -> Result<()> {
         black_material: minimal_black_material,
         date: game.date.as_deref(),
         time: game.time.as_deref(),
+        end_date: game.end_date.as_deref(),
+        end_time: game.end_time.as_deref(),
         time_control: game.time_control.as_deref(),
         site_id,
         event_id,
@@ -204,6 +221,59 @@ mod tests {
         insert_pgn(&mut conn, pgn_a);
         insert_pgn(&mut conn, pgn_b);
         assert_eq!(game_count(&mut conn), 2);
+    }
+
+    #[test]
+    fn stores_end_time_from_headers() {
+        let mut conn = SqliteConnection::establish(":memory:").unwrap();
+        core::init_db(&mut conn, "Test", "Test").unwrap();
+        let pgn = r#"[Date "2026.09.09"]
+[UTCTime "11:05:14"]
+[EndDate "2026.09.23"]
+[EndTime "09:34:52"]
+[White "bonfire123"]
+[Black "capaloco"]
+
+1. e4 e5 *
+"#;
+        insert_pgn(&mut conn, pgn);
+        let (end_date, end_time): (Option<String>, Option<String>) = games::table
+            .select((games::end_date, games::end_time))
+            .first(&mut conn)
+            .unwrap();
+        assert_eq!(end_date.as_deref(), Some("2026.09.23"));
+        assert_eq!(end_time.as_deref(), Some("09:34:52"));
+    }
+
+    #[test]
+    fn reimport_backfills_missing_end_time() {
+        let mut conn = SqliteConnection::establish(":memory:").unwrap();
+        core::init_db(&mut conn, "Test", "Test").unwrap();
+        let without_end = r#"[Date "2026.09.09"]
+[UTCTime "11:05:14"]
+[White "bonfire123"]
+[Black "capaloco"]
+
+1. e4 e5 *
+"#;
+        let with_end = r#"[Date "2026.09.09"]
+[UTCTime "11:05:14"]
+[EndDate "2026.09.23"]
+[EndTime "09:34:52"]
+[White "bonfire123"]
+[Black "capaloco"]
+
+1. e4 e5 *
+"#;
+        insert_pgn(&mut conn, without_end);
+        insert_pgn(&mut conn, with_end);
+        let (end_date, end_time): (Option<String>, Option<String>) = games::table
+            .select((games::end_date, games::end_time))
+            .first(&mut conn)
+            .unwrap();
+        assert_eq!(end_date.as_deref(), Some("2026.09.23"));
+        assert_eq!(end_time.as_deref(), Some("09:34:52"));
+        assert_eq!(game_count(&mut conn), 1);
     }
 
     #[test]

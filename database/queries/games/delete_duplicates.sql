@@ -1,13 +1,18 @@
 -- Delete duplicate games from the database
--- Removes games with identical EventID, SiteID, Round, WhiteID, BlackID, Moves, Date, UTCTime
--- Keeps only the first occurrence (lowest ID) of each duplicate set
+-- A game can be stored more than once: byte-identical re-imports, and the same
+-- game re-imported with a richer move encoding (comments and clocks) than an
+-- earlier bare one. Rows sharing date, time, players, result and ply count are
+-- the same game; keep the most detailed record, then the oldest row.
 DELETE FROM Games
-WHERE ID IN (
-    SELECT ID
+WHERE ID NOT IN (
+    SELECT keep_id
     FROM (
-        SELECT ID,
-            ROW_NUMBER() OVER (PARTITION BY EventID, SiteID, Round, WhiteID, BlackID, Moves, Date, UTCTime ORDER BY ID) AS RowNum
+        SELECT ID AS keep_id,
+            ROW_NUMBER() OVER (
+                PARTITION BY Date, UTCTime, WhiteID, BlackID, Result, PlyCount
+                ORDER BY length(Moves) DESC, ID
+            ) AS row_num
         FROM Games
-    ) AS Subquery
-    WHERE RowNum > 1
+    ) AS ranked
+    WHERE row_num = 1
 );
