@@ -459,7 +459,7 @@
         "correctMoveWas": "正确的着法是 {{move}}",
         "resetOpeningData": {
           "title": "重置开局数据",
-          "desc": "确定要重置 \"{ { fileName } } \" 的开局数据吗？所有学习进度将会丢失。"
+          "desc": "确定要重置 \"{{fileName}}\" 的开局数据吗？所有学习进度将会丢失。"
         }
       },
       "analysis": {
