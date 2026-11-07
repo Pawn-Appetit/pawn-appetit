@@ -283,6 +283,7 @@ Pawn Appétit is for chess players **all around the world**! We're committed to 
 | Language                        | Progress | Link                        |
 | ------------------------------- | -------- | --------------------------- |
 | 🇺🇸 **English US**               | ✅ 100%  | [View](./src/locales/en-US) |
+| 🇨🇳 **中文 (Chinese)**           | ✅ 100%   | [View](./src/locales/zh)    |
 | 🇬🇧 **English UK**               | 🟡 90%   | [View](./src/locales/en-GB) |
 | 🇪🇸 **Español (Spanish)**        | 🟡 67%   | [View](./src/locales/es)    |
 | 🇩🇪 **Deutsch (German)**         | 🟡 50%   | [View](./src/locales/de)    |
@@ -291,7 +292,6 @@ Pawn Appétit is for chess players **all around the world**! We're committed to 
 | 🇮🇹 **Italiano (Italian)**       | 🟡 50%   | [View](./src/locales/it)    |
 | 🇷🇺 **Русский (Russian)**        | 🟡 50%   | [View](./src/locales/ru)    |
 | 🇹🇷 **Türkçe (Turkish)**         | 🟡 50%   | [View](./src/locales/tr)    |
-| 🇨🇳 **中文 (Chinese)**           | 🟡 50%   | [View](./src/locales/zh)    |
 | 🇵🇱 **Polski (Polish)**          | 🔴 32%   | [View](./src/locales/pl)    |
 | 🇧🇾 **Беларуская (Belarusian)**  | 🔴 28%   | [View](./src/locales/be)    |
 | 🇳🇴 **Norsk (Norwegian Bokmål)** | 🔴 28%   | [View](./src/locales/nb)    |
