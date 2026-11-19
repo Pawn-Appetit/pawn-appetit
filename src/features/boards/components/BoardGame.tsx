@@ -721,10 +721,10 @@ function BoardGame() {
   }, [activeTabData]);
 
   useEffect(() => {
-    if (pos?.isEnd()) {
+    if (pos?.isEnd() || headers.result !== "*") {
       setGameState("gameOver");
     }
-  }, [pos, setGameState]);
+  }, [pos, headers.result, setGameState]);
 
   useEffect(() => {
     // Only request engine moves when game is actively playing
