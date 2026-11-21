@@ -1,7 +1,7 @@
 import type { DrawShape } from "@lichess-org/chessground/draw";
 import type { Piece } from "@lichess-org/chessground/types";
 import { Box, Group, Text } from "@mantine/core";
-import { useHotkeys } from "@mantine/hooks";
+import { useElementSize, useHotkeys } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconCamera, IconCopy, IconEraser, IconSwitchVertical, IconTool } from "@tabler/icons-react";
 import { save } from "@tauri-apps/plugin-dialog";
@@ -156,6 +156,7 @@ function Board({
 }: ChessboardProps) {
   const { t } = useTranslation();
   const { layout } = useResponsiveLayout();
+  const { ref: containerRef, height: containerHeight } = useElementSize();
 
   const store = useContext(TreeStateContext)!;
 
@@ -487,7 +488,7 @@ function Board({
       : undefined;
 
   return (
-    <Box w="100%" h="100%">
+    <Box w="100%" h="100%" ref={containerRef}>
       <Box
         style={{
           display: "flex",
@@ -497,8 +498,11 @@ function Board({
           gap: "0.5rem",
           flexWrap: "nowrap",
           overflow: "hidden",
-          // Let the board use available space - responsive sizing is handled by the container
-          maxWidth: "100%",
+          margin: "0 auto",
+          maxWidth:
+            containerHeight > 0
+              ? `calc(${containerHeight}px - 4.25rem - 1rem + 25px + var(--mantine-spacing-sm))`
+              : "100%",
           maxHeight: "100%",
         }}
       >
