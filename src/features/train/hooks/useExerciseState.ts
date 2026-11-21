@@ -6,6 +6,7 @@ interface ExerciseBase {
     title: string | { default: string };
     description: string | { default: string };
     fen?: string;
+    gameData?: { fen?: string };
     stepsCount?: number;
 }
 
@@ -80,7 +81,8 @@ export function useExerciseState<T extends ExerciseBase, C extends CategoryBase>
         (category: C | null) => {
             setSelectedCategory(category);
             setSelectedExercise(null);
-            const newFen = category?.exercises[0]?.fen || initialFen;
+            const newFen =
+                category?.exercises[0]?.gameData?.fen || category?.exercises[0]?.fen || initialFen;
             setCurrentFen(newFen);
             setStartingFen(newFen);
             resetState();
@@ -91,7 +93,7 @@ export function useExerciseState<T extends ExerciseBase, C extends CategoryBase>
     const handleExerciseSelect = useCallback(
         (exercise: T) => {
             setSelectedExercise(exercise);
-            const newFen = exercise?.fen || initialFen;
+            const newFen = exercise?.gameData?.fen || exercise?.fen || initialFen;
             setCurrentFen(newFen);
             setStartingFen(newFen);
             resetState();
